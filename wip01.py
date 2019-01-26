@@ -4,6 +4,7 @@
 import cv2
 
 ## Checking connection Anya
+##version 2
 #src3 = cv2.imread("C:/Users/zal0001m/Documents/Private/AnjutkaVideo/IMG_20180814_181351.jpg")
 #cv2.imshow("hi",src3)
 
