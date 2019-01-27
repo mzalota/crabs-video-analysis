@@ -53,12 +53,12 @@ def isolateRedDots(featureImage):
     # upper_red = np.array([221,227,224])
     mask0 = cv2.inRange(img_hsv, lower_red, upper_red)
 
-    cv2.imshow("mask0_GaussianBlur", mask0)
+    cv2.imshow("mask0_before_GaussianBlur", mask0)
 
     mask0 = cv2.GaussianBlur(mask0, (11, 11), 0)
 
     cv2.imshow("mask0_before_erode", mask0)
-    cv2.waitKey(0)
+    #cv2.waitKey(0)
 
     # perform a series of erosions and dilations to remove
     # any small blobs of noise from the thresholded image
