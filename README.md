@@ -4,5 +4,14 @@
 #python -m pip install opencv-python
 #python -m pip install numpy
 
-#from skimage.measure import structural_similarity as ssim
-#import matplotlib.pyplot as plt
+#python -m pip install --upgrade imutils
+#python -m pip install scikit-image
+
+
+
+# ffmpeg -i i"C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/V1_R_20180911_165259.avi" -strict -2 output.mp4
+
+
+#https://docs.opencv.org/trunk/dd/d49/tutorial_py_contour_features.html#gsc.tab=0
+
+#https://www.geeksforgeeks.org/template-matching-using-opencv-in-python/
