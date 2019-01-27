@@ -23,6 +23,9 @@ def highlightMatchedFeature(img_rgb, template):
 
 
 def keepTwoLargestContours(contours):
+    print "contours"
+    print contours
+
     bounding_boxes = []
     for contour in contours:
         Xmin = np.min(contour[:, 0])
@@ -34,8 +37,9 @@ def keepTwoLargestContours(contours):
 
     # bounding_boxes = sorted(bounding_boxes, key=lambda p: p.area, reverse=True)
     bounding_boxes = sorted(bounding_boxes, key=lambda box: abs((box[0] - box[1]) * (box[2] - box[3])), reverse=True)
-    #print bounding_boxes
-    return bounding_boxes
+    print "bounding_boxes"
+    print bounding_boxes
+    return bounding_boxes[:2]
 
 
 def isolateRedDots(featureImage):
@@ -54,6 +58,7 @@ def isolateRedDots(featureImage):
     mask0 = cv2.GaussianBlur(mask0, (11, 11), 0)
 
     cv2.imshow("mask0_before_erode", mask0)
+    cv2.waitKey(0)
 
     # perform a series of erosions and dilations to remove
     # any small blobs of noise from the thresholded image

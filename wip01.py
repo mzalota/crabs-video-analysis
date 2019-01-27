@@ -33,20 +33,20 @@ print(cv2.__version__)
 #vidcap = cv2.VideoCapture('C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/V2_R_20180911_165730.avi' )
 
 #vidcap = cv2.VideoCapture('C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi')
-vidcap = cv2.VideoCapture('D:\Video_Biology\Kara\2018\AMK72\2018_09_15_St_5993\V4__R_20180915_210447.avi')
+vidcap = cv2.VideoCapture("D:/Video_Biology/Kara/2018/AMK72/2018_09_15_St_5993/V4__R_20180915_210447.avi")
 
 
 #ffmpeg -i "C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi" -strict -2 ../output_st_v3.mp4
 
 success, image = vidcap.read()
-count = 81
+count = 250
 success = True
 
 cv2.startWindowThread()
 
-sectionWithDots=[300,1300,600,1400]
+sectionWithDots=[300,600,600,1400]
 
-dotsShift=150
+dotsShift=300
 
 while success:
     print 'Read a new frame: ', count
@@ -59,16 +59,18 @@ while success:
     redDotsArea = image[sectionWithDots[0]:sectionWithDots[1], sectionWithDots[2]:sectionWithDots[3]]
 
     dots = isolateRedDots(redDotsArea)
+    print "dots"
+    print dots
     topX = int(min(dots[0][0],dots[1][0]))
     bottomX = int(max(dots[0][1], dots[1][1]))
     topY = int(min(dots[0][2], dots[1][2]))
     bottomY = int(max(dots[0][3], dots[1][3]))
     print topX, bottomX, topY, bottomY
 
-    sectionWithDots[0] = sectionWithDots[0] + topX-dotsShift
-    sectionWithDots[1] = sectionWithDots[0] + bottomX + dotsShift
-    sectionWithDots[2] = sectionWithDots[2] + topY - dotsShift
-    sectionWithDots[3] = sectionWithDots[2] + bottomY + dotsShift
+    sectionWithDots[0] = max(sectionWithDots[0] + topX-dotsShift,1)
+    sectionWithDots[1] = min(sectionWithDots[0] + bottomX + dotsShift,1500)
+    sectionWithDots[2] = max(sectionWithDots[2] + topY - dotsShift,1)
+    sectionWithDots[3] = min(sectionWithDots[2] + bottomY + dotsShift,1500)
 
     withRedDots = drawContoursAroundRedDots(redDotsArea)
 
@@ -79,9 +81,9 @@ while success:
 
     cv2.resizeWindow(windowName, 900, 600)
     cv2.moveWindow(windowName, 40, 30)
-    cv2.imshow(windowName, withRedDots)
+    cv2.imshow(windowName, image)
 
-    cv2.imshow("orig", image)
+    cv2.imshow("reddots", withRedDots )
 
     cv2.waitKey(0)
     cv2.destroyAllWindows()
@@ -95,7 +97,7 @@ while success:
     # Now when you read the frame, you will be reading the 50th frame
     success, image = vidcap.read()
 
-    count += 250
+    count += 50
 
     if count > 29100:
         break
