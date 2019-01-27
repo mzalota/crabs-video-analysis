@@ -7,7 +7,7 @@
 #python -m pip install --upgrade imutils
 #python -m pip install scikit-image
 
-
+#download ffmpeg from https://ffmpeg.zeranoe.com/builds/
 
 # ffmpeg -i i"C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/V1_R_20180911_165259.avi" -strict -2 output.mp4
 
