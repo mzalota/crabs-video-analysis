@@ -68,17 +68,23 @@ while success:
     # Now when you read the frame, you will be reading the 50th frame
     success, image = vidcap.read()
 
+    print "image"
+    print type(image)
+
     vf_prev = vf
     vf = VideoFrame(image, vf_prev)
-    withRedDots = vf.processFrame()
+    vf.isolateRedDots()
+
+    withRedDots = vf.drawBoxesAroundRedDots(image, [vf.redDot1, vf.redDot2])
 
     windowName = 'Detected_' + str(count)
-    showWindow(windowName, image, Point(40, 40))
+    #showWindow(windowName, image, Point(40, 40))
     showWindow("redDots", withRedDots, Point(700, 200))
+
+    #showWindow("redDotsImageFragment", redDotsImageFragment, Point(700, 600))
 
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-
     # cv2.imwrite("frame%d.jpg" % count, image)     # save frame as JPEG file
     ##success,image = vidcap.read()
 

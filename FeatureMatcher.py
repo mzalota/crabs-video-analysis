@@ -2,10 +2,9 @@ from collections import namedtuple
 
 import cv2
 import numpy as np
-
-#https://www.geeksforgeeks.org/template-matching-using-opencv-in-python/
-from skimage.draw import polygon_perimeter
 from skimage import measure
+# https://www.geeksforgeeks.org/template-matching-using-opencv-in-python/
+from skimage.draw import polygon_perimeter
 
 Box = namedtuple('Box', 'topLeft bottomRight')
 Point = namedtuple('Point', 'x y')
@@ -82,19 +81,6 @@ def isolateRedDots(featureImage):
     return top2Boxes
 
 
-def drawBoxesAroundRedDots(image_without_boxes, bounding_boxes):
-    #https://docs.opencv.org/trunk/dd/d49/tutorial_py_contour_features.html#gsc.tab=0
-
-    with_boxes = np.copy(image_without_boxes)
-
-    for box in bounding_boxes:
-        #print box
-        c = [box.topLeft.x, box.bottomRight.x, box.bottomRight.x, box.topLeft.x, box.topLeft.x]
-        r = [box.bottomRight.y, box.bottomRight.y, box.topLeft.y, box.topLeft.y, box.bottomRight.y]
-        rr, cc = polygon_perimeter(r, c, with_boxes.shape)
-        with_boxes[rr, cc] = 1  # set color white
-    return with_boxes
-
 def drawBoxesAroundRedDots_old(image_without_boxes, bounding_boxes):
     #https://docs.opencv.org/trunk/dd/d49/tutorial_py_contour_features.html#gsc.tab=0
 
@@ -113,7 +99,7 @@ def drawBoxesAroundRedDots_old(image_without_boxes, bounding_boxes):
     return with_boxes
 
 
-def drawContoursAroundRedDots(src3):
-    contours = isolateRedDots(src3)
-    return drawBoxesAroundRedDots(src3, contours)
+#def drawContoursAroundRedDots(src3):
+#    contours = isolateRedDots(src3)
+#    return drawBoxesAroundRedDots(src3, contours)
 
