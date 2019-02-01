@@ -75,7 +75,7 @@ while success:
     vf = VideoFrame(image, vf_prev)
     vf.isolateRedDots()
 
-    withRedDots = vf.drawBoxesAroundRedDots(image, [vf.redDot1, vf.redDot2])
+    withRedDots = vf.drawBoxesAroundRedDots()
 
     windowName = 'Detected_' + str(count)
     #showWindow(windowName, image, Point(40, 40))
