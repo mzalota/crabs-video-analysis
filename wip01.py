@@ -38,7 +38,7 @@ vidcap = cv2.VideoCapture('C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_599
 #ffmpeg -i "C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi" -strict -2 ../output_st_v3.mp4
 
 #success, image = vidcap.read()
-count = 2100
+count = 2700
 
 cv2.startWindowThread()
 
@@ -91,7 +91,7 @@ while success:
     ##success,image = vidcap.read()
 
 
-    count += 250
+    count += 25
 
     if count > 29100:
         break

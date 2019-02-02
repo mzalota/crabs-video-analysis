@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 from skimage.draw import polygon_perimeter
 
-from FeatureMatcher import FeatureMatcher
-from common import Point, Box, boxAroundBoxes
+from RedDot import RedDot
+from common import Point, Box, boxAroundBoxes, translateCoordinateToOuter
 
 
 #from wip01 import boxAroundBoxes, dotsShift, showWindow, Point
@@ -24,22 +24,11 @@ class VideoFrame:
 
 
     def isolateRedDots(self):
+        self.redDot1 = RedDot(True)
+        self.redDot1.isolateRedDots(self.image, self.__redDotsSearchArea1())
 
-        redDotsSearchBox = self.__redDotsSearchArea()
-
-        redDotsImageFragment= self.__redDotsSearchImage()
-
-        cv2.imshow("zoom", redDotsImageFragment)
-
-        fm = FeatureMatcher()
-        dots = fm.isolateRedDots(redDotsImageFragment)
-        cv2.waitKey(0)
-        self.redDot1 = self.__innerCoordinateToOuter(dots[0],redDotsSearchBox.topLeft)
-        self.redDot2 = self.__innerCoordinateToOuter(dots[1],redDotsSearchBox.topLeft)
-
-        self.boxAroundBoxesInner = boxAroundBoxes(dots[0], dots[1])
-
-        self.boxAroundRedDotsAbsolute = self.__innerCoordinateToOuter(self.boxAroundBoxesInner, redDotsSearchBox.topLeft)
+        self.redDot2 = RedDot(True)
+        self.redDot2.isolateRedDots(self.image, self.__redDotsSearchArea2())
 
 
     def drawBoxesAroundRedDots(self):
@@ -47,7 +36,7 @@ class VideoFrame:
 
         image_with_boxes = np.copy(self.image)
 
-        bounding_boxes = [self.redDot1, self.redDot2]
+        bounding_boxes = [self.redDot1.boxAroundDot, self.redDot2.boxAroundDot]
         for box in bounding_boxes:
             c = [box.topLeft.x, box.bottomRight.x, box.bottomRight.x, box.topLeft.x, box.topLeft.x]
             r = [box.bottomRight.y, box.bottomRight.y, box.topLeft.y, box.topLeft.y, box.bottomRight.y]
@@ -68,18 +57,28 @@ class VideoFrame:
         """
         :return: numpy.ndarray 
         """
-        redDotsSearchArea = self.__redDotsSearchArea()
+        redDotsSearchArea = self.__redDotsSearchArea1()
 
         return self.image[redDotsSearchArea.topLeft.y:redDotsSearchArea.bottomRight.y,
                                redDotsSearchArea.topLeft.x: redDotsSearchArea.bottomRight.x]
 
-    def __redDotsSearchArea(self):
+    def __redDotsSearchArea1(self):
         if self.boxAroundRedDotsAbsolute:
-            return self.__updateRedDotsSearchArea(self.boxAroundRedDotsAbsolute)
+            return self.__updateRedDotsSearchArea(self.redDot1.boxAroundDot)
         if self.prevFrame:
-            return self.__updateRedDotsSearchArea(self.prevFrame.boxAroundRedDotsAbsolute)
-        return Box(Point(600, 300), Point(1400, 700))
+            return self.__updateRedDotsSearchArea(self.prevFrame.redDot1.boxAroundDot)
+        #return Box(Point(600, 300), Point(1400, 700))
 
+        return Box(Point(600, 300), Point(900, 600))
+
+    def __redDotsSearchArea2(self):
+        if self.boxAroundRedDotsAbsolute:
+            return self.__updateRedDotsSearchArea(self.redDot2.boxAroundDot)
+        if self.prevFrame:
+            return self.__updateRedDotsSearchArea(self.prevFrame.redDot2.boxAroundDot)
+        #return Box(Point(600, 300), Point(1400, 700))
+
+        return Box(Point(900, 300), Point(1400, 800))
 
     def __updateRedDotsSearchArea(self, boxAroundRedDots):
         topLeftX = max(boxAroundRedDots.topLeft.x - self.dotsShift, 1)
@@ -89,19 +88,4 @@ class VideoFrame:
         redDotsSearchArea = Box(Point(topLeftX, topLeftY), Point(bottomRightX, bottomRightY))
 
         return redDotsSearchArea
-
-
-    def __innerCoordinateToOuter(self, innerBox, topLeftOuterPoint):
-        """
-        :param innerBox: Box
-        :param topLeftOuterPoint: Point 
-        :return: Box
-        """
-        topLeftX = max(topLeftOuterPoint.x + innerBox.topLeft.x, 1)
-        topLeftY = max(topLeftOuterPoint.y + innerBox.topLeft.y, 1)
-        bottomRightX = min(topLeftOuterPoint.x + innerBox.bottomRight.x, self.image.shape[1])
-        bottomRightY = min(topLeftOuterPoint.y + innerBox.bottomRight.y, self.image.shape[0])
-        #return bottomRightX, bottomRightY, topLeftX, topLeftY
-
-        return Box(Point(topLeftX, topLeftY), Point(bottomRightX, bottomRightY))
 

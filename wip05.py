@@ -10,7 +10,7 @@
 # template matching
 import cv2
 
-from FeatureMatcher import highlightMatchedFeature
+from RedDot import highlightMatchedFeature
 
 # Read the main image
 imagePath = 'C:/workspaces/AnjutkaVideo/frames/frame7.jpg'
