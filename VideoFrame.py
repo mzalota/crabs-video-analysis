@@ -1,3 +1,4 @@
+import cv2
 import numpy as np
 from skimage.draw import polygon_perimeter
 
@@ -28,8 +29,11 @@ class VideoFrame:
 
         redDotsImageFragment= self.__redDotsSearchImage()
 
+        cv2.imshow("zoom", redDotsImageFragment)
+
         fm = FeatureMatcher()
         dots = fm.isolateRedDots(redDotsImageFragment)
+        cv2.waitKey(0)
         self.redDot1 = self.__innerCoordinateToOuter(dots[0],redDotsSearchBox.topLeft)
         self.redDot2 = self.__innerCoordinateToOuter(dots[1],redDotsSearchBox.topLeft)
 

@@ -11,6 +11,11 @@ Point = namedtuple('Point', 'x y')
 
 class FeatureMatcher:
 
+    mask_color  = None
+    mask_blurred  = None
+    mask_eroded  = None
+    mask_dilated = None
+
     def highlightMatchedFeature(self, img_rgb, template):
         # Convert it to grayscale
         img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
@@ -28,56 +33,71 @@ class FeatureMatcher:
             cv2.rectangle(img_rgb, pt, (pt[0] + w, pt[1] + h), (0, 255, 255), 2)
 
 
-    def keepTwoLargestContours(self, contours):
-        print "contours"
-        #print contours
-
-        bounding_boxes = []
-        for contour in contours:
-            Xmin = int(np.min(contour[:, 1]))
-            Xmax = int(np.max(contour[:, 1]))
-            Ymin = int(np.min(contour[:, 0]))
-            Ymax = int(np.max(contour[:, 0]))
-            box = Box(Point(Xmin,Ymin), Point(Xmax,Ymax))
-
-            #bounding_boxes.append([Xmin, Xmax, Ymin, Ymax])
-            bounding_boxes.append(box)
-
-        # bounding_boxes = sorted(bounding_boxes, key=lambda p: p.area, reverse=True)
-        #bounding_boxes = sorted(bounding_boxes, key=lambda box: abs((box[0] - box[1]) * (box[2] - box[3])), reverse=True)
-        bounding_boxes = sorted(bounding_boxes, key=lambda box: abs((box.topLeft.x - box.bottomRight.x) * (box.topLeft.y - box.bottomRight.y)), reverse=True)
-        print "bounding_boxes"
-        print bounding_boxes
-        return bounding_boxes[:2]
-
-
     def isolateRedDots(self, featureImage):
 
+        self.mask_color = self.__isolateAreasWithRedColor(featureImage)
+
+        self.mask_final = self.__blurErodeDilate(self.mask_color)
+
+        contours = measure.find_contours(self.mask_final, 0.9)
+
+        bounding_boxes = self.__boundingBoxesAroundContours(contours)
+        top2Boxes = self.__keepTwoLargestContours(bounding_boxes)
+
+        return top2Boxes
+
+
+    def __isolateAreasWithRedColor(self, featureImage):
+
+        #TODO: add both ranges of color 0-10 and 150-200
+        #lower_red = np.array([150, 0, 190])
+        #upper_red = np.array([200, 255, 255])
+
+        lower_red = np.array([0, 0, 150])
+        upper_red = np.array([10, 255, 255])
+
         img_hsv = cv2.cvtColor(featureImage, cv2.COLOR_BGR2HSV)
-        # img_hsv=featureImage
-        # lower mask (0-10)
-        # lower_red = np.array([0,50,50])
-        lower_red = np.array([150, 0, 190])
-        upper_red = np.array([200, 255, 255])
-        # upper_red = np.array([221,227,224])
         mask0 = cv2.inRange(img_hsv, lower_red, upper_red)
+        #cv2.imshow("mask0_before_GaussianBlur", mask0)
+        return mask0
 
-        cv2.imshow("mask0_before_GaussianBlur", mask0)
 
-        mask0 = cv2.GaussianBlur(mask0, (11, 11), 0)
-
-        cv2.imshow("mask0_before_erode", mask0)
-        #cv2.waitKey(0)
-
+    def __blurErodeDilate(self, mask_in):
         # perform a series of erosions and dilations to remove
         # any small blobs of noise from the thresholded image
-        mask0 = cv2.erode(mask0, None, iterations=1)
+        cv2.imshow("mask_in_before_blur", mask_in)
 
-        cv2.imshow("mask0_before_dilate", mask0)
+        self.mask_blurred = cv2.GaussianBlur(mask_in, (11, 11), 0)
+        cv2.imshow("mask01_after_blur", self.mask_blurred)
 
-        mask0 = cv2.dilate(mask0, None, iterations=6)
+        self.mask_eroded = cv2.erode(self.mask_blurred, None, iterations=1)
+        cv2.imshow("mask02_after_erode", self.mask_eroded)
 
-        # cv2.imshow("redDotMask", isolatedImage)
-        contours = measure.find_contours(mask0, 0.9)
-        top2Boxes = self.keepTwoLargestContours(contours)
-        return top2Boxes
+        self.mask_dilated = cv2.dilate(self.mask_eroded, None, iterations=6)
+        cv2.imshow("mask03_after_dilate", self.mask_dilated)
+
+        return np.copy(self.mask_dilated)
+
+
+    def __keepTwoLargestContours(self, bounding_boxes):
+        bounding_boxes = sorted(bounding_boxes, key=lambda box: abs((box.topLeft.x - box.bottomRight.x) * (box.topLeft.y - box.bottomRight.y)), reverse=True)
+        #print "bounding_boxes"
+        #print bounding_boxes
+        return bounding_boxes[:2]
+
+    def __boundingBoxesAroundContours(self, contours):
+        #print "contours"
+        # print contours
+        bounding_boxes = []
+        for contour in contours:
+            box = self.__boundingBoxAroundContour(contour)
+            bounding_boxes.append(box)
+        return bounding_boxes
+
+    def __boundingBoxAroundContour(self, contour):
+        Xmin = int(np.min(contour[:, 1]))
+        Xmax = int(np.max(contour[:, 1]))
+        Ymin = int(np.min(contour[:, 0]))
+        Ymax = int(np.max(contour[:, 0]))
+        box = Box(Point(Xmin, Ymin), Point(Xmax, Ymax))
+        return box

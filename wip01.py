@@ -38,7 +38,7 @@ vidcap = cv2.VideoCapture('C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_599
 #ffmpeg -i "C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi" -strict -2 ../output_st_v3.mp4
 
 #success, image = vidcap.read()
-count = 1150
+count = 2100
 
 cv2.startWindowThread()
 
@@ -61,12 +61,14 @@ vf=None
 
 while success:
     print 'Read a new frame: ', count
+    windowName = 'Detected_' + str(count)
 
     # start_frame_number = 50
     vidcap.set(cv2.CAP_PROP_POS_FRAMES, count)
 
     # Now when you read the frame, you will be reading the 50th frame
     success, image = vidcap.read()
+    showWindow(windowName, image, Point(700, 200))
 
     print "image"
     print type(image)
@@ -77,9 +79,9 @@ while success:
 
     withRedDots = vf.drawBoxesAroundRedDots()
 
-    windowName = 'Detected_' + str(count)
+    #windowName = 'Detected_' + str(count)
     #showWindow(windowName, image, Point(40, 40))
-    showWindow("redDots", withRedDots, Point(700, 200))
+    showWindow(windowName, withRedDots, Point(700, 200))
 
     #showWindow("redDotsImageFragment", redDotsImageFragment, Point(700, 600))
 
