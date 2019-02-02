@@ -76,6 +76,8 @@ while success:
     vf_prev = vf
     vf = VideoFrame(image, vf_prev)
     vf.isolateRedDots()
+    print "distance between Red Points"
+    print vf.distanceBetweenRedPoints()
 
     withRedDots = vf.drawBoxesAroundRedDots()
 

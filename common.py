@@ -1,5 +1,7 @@
 from collections import namedtuple
 
+import math
+
 Point = namedtuple('Point', 'x y')
 Box = namedtuple('Box', 'topLeft bottomRight')
 
@@ -22,3 +24,12 @@ def translateCoordinateToOuter(innerBox, topLeftOuterPoint):
     bottomRightY = topLeftOuterPoint.y + innerBox.bottomRight.y
 
     return Box(Point(topLeftX, topLeftY), Point(bottomRightX, bottomRightY))
+
+def distanceBetweenPoints(point1,point2):
+	x1 = point1.x
+	y1 = point1.y
+	x2 = point2.x
+	y2 = point2.y
+
+	dist = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+	return dist

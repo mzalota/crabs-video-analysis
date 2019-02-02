@@ -25,6 +25,12 @@ class RedDot:
     def __init__(self, showDebugImages = False):
         self.__showDebugImages = showDebugImages
 
+    def dotWasDetected(self):
+        if self.boxAroundDot:
+            return True
+        else:
+            return False
+
     def isolateRedDots(self, wholeImage, redDotsSearchArea):
 
         featureImage = self.__redDotsSearchImage(wholeImage, redDotsSearchArea)
@@ -39,8 +45,8 @@ class RedDot:
         top2Boxes = self.__keepTwoLargestContours(bounding_boxes)
 
         if self.__showDebugImages:
-            print "top2Boxes"
-            print top2Boxes
+            #print "top2Boxes"
+            #print top2Boxes
 
             cv2.imshow("imgage_to_locate_red_dots", featureImage)
             cv2.imshow("mask_in_before_blur", self.__mask_color)
@@ -50,6 +56,8 @@ class RedDot:
             cv2.waitKey(0)
 
         if len(top2Boxes)>0:
+            #print "topBox"
+            #print top2Boxes[0]
             self.__dotLocationInner = top2Boxes[0]
             self.boxAroundDot = translateCoordinateToOuter(top2Boxes[0], redDotsSearchArea.topLeft)
         else:
@@ -62,8 +70,9 @@ class RedDot:
         """
         :return: numpy.ndarray 
         """
-        return image[redDotsSearchArea.topLeft.y:redDotsSearchArea.bottomRight.y,
-                               redDotsSearchArea.topLeft.x: redDotsSearchArea.bottomRight.x]
+        print "redDotsSearchArea"
+        print redDotsSearchArea
+        return image[redDotsSearchArea.topLeft.y:redDotsSearchArea.bottomRight.y, redDotsSearchArea.topLeft.x: redDotsSearchArea.bottomRight.x]
 
 
     def __isolateAreasWithRedColor(self, featureImage):
