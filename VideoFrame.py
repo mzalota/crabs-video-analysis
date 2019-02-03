@@ -34,14 +34,16 @@ class VideoFrame:
 
     def isolateRedDots(self):
         self.redDot1 = RedDot(self.image, self.__redDotsSearchArea1())
-        self.redDot1.isolateRedDots("1_redDot")
+        #self.redDot1.isolateRedDots("1_redDot")
+        self.redDot1.isolateRedDots()
 
         #if self.redDot1.dotWasDetected():
             #print "detected red dot 1:"
             #print self.redDot1.boxAroundDot
 
         self.redDot2 = RedDot(self.image, self.__redDotsSearchArea2())
-        self.redDot2.isolateRedDots("2_redDot")
+        #self.redDot2.isolateRedDots("2_redDot")
+        self.redDot2.isolateRedDots()
 
         #if self.redDot2.dotWasDetected():
             #print "detected red dot 2:"

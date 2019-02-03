@@ -8,6 +8,7 @@
 #python -m pip install scikit-image
 #python -m pip install scipy
 #python -m pip install matplotlib
+#python -m pip install pyautogui
 
 
 # ffmpeg -i "C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/V1_R_20180911_165259.avi" -strict -2 output.mp4

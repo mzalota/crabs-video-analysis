@@ -33,3 +33,11 @@ def distanceBetweenPoints(point1,point2):
 
 	dist = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
 	return dist
+
+
+def subImage(image, box):
+    """
+    :return: numpy.ndarray 
+    """
+    print box
+    return image[box.topLeft.y:box.bottomRight.y, box.topLeft.x: box.bottomRight.x]

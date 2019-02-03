@@ -9,9 +9,11 @@
 
 import cv2
 import time
+from pyautogui import press
 
+from FeatureMatcher import FeatureMatcher
 from VideoFrame import VideoFrame
-from common import Point, distanceBetweenPoints
+from common import Point, distanceBetweenPoints, Box, subImage
 
 import os
 filepath="C:/workspaces/AnjutkaVideo/frames/frame1.jpg"
@@ -66,7 +68,7 @@ vidcap = cv2.VideoCapture('C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_599
 #ffmpeg -i "C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi" -strict -2 ../output_st_v3.mp4
 
 #success, image = vidcap.read()
-count = 25130 # 26670 #25130 # 100 26215
+count = 23785 #25130 # 26670 #25130 # 100 26215
 
 cv2.startWindowThread()
 
@@ -77,16 +79,57 @@ def showWindow(windowName, image, position):
     cv2.imshow(windowName, image)
 
 
+def click_and_crop(event, x, y, flags, param):
+    # grab references to the global variables
+    global refPt, cropping, filepath, lineDefined, onePointDefined,featureCoordiate, featureBox
+
+    # if the left mouse button was clicked, record the starting
+    # (x, y) coordinates and indicate that cropping is being
+    # performed
+
+
+    # check to see if the left mouse button was released
+    if event == cv2.EVENT_LBUTTONDOWN:
+        #if not onePointDefined:
+        #    refPt = [(x, y)]
+        #else:
+        #    refPt.append((x, y))
+
+        featureCoordiate = Point(x,y)
+        featureBox = Box(Point(max(x-50,1),max(y-50,1)),Point(x + 50, y + 50))
+
+        cv2.rectangle(image, (max(x-50,1), max(y-50,1)), (x + 50, y + 50), (255, 0, 0), 2)
+        #cv2.imshow("mainWithRedDots", image)
+
+
+
+        press('a')
+
+        #if onePointDefined:
+        #    lineDefined = True
+        #onePointDefined = True
+
+        # draw a rectangle around the region of interest
+        # cv2.rectangle(image, refPt[0], refPt[1], (0, 255, 0), 2)
+
+        lineDefined=False
+        if lineDefined:
+            cv2.line(image, refPt[0], refPt[1], (0, 0, 255), 1)
+            cv2.imshow(filepath, image)
+
+featureCoordiate = Point(0, 0)
+featureBox = Box(Point(1800,300),Point(1900,500))
+
+fm = FeatureMatcher()
+subImg = None
 vf=None
 success = True
 while success:
     print 'Read a new frame: ', count
     windowName = 'Detected_' + str(count)
 
-    # start_frame_number = 50
+    # set the number of the frame to read
     vidcap.set(cv2.CAP_PROP_POS_FRAMES, count)
-
-    # Now when you read the frame, you will be reading the 50th frame
     success, image = vidcap.read()
 
     if not success:
@@ -107,15 +150,40 @@ while success:
     writeToCSVFile(frameLogFile, row)
 
     withRedDots = vf.drawBoxesAroundRedDots()
+
+    #img_rgb = cv2.imread(imagePath)
+    #template = cv2.imread(feature_image, 0)
+
+
+    if subImg is not None:
+        print "subImg shape"
+        print subImg.shape
+        #cv2.imshow('subImg', subImg)
+        #showWindow("subImg", subImg, Point(100, 100))
+        #showWindow("mainWithRedDots", withRedDots, Point(700, 200))
+        #cv2.waitKey(0)
+        featureBox = fm.highlightMatchedFeature(withRedDots, subImg)
+        if featureBox is not None:
+            fm.drawBoxOnImage(withRedDots, featureBox)
+
     showWindow("mainWithRedDots", withRedDots, Point(700, 200))
 
-    cv2.waitKey(0)
-    #cv2.waitKey(2000)
+    if featureBox is None:
+        cv2.setMouseCallback("mainWithRedDots", click_and_crop)
+        print "Click on a new feature"
+        cv2.waitKey(0)
+    else:
+        cv2.waitKey(1000)
     #cv2.destroyAllWindows()
+
+    print "featureBox is"
+    print featureBox
+
+    subImg = subImage(withRedDots, featureBox)
 
     # cv2.imwrite("frame%d.jpg" % count, image)     # save frame as JPEG file
 
-    count += 35
+    count += 15
 
     if count > 29100:
         break

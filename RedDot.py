@@ -70,8 +70,8 @@ class RedDot:
         """
         :return: numpy.ndarray 
         """
-        print "redDotsSearchArea"
-        print redDotsSearchArea
+        #print "redDotsSearchArea"
+        #print redDotsSearchArea
         return image[redDotsSearchArea.topLeft.y:redDotsSearchArea.bottomRight.y, redDotsSearchArea.topLeft.x: redDotsSearchArea.bottomRight.x]
 
 
