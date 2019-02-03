@@ -53,7 +53,7 @@ class RedDot:
             cv2.imshow("mask01_after_blur", self.__mask_blurred)
             cv2.imshow("mask02_after_erode", self.__mask_eroded)
             cv2.imshow("mask03_after_dilate", self.__mask_dilated)
-            cv2.waitKey(0)
+            #cv2.waitKey(0)
 
         if len(top2Boxes)>0:
             #print "topBox"
@@ -84,13 +84,13 @@ class RedDot:
         #upper_red = np.array([200, 255, 255])
 
         # lower mask (0-10)
-        lower_red = np.array([0, 0, 100]) #150
+        lower_red = np.array([0, 100, 150]) #150
         upper_red = np.array([10, 255, 255])
 
         mask0 = cv2.inRange(img_hsv, lower_red, upper_red)
 
         # upper mask (170-180)
-        lower_red = np.array([150, 0, 100]) #150
+        lower_red = np.array([150, 100, 150]) #150
         upper_red = np.array([200, 255, 255])
         mask1 = cv2.inRange(img_hsv, lower_red, upper_red)
 

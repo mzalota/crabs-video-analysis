@@ -8,9 +8,54 @@
 # ffmpeg -i i"C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/V1_R_20180911_165259.avi" -strict -2 output.mp4
 
 import cv2
+import time
 
 from VideoFrame import VideoFrame
-from common import Point
+from common import Point, distanceBetweenPoints
+
+import os
+filepath="C:/workspaces/AnjutkaVideo/frames/frame1.jpg"
+filenameFull=os.path.basename(filepath)
+filename=os.path.splitext(filenameFull)[0]
+
+dataRows=[[]]
+
+'''
+
+with open(csvFilePath, 'wb') as crabsFile:
+    writer = csv.writer(crabsFile,delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    writer.writerows(dataRows)
+crabsFile.close()
+'''
+
+import csv
+
+csvFilePath = 'C:/workspaces/AnjutkaVideo/redDots_log04.csv'
+crabsFile = open(csvFilePath, 'wb')
+#writer = csv.writer(crabsFile,delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
+f = open('csvfile.csv','w')
+
+row = []
+
+row.append("distance")
+row.append("redDot1Detected")
+row.append("redDot2Detected")
+row.append("redDot1_topLeft_x")
+row.append("redDot1_topLeft_y")
+row.append("redDot1_bootomRight_x")
+row.append("redDot1_bootomRight_y")
+row.append("redDot1_box_diagonal")
+
+row.append("redDot2_topLeft_x")
+row.append("redDot2_topLeft_y")
+row.append("redDot2_bootomRight_x")
+row.append("redDot2_bootomRight_y")
+row.append("redDot2_box_diagonal")
+
+row.append("searchArea")
+f.write(";".join(row)+'\n')
+
 
 # src3 = cv2.imread("C:/Users/zal0001m/Documents/Private/AnjutkaVideo/IMG_20180814_181351.jpg")
 # cv2.imshow("hi",src3)
@@ -38,7 +83,7 @@ vidcap = cv2.VideoCapture('C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_599
 #ffmpeg -i "C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi" -strict -2 ../output_st_v3.mp4
 
 #success, image = vidcap.read()
-count = 2700
+count = 25130 # 100
 
 cv2.startWindowThread()
 
@@ -63,15 +108,17 @@ while success:
     print 'Read a new frame: ', count
     windowName = 'Detected_' + str(count)
 
+    row = [count]
+
     # start_frame_number = 50
     vidcap.set(cv2.CAP_PROP_POS_FRAMES, count)
 
     # Now when you read the frame, you will be reading the 50th frame
     success, image = vidcap.read()
-    showWindow(windowName, image, Point(700, 200))
+    #showWindow(windowName, image, Point(700, 200))
 
-    print "image"
-    print type(image)
+    #print "image"
+    #print type(image)
 
     vf_prev = vf
     vf = VideoFrame(image, vf_prev)
@@ -79,21 +126,66 @@ while success:
     print "distance between Red Points"
     print vf.distanceBetweenRedPoints()
 
+    row.append(vf.distanceBetweenRedPoints())
+
+    row.append(vf.redDot1.dotWasDetected())
+    row.append(vf.redDot2.dotWasDetected())
+
+    if vf.redDot1.dotWasDetected():
+        row.append(vf.redDot1.boxAroundDot.topLeft.x)
+        row.append(vf.redDot1.boxAroundDot.topLeft.y)
+        row.append(vf.redDot1.boxAroundDot.bottomRight.x)
+        row.append(vf.redDot1.boxAroundDot.bottomRight.y)
+        row.append(distanceBetweenPoints(vf.redDot1.boxAroundDot.topLeft, vf.redDot1.boxAroundDot.bottomRight))
+    else:
+        row.append(-1)
+        row.append(-1)
+        row.append(-1)
+        row.append(-1)
+        row.append(-1)
+
+    if vf.redDot2.dotWasDetected():
+        row.append(vf.redDot2.boxAroundDot.topLeft.x)
+        row.append(vf.redDot2.boxAroundDot.topLeft.y)
+        row.append(vf.redDot2.boxAroundDot.bottomRight.x)
+        row.append(vf.redDot2.boxAroundDot.bottomRight.y)
+        row.append(distanceBetweenPoints(vf.redDot2.boxAroundDot.topLeft, vf.redDot2.boxAroundDot.bottomRight))
+    else:
+        row.append(-1)
+        row.append(-1)
+        row.append(-1)
+        row.append(-1)
+        row.append(-1)
+
+    row.append(vf.searchArea())
+
+    print row
+    #writer.writerow(row)
+    crabsFile.write(";".join(str(x) for x in row)+"\n")
+    crabsFile.flush()
+
     withRedDots = vf.drawBoxesAroundRedDots()
 
     #windowName = 'Detected_' + str(count)
-    #showWindow(windowName, image, Point(40, 40))
-    showWindow(windowName, withRedDots, Point(700, 200))
+
+    #showWindow(windowName, withRedDots, Point(700, 200))
+    showWindow("mainWithRedDots", withRedDots, Point(700, 200))
+
 
     #showWindow("redDotsImageFragment", redDotsImageFragment, Point(700, 600))
 
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    #cv2.waitKey(0)
+    cv2.waitKey(2000)
+    #cv2.destroyAllWindows()
+
+
     # cv2.imwrite("frame%d.jpg" % count, image)     # save frame as JPEG file
     ##success,image = vidcap.read()
 
 
-    count += 25
+    count += 35
 
     if count > 29100:
         break
+
+crabsFile.close()

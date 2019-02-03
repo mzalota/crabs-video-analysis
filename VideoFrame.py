@@ -12,8 +12,8 @@ from common import Point, Box, boxAroundBoxes, translateCoordinateToOuter, dista
 class VideoFrame:
     # initializing the variables
     __initialDistanceForRedBoxSearchArea=200
-    dotsShift = 150
-    boxAroundRedDotsAbsolute = None
+    #dotsShift = 150
+    #boxAroundRedDotsAbsolute = None
     redDot1 = None
     redDot2 = None
 
@@ -25,27 +25,27 @@ class VideoFrame:
 
     def distanceBetweenRedPoints(self):
         if self.redDot1.dotWasDetected() and self.redDot2.dotWasDetected():
-            return distanceBetweenPoints(self.redDot1.boxAroundDot.topLeft,self.redDot2.boxAroundDot.topLeft)
+            return int(distanceBetweenPoints(self.redDot1.boxAroundDot.topLeft,self.redDot2.boxAroundDot.topLeft))
         else:
             if self.prevFrame:
-                return self.prevFrame.distanceBetweenRedPoints()
+                return int(self.prevFrame.distanceBetweenRedPoints())
             else:
-                return self.__initialDistanceForRedBoxSearchArea
+                return int(self.__initialDistanceForRedBoxSearchArea)
 
     def isolateRedDots(self):
         self.redDot1 = RedDot(True)
         self.redDot1.isolateRedDots(self.image, self.__redDotsSearchArea1())
 
-        if self.redDot1.dotWasDetected():
-            print "detected red dot 1:"
-            print self.redDot1.boxAroundDot
+        #if self.redDot1.dotWasDetected():
+            #print "detected red dot 1:"
+            #print self.redDot1.boxAroundDot
 
         self.redDot2 = RedDot(True)
         self.redDot2.isolateRedDots(self.image, self.__redDotsSearchArea2())
 
-        if self.redDot2.dotWasDetected():
-            print "detected red dot 2:"
-            print self.redDot2.boxAroundDot
+        #if self.redDot2.dotWasDetected():
+            #print "detected red dot 2:"
+            #print self.redDot2.boxAroundDot
 
 
     def drawBoxesAroundRedDots(self):
@@ -76,19 +76,23 @@ class VideoFrame:
         print "aaa"
 
 
+    def searchArea(self):
+        redBox1 = self.__redDotsSearchArea1()
+        redBox2 = self.__redDotsSearchArea2()
+
+        return str(redBox1)+"_"+str(redBox2)
 
     def __redDotsSearchArea1(self):
-        print "in __redDotsSearchArea1"
-        if self.redDot1.dotWasDetected() :
+        #print "in __redDotsSearchArea1"
+        if self.redDot1.dotWasDetected():
             return self.__updateRedDotsSearchArea(self.redDot1.boxAroundDot)
         elif self.prevFrame:
             return self.prevFrame.__redDotsSearchArea1()
-        #return Box(Point(600, 300), Point(1400, 700))
         else:
             return Box(Point(600, 300), Point(900, 600))
 
     def __redDotsSearchArea2(self):
-        print "in __redDotsSearchArea2"
+        #print "in __redDotsSearchArea2"
         if self.redDot2.dotWasDetected():
             return self.__updateRedDotsSearchArea(self.redDot2.boxAroundDot)
         elif self.prevFrame:
@@ -99,15 +103,19 @@ class VideoFrame:
 
 
     def __updateRedDotsSearchArea(self, boxAroundRedDots):
-        print "__updateRedDotsSearchArea.boxAroundRedDots"
-        print boxAroundRedDots
+        #print "__updateRedDotsSearchArea.boxAroundRedDots"
+        #print boxAroundRedDots
         dotsShift = int(self.distanceBetweenRedPoints()/2)
-        print "dotsShift"
-        print dotsShift
-        topLeftX = max(boxAroundRedDots.topLeft.x - dotsShift, 1)
-        topLeftY = max(boxAroundRedDots.topLeft.y - dotsShift, 1)
-        bottomRightX = min(boxAroundRedDots.bottomRight.x + dotsShift, self.image.shape[1])
-        bottomRightY = min(boxAroundRedDots.bottomRight.y + dotsShift, self.image.shape[0])
+        #print "dotsShift"
+        #print dotsShift
+
+        bottomRightLimit_x = self.image.shape[1]-200
+        bottomRightLimit_y = self.image.shape[0] - 200
+
+        topLeftX = min(max(boxAroundRedDots.topLeft.x - dotsShift, 1), bottomRightLimit_x-100)
+        topLeftY = min(max(boxAroundRedDots.topLeft.y - dotsShift, 1), bottomRightLimit_y-100)
+        bottomRightX = min(boxAroundRedDots.bottomRight.x + dotsShift, bottomRightLimit_x)
+        bottomRightY = min(boxAroundRedDots.bottomRight.y + dotsShift, bottomRightLimit_y)
         redDotsSearchArea = Box(Point(topLeftX, topLeftY), Point(bottomRightX, bottomRightY))
 
         return redDotsSearchArea
