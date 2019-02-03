@@ -20,10 +20,10 @@ class RedDot:
     __mask_eroded  = None
     __mask_dilated = None
     __mask_final = None
-    __showDebugImages = False
 
-    def __init__(self, showDebugImages = False):
-        self.__showDebugImages = showDebugImages
+    def __init__(self, wholeImage, redDotsSearchArea):
+        self.__image = wholeImage
+        self.__redDotsSearchArea = redDotsSearchArea
 
     def dotWasDetected(self):
         if self.boxAroundDot:
@@ -31,9 +31,9 @@ class RedDot:
         else:
             return False
 
-    def isolateRedDots(self, wholeImage, redDotsSearchArea):
+    def isolateRedDots(self, debugWindowName = None):
 
-        featureImage = self.__redDotsSearchImage(wholeImage, redDotsSearchArea)
+        featureImage = self.__redDotsSearchImage(self.__image, self.__redDotsSearchArea)
 
         self.__mask_color = self.__isolateAreasWithRedColor(featureImage)
 
@@ -44,22 +44,22 @@ class RedDot:
         bounding_boxes = self.__boundingBoxesAroundContours(contours)
         top2Boxes = self.__keepTwoLargestContours(bounding_boxes)
 
-        if self.__showDebugImages:
+        if debugWindowName:
             #print "top2Boxes"
             #print top2Boxes
 
-            cv2.imshow("imgage_to_locate_red_dots", featureImage)
-            cv2.imshow("mask_in_before_blur", self.__mask_color)
-            cv2.imshow("mask01_after_blur", self.__mask_blurred)
-            cv2.imshow("mask02_after_erode", self.__mask_eroded)
-            cv2.imshow("mask03_after_dilate", self.__mask_dilated)
+            cv2.imshow(debugWindowName+"_image_to_locate_red_dots", featureImage)
+            cv2.imshow(debugWindowName+"_mask_in_before_blur", self.__mask_color)
+            #cv2.imshow(debugWindowName+"_mask01_after_blur", self.__mask_blurred)
+            #cv2.imshow(debugWindowName+"_mask02_after_erode", self.__mask_eroded)
+            cv2.imshow(debugWindowName+"_mask03_after_dilate", self.__mask_dilated)
             #cv2.waitKey(0)
 
         if len(top2Boxes)>0:
             #print "topBox"
             #print top2Boxes[0]
             self.__dotLocationInner = top2Boxes[0]
-            self.boxAroundDot = translateCoordinateToOuter(top2Boxes[0], redDotsSearchArea.topLeft)
+            self.boxAroundDot = translateCoordinateToOuter(top2Boxes[0], self.__redDotsSearchArea.topLeft)
         else:
             pass
 

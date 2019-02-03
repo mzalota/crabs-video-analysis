@@ -33,15 +33,15 @@ class VideoFrame:
                 return int(self.__initialDistanceForRedBoxSearchArea)
 
     def isolateRedDots(self):
-        self.redDot1 = RedDot(True)
-        self.redDot1.isolateRedDots(self.image, self.__redDotsSearchArea1())
+        self.redDot1 = RedDot(self.image, self.__redDotsSearchArea1())
+        self.redDot1.isolateRedDots("1_redDot")
 
         #if self.redDot1.dotWasDetected():
             #print "detected red dot 1:"
             #print self.redDot1.boxAroundDot
 
-        self.redDot2 = RedDot(True)
-        self.redDot2.isolateRedDots(self.image, self.__redDotsSearchArea2())
+        self.redDot2 = RedDot(self.image, self.__redDotsSearchArea2())
+        self.redDot2.isolateRedDots("2_redDot")
 
         #if self.redDot2.dotWasDetected():
             #print "detected red dot 2:"
@@ -84,7 +84,7 @@ class VideoFrame:
 
     def __redDotsSearchArea1(self):
         #print "in __redDotsSearchArea1"
-        if self.redDot1.dotWasDetected():
+        if self.redDot1 and self.redDot1.dotWasDetected():
             return self.__updateRedDotsSearchArea(self.redDot1.boxAroundDot)
         elif self.prevFrame:
             return self.prevFrame.__redDotsSearchArea1()
@@ -93,7 +93,7 @@ class VideoFrame:
 
     def __redDotsSearchArea2(self):
         #print "in __redDotsSearchArea2"
-        if self.redDot2.dotWasDetected():
+        if self.redDot2 and self.redDot2.dotWasDetected():
             return self.__updateRedDotsSearchArea(self.redDot2.boxAroundDot)
         elif self.prevFrame:
             return self.prevFrame.__redDotsSearchArea2()
@@ -120,3 +120,56 @@ class VideoFrame:
 
         return redDotsSearchArea
 
+
+    def infoAboutFrame(self):
+        row = []
+
+        row.append(self.distanceBetweenRedPoints())
+        row.append(self.redDot1.dotWasDetected())
+        row.append(self.redDot2.dotWasDetected())
+        if self.redDot1.dotWasDetected():
+            row.append(self.redDot1.boxAroundDot.topLeft.x)
+            row.append(self.redDot1.boxAroundDot.topLeft.y)
+            row.append(self.redDot1.boxAroundDot.bottomRight.x)
+            row.append(self.redDot1.boxAroundDot.bottomRight.y)
+            row.append(distanceBetweenPoints(self.redDot1.boxAroundDot.topLeft, self.redDot1.boxAroundDot.bottomRight))
+        else:
+            row.append(-1)
+            row.append(-1)
+            row.append(-1)
+            row.append(-1)
+            row.append(-1)
+        if self.redDot2.dotWasDetected():
+            row.append(self.redDot2.boxAroundDot.topLeft.x)
+            row.append(self.redDot2.boxAroundDot.topLeft.y)
+            row.append(self.redDot2.boxAroundDot.bottomRight.x)
+            row.append(self.redDot2.boxAroundDot.bottomRight.y)
+            row.append(distanceBetweenPoints(self.redDot2.boxAroundDot.topLeft, self.redDot2.boxAroundDot.bottomRight))
+        else:
+            row.append(-1)
+            row.append(-1)
+            row.append(-1)
+            row.append(-1)
+            row.append(-1)
+        row.append(self.searchArea())
+
+        return row
+
+    @staticmethod
+    def infoHeaders():
+        row = []
+        row.append("distance")
+        row.append("redDot1Detected")
+        row.append("redDot2Detected")
+        row.append("redDot1_topLeft_x")
+        row.append("redDot1_topLeft_y")
+        row.append("redDot1_bootomRight_x")
+        row.append("redDot1_bootomRight_y")
+        row.append("redDot1_box_diagonal")
+        row.append("redDot2_topLeft_x")
+        row.append("redDot2_topLeft_y")
+        row.append("redDot2_bootomRight_x")
+        row.append("redDot2_bootomRight_y")
+        row.append("redDot2_box_diagonal")
+        row.append("searchArea")
+        return row

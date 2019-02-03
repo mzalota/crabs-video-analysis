@@ -18,43 +18,27 @@ filepath="C:/workspaces/AnjutkaVideo/frames/frame1.jpg"
 filenameFull=os.path.basename(filepath)
 filename=os.path.splitext(filenameFull)[0]
 
-dataRows=[[]]
+
+def writeToCSVFile(file, row):
+    file.write(";".join(str(x) for x in row) + "\n")
+    file.flush()
+
 
 '''
-
+import csv
 with open(csvFilePath, 'wb') as crabsFile:
     writer = csv.writer(crabsFile,delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     writer.writerows(dataRows)
 crabsFile.close()
 '''
 
-import csv
+#Open File where Frame Info will be written using Semicolumn as a delimiter. Write the Header row into the file
+csvFilePath = 'C:/workspaces/AnjutkaVideo/redDots_log06.csv'
+frameLogFile = open(csvFilePath, 'wb')
 
-csvFilePath = 'C:/workspaces/AnjutkaVideo/redDots_log04.csv'
-crabsFile = open(csvFilePath, 'wb')
-#writer = csv.writer(crabsFile,delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-
-f = open('csvfile.csv','w')
-
-row = []
-
-row.append("distance")
-row.append("redDot1Detected")
-row.append("redDot2Detected")
-row.append("redDot1_topLeft_x")
-row.append("redDot1_topLeft_y")
-row.append("redDot1_bootomRight_x")
-row.append("redDot1_bootomRight_y")
-row.append("redDot1_box_diagonal")
-
-row.append("redDot2_topLeft_x")
-row.append("redDot2_topLeft_y")
-row.append("redDot2_bootomRight_x")
-row.append("redDot2_bootomRight_y")
-row.append("redDot2_box_diagonal")
-
-row.append("searchArea")
-f.write(";".join(row)+'\n')
+headerRow=VideoFrame.infoHeaders()
+headerRow.insert(0, "frameNumber")
+writeToCSVFile(frameLogFile, headerRow)
 
 
 # src3 = cv2.imread("C:/Users/zal0001m/Documents/Private/AnjutkaVideo/IMG_20180814_181351.jpg")
@@ -66,7 +50,6 @@ redDotFile02 = 'C:/workspaces/AnjutkaVideo/red_dot02.png'
 
 featureImage = cv2.imread(redDotFile02, 0)
 #frame = cv2.imread(redDotFile02, 1)
-
 
 
 # https://stackoverflow.com/questions/33311153/python-extracting-and-saving-video-frames
@@ -83,15 +66,9 @@ vidcap = cv2.VideoCapture('C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_599
 #ffmpeg -i "C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi" -strict -2 ../output_st_v3.mp4
 
 #success, image = vidcap.read()
-count = 25130 # 100
+count = 25130 # 26670 #25130 # 100 26215
 
 cv2.startWindowThread()
-
-topLeftX= 600
-topLeftY= 300
-bottomRightX=1400
-bottomRightY=700
-
 
 def showWindow(windowName, image, position):
     cv2.namedWindow(windowName, cv2.WINDOW_NORMAL)  #  WINDOW_AUTOSIZE
@@ -100,92 +77,47 @@ def showWindow(windowName, image, position):
     cv2.imshow(windowName, image)
 
 
-success = True
-
 vf=None
-
+success = True
 while success:
     print 'Read a new frame: ', count
     windowName = 'Detected_' + str(count)
-
-    row = [count]
 
     # start_frame_number = 50
     vidcap.set(cv2.CAP_PROP_POS_FRAMES, count)
 
     # Now when you read the frame, you will be reading the 50th frame
     success, image = vidcap.read()
-    #showWindow(windowName, image, Point(700, 200))
 
-    #print "image"
-    #print type(image)
+    if not success:
+        "no more frames to read from video "
+        break
 
     vf_prev = vf
     vf = VideoFrame(image, vf_prev)
     vf.isolateRedDots()
-    print "distance between Red Points"
-    print vf.distanceBetweenRedPoints()
+    #print "distance between Red Points"
+    #print vf.distanceBetweenRedPoints()
 
-    row.append(vf.distanceBetweenRedPoints())
-
-    row.append(vf.redDot1.dotWasDetected())
-    row.append(vf.redDot2.dotWasDetected())
-
-    if vf.redDot1.dotWasDetected():
-        row.append(vf.redDot1.boxAroundDot.topLeft.x)
-        row.append(vf.redDot1.boxAroundDot.topLeft.y)
-        row.append(vf.redDot1.boxAroundDot.bottomRight.x)
-        row.append(vf.redDot1.boxAroundDot.bottomRight.y)
-        row.append(distanceBetweenPoints(vf.redDot1.boxAroundDot.topLeft, vf.redDot1.boxAroundDot.bottomRight))
-    else:
-        row.append(-1)
-        row.append(-1)
-        row.append(-1)
-        row.append(-1)
-        row.append(-1)
-
-    if vf.redDot2.dotWasDetected():
-        row.append(vf.redDot2.boxAroundDot.topLeft.x)
-        row.append(vf.redDot2.boxAroundDot.topLeft.y)
-        row.append(vf.redDot2.boxAroundDot.bottomRight.x)
-        row.append(vf.redDot2.boxAroundDot.bottomRight.y)
-        row.append(distanceBetweenPoints(vf.redDot2.boxAroundDot.topLeft, vf.redDot2.boxAroundDot.bottomRight))
-    else:
-        row.append(-1)
-        row.append(-1)
-        row.append(-1)
-        row.append(-1)
-        row.append(-1)
-
-    row.append(vf.searchArea())
+    row=vf.infoAboutFrame()
+    row.insert(0, count)
 
     print row
-    #writer.writerow(row)
-    crabsFile.write(";".join(str(x) for x in row)+"\n")
-    crabsFile.flush()
+
+    writeToCSVFile(frameLogFile, row)
 
     withRedDots = vf.drawBoxesAroundRedDots()
-
-    #windowName = 'Detected_' + str(count)
-
-    #showWindow(windowName, withRedDots, Point(700, 200))
     showWindow("mainWithRedDots", withRedDots, Point(700, 200))
 
-
-    #showWindow("redDotsImageFragment", redDotsImageFragment, Point(700, 600))
-
-    #cv2.waitKey(0)
-    cv2.waitKey(2000)
+    cv2.waitKey(0)
+    #cv2.waitKey(2000)
     #cv2.destroyAllWindows()
 
-
     # cv2.imwrite("frame%d.jpg" % count, image)     # save frame as JPEG file
-    ##success,image = vidcap.read()
-
 
     count += 35
 
     if count > 29100:
         break
 
-crabsFile.close()
+frameLogFile.close()
