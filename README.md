@@ -17,3 +17,6 @@ ffmpeg -i "D:\Video_Biology\Kara\2018\AMK72\2018_09_15_St_5993\V4__R_20180915_21
 #https://docs.opencv.org/trunk/dd/d49/tutorial_py_contour_features.html#gsc.tab=0
 
 #https://www.geeksforgeeks.org/template-matching-using-opencv-in-python/
+
+
+#https://stackoverflow.com/questions/13564851/how-to-generate-keyboard-events-in-python

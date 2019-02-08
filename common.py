@@ -39,5 +39,5 @@ def subImage(image, box):
     """
     :return: numpy.ndarray 
     """
-    print box
+    #print box
     return image[box.topLeft.y:box.bottomRight.y, box.topLeft.x: box.bottomRight.x]
