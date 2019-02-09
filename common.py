@@ -12,6 +12,33 @@ def boxAroundBoxes(box1, box2):
     return Box(topLeft, bottomRight)
 
 
+def calculateMidpoin2(point1, point2):
+    x1 = point1[0]
+    y1 = point1[1]
+    x2 = point2[0]
+    y2 = point2[1]
+
+    xDist = math.fabs(x2 - x1)
+    yDist = math.fabs(y2 - y1)
+    xMid = (x2 - math.ceil(xDist / 2))
+    yMid = (y2 - math.ceil(yDist / 2))
+
+    return (xMid, yMid)
+
+def calculateMidpoint(point1, point2):
+    # type: (Point, Point) -> Point
+    x1 = point1.x
+    y1 = point1.y
+    x2 = point2.x
+    y2 = point2.y
+
+    xDist = math.fabs(x2 - x1)
+    yDist = math.fabs(y2 - y1)
+    xMid = int(x2 - math.ceil(xDist / 2))
+    yMid = int(y2 - math.ceil(yDist / 2))
+
+    return Point(xMid, yMid)
+
 def translateCoordinateToOuter(innerBox, topLeftOuterPoint):
     """
     :param innerBox: Box
@@ -41,3 +68,8 @@ def subImage(image, box):
     """
     #print box
     return image[box.topLeft.y:box.bottomRight.y, box.topLeft.x: box.bottomRight.x]
+
+
+def boxAroundPoint(point, boxSize):
+    offset = int(boxSize/2)
+    return Box(Point(max(point.x - offset, 1), max(point.y - offset, 1)), Point(point.x + offset, point.y + offset))
