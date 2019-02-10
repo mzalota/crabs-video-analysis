@@ -62,7 +62,7 @@ vidcap = cv2.VideoCapture('C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_599
 # ffmpeg -i "C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi" -strict -2 ../output_st_v3.mp4
 
 
-count = 23785 # 5180 #23785  # 25130 # 26670 #25130 # 100 26215
+count = 100 # 5180 #23785  # 25130 # 26670 #25130 # 100 26215
 
 needToSelectFeature = True
 
@@ -77,6 +77,8 @@ fm = FeatureMatcher(Point(1250, 75))
 fm2 = FeatureMatcher(Point(1500, 350),503)
 fm3 = FeatureMatcher(Point(500, 350),601)
 fm4 = FeatureMatcher(Point(1000, 350),547)
+
+print fm.infoHeaders()
 
 subImg = None
 vf = None
@@ -142,13 +144,22 @@ while success:
 
     #imageWinNoBoxes.showWindow(withRedDots)
 
+    fm.showSubImage()
+    fm2.showSubImage()
+    fm3.showSubImage()
+    fm4.showSubImage()
 
     fm.drawBoxOnImage(withRedDots)
     fm2.drawBoxOnImage(withRedDots)
     fm3.drawBoxOnImage(withRedDots)
     fm4.drawBoxOnImage(withRedDots)
 
-    imageWin.showWindowAndWait(withRedDots, 2000)
+    #print fm.infoAboutFeature()
+    #print fm2.infoAboutFeature()
+    #print fm3.infoAboutFeature()
+    #print fm4.infoAboutFeature()
+
+    imageWin.showWindowAndWait(withRedDots, 1000)
 
     # imageWin.showWindowAndWaitForClick(withRedDots)
 

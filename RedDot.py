@@ -4,10 +4,7 @@ import cv2
 import numpy as np
 from skimage import measure
 
-from common import translateCoordinateToOuter
-
-Box = namedtuple('Box', 'topLeft bottomRight')
-Point = namedtuple('Point', 'x y')
+from common import translateCoordinateToOuter, Point, Box
 
 
 class RedDot:
