@@ -30,6 +30,9 @@ class Feature:
     def getImage(self):
         return self.__image
 
+    def getLocation(self):
+        return self.__location
+
     @staticmethod
     def infoHeaders():
         row = []
@@ -51,8 +54,6 @@ class Feature:
 class FeatureMatcher:
     __featureBoxSize = 100
     __defaultStartingPoint = Point(500, 500)
-    #__prev_subImage = None
-    __featureLocation = None
     __threshold_for_matching = 0.6
     __detectionWasReset = False
     __correlation = 0
@@ -61,13 +62,9 @@ class FeatureMatcher:
     def __init__(self, startingPoint, boxSize = 100):
         self.__id = str(uuid.uuid4().fields[-1])[:5]
         self.__featureBoxSize = boxSize
-        self.setFeatureLocation(startingPoint)
+        self.__defaultStartingPoint = startingPoint
         self.__subImageWin = ImageWindow(self.__id, Point(50, 50))
         self.__feature = Feature()
-
-    def setFeatureLocation(self, startingPoint):
-        self.__defaultStartingPoint = startingPoint
-        self.__featureLocation =startingPoint
 
     def __defaultBoxAroundFeature(self):
         return boxAroundPoint(self.__defaultStartingPoint, self.__featureBoxSize)
@@ -83,12 +80,11 @@ class FeatureMatcher:
         return self.__detectionWasReset
 
     def showSubImage(self):
-        #self.__subImageWin.showWindow(self.__prev_subImage)
         self.__subImageWin.showWindow(self.__feature.getImage())
 
     def getFeature(self, image):
 
-        #newBox = self.__findSubImage(image, self.__prev_subImage)
+
         newBox = self.__findSubImage(image, self.__feature.getImage())
 
         self.__detectionWasReset = True
@@ -115,9 +111,9 @@ class FeatureMatcher:
             self.__feature = Feature()
 
 
-        self.__featureLocation = calculateMidpoint(newBox.topLeft, newBox.bottomRight)
+        newfeatureLocation = calculateMidpoint(newBox.topLeft, newBox.bottomRight)
 
-        self.__feature.updateImage(subImage(image, newBox),self.__featureLocation)
+        self.__feature.updateImage(subImage(image, newBox), newfeatureLocation)
 
         print self.__feature.infoAboutFeature()
         return newBox
@@ -126,8 +122,6 @@ class FeatureMatcher:
     def __findSubImage(self, image, subImage):
         if subImage is None:
             return None
-
-
 
         # Algorithm is described here: https: // www.geeksforgeeks.org / template - matching - using - opencv - in -python /
 
@@ -151,14 +145,11 @@ class FeatureMatcher:
         topLeft = Point(max_loc[0], max_loc[1])
         bottomRight = Point(topLeft.x + w, topLeft.y + h)
 
-        #print "id, max_val, max_loc, newLocation"
-        #print self.__id, max_val, max_loc, newLocation
-
         return Box(topLeft, bottomRight)
 
 
     def drawBoxOnImage(self, image):
-        box = boxAroundPoint(self.__featureLocation, self.__featureBoxSize)
+        box = boxAroundPoint(self.__feature.getLocation(), self.__featureBoxSize)
         cv2.rectangle(image, (box.topLeft.x, box.topLeft.y),
                       (box.bottomRight.x, box.bottomRight.y), (0, 255, 0), 2)
 
@@ -181,13 +172,10 @@ class FeatureMatcher:
         row.append(self.__correlation)
         if self.detectionWasReset():
             row.append("Yes")
-            row.append(self.__featureLocation.x)
-            row.append(self.__featureLocation.y)
         else:
             row.append("No")
-            row.append(self.__featureLocation.x)
-            row.append(self.__featureLocation.y)
-            #row.append(-1)
-            #row.append(-1)
+        row.append(self.__feature.getLocation().x)
+        row.append(self.__feature.getLocation().y)
+
         row.append(self.__resetReason)
         return row
