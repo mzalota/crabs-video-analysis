@@ -74,9 +74,9 @@ imageWinNoBoxes = ImageWindow("withoutFeatureBoxes", Point(700, 20))
 
 featureBox = None
 fm = FeatureMatcher(Point(1250, 75))
-fm2 = FeatureMatcher(Point(1500, 350),503)
-fm3 = FeatureMatcher(Point(500, 350),601)
-fm4 = FeatureMatcher(Point(1000, 350),547)
+fm2 = FeatureMatcher(Point(1300, 100),500)
+fm3 = FeatureMatcher(Point(200, 50),600)
+fm4 = FeatureMatcher(Point(800, 50),400)
 
 print fm.infoHeaders()
 
