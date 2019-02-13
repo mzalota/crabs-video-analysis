@@ -4,38 +4,56 @@ import cv2
 import numpy as np
 from skimage import measure
 
+from Frame import Frame
 from ImageWindow import ImageWindow
 from common import Box, Point, subImage, boxAroundPoint, calculateMidpoint
 
 class Feature:
     __id = None
     __subImageWin = None
-    __image = None
-    __topLeftPoint = None
-    __featureBoxSize = 100
 
-    def __init__(self, boxSize):
+    def __init__(self, boxSize = 100):
         self.__id = str(uuid.uuid4().fields[-1])[:5]
         self.__featureBoxSize = boxSize
         self.__subImageWin = ImageWindow(self.__id, Point(50, 50))
+        self.__image = None
+        self.__images = dict()
+        self.__topLeftPoints = dict()
+
 
     def __defaultBoxAroundFeature(self):
-        return Box(self.__topLeftPoint, Point(self.__topLeftPoint.x+self.__featureBoxSize,self.__topLeftPoint.y+self.__featureBoxSize))
+        return Box(self.__getTopLeft(), Point(self.__getTopLeft().x + self.__featureBoxSize, self.__getTopLeft().y + self.__featureBoxSize))
+
+    def __getTopLeft(self):
+        if len(self.__topLeftPoints)<1:
+            return None
+        #return self.__topLeftPoint
+        lastPoint = self.__topLeftPoints[max(self.__topLeftPoints.keys())]
+
+        #print "max lastPoint"
+        #print self.__id, lastPoint, self.__topLeftPoints
+
+        return lastPoint
 
     def __defaultBoxAroundFeatur2(self):
         offsetY = 100
         offsetX = 200
-        point = self.__topLeftPoint
+        point = self.__getTopLeft()
         return Box(Point(max(point.x - offsetX, 1), max(point.y - offsetY, 1)),
                    Point(point.x + offsetX, point.y + offsetY))
 
     def showSubImage(self):
-        self.__subImageWin.showWindow(self.__image)
+        self.__subImageWin.showWindow(self.getImage())
 
-    def pluckFeature(self, image, topLeftPoint):
-        self.__topLeftPoint = topLeftPoint
-        self.__image = subImage(image, self.__defaultBoxAroundFeature())
+    def pluckFeature(self, frame, topLeftPoint):
+        print "max pluckFeature"
+        print self.__id, topLeftPoint, self.__topLeftPoints
 
+        #self.__topLeftPoint = topLeftPoint
+        self.__topLeftPoints[frame.getFrameID()] = topLeftPoint #append
+        image = subImage(frame.getImage(), self.__defaultBoxAroundFeature())
+        self.__images[frame.getFrameID()] = image.copy()
+        self.__image = image.copy()
 
     def drawBoxOnImage(self, image):
         box = self.__defaultBoxAroundFeature()
@@ -44,6 +62,9 @@ class Feature:
 
     def getImage(self):
         return self.__image
+        #if len(self.__images)<1:
+        #    return None
+        #return self.__images[max(self.__images.keys())]
 
     def getLocation(self):
         box = self.__defaultBoxAroundFeature()
@@ -83,31 +104,43 @@ class FeatureMatcher:
         self.__subImageWin = ImageWindow(self.__id, Point(50, 50))
         self.__feature = Feature(self.__featureBoxSize)
 
+        print "WTF 00"
+        print self.__defaultStartingPoint
+
     def detectionWasReset(self):
         return self.__detectionWasReset
 
     def showSubImage(self):
         self.__subImageWin.showWindow(self.__feature.getImage())
 
-    def getFeature(self, image):
+    def getFeature(self, frame):
+        image = frame.getImage()
+
+
 
         newTopLeftOfFeature = self.__findSubImage(image, self.__feature.getImage())
+        print "yyyyy "
+        print newTopLeftOfFeature
 
         newTopLeftOfFeature = self.resetFeatureIfNecessary(newTopLeftOfFeature)
 
-        self.__feature.pluckFeature(image, newTopLeftOfFeature)
+        self.__feature.pluckFeature(frame, newTopLeftOfFeature)
 
         print self.__feature.infoAboutFeature()
         return newTopLeftOfFeature
 
     def resetFeatureIfNecessary(self, newTopLeftOfFeature):
+        print "WTF 10"
+        print self.__defaultStartingPoint
         self.__detectionWasReset = True
         self.__resetReason = ""
         if newTopLeftOfFeature is None:
             print "Did not detect feature: resetting Location to Default"
             self.__resetReason = "NotDetected"
             newTopLeftOfFeature = self.resetFeature()
-        if ((newTopLeftOfFeature.y + self.__featureBoxSize) > 960):
+            print "WTF 30"
+            print newTopLeftOfFeature
+        if ((newTopLeftOfFeature.y + self.__featureBoxSize) > 1000):
             print "Got to the bottom of the screen: resetting location to default"
             self.__resetReason = "Bottom"
             newTopLeftOfFeature = self.resetFeature()
@@ -115,6 +148,10 @@ class FeatureMatcher:
             print "Got too close to the left edge: resetting location to default"
             self.__resetReason = "LeftEdge"
             newTopLeftOfFeature = self.resetFeature()
+
+
+        print "WTF 100"
+        print newTopLeftOfFeature
         return newTopLeftOfFeature
 
     def resetFeature(self):
@@ -124,8 +161,13 @@ class FeatureMatcher:
 
 
     def __findSubImage(self, image, subImage):
+        print "qqqqqqqqq "
+
         if subImage is None:
             return None
+
+        print "xxxxx "
+        print subImage.shape
 
         # Algorithm is described here: https: // www.geeksforgeeks.org / template - matching - using - opencv - in -python /
 
@@ -147,10 +189,10 @@ class FeatureMatcher:
         # get w and h, so that we can reconstruct the box
         d, w, h = subImage.shape[::-1]
         topLeft = Point(max_loc[0], max_loc[1])
-        bottomRight = Point(topLeft.x + w, topLeft.y + h)
+        Point(topLeft.x + w, topLeft.y + h)
 
         return topLeft
-        #return Box(topLeft, bottomRight)
+
 
 
     def drawBoxOnImage(self, image):

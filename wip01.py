@@ -8,21 +8,21 @@
 # ffmpeg -i i"C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/V1_R_20180911_165259.avi" -strict -2 output.mp4
 
 import cv2
-#import time
-#from pyautogui import press
 
-from ImageWindow import ImageWindow
 from FeatureMatcher import FeatureMatcher
+# import time
+# from pyautogui import press
+from Frame import Frame
+from ImageWindow import ImageWindow
 from VideoFrame import VideoFrame
 from common import Point
-
-import os
-
 from logger import Logger
 
 filepath = "C:/workspaces/AnjutkaVideo/frames/frame1.jpg"
-#filenameFull = os.path.basename(filepath)
-#filename = os.path.splitext(filenameFull)[0]
+
+
+# filenameFull = os.path.basename(filepath)
+# filename = os.path.splitext(filenameFull)[0]
 
 
 def writeToCSVFile(file, row):
@@ -62,7 +62,7 @@ vidcap = cv2.VideoCapture('C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_599
 # ffmpeg -i "C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi" -strict -2 ../output_st_v3.mp4
 
 
-count = 100 # 5180 #23785  # 25130 # 26670 #25130 # 100 26215
+count = 2500  # 5180 #23785  # 25130 # 26670 #25130 # 100 26215
 
 needToSelectFeature = True
 
@@ -74,9 +74,9 @@ imageWinNoBoxes = ImageWindow("withoutFeatureBoxes", Point(700, 20))
 
 featureBox = None
 fm = FeatureMatcher(Point(1250, 75))
-fm2 = FeatureMatcher(Point(1300, 100),500)
-fm3 = FeatureMatcher(Point(200, 50),600)
-fm4 = FeatureMatcher(Point(800, 50),400)
+fm2 = FeatureMatcher(Point(1300, 100), 500)
+fm3 = FeatureMatcher(Point(200, 50), 600)
+fm4 = FeatureMatcher(Point(800, 50), 400)
 
 print fm.infoHeaders()
 
@@ -102,15 +102,19 @@ def findBrightestSpot():
 
 
 while success:
+
     print 'Read a new frame: ', count
     windowName = 'Detected_' + str(count)
 
     # set the number of the frame to read
     vidcap.set(cv2.CAP_PROP_POS_FRAMES, count)
     success, image = vidcap.read()
-    #print "image shape"
-    #print image.shape
-    #(1080L, 1920L, 3L)
+
+    frame = Frame(count, image.copy())
+
+    # print "image shape"
+    # print image.shape
+    # (1080L, 1920L, 3L)
 
     if not success:
         "no more frames to read from video "
@@ -118,7 +122,7 @@ while success:
 
     vf_prev = vf
     vf = VideoFrame(image, vf_prev)
-    imageCopy = image.copy()
+    # imageCopy = image.copy()
     vf.isolateRedDots()
     withRedDots = vf.drawBoxesAroundRedDots()
 
@@ -126,7 +130,7 @@ while success:
     row.insert(0, count)
     logger.writeToRedDotsFile(row)
 
-    #findBrightestSpot()
+    # findBrightestSpot()
     '''
     if needToSelectFeature:
         needToSelectFeature = False
@@ -137,12 +141,12 @@ while success:
         fm.setFeatureLocation(firstFeature)
     '''
 
-    fm.getFeature(imageCopy)
-    fm2.getFeature(imageCopy)
-    fm3.getFeature(imageCopy)
-    fm4.getFeature(imageCopy)
+    fm.getFeature(frame)
+    fm2.getFeature(frame)
+    fm3.getFeature(frame)
+    fm4.getFeature(frame)
 
-    #imageWinNoBoxes.showWindow(withRedDots)
+    # imageWinNoBoxes.showWindow(withRedDots)
 
     fm.showSubImage()
     fm2.showSubImage()
@@ -154,10 +158,10 @@ while success:
     fm3.drawBoxOnImage(withRedDots)
     fm4.drawBoxOnImage(withRedDots)
 
-    #print fm.infoAboutFeature()
-    #print fm2.infoAboutFeature()
-    #print fm3.infoAboutFeature()
-    #print fm4.infoAboutFeature()
+    # print fm.infoAboutFeature()
+    # print fm2.infoAboutFeature()
+    # print fm3.infoAboutFeature()
+    # print fm4.infoAboutFeature()
 
     imageWin.showWindowAndWait(withRedDots, 1000)
 
@@ -179,4 +183,3 @@ logger.closeFiles()
 
 # img_rgb = cv2.imread(imagePath)
 # template = cv2.imread(feature_image, 0)
-

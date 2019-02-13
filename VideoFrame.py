@@ -70,14 +70,6 @@ class VideoFrame:
         return image_with_boxes
 
 
-    def highlightMatchedFeatureeeeee(self):
-
-        # resize(image, dst, Size(), 0.5, 0.5, interpolation);
-        # print Box(Point(topLeftX,topLeftY), Point(bottomRightX,bottomRightY))
-        # highlightMatchedFeature(image, featureImage)
-        print "aaa"
-
-
     def searchArea(self):
         redBox1 = self.__redDotsSearchArea1()
         redBox2 = self.__redDotsSearchArea2()
