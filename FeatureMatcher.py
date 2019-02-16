@@ -48,6 +48,21 @@ class Feature:
         cv2.rectangle(image, (box.topLeft.x, box.topLeft.y),
                       (box.bottomRight.x, box.bottomRight.y), (0, 255, 0), 2)
 
+        self.__addIDText(box, image)
+
+    def __addIDText(self, box, image):
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        bottomLeftCornerOfText = (box.topLeft.x, box.topLeft.y + 22)
+        fontScale = 1
+        fontColor = (0, 255, 0)
+        lineType = 2
+        cv2.putText(image, self.__id,
+                    bottomLeftCornerOfText,
+                    font,
+                    fontScale,
+                    fontColor,
+                    lineType)
+
     def getImage(self):
         if len(self.__images)<1:
             return None
@@ -57,8 +72,10 @@ class Feature:
         box = self.__defaultBoxAroundFeature()
         return calculateMidpoint(box.topLeft, box.bottomRight)
 
-    def findFeature(self, bigImage):
-        newLocation = self.__findSubImage(bigImage,self.getImage())
+    def findFeature(self, frame):
+        newLocation = self.__findSubImage(frame.getImage(), self.getImage())
+        if newLocation:
+            self.pluckFeature(frame,newLocation)
         return newLocation
 
     def __findSubImage(self, image, subImage):
@@ -127,40 +144,42 @@ class FeatureMatcher:
         self.__subImageWin.showWindow(self.__feature.getImage())
 
     def getFeature(self, frame):
-        image = frame.getImage()
+        newTopLeftOfFeature = self.__feature.findFeature(frame)
 
-        newTopLeftOfFeature = self.__findSubImage(image, self.__feature.getImage())
-
-        newTopLeftOfFeature = self.resetFeatureIfNecessary(newTopLeftOfFeature)
-        self.__feature.pluckFeature(frame, newTopLeftOfFeature)
+        self.resetFeatureIfNecessary(newTopLeftOfFeature)
+        if self.detectionWasReset():
+            newTopLeftOfFeature = self.resetFeature()
+            self.__feature.pluckFeature(frame, newTopLeftOfFeature)
 
         return newTopLeftOfFeature
 
     def resetFeatureIfNecessary(self, newTopLeftOfFeature):
-        self.__detectionWasReset = True
+        self.__detectionWasReset = False
         self.__resetReason = ""
         if newTopLeftOfFeature is None:
             print "Did not detect feature: resetting Location to Default"
             self.__resetReason = "NotDetected"
-            newTopLeftOfFeature = self.resetFeature()
-        if ((newTopLeftOfFeature.y + self.__featureBoxSize) > 1000):
+            self.__detectionWasReset = True
+
+        elif ((newTopLeftOfFeature.y + self.__featureBoxSize) > 1000):
             print "Got to the bottom of the screen: resetting location to default"
             self.__resetReason = "Bottom"
-            newTopLeftOfFeature = self.resetFeature()
-        if newTopLeftOfFeature.x <= 40:
+            self.__detectionWasReset = True
+
+        elif newTopLeftOfFeature.x <= 40:
             print "Got too close to the left edge: resetting location to default"
             self.__resetReason = "LeftEdge"
-            newTopLeftOfFeature = self.resetFeature()
+            self.__detectionWasReset = True
 
-        return newTopLeftOfFeature
+        #return newTopLeftOfFeature
 
     def resetFeature(self):
         self.__detectionWasReset = False
         self.__feature = Feature(self.__featureBoxSize)
         return self.__defaultStartingPoint
 
-    def __findSubImage(self, image, subImage):
-        return self.__feature.findFeature(image)
+    #def __findSubImage(self, image, subImage):
+    #    return self.__feature.findFeature(image)
 
 
     def drawBoxOnImage(self, image):

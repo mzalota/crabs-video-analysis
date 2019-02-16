@@ -62,7 +62,7 @@ vidcap = cv2.VideoCapture('C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_599
 # ffmpeg -i "C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi" -strict -2 ../output_st_v3.mp4
 
 
-count = 2500  # 5180 #23785  # 25130 # 26670 #25130 # 100 26215
+count = 5900 #2500  # 5180 #23785  # 25130 # 26670 #25130 # 100 26215
 
 needToSelectFeature = True
 
