@@ -15,7 +15,7 @@ from FeatureMatcher import FeatureMatcher
 from Frame import Frame
 from ImageWindow import ImageWindow
 from VideoFrame import VideoFrame
-from common import Point
+from common import Point, Box
 from logger import Logger
 
 filepath = "C:/workspaces/AnjutkaVideo/frames/frame1.jpg"
@@ -73,15 +73,77 @@ imageWin = ImageWindow("mainWithRedDots", Point(700, 200))
 imageWinNoBoxes = ImageWindow("withoutFeatureBoxes", Point(700, 20))
 
 featureBox = None
-fm = FeatureMatcher(Point(1250, 75))
-fm2 = FeatureMatcher(Point(1300, 100), 500)
-fm3 = FeatureMatcher(Point(200, 50), 600)
-fm4 = FeatureMatcher(Point(800, 50), 400)
 
-print fm.infoHeaders()
 
+class VelocityDetector():
+    def __init__(self):
+        self.__prevFrame = None
+        self.__fm = list()
+
+        self.__fm.append(FeatureMatcher(Box(Point(1250,75), Point(1250 + 100, 75 + 200))))
+        self.__fm.append(FeatureMatcher(Box(Point(1250, 75), Point(1350 + 100, 75 + 100))))
+        self.__fm.append(FeatureMatcher(Box(Point(1250, 75), Point(1450 + 200, 75 + 100))))
+        self.__fm.append(FeatureMatcher(Box(Point(1300, 100), Point(1300 + 500, 100 + 300))))
+        self.__fm.append(FeatureMatcher(Box(Point(200, 50), Point(200 + 600, 50 + 400))))
+        self.__fm.append(FeatureMatcher(Box(Point(800, 50), Point(800 + 300, 50 + 200))))
+
+        self.__fm.append(FeatureMatcher(Box(Point(200, 450), Point(200 + 200, 450 + 200))))
+        self.__fm.append(FeatureMatcher(Box(Point(800, 300), Point(800 + 300, 300 + 200))))
+
+        print "list length is"
+        print len(self.__fm)
+        #print fm.infoHeaders()
+
+    def detectVelocity(self):
+
+        print "list length 2 is"
+        print len(self.__fm)
+
+        for fm in self.__fm:
+            section = fm.detectSeeFloorSections(frame)
+            section.drawFeatureOnFrame(withRedDots)
+            if not fm.detectionWasReset() and self.__prevFrame is not None:
+                print "drift for section: "+section.getID()
+                print section.getDrift(frame.getFrameID(), self.__prevFrame.getFrameID())
+            #section.showSubImage()
+
+        self.__prevFrame = frame
+
+        #sec1 = self.__fm[0].detectSeeFloorSections(frame)
+        #sec2 = self.__fm[1].detectSeeFloorSections(frame)
+        #sec3 = self.__fm[2].detectSeeFloorSections(frame)
+        #sec4 = self.__fm[3].detectSeeFloorSections(frame)
+        # imageWinNoBoxes.showWindow(withRedDots)
+        # fm.showSubImage()
+        # fm2.showSubImage()
+        # fm3.showSubImage()
+        # fm4.showSubImage()
+        # sec1.showSubImage()
+        # sec2.showSubImage()
+        # sec3.showSubImage()
+        # sec4.showSubImage()
+        #sec1.drawFeatureOnFrame(withRedDots)
+        #sec2.drawFeatureOnFrame(withRedDots)
+        #sec3.drawFeatureOnFrame(withRedDots)
+        #sec4.drawFeatureOnFrame(withRedDots)
+
+        # fm.drawBoxOnImage(withRedDots)
+        # fm2.drawBoxOnImage(withRedDots)
+        # fm3.drawBoxOnImage(withRedDots)
+        # fm4.drawBoxOnImage(withRedDots)
+
+        for fm in self.__fm:
+            print fm.infoAboutFeature()
+
+
+
+
+
+velocityDetector = VelocityDetector()
 subImg = None
 vf = None
+
+
 success = True
 
 
@@ -141,27 +203,7 @@ while success:
         fm.setFeatureLocation(firstFeature)
     '''
 
-    fm.getFeature(frame)
-    fm2.getFeature(frame)
-    fm3.getFeature(frame)
-    fm4.getFeature(frame)
-
-    # imageWinNoBoxes.showWindow(withRedDots)
-
-    fm.showSubImage()
-    fm2.showSubImage()
-    fm3.showSubImage()
-    fm4.showSubImage()
-
-    fm.drawBoxOnImage(withRedDots)
-    fm2.drawBoxOnImage(withRedDots)
-    fm3.drawBoxOnImage(withRedDots)
-    fm4.drawBoxOnImage(withRedDots)
-
-    # print fm.infoAboutFeature()
-    # print fm2.infoAboutFeature()
-    # print fm3.infoAboutFeature()
-    # print fm4.infoAboutFeature()
+    velocityDetector.detectVelocity()
 
     imageWin.showWindowAndWait(withRedDots, 1000)
 

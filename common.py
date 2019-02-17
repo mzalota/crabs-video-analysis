@@ -3,7 +3,21 @@ from collections import namedtuple
 import math
 
 Point = namedtuple('Point', 'x y')
-Box = namedtuple('Box', 'topLeft bottomRight')
+#Box = namedtuple('Box', 'topLeft bottomRight')
+
+class Box:
+    #topLeft = Point(0,0)
+    #bottomRight = Point(100, 100)
+
+    def __init__(self, topLeft, bottomRight):
+        self.bottomRight = bottomRight
+        self.topLeft = topLeft
+
+    def width(self):
+        return self.bottomRight.x - self.topLeft.x
+
+    def hight(self):
+        return self.bottomRight.y - self.topLeft.y
 
 
 def boxAroundBoxes(box1, box2):

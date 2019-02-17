@@ -1,7 +1,7 @@
 import cv2
 from pyautogui import press
 
-from common import Point, boxAroundPoint
+from common import Point, boxAroundPoint,Box
 
 
 class ImageWindow:
@@ -13,7 +13,17 @@ class ImageWindow:
         self.__windowName = windowName
         self.__windowPosition = position
         self.__windowPositionAndDimensionsInitialized = False
+        self.__windowWidth = 900
+        self.__windowHight = 600
+        #cv2.startWindowThread()
 
+    @staticmethod
+    def createWindow(windowName, windowBox):
+        # type: (String, Box) -> ImageWindow
+        win = ImageWindow(windowName, windowBox.topLeft)
+        win.__windowWidth = windowBox.width()
+        win.__windowHight = windowBox.hight()
+        return win
 
     def waitForMouseClick(self):
         cv2.setMouseCallback(self.__windowName, self.click_and_crop)
@@ -22,11 +32,7 @@ class ImageWindow:
         cv2.waitKey(0)
 
     def click_and_crop(self, event, x, y, flags, param):
-        #print "in ImageWindow click_and_crop"
-        #global featureCoordiate, featureBox
         self.wasClicked(event, x, y)
-        #featureCoordiate = self.featureCoordiate
-        #featureBox = self.featureBox
 
     def wasClicked(self, event, x, y):
         # check to see if the left mouse button was released
@@ -40,7 +46,7 @@ class ImageWindow:
     def showWindow(self, image):
         if not self.__windowPositionAndDimensionsInitialized:
             cv2.namedWindow(self.__windowName, cv2.WINDOW_NORMAL)  # WINDOW_AUTOSIZE
-            cv2.resizeWindow(self.__windowName, 900, 600)
+            cv2.resizeWindow(self.__windowName, self.__windowWidth, self.__windowHight)
             cv2.moveWindow(self.__windowName, self.__windowPosition.x, self.__windowPosition.y)
             self.__windowPositionAndDimensionsInitialized = True
         cv2.imshow(self.__windowName, image)
@@ -52,3 +58,14 @@ class ImageWindow:
     def showWindowAndWait(self, image, delay):
         self.showWindow(image)
         cv2.waitKey(delay)
+
+    def closeWindow(self):
+        cv2.waitKey(1)
+        cv2.waitKey(1)
+        cv2.destroyWindow(self.__windowName)
+        cv2.waitKey(1)
+        cv2.waitKey(1)
+        cv2.waitKey(1)
+        cv2.waitKey(1)
+        cv2.waitKey(1)
+        print "trying to close window " + self.__windowName
