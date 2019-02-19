@@ -20,14 +20,14 @@ class FeatureMatcher:
 
     def detectSeeFloorSection(self, frame, section):
         if section is None:
-            return SeeFloorSection.createFeature(frame, self.__startingBox)
+            return SeeFloorSection(frame, self.__startingBox)
 
         newTopLeftOfFeature = section.findFeature(frame)
         wasReset = self.__resetFeatureIfNecessary(newTopLeftOfFeature)
         self.__detectionWasReset = wasReset
         if wasReset:
             #section.closeWindow()
-            return SeeFloorSection.createFeature(frame, self.__startingBox)
+            return SeeFloorSection(frame, self.__startingBox)
         else:
             return section
 

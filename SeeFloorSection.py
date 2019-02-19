@@ -9,17 +9,10 @@ from common import Box, Point, subImage, calculateMidpoint, distanceBetweenPoint
 class SeeFloorSection:
     __threshold_for_matching = 0.6
 
-    @staticmethod
-    def createFeature(frame, box):
-        #feature = SeeFloorSection(box.width())
-        feature = SeeFloorSection()
-        feature.__startingBox = box
-        feature.pluckFeature(frame, box.topLeft)
-        feature.__subImageWin = ImageWindow.createWindow(feature.__getWindowName(), box)
-        return feature
-
-    def __init__(self):
+    def __init__(self,frame, box):
         self.__initialize()
+        self.__startingBox = box
+        self.pluckFeature(frame, box.topLeft)
 
     def __initialize(self):
         self.__id = str(uuid.uuid4().fields[-1])[:5]
@@ -27,6 +20,7 @@ class SeeFloorSection:
         self.__images = dict()
         self.__topLeftPoints = dict()
         self.__startingBox = None
+        self.__subImageWin = None
 
     def closeWindow(self):
         self.showSubImage()
@@ -47,26 +41,19 @@ class SeeFloorSection:
         lastPoint = self.__topLeftPoints[max(self.__topLeftPoints.keys())]
         return lastPoint
 
-    def __defaultBoxAroundFeatur2(self):
-        offsetY = 100
-        offsetX = 200
-        point = self.__getTopLeft()
-        return Box(Point(max(point.x - offsetX, 1), max(point.y - offsetY, 1)),
-                   Point(point.x + offsetX, point.y + offsetY))
-
     def showSubImage(self):
         img = self.getImage()
+        if self.__subImageWin is None:
+            self.__subImageWin = ImageWindow.createWindow(self.__getWindowName(), self.__defaultBoxAroundFeature())
         if img is not None:
             self.__subImageWin.showWindow(img)
 
     def pluckFeature(self, frame, topLeftPoint):
-        # type: (object, object) -> object
+        # type: (Frame, Point) -> None
         self.__topLeftPoints[frame.getFrameID()] = topLeftPoint #append
         image = subImage(frame.getImage(), self.__defaultBoxAroundFeature())
         self.__images[frame.getFrameID()] = image.copy()
         self.__frameIDs.append(frame.getFrameID())
-
-
 
     def getDrift(self):
         numOfFrames = len(self.__topLeftPoints)

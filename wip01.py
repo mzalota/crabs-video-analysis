@@ -63,7 +63,7 @@ vidcap = cv2.VideoCapture('C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_599
 # ffmpeg -i "C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi" -strict -2 ../output_st_v3.mp4
 
 
-count = 5900 #2500  # 5180 #23785  # 25130 # 26670 #25130 # 100 26215
+count = 10000 #2500  # 5180 #23785  # 25130 # 26670 #25130 # 100 26215
 
 needToSelectFeature = True
 
@@ -99,7 +99,7 @@ class VelocityDetector():
             if not fm.detectionWasReset() and self.__prevFrame is not None:
                 drift = section.getDrift()
                 drifts.append(drift)
-            #section.showSubImage()
+            section.showSubImage()
 
         if len(drifts)>0:
             print drifts
