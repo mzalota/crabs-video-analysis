@@ -8,6 +8,7 @@
 # ffmpeg -i i"C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/V1_R_20180911_165259.avi" -strict -2 output.mp4
 
 import cv2
+import numpy
 
 from FeatureMatcher import FeatureMatcher
 # import time
@@ -90,22 +91,20 @@ class VelocityDetector():
         self.__fm.append(FeatureMatcher(Box(Point(200, 450), Point(200 + 200, 450 + 200))))
         self.__fm.append(FeatureMatcher(Box(Point(800, 300), Point(800 + 300, 300 + 200))))
 
-        print "list length is"
-        print len(self.__fm)
-        #print fm.infoHeaders()
-
     def detectVelocity(self):
-
-        print "list length 2 is"
-        print len(self.__fm)
-
+        drifts = list()
         for fm in self.__fm:
             section = fm.detectSeeFloorSections(frame)
             section.drawFeatureOnFrame(withRedDots)
             if not fm.detectionWasReset() and self.__prevFrame is not None:
-                print "drift for section: "+section.getID()
-                print section.getDrift(frame.getFrameID(), self.__prevFrame.getFrameID())
+                drift = section.getDrift()
+                drifts.append(drift)
             #section.showSubImage()
+
+        if len(drifts)>0:
+            print drifts
+            #print "median value is"
+            print numpy.median(drifts)
 
         self.__prevFrame = frame
 
@@ -132,8 +131,8 @@ class VelocityDetector():
         # fm3.drawBoxOnImage(withRedDots)
         # fm4.drawBoxOnImage(withRedDots)
 
-        for fm in self.__fm:
-            print fm.infoAboutFeature()
+        #for fm in self.__fm:
+        #    print fm.infoAboutFeature()
 
 
 

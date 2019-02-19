@@ -23,6 +23,7 @@ class SeeFloorSection:
 
     def __initialize(self):
         self.__id = str(uuid.uuid4().fields[-1])[:5]
+        self.__frameIDs = list()
         self.__images = dict()
         self.__topLeftPoints = dict()
         self.__startingBox = None
@@ -63,10 +64,15 @@ class SeeFloorSection:
         self.__topLeftPoints[frame.getFrameID()] = topLeftPoint #append
         image = subImage(frame.getImage(), self.__defaultBoxAroundFeature())
         self.__images[frame.getFrameID()] = image.copy()
+        self.__frameIDs.append(frame.getFrameID())
 
-    def getDrift(self, lastFrame, beforeLastFrame):
+
+
+    def getDrift(self):
         numOfFrames = len(self.__topLeftPoints)
         if numOfFrames > 1:
+            lastFrame = self.__frameIDs[numOfFrames-1]
+            beforeLastFrame = self.__frameIDs[numOfFrames-2]
             lastPoint = self.__topLeftPoints[lastFrame]
             beforeLastPoint = self.__topLeftPoints[beforeLastFrame]
             return distanceBetweenPoints(lastPoint,beforeLastPoint)
