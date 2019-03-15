@@ -9,13 +9,18 @@
 
 import cv2
 import numpy
+import os
+import psutil
+import gc
 
 from FeatureMatcher import FeatureMatcher
 # import time
 # from pyautogui import press
 from Frame import Frame
 from ImageWindow import ImageWindow
+from VelocityDetector import VelocityDetector
 from VideoFrame import VideoFrame
+from VideoStream import VideoStream
 from common import Point, Box
 from logger import Logger
 
@@ -56,14 +61,16 @@ print(cv2.__version__)
 # vidcap = cv2.VideoCapture('C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/output_v1.mp4')
 # vidcap = cv2.VideoCapture('C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/V2_R_20180911_165730.avi' )
 
-vidcap = cv2.VideoCapture('C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi')
+#vidcap = cv2.VideoCapture('C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi')
+videoStream = VideoStream('C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi')
+
 # vidcap = cv2.VideoCapture("D:/Video_Biology/Kara/2018/AMK72/2018_09_15_St_5993/V4__R_20180915_210447.avi")
 
 
 # ffmpeg -i "C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi" -strict -2 ../output_st_v3.mp4
 
 
-count = 10000 #2500  # 5180 #23785  # 25130 # 26670 #25130 # 100 26215
+count =100   #10000 #2500  # 5180 #23785  # 25130 # 26670 #25130 # 100 26215
 
 needToSelectFeature = True
 
@@ -74,68 +81,6 @@ imageWin = ImageWindow("mainWithRedDots", Point(700, 200))
 imageWinNoBoxes = ImageWindow("withoutFeatureBoxes", Point(700, 20))
 
 featureBox = None
-
-
-class VelocityDetector():
-    def __init__(self):
-        self.__prevFrame = None
-        self.__fm = list()
-
-        self.__fm.append(FeatureMatcher(Box(Point(1250,75), Point(1250 + 100, 75 + 200))))
-        self.__fm.append(FeatureMatcher(Box(Point(1250, 75), Point(1350 + 100, 75 + 100))))
-        self.__fm.append(FeatureMatcher(Box(Point(1250, 75), Point(1450 + 200, 75 + 100))))
-        self.__fm.append(FeatureMatcher(Box(Point(1300, 100), Point(1300 + 500, 100 + 300))))
-        self.__fm.append(FeatureMatcher(Box(Point(200, 50), Point(200 + 600, 50 + 400))))
-        self.__fm.append(FeatureMatcher(Box(Point(800, 50), Point(800 + 300, 50 + 200))))
-
-        self.__fm.append(FeatureMatcher(Box(Point(200, 450), Point(200 + 200, 450 + 200))))
-        self.__fm.append(FeatureMatcher(Box(Point(800, 300), Point(800 + 300, 300 + 200))))
-
-    def detectVelocity(self):
-        drifts = list()
-        for fm in self.__fm:
-            section = fm.detectSeeFloorSections(frame)
-            section.drawFeatureOnFrame(withRedDots)
-            if not fm.detectionWasReset() and self.__prevFrame is not None:
-                drift = section.getDrift()
-                drifts.append(drift)
-            section.showSubImage()
-
-        if len(drifts)>0:
-            print drifts
-            #print "median value is"
-            print numpy.median(drifts)
-
-        self.__prevFrame = frame
-
-        #sec1 = self.__fm[0].detectSeeFloorSections(frame)
-        #sec2 = self.__fm[1].detectSeeFloorSections(frame)
-        #sec3 = self.__fm[2].detectSeeFloorSections(frame)
-        #sec4 = self.__fm[3].detectSeeFloorSections(frame)
-        # imageWinNoBoxes.showWindow(withRedDots)
-        # fm.showSubImage()
-        # fm2.showSubImage()
-        # fm3.showSubImage()
-        # fm4.showSubImage()
-        # sec1.showSubImage()
-        # sec2.showSubImage()
-        # sec3.showSubImage()
-        # sec4.showSubImage()
-        #sec1.drawFeatureOnFrame(withRedDots)
-        #sec2.drawFeatureOnFrame(withRedDots)
-        #sec3.drawFeatureOnFrame(withRedDots)
-        #sec4.drawFeatureOnFrame(withRedDots)
-
-        # fm.drawBoxOnImage(withRedDots)
-        # fm2.drawBoxOnImage(withRedDots)
-        # fm3.drawBoxOnImage(withRedDots)
-        # fm4.drawBoxOnImage(withRedDots)
-
-        #for fm in self.__fm:
-        #    print fm.infoAboutFeature()
-
-
-
 
 
 velocityDetector = VelocityDetector()
@@ -162,34 +107,49 @@ def findBrightestSpot():
     imageWin.showWindowAndWaitForClick(image)
 
 
+def printMemoryUsage():
+    process = psutil.Process(os.getpid())
+    print("memoryUsed: "+toMegaBytes(process.memory_info().rss))
+
+
+def toMegaBytes(memoryInBytes):
+    memoryInMegabytes = int(memoryInBytes) / (1024 * 1024)
+    return str(memoryInMegabytes) + "MB"
+
+
+
+
 while success:
 
     print 'Read a new frame: ', count
     windowName = 'Detected_' + str(count)
 
-    # set the number of the frame to read
-    vidcap.set(cv2.CAP_PROP_POS_FRAMES, count)
-    success, image = vidcap.read()
+    try:
+        image = videoStream.readImage(count)
+        frame = Frame(count, videoStream)
+    except Exception as error:
+        print ("no more frames to read from video ")
+        print('Caught this error: ' + repr(error))
+        break
 
-    frame = Frame(count, image.copy())
+    #frame = Frame(count,  image.copy())
+
 
     # print "image shape"
     # print image.shape
     # (1080L, 1920L, 3L)
 
-    if not success:
-        "no more frames to read from video "
-        break
+
 
     vf_prev = vf
-    vf = VideoFrame(image, vf_prev)
-    # imageCopy = image.copy()
+    vf = VideoFrame(frame, vf_prev)
     vf.isolateRedDots()
     withRedDots = vf.drawBoxesAroundRedDots()
 
     row = vf.infoAboutFrame()
     row.insert(0, count)
     logger.writeToRedDotsFile(row)
+    print row
 
     # findBrightestSpot()
     '''
@@ -202,17 +162,19 @@ while success:
         fm.setFeatureLocation(firstFeature)
     '''
 
-    velocityDetector.detectVelocity()
+    velocityDetector.detectVelocity(frame, withRedDots)
 
+    #imageWin.showWindowAndWait(image, 1000)
     imageWin.showWindowAndWait(withRedDots, 1000)
 
     # imageWin.showWindowAndWaitForClick(withRedDots)
 
     # cv2.destroyAllWindows()
 
-
-
     count += 5
+
+    gc.collect()
+    printMemoryUsage()
 
     if count > 29100:
         break

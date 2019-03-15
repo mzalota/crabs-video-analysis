@@ -8,19 +8,15 @@ from common import translateCoordinateToOuter, Point, Box
 
 
 class RedDot:
-
     __dotLocationInner = None
     boxAroundDot = None
 
-    __mask_color  = None
-    __mask_blurred  = None
-    __mask_eroded  = None
-    __mask_dilated = None
-    __mask_final = None
-
-    def __init__(self, wholeImage, redDotsSearchArea):
-        self.__image = wholeImage
+    def __init__(self, frame, redDotsSearchArea):
+        self.__frame = frame
         self.__redDotsSearchArea = redDotsSearchArea
+
+    def __getImage(self):
+        return self.__frame.getImage()
 
     def dotWasDetected(self):
         if self.boxAroundDot:
@@ -30,13 +26,10 @@ class RedDot:
 
     def isolateRedDots(self, debugWindowName = None):
 
-        featureImage = self.__redDotsSearchImage(self.__image, self.__redDotsSearchArea)
-
-        self.__mask_color = self.__isolateAreasWithRedColor(featureImage)
-
-        self.__mask_final = self.__blurErodeDilate(self.__mask_color)
-
-        contours = measure.find_contours(self.__mask_final, 0.9)
+        featureImage = self.__redDotsSearchImage(self.__getImage(), self.__redDotsSearchArea)
+        mask_color = self.__isolateAreasWithRedColor(featureImage)
+        mask_final = self.__blurErodeDilate(mask_color)
+        contours = measure.find_contours(mask_final, 0.9)
 
         bounding_boxes = self.__boundingBoxesAroundContours(contours)
         top2Boxes = self.__keepTwoLargestContours(bounding_boxes)
@@ -46,10 +39,10 @@ class RedDot:
             #print top2Boxes
 
             cv2.imshow(debugWindowName+"_image_to_locate_red_dots", featureImage)
-            cv2.imshow(debugWindowName+"_mask_in_before_blur", self.__mask_color)
+            cv2.imshow(debugWindowName+"_mask_in_before_blur", mask_color)
             #cv2.imshow(debugWindowName+"_mask01_after_blur", self.__mask_blurred)
             #cv2.imshow(debugWindowName+"_mask02_after_erode", self.__mask_eroded)
-            cv2.imshow(debugWindowName+"_mask03_after_dilate", self.__mask_dilated)
+            cv2.imshow(debugWindowName+"_mask03_after_dilate", mask_final)
             #cv2.waitKey(0)
 
         if len(top2Boxes)>0:
@@ -100,11 +93,11 @@ class RedDot:
     def __blurErodeDilate(self, mask_in):
         # perform a series of erosions and dilations to remove
         # any small blobs of noise from the thresholded image
-        self.__mask_blurred = cv2.GaussianBlur(mask_in, (11, 11), 0)
-        self.__mask_eroded = cv2.erode(self.__mask_blurred, None, iterations=1)
-        self.__mask_dilated = cv2.dilate(self.__mask_eroded, None, iterations=6)
-
-        return np.copy(self.__mask_dilated)
+        mask_blurred = cv2.GaussianBlur(mask_in, (11, 11), 0)
+        mask_eroded = cv2.erode(mask_blurred, None, iterations=1)
+        mask_dilated = cv2.dilate(mask_eroded, None, iterations=6)
+        #return np.copy(mask_dilated)
+        return mask_dilated
 
 
     def __keepTwoLargestContours(self, bounding_boxes):

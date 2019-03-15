@@ -9,7 +9,8 @@
 #python -m pip install scipy
 #python -m pip install matplotlib
 #python -m pip install pyautogui
-
+#python -m pip install psutil
+#python -m pip install pylru
 
 # ffmpeg -i "C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/V1_R_20180911_165259.avi" -strict -2 output.mp4
 

@@ -2,6 +2,7 @@ import uuid
 
 import cv2
 
+from Frame import Frame
 from ImageWindow import ImageWindow
 from common import Box, Point, subImage, calculateMidpoint, distanceBetweenPoints
 
@@ -17,7 +18,7 @@ class SeeFloorSection:
     def __initialize(self):
         self.__id = str(uuid.uuid4().fields[-1])[:5]
         self.__frameIDs = list()
-        self.__images = dict()
+        self.__frames = dict()
         self.__topLeftPoints = dict()
         self.__startingBox = None
         self.__subImageWin = None
@@ -51,8 +52,7 @@ class SeeFloorSection:
     def pluckFeature(self, frame, topLeftPoint):
         # type: (Frame, Point) -> None
         self.__topLeftPoints[frame.getFrameID()] = topLeftPoint #append
-        image = subImage(frame.getImage(), self.__defaultBoxAroundFeature())
-        self.__images[frame.getFrameID()] = image.copy()
+        self.__frames[frame.getFrameID()] = frame
         self.__frameIDs.append(frame.getFrameID())
 
     def getDrift(self):
@@ -84,15 +84,21 @@ class SeeFloorSection:
                     lineType)
 
     def getImage(self):
-        if len(self.__images)<1:
+        if len(self.__frames)<1:
             return None
-        return self.__images[max(self.__images.keys())]
+
+        image = self.__getLastFrame().getImage()
+        return subImage(image, self.__defaultBoxAroundFeature())
+
+    def __getLastFrame(self):
+        return self.__frames[max(self.__frames.keys())]
 
     def getLocation(self):
         box = self.__defaultBoxAroundFeature()
         return calculateMidpoint(box.topLeft, box.bottomRight)
 
     def findFeature(self, frame):
+        # type: (Frame) -> Point
         newLocation = self.__findSubImage(frame.getImage(), self.getImage())
         if newLocation:
             self.pluckFeature(frame,newLocation)

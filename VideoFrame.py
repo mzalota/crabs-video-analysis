@@ -12,16 +12,17 @@ from common import Point, Box, boxAroundBoxes, translateCoordinateToOuter, dista
 class VideoFrame:
     # initializing the variables
     __initialDistanceForRedBoxSearchArea=200
-    #dotsShift = 150
-    #boxAroundRedDotsAbsolute = None
     redDot1 = None
     redDot2 = None
 
-
     # defining constructor
-    def __init__(self, image, prevFrame=None):
-        self.image = image
+    def __init__(self, frame, prevFrame=None):
+        # type: (Frame, VideoFrame) -> VideoFrame
+        self.__frame = frame
         self.prevFrame = prevFrame
+
+    def __getImage(self):
+        return self.__frame.getImage()
 
     def distanceBetweenRedPoints(self):
         if self.redDot1.dotWasDetected() and self.redDot2.dotWasDetected():
@@ -33,7 +34,7 @@ class VideoFrame:
                 return int(self.__initialDistanceForRedBoxSearchArea)
 
     def isolateRedDots(self):
-        self.redDot1 = RedDot(self.image, self.__redDotsSearchArea1())
+        self.redDot1 = RedDot(self.__frame, self.__redDotsSearchArea1())
         #self.redDot1.isolateRedDots("1_redDot")
         self.redDot1.isolateRedDots()
 
@@ -41,7 +42,7 @@ class VideoFrame:
             #print "detected red dot 1:"
             #print self.redDot1.boxAroundDot
 
-        self.redDot2 = RedDot(self.image, self.__redDotsSearchArea2())
+        self.redDot2 = RedDot(self.__frame, self.__redDotsSearchArea2())
         #self.redDot2.isolateRedDots("2_redDot")
         self.redDot2.isolateRedDots()
 
@@ -53,7 +54,7 @@ class VideoFrame:
     def drawBoxesAroundRedDots(self):
         #https://docs.opencv.org/trunk/dd/d49/tutorial_py_contour_features.html#gsc.tab=0
 
-        image_with_boxes = np.copy(self.image)
+        image_with_boxes = np.copy(self.__getImage())
 
         bounding_boxes = []
         #bounding_boxes = [self.redDot1.boxAroundDot, self.redDot2.boxAroundDot]
@@ -103,8 +104,8 @@ class VideoFrame:
         #print "dotsShift"
         #print dotsShift
 
-        bottomRightLimit_x = self.image.shape[1]-200
-        bottomRightLimit_y = self.image.shape[0] - 200
+        bottomRightLimit_x = self.__getImage().shape[1]-200
+        bottomRightLimit_y = self.__getImage().shape[0] - 200
 
         topLeftX = min(max(boxAroundRedDots.topLeft.x - dotsShift, 1), bottomRightLimit_x-100)
         topLeftY = min(max(boxAroundRedDots.topLeft.y - dotsShift, 1), bottomRightLimit_y-100)

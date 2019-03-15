@@ -19,6 +19,7 @@ class FeatureMatcher:
         return self.__seeFloorSection
 
     def detectSeeFloorSection(self, frame, section):
+        # type: (Frame, SeeFloorSection) -> SeeFloorSection
         if section is None:
             return SeeFloorSection(frame, self.__startingBox)
 
