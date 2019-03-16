@@ -65,8 +65,7 @@ class VelocityDetector():
 
         self.__prevFrame = frame
 
-        if len(self.__drifts)>0:
-            print [str(x) for x in self.__drifts]
+
 
         #sec1 = self.__fm[0].detectSeeFloorSections(frame)
         #sec2 = self.__fm[1].detectSeeFloorSections(frame)
@@ -94,8 +93,12 @@ class VelocityDetector():
         #for fm in self.__fm:
         #    print fm.infoAboutFeature()
 
+    def getDriftsAsString(self):
+        if len(self.__drifts) <= 0:
+            return ""
 
+        concatStr = [str(x) for x in self.__drifts]
+        return concatStr
 
-
-
-
+    def getDriftsCount(self):
+        return len(self.__drifts)

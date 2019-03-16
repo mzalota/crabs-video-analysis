@@ -39,12 +39,23 @@ def writeToCSVFile(file, row):
 
 # Open File where Frame Info will be written using Semicolumn as a delimiter. Write the Header row into the file
 csvFilePath = 'C:/workspaces/AnjutkaVideo/redDots_log06.csv'
-featuresFilePath = 'C:/workspaces/AnjutkaVideo/features_log06.csv'
+featuresFilePath = 'C:/workspaces/AnjutkaVideo/drifts_log06.csv'
 logger = Logger(csvFilePath, featuresFilePath)
 
 headerRow = VideoFrame.infoHeaders()
 headerRow.insert(0, "frameNumber")
 logger.writeToRedDotsFile(headerRow)
+
+driftsFileHeaderRow = []
+driftsFileHeaderRow.append("frameNumber")
+driftsFileHeaderRow.append("driftX")
+driftsFileHeaderRow.append("driftY")
+driftsFileHeaderRow.append("driftDistance")
+driftsFileHeaderRow.append("driftAngle")
+driftsFileHeaderRow.append("driftsCount")
+driftsFileHeaderRow.append("drifts")
+
+logger.writeToDriftsFile(driftsFileHeaderRow)
 
 # src3 = cv2.imread("C:/Users/zal0001m/Documents/Private/AnjutkaVideo/IMG_20180814_181351.jpg")
 # cv2.imshow("hi",src3)
@@ -159,9 +170,27 @@ while success:
 
     velocityDetector.detectVelocity(frame, withRedDots)
     driftVector = velocityDetector.getMedianDriftVector()
+    driftDistance = velocityDetector.getMedianDriftDistance()
+    driftAngle = velocityDetector.getMedianDriftAngle()
+    driftsCount = velocityDetector.getDriftsCount()
+    driftsStr = velocityDetector.getDriftsAsString()
 
-    print "drift distance/angle is: "+str(velocityDetector.getMedianDriftDistance()) + "/" + str(velocityDetector.getMedianDriftAngle())
-    print "drift vector is: "+str(driftVector)
+
+    if driftsStr:
+        driftsRow = []
+        driftsRow.append(count)
+        driftsRow.append(driftVector.x)
+        driftsRow.append(driftVector.y)
+        driftsRow.append(driftDistance)
+        driftsRow.append(driftAngle)
+        driftsRow.append(driftsCount)
+        driftsRow.append(driftsStr)
+
+        logger.writeToDriftsFile(driftsRow)
+        print driftsRow
+
+    #print "drift distance/angle is: "+str(driftDistance) + "/" + str(driftAngle)
+    #print "drift vector is: "+str(driftVector)
 
     img = Image(withRedDots)
     img.drawDriftVectorOnImage(driftVector)
