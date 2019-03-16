@@ -5,7 +5,7 @@ import cv2
 from Frame import Frame
 from Image import Image
 from ImageWindow import ImageWindow
-from common import Box, Point, subImage, Vector
+from common import Box, Point, Vector
 
 
 class SeeFloorSection:
@@ -71,36 +71,23 @@ class SeeFloorSection:
     def drawFeatureOnFrame(self, image):
         #TODO: refactor image numpy array into Image class
         box = self.__defaultBoxAroundFeature()
-        img = Image(image)
-        img.drawBoxOnImage(box)
-        self.__addIDText(box, img.asNumpyArray())
-
-    def __addIDText(self, box, image):
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        bottomLeftCornerOfText = (box.topLeft.x, box.topLeft.y + 27)
-        fontScale = 1
-        fontColor = (0, 255, 0)
-        lineType = 2
-        cv2.putText(image, self.__id,
-                    bottomLeftCornerOfText,
-                    font,
-                    fontScale,
-                    fontColor,
-                    lineType)
+        image.drawBoxOnImage(box)
+        image.drawTextInBox(box,self.__id)
 
     def getImage(self):
         if len(self.__frames)<1:
             return None
 
         image = self.__getLastFrame().getImage()
-        return subImage(image, self.__defaultBoxAroundFeature())
+        img = Image(image)
+        return img.subImage(self.__defaultBoxAroundFeature()).asNumpyArray()
 
     def __getLastFrame(self):
         return self.__frames[max(self.__frames.keys())]
 
     def getLocation(self):
         box = self.__defaultBoxAroundFeature()
-        return calculateMidpoint(box.topLeft, box.bottomRight)
+        return box.topLeft.calculateMidpoint (box.bottomRight)
 
     def findFeature(self, frame):
         # type: (Frame) -> Point

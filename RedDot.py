@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 from skimage import measure
 
-from common import translateCoordinateToOuter, Point, Box
+from common import Point, Box
 
 
 class RedDot:
@@ -49,7 +49,7 @@ class RedDot:
             #print "topBox"
             #print top2Boxes[0]
             self.__dotLocationInner = top2Boxes[0]
-            self.boxAroundDot = translateCoordinateToOuter(top2Boxes[0], self.__redDotsSearchArea.topLeft)
+            self.boxAroundDot = top2Boxes[0].translateCoordinateToOuter(self.__redDotsSearchArea.topLeft)
         else:
             pass
 

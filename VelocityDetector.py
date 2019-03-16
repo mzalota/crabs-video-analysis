@@ -1,6 +1,7 @@
 import numpy
 
 from FeatureMatcher import FeatureMatcher
+from Image import Image
 from common import Box, Point, Vector
 
 
@@ -27,11 +28,11 @@ class VelocityDetector():
         driftY = list()
         for fm in self.__fm:
             section = fm.detectSeeFloorSections(frame)
-            section.drawFeatureOnFrame(image)
+            img = Image(image)
+            section.drawFeatureOnFrame(img)
             if not fm.detectionWasReset() and self.__prevFrame is not None:
                 drift = section.getDrift()
                 drifts.append(drift)
-                print drift
                 driftPixels.append(drift.length())
                 driftAngles.append(drift.angle())
                 driftX.append(drift.x)

@@ -7,6 +7,9 @@ class Point:
         self.x = x
         self.y = y
 
+    def __str__(self):
+        return "("+str(self.x)+","+str(self.y)+")"
+
     def calculateMidpoint(self, point2):
         # type: (Point) -> Point
         x1 = self.x
@@ -35,13 +38,18 @@ class Point:
         # type: (Vector) -> Point
         return Point(self.x+int(vector.x), int(self.y+vector.y))
 
+
+    def boxAroundPoint(self, boxSize):
+        offset = int(boxSize/2)
+        return Box(Point(max(self.x - offset, 1), max(self.y - offset, 1)), Point(self.x + offset, self.y + offset))
+
 class Vector:
     def __init__(self, point):
         self.x = point.x
         self.y = point.y
 
     def __str__(self):
-        return "("+str(self.x)+","+str(self.y)+")"
+        return str(Point(self.x,self.y))
 
     def __init__(self, x,y):
         self.x = x
@@ -81,51 +89,28 @@ class Box:
         self.bottomRight = bottomRight
         self.topLeft = topLeft
 
+    def __str__(self):
+        return "["+str(self.topLeft)+":"+str(self.bottomRight)+"]"
+
     def width(self):
         return self.bottomRight.x - self.topLeft.x
+
     def hight(self):
         return self.bottomRight.y - self.topLeft.y
+
     def diagonal(self):
         return self.topLeft.distanceTo(self.bottomRight)
 
+    def translateCoordinateToOuter(self, topLeftOuterPoint):
+        # type: (Point) -> Box
+        topLeftX = topLeftOuterPoint.x + self.topLeft.x
+        topLeftY = topLeftOuterPoint.y + self.topLeft.y
+        bottomRightX = topLeftOuterPoint.x + self.bottomRight.x
+        bottomRightY = topLeftOuterPoint.y + self.bottomRight.y
 
+        return Box(Point(topLeftX, topLeftY), Point(bottomRightX, bottomRightY))
 
 def boxAroundBoxes(box1, box2):
     topLeft= Point(min(box1.topLeft.x, box2.topLeft.x), min(box1.topLeft.y, box2.topLeft.y))
     bottomRight= Point(max(box1.bottomRight.x, box2.bottomRight.x), max(box1.bottomRight.y, box2.bottomRight.y))
     return Box(topLeft, bottomRight)
-
-def translateCoordinateToOuter(innerBox, topLeftOuterPoint):
-    """
-    :param innerBox: Box
-    :param topLeftOuterPoint: Point 
-    :return: Box
-    """
-    topLeftX = topLeftOuterPoint.x + innerBox.topLeft.x
-    topLeftY = topLeftOuterPoint.y + innerBox.topLeft.y
-    bottomRightX = topLeftOuterPoint.x + innerBox.bottomRight.x
-    bottomRightY = topLeftOuterPoint.y + innerBox.bottomRight.y
-
-    return Box(Point(topLeftX, topLeftY), Point(bottomRightX, bottomRightY))
-
-def distanceBetweenPointtts(point1,point2):
-	x1 = point1.x
-	y1 = point1.y
-	x2 = point2.x
-	y2 = point2.y
-
-	dist = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
-	return dist
-
-
-def subImage(image, box):
-    """
-    :return: numpy.ndarray 
-    """
-    #print box
-    return image[box.topLeft.y:box.bottomRight.y, box.topLeft.x: box.bottomRight.x]
-
-
-def boxAroundPoint(point, boxSize):
-    offset = int(boxSize/2)
-    return Box(Point(max(point.x - offset, 1), max(point.y - offset, 1)), Point(point.x + offset, point.y + offset))

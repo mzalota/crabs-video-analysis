@@ -163,13 +163,10 @@ while success:
 
     driftVector = velocityDetector.detectVelocity(frame, withRedDots)
 
-    if driftVector is not None:
-        img = Image(withRedDots)
-        vectorStart = Point(100,100)
-        vectorEnd = vectorStart.translateBy(driftVector)
-        vectorBox = Box (vectorStart, vectorEnd)
-        img.drawBoxOnImage(vectorBox)
-        withRedDots = img.asNumpyArray()
+    img = Image(withRedDots)
+    img.drawDriftVectorOnImage(driftVector)
+    withRedDots = img.asNumpyArray()
+
     #imageWin.showWindowAndWait(image, 1000)
     imageWin.showWindowAndWait(withRedDots, 1000)
 
@@ -179,7 +176,7 @@ while success:
 
     count += 5
 
-    gc.collect()
+    #gc.collect()
     printMemoryUsage()
 
     if count > 29100:
