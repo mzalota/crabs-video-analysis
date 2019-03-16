@@ -20,40 +20,53 @@ class VelocityDetector():
         self.__fm.append(FeatureMatcher(Box(Point(200, 450), Point(200 + 200, 450 + 200))))
         self.__fm.append(FeatureMatcher(Box(Point(800, 300), Point(800 + 300, 300 + 200))))
 
-    def detectVelocity(self,frame,image):
-        drifts = list()
+    def getMedianDriftDistance(self):
+        if len(self.__drifts)<=0:
+            return None
+
         driftPixels = list()
+        for drift in self.__drifts:
+            driftPixels.append(drift.length())
+        return numpy.median(driftPixels)
+
+    def getMedianDriftAngle(self):
+        if len(self.__drifts)<=0:
+            return None
+
         driftAngles = list()
+        for drift in self.__drifts:
+            driftAngles.append(drift.angle())
+        return numpy.median(driftAngles)
+
+    def getMedianDriftVector(self):
+        if len(self.__drifts)<=0:
+            return None
+
         driftX = list()
         driftY = list()
+        for drift in self.__drifts:
+            driftX.append(drift.x)
+            driftY.append(drift.y)
+
+        medianXDrift = numpy.median(driftX)
+        medianYDrift = numpy.median(driftY)
+        return Vector(medianXDrift, medianYDrift)
+
+    def detectVelocity(self,frame,image):
+        self.__drifts = list()
         for fm in self.__fm:
             section = fm.detectSeeFloorSections(frame)
             img = Image(image)
             section.drawFeatureOnFrame(img)
             if not fm.detectionWasReset() and self.__prevFrame is not None:
                 drift = section.getDrift()
-                drifts.append(drift)
-                driftPixels.append(drift.length())
-                driftAngles.append(drift.angle())
-                driftX.append(drift.x)
-                driftY.append(drift.y)
-                #print drift
+                self.__drifts.append(drift)
             #section.showSubImage()
 
         self.__prevFrame = frame
 
-        if len(drifts)>0:
-            print [str(x) for x in drifts]
-            #print "median value is"
-            print "median drift distanse: " + str(numpy.median(driftPixels))
-            print "median drift angle: " + str( numpy.median(driftAngles))
-            medianXDrift = numpy.median(driftX)
-            print "median drift X: " + str(medianXDrift)
-            medianYDrift = numpy.median(driftY)
-            print "median drift Y: " + str(medianYDrift)
-            return Vector(medianXDrift, medianYDrift)
-        else:
-            return None
+        if len(self.__drifts)>0:
+            print [str(x) for x in self.__drifts]
 
         #sec1 = self.__fm[0].detectSeeFloorSections(frame)
         #sec2 = self.__fm[1].detectSeeFloorSections(frame)
@@ -80,6 +93,8 @@ class VelocityDetector():
 
         #for fm in self.__fm:
         #    print fm.infoAboutFeature()
+
+
 
 
 

@@ -118,8 +118,6 @@ def toMegaBytes(memoryInBytes):
     return str(memoryInMegabytes) + "MB"
 
 
-
-
 while success:
 
     print 'Read a new frame: ', count
@@ -132,8 +130,6 @@ while success:
         print ("no more frames to read from video ")
         print('Caught this error: ' + repr(error))
         break
-
-    #frame = Frame(count,  image.copy())
 
 
     # print "image shape"
@@ -161,10 +157,15 @@ while success:
         fm.setFeatureLocation(firstFeature)
     '''
 
-    driftVector = velocityDetector.detectVelocity(frame, withRedDots)
+    velocityDetector.detectVelocity(frame, withRedDots)
+    driftVector = velocityDetector.getMedianDriftVector()
+
+    print "drift distance/angle is: "+str(velocityDetector.getMedianDriftDistance()) + "/" + str(velocityDetector.getMedianDriftAngle())
+    print "drift vector is: "+str(driftVector)
 
     img = Image(withRedDots)
     img.drawDriftVectorOnImage(driftVector)
+
     withRedDots = img.asNumpyArray()
 
     #imageWin.showWindowAndWait(image, 1000)
