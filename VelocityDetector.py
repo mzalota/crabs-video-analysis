@@ -1,7 +1,7 @@
 import numpy
 
 from FeatureMatcher import FeatureMatcher
-from common import Box, Point
+from common import Box, Point, Vector
 
 
 class VelocityDetector():
@@ -21,20 +21,38 @@ class VelocityDetector():
 
     def detectVelocity(self,frame,image):
         drifts = list()
+        driftPixels = list()
+        driftAngles = list()
+        driftX = list()
+        driftY = list()
         for fm in self.__fm:
             section = fm.detectSeeFloorSections(frame)
             section.drawFeatureOnFrame(image)
             if not fm.detectionWasReset() and self.__prevFrame is not None:
                 drift = section.getDrift()
                 drifts.append(drift)
+                print drift
+                driftPixels.append(drift.length())
+                driftAngles.append(drift.angle())
+                driftX.append(drift.x)
+                driftY.append(drift.y)
+                #print drift
             #section.showSubImage()
 
-        if len(drifts)>0:
-            print drifts
-            #print "median value is"
-            print numpy.median(drifts)
-
         self.__prevFrame = frame
+
+        if len(drifts)>0:
+            print [str(x) for x in drifts]
+            #print "median value is"
+            print "median drift distanse: " + str(numpy.median(driftPixels))
+            print "median drift angle: " + str( numpy.median(driftAngles))
+            medianXDrift = numpy.median(driftX)
+            print "median drift X: " + str(medianXDrift)
+            medianYDrift = numpy.median(driftY)
+            print "median drift Y: " + str(medianYDrift)
+            return Vector(medianXDrift, medianYDrift)
+        else:
+            return None
 
         #sec1 = self.__fm[0].detectSeeFloorSections(frame)
         #sec2 = self.__fm[1].detectSeeFloorSections(frame)

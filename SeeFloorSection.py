@@ -3,8 +3,9 @@ import uuid
 import cv2
 
 from Frame import Frame
+from Image import Image
 from ImageWindow import ImageWindow
-from common import Box, Point, subImage, calculateMidpoint, distanceBetweenPoints
+from common import Box, Point, subImage, Vector
 
 
 class SeeFloorSection:
@@ -62,13 +63,17 @@ class SeeFloorSection:
             beforeLastFrame = self.__frameIDs[numOfFrames-2]
             lastPoint = self.__topLeftPoints[lastFrame]
             beforeLastPoint = self.__topLeftPoints[beforeLastFrame]
-            return distanceBetweenPoints(lastPoint,beforeLastPoint)
+            driftVector = Vector(lastPoint.x-beforeLastPoint.x, lastPoint.y-beforeLastPoint.y)
+            return driftVector
+            #return lastPoint.distanceTo(beforeLastPoint)
         return None
 
     def drawFeatureOnFrame(self, image):
+        #TODO: refactor image numpy array into Image class
         box = self.__defaultBoxAroundFeature()
-        cv2.rectangle(image, (box.topLeft.x, box.topLeft.y), (box.bottomRight.x, box.bottomRight.y), (0, 255, 0), 2)
-        self.__addIDText(box, image)
+        img = Image(image)
+        img.drawBoxOnImage(box)
+        self.__addIDText(box, img.asNumpyArray())
 
     def __addIDText(self, box, image):
         font = cv2.FONT_HERSHEY_SIMPLEX

@@ -17,6 +17,7 @@ from FeatureMatcher import FeatureMatcher
 # import time
 # from pyautogui import press
 from Frame import Frame
+from Image import Image
 from ImageWindow import ImageWindow
 from VelocityDetector import VelocityDetector
 from VideoFrame import VideoFrame
@@ -139,8 +140,6 @@ while success:
     # print image.shape
     # (1080L, 1920L, 3L)
 
-
-
     vf_prev = vf
     vf = VideoFrame(frame, vf_prev)
     vf.isolateRedDots()
@@ -162,8 +161,15 @@ while success:
         fm.setFeatureLocation(firstFeature)
     '''
 
-    velocityDetector.detectVelocity(frame, withRedDots)
+    driftVector = velocityDetector.detectVelocity(frame, withRedDots)
 
+    if driftVector is not None:
+        img = Image(withRedDots)
+        vectorStart = Point(100,100)
+        vectorEnd = vectorStart.translateBy(driftVector)
+        vectorBox = Box (vectorStart, vectorEnd)
+        img.drawBoxOnImage(vectorBox)
+        withRedDots = img.asNumpyArray()
     #imageWin.showWindowAndWait(image, 1000)
     imageWin.showWindowAndWait(withRedDots, 1000)
 

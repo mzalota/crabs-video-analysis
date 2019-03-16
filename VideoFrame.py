@@ -3,19 +3,14 @@ import numpy as np
 from skimage.draw import polygon_perimeter
 
 from RedDot import RedDot
-from common import Point, Box, boxAroundBoxes, translateCoordinateToOuter, distanceBetweenPoints
-
-
-#from wip01 import boxAroundBoxes, dotsShift, showWindow, Point
+from common import Point, Box
 
 
 class VideoFrame:
-    # initializing the variables
     __initialDistanceForRedBoxSearchArea=200
     redDot1 = None
     redDot2 = None
 
-    # defining constructor
     def __init__(self, frame, prevFrame=None):
         # type: (Frame, VideoFrame) -> VideoFrame
         self.__frame = frame
@@ -26,7 +21,7 @@ class VideoFrame:
 
     def distanceBetweenRedPoints(self):
         if self.redDot1.dotWasDetected() and self.redDot2.dotWasDetected():
-            return int(distanceBetweenPoints(self.redDot1.boxAroundDot.topLeft,self.redDot2.boxAroundDot.topLeft))
+            return int(self.redDot1.boxAroundDot.topLeft.distanceTo(self.redDot2.boxAroundDot.topLeft))
         else:
             if self.prevFrame:
                 return int(self.prevFrame.distanceBetweenRedPoints())
@@ -35,20 +30,10 @@ class VideoFrame:
 
     def isolateRedDots(self):
         self.redDot1 = RedDot(self.__frame, self.__redDotsSearchArea1())
-        #self.redDot1.isolateRedDots("1_redDot")
         self.redDot1.isolateRedDots()
 
-        #if self.redDot1.dotWasDetected():
-            #print "detected red dot 1:"
-            #print self.redDot1.boxAroundDot
-
         self.redDot2 = RedDot(self.__frame, self.__redDotsSearchArea2())
-        #self.redDot2.isolateRedDots("2_redDot")
         self.redDot2.isolateRedDots()
-
-        #if self.redDot2.dotWasDetected():
-            #print "detected red dot 2:"
-            #print self.redDot2.boxAroundDot
 
 
     def drawBoxesAroundRedDots(self):
@@ -87,12 +72,10 @@ class VideoFrame:
             return Box(Point(600, 300), Point(900, 600))
 
     def __redDotsSearchArea2(self):
-        #print "in __redDotsSearchArea2"
         if self.redDot2 and self.redDot2.dotWasDetected():
             return self.__updateRedDotsSearchArea(self.redDot2.boxAroundDot)
         elif self.prevFrame:
             return self.prevFrame.__redDotsSearchArea2()
-        #return Box(Point(600, 300), Point(1400, 700))
         else:
             return Box(Point(900, 300), Point(1400, 800))
 
@@ -127,7 +110,7 @@ class VideoFrame:
             row.append(self.redDot1.boxAroundDot.topLeft.y)
             row.append(self.redDot1.boxAroundDot.bottomRight.x)
             row.append(self.redDot1.boxAroundDot.bottomRight.y)
-            row.append(distanceBetweenPoints(self.redDot1.boxAroundDot.topLeft, self.redDot1.boxAroundDot.bottomRight))
+            row.append(self.redDot1.boxAroundDot.diagonal())
         else:
             row.append(-1)
             row.append(-1)
@@ -139,7 +122,7 @@ class VideoFrame:
             row.append(self.redDot2.boxAroundDot.topLeft.y)
             row.append(self.redDot2.boxAroundDot.bottomRight.x)
             row.append(self.redDot2.boxAroundDot.bottomRight.y)
-            row.append(distanceBetweenPoints(self.redDot2.boxAroundDot.topLeft, self.redDot2.boxAroundDot.bottomRight))
+            row.append(self.redDot2.boxAroundDot.diagonal())
         else:
             row.append(-1)
             row.append(-1)
