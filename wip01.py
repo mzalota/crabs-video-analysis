@@ -20,55 +20,35 @@ from Frame import Frame
 from Image import Image
 from ImageWindow import ImageWindow
 from VelocityDetector import VelocityDetector
-from VideoFrame import VideoFrame
+from RedDotsDetector import RedDotsDetector
 from VideoStream import VideoStream
 from common import Point, Box
 from logger import Logger
 
+
 filepath = "C:/workspaces/AnjutkaVideo/frames/frame1.jpg"
-
-
 # filenameFull = os.path.basename(filepath)
 # filename = os.path.splitext(filenameFull)[0]
 
 
-def writeToCSVFile(file, row):
-    file.write(";".join(str(x) for x in row) + "\n")
-    file.flush()
-
-
 # Open File where Frame Info will be written using Semicolumn as a delimiter. Write the Header row into the file
-csvFilePath = 'C:/workspaces/AnjutkaVideo/redDots_log06.csv'
-featuresFilePath = 'C:/workspaces/AnjutkaVideo/drifts_log06.csv'
+csvFilePath = 'C:/workspaces/AnjutkaVideo/redDots_log08.csv'
+featuresFilePath = 'C:/workspaces/AnjutkaVideo/drifts_log08.csv'
 logger = Logger(csvFilePath, featuresFilePath)
 
-headerRow = VideoFrame.infoHeaders()
+headerRow = RedDotsDetector.infoHeaders()
 headerRow.insert(0, "frameNumber")
 logger.writeToRedDotsFile(headerRow)
 
-driftsFileHeaderRow = []
+driftsFileHeaderRow = VelocityDetector.infoHeaders()
 driftsFileHeaderRow.append("frameNumber")
-driftsFileHeaderRow.append("driftX")
-driftsFileHeaderRow.append("driftY")
-driftsFileHeaderRow.append("driftDistance")
-driftsFileHeaderRow.append("driftAngle")
-driftsFileHeaderRow.append("driftsCount")
-driftsFileHeaderRow.append("drifts")
-
 logger.writeToDriftsFile(driftsFileHeaderRow)
 
 # src3 = cv2.imread("C:/Users/zal0001m/Documents/Private/AnjutkaVideo/IMG_20180814_181351.jpg")
 # cv2.imshow("hi",src3)
 
-crabFile1 = 'C:/workspaces/AnjutkaVideo/crab_from_frame_1.png'
-redDotFile01 = 'C:/workspaces/AnjutkaVideo/red_dot01.png'
-redDotFile02 = 'C:/workspaces/AnjutkaVideo/red_dot02.png'
-
-featureImage = cv2.imread(redDotFile02, 0)
-
 # https://stackoverflow.com/questions/33311153/python-extracting-and-saving-video-frames
 
-print(cv2.__version__)
 # vidcap = cv2.VideoCapture('C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/V1_R_20180911_165259.avi')
 # vidcap = cv2.VideoCapture('C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/output_v1.mp4')
 # vidcap = cv2.VideoCapture('C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/V2_R_20180911_165730.avi' )
@@ -77,47 +57,9 @@ print(cv2.__version__)
 videoStream = VideoStream('C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi')
 
 # vidcap = cv2.VideoCapture("D:/Video_Biology/Kara/2018/AMK72/2018_09_15_St_5993/V4__R_20180915_210447.avi")
-
-
 # ffmpeg -i "C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi" -strict -2 ../output_st_v3.mp4
 
-
-count =100   #10000 #2500  # 5180 #23785  # 25130 # 26670 #25130 # 100 26215
-
-needToSelectFeature = True
-
-cv2.startWindowThread()
-
-imageWin = ImageWindow("mainWithRedDots", Point(700, 200))
-
-imageWinNoBoxes = ImageWindow("withoutFeatureBoxes", Point(700, 20))
-
-featureBox = None
-
-
-velocityDetector = VelocityDetector()
-subImg = None
-vf = None
-
-
-success = True
-
-
-def findBrightestSpot():
-    global image
-    # https://www.pyimagesearch.com/2014/09/29/finding-brightest-spot-image-using-python-opencv/
-    orig = image.copy()
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    radius_ = 37
-    gray = cv2.GaussianBlur(gray, (radius_, radius_), 0)
-    (minVal, maxVal, minLoc, maxLoc) = cv2.minMaxLoc(gray)
-    image = orig.copy()
-    cv2.circle(image, maxLoc, radius_, (255, 0, 0), 2)
-    print "brigtest spot maxLoc"
-    print maxLoc
-    print maxVal
-    imageWin.showWindowAndWaitForClick(image)
-
+#imageWinNoBoxes = ImageWindow("withoutFeatureBoxes", Point(700, 20))
 
 def printMemoryUsage():
     process = psutil.Process(os.getpid())
@@ -129,6 +71,22 @@ def toMegaBytes(memoryInBytes):
     return str(memoryInMegabytes) + "MB"
 
 
+    # print "image shape"
+    # print image.shape
+    # (1080L, 1920L, 3L)
+
+
+print(cv2.__version__)
+cv2.startWindowThread()
+
+velocityDetector = VelocityDetector()
+vf = None
+imageWin = ImageWindow("mainWithRedDots", Point(700, 200))
+
+
+count =1015   #10000 #2500  # 5180 #23785  # 25130 # 26670 #25130 # 100 26215
+
+success = True
 while success:
 
     print 'Read a new frame: ', count
@@ -142,13 +100,8 @@ while success:
         print('Caught this error: ' + repr(error))
         break
 
-
-    # print "image shape"
-    # print image.shape
-    # (1080L, 1920L, 3L)
-
     vf_prev = vf
-    vf = VideoFrame(frame, vf_prev)
+    vf = RedDotsDetector(frame, vf_prev)
     vf.isolateRedDots()
     withRedDots = vf.drawBoxesAroundRedDots()
 
@@ -170,24 +123,11 @@ while success:
 
     velocityDetector.detectVelocity(frame, withRedDots)
     driftVector = velocityDetector.getMedianDriftVector()
-    driftDistance = velocityDetector.getMedianDriftDistance()
-    driftAngle = velocityDetector.getMedianDriftAngle()
-    driftsCount = velocityDetector.getDriftsCount()
-    driftsStr = velocityDetector.getDriftsAsString()
 
-
-    if driftsStr:
-        driftsRow = []
-        driftsRow.append(count)
-        driftsRow.append(driftVector.x)
-        driftsRow.append(driftVector.y)
-        driftsRow.append(driftDistance)
-        driftsRow.append(driftAngle)
-        driftsRow.append(driftsCount)
-        driftsRow.append(driftsStr)
-
-        logger.writeToDriftsFile(driftsRow)
-        print driftsRow
+    driftsRow = velocityDetector.infoAboutDrift()
+    driftsRow.insert(0, count)
+    logger.writeToDriftsFile(driftsRow)
+    print driftsRow
 
     #print "drift distance/angle is: "+str(driftDistance) + "/" + str(driftAngle)
     #print "drift vector is: "+str(driftVector)
@@ -209,7 +149,7 @@ while success:
     #gc.collect()
     printMemoryUsage()
 
-    if count > 29100:
+    if count > 99100:
         break
 
         # cv2.imwrite("frame%d.jpg" % count, image)     # save frame as JPEG file

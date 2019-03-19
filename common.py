@@ -86,6 +86,7 @@ class Box:
     #bottomRight = Point(100, 100)
 
     def __init__(self, topLeft, bottomRight):
+        # type: (Point, Point) -> Box
         self.bottomRight = bottomRight
         self.topLeft = topLeft
 
@@ -100,6 +101,10 @@ class Box:
 
     def diagonal(self):
         return self.topLeft.distanceTo(self.bottomRight)
+
+    def distanceTo(self, otherBox):
+        # type: (Box) -> int
+        return int(self.topLeft.distanceTo(otherBox.topLeft))
 
     def translateCoordinateToOuter(self, topLeftOuterPoint):
         # type: (Point) -> Box

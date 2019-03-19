@@ -102,3 +102,32 @@ class VelocityDetector():
 
     def getDriftsCount(self):
         return len(self.__drifts)
+
+    def infoAboutDrift(self):
+        driftVector = self.getMedianDriftVector()
+        driftDistance = self.getMedianDriftDistance()
+        driftAngle = self.getMedianDriftAngle()
+        driftsCount = self.getDriftsCount()
+        driftsStr = self.getDriftsAsString()
+
+        driftsRow = []
+        if driftsStr:
+            driftsRow.append(driftVector.x)
+            driftsRow.append(driftVector.y)
+            driftsRow.append(driftDistance)
+            driftsRow.append(driftAngle)
+            driftsRow.append(driftsCount)
+            driftsRow.append(driftsStr)
+
+        return driftsRow
+
+    @staticmethod
+    def infoHeaders():
+        row = []
+        row.append("driftX")
+        row.append("driftY")
+        row.append("driftDistance")
+        row.append("driftAngle")
+        row.append("driftsCount")
+        row.append("drifts")
+        return row
