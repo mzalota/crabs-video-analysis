@@ -1,4 +1,4 @@
-from VideoFrame import VideoFrame
+from RedDotsDetector import RedDotsDetector
 
 
 class Logger:

@@ -78,8 +78,8 @@ class SeeFloorSection:
         if len(self.__frames)<1:
             return None
 
-        image = self.__getLastFrame().getImage()
-        img = Image(image)
+        img = self.__getLastFrame().getImgObj()
+        #img = Image(image)
         return img.subImage(self.__defaultBoxAroundFeature()).asNumpyArray()
 
     def __getLastFrame(self):

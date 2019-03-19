@@ -17,7 +17,7 @@ from skimage import measure
 from skimage.draw import polygon_perimeter
 
 from RedDot import isolateRedDots, drawContoursAroundRedDots
-from VideoFrame import drawBoxesAroundRedDots
+from RedDotsDetector import drawBoxesAroundRedDots
 
 frameFile = "C:/workspaces/AnjutkaVideo/frames/frame7.jpg"
 

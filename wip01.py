@@ -103,7 +103,9 @@ while success:
     vf_prev = vf
     vf = RedDotsDetector(frame, vf_prev)
     vf.isolateRedDots()
-    withRedDots = vf.drawBoxesAroundRedDots()
+    withRedDotsObj = vf.drawBoxesAroundRedDots()
+    #withRedDots = withRedDotsObj.asNumpyArray()
+    withRedDots = frame.getImgObj().asNumpyArray()
 
     row = vf.infoAboutFrame()
     row.insert(0, count)

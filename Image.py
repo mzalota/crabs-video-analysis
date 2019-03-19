@@ -7,6 +7,12 @@ class Image:
     def __init__(self, imageAsNumpyArray):
         self.__image = imageAsNumpyArray
 
+    def width(self):
+        return self.__image.shape[1]
+
+    def height(self):
+        return self.__image.shape[0]
+
     def asNumpyArray(self):
         return self.__image
 

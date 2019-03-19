@@ -1,11 +1,13 @@
+from Image import Image
+
+
 class Frame:
-    __frameID = None
-    __image = None
+    #__frameID = None
+    #__image = None
 
     def __init__(self, frameNumber, videoStream):
         # type: (int, VideoStream) -> Frame
         self.__frameID = frameNumber
-        #self.__image = image
         self.__videoStream = videoStream
 
 
@@ -14,3 +16,7 @@ class Frame:
 
     def getImage(self):
         return self.__videoStream.readImage(self.__frameID)
+
+    def getImgObj(self):
+        # type: () -> Image
+        return Image(self.__videoStream.readImage(self.__frameID))

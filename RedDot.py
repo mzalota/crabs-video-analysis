@@ -11,12 +11,11 @@ class RedDot:
     __dotLocationInner = None
     boxAroundDot = None
 
-    def __init__(self, frame, redDotsSearchArea):
-        self.__frame = frame
+    def __init__(self, image, redDotsSearchArea):
+        # type: (Image, Box) -> object
+        self.__image = image
         self.__redDotsSearchArea = redDotsSearchArea
-
-    def __getImage(self):
-        return self.__frame.getImage()
+        self.__isolate()
 
     def dotWasDetected(self):
         if self.boxAroundDot:
@@ -24,9 +23,9 @@ class RedDot:
         else:
             return False
 
-    def isolateRedDots(self, debugWindowName = None):
+    def __isolate(self, debugWindowName = None):
 
-        featureImage = self.__redDotsSearchImage(self.__getImage(), self.__redDotsSearchArea)
+        featureImage = self.__image.subImage(self.__redDotsSearchArea).asNumpyArray()
         mask_color = self.__isolateAreasWithRedColor(featureImage)
         mask_final = self.__blurErodeDilate(mask_color)
         contours = measure.find_contours(mask_final, 0.9)
@@ -52,17 +51,6 @@ class RedDot:
             self.boxAroundDot = top2Boxes[0].translateCoordinateToOuter(self.__redDotsSearchArea.topLeft)
         else:
             pass
-
-        #return top2Boxes
-
-
-    def __redDotsSearchImage(self,image, redDotsSearchArea):
-        """
-        :return: numpy.ndarray 
-        """
-        #print "redDotsSearchArea"
-        #print redDotsSearchArea
-        return image[redDotsSearchArea.topLeft.y:redDotsSearchArea.bottomRight.y, redDotsSearchArea.topLeft.x: redDotsSearchArea.bottomRight.x]
 
 
     def __isolateAreasWithRedColor(self, featureImage):
