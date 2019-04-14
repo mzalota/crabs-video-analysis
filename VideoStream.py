@@ -1,5 +1,10 @@
+import psutil
 from cv2 import cv2
 import pylru
+import os
+
+from Image import Image
+
 
 class VideoStream:
 
@@ -15,9 +20,24 @@ class VideoStream:
 
         return self.__imagesCache[frameID]
 
+    def readImageObj(self, frameID):
+        # type: () -> Image
+        return Image(self.readImage(frameID))
+
     def __readFromVideoCapture(self, frameID):
-        self.__vidcap.set(cv2.CAP_PROP_POS_FRAMES, frameID)
+        print("frameID is")
+        print (frameID)
+        self.__vidcap.set(cv2.CAP_PROP_POS_FRAMES, float(frameID))
         success, image = self.__vidcap.read()
         if not success:
             raise Exception("Could not read Videofile any more")
         return image
+
+    def printMemoryUsage(self):
+        process = psutil.Process(os.getpid())
+        print("memoryUsed: "+self.__toMegaBytes(process.memory_info().rss))
+
+
+    def __toMegaBytes(self, memoryInBytes):
+        memoryInMegabytes = int(memoryInBytes) / (1024 * 1024)
+        return str(memoryInMegabytes) + "MB"

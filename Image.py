@@ -76,3 +76,6 @@ class Image:
             rr, cc = polygon_perimeter(r, c, image_with_boxes.shape)
             image_with_boxes[rr, cc] = 1  # set color white
         return image_with_boxes
+
+    def writeToFile(self, filepath):
+        cv2.imwrite(filepath, self.asNumpyArray())  # save frame as JPEG file

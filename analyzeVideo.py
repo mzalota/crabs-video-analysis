@@ -61,14 +61,6 @@ videoStream = VideoStream('C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_599
 
 #imageWinNoBoxes = ImageWindow("withoutFeatureBoxes", Point(700, 20))
 
-def printMemoryUsage():
-    process = psutil.Process(os.getpid())
-    print("memoryUsed: "+toMegaBytes(process.memory_info().rss))
-
-
-def toMegaBytes(memoryInBytes):
-    memoryInMegabytes = int(memoryInBytes) / (1024 * 1024)
-    return str(memoryInMegabytes) + "MB"
 
 
     # print "image shape"
