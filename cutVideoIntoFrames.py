@@ -51,7 +51,7 @@ def processFrame(nextFrame, frame, prevFrame):
     try:
 
         #frame = Frame(count, videoStream)
-        #frame.saveImageToFile(rootDirectory)
+        frame.saveImageToFile(rootDirectory)
 
         image = frame.attachNeighbourFrames(nextFrame, prevFrame, 600)
 
@@ -63,33 +63,9 @@ def processFrame(nextFrame, frame, prevFrame):
         print('Caught this error: ' + repr(error))
 
 
-def attachNeighbourFrames(frame, nextFrame, prevFrame):
-    image = frame.getImgObj()
-    image.drawTextInBox(Box(Point(0, 0), Point(80, 50)), frame.getFrameID())
-    prevSubImage = buildPrevImagePart(prevFrame, 400)
-    nextSubImage = buildNextImagePart(nextFrame, 400)
-    res = np.concatenate((nextSubImage.asNumpyArray(), image.asNumpyArray()))
-    res2 = np.concatenate((res, prevSubImage.asNumpyArray()))
-    return res2
-
-
-def buildPrevImagePart(prevFrame, height):
-    # boxLine = Box(Point(0, prevImage.height() - 3), Point(prevImage.width(), prevImage.height()))
-    # prevImage.drawBoxOnImage(boxLine)
-    prevSubImage = prevFrame.getImgObj().topPart(height)
-    prevSubImage.drawTextInBox(Box(Point(0, 0), Point(80, 50)), prevFrame.getFrameID())
-    return prevSubImage
-
-
-def buildNextImagePart(nextFrame, height):
-    nextSubImage = nextFrame.getImgObj().bottomPart(height)
-    nextSubImage.drawTextInBox(Box(Point(0, 0), Point(80, 50)), nextFrame.getFrameID())
-    return nextSubImage
-
-
 import csv
 
-framesFilePath = rootDirectory+"/cutFrames.csv"
+framesFilePath = rootDirectory+"/cutFrames2.csv"
 nextFrameNumber = 0
 frameNumber = 0
 prevFrameNumber= 0

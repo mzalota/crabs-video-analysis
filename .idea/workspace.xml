@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="a1a869c0-4852-40ce-ab45-9ae29e94a5c1" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/determineFrames.py" afterDir="false" />
+    <list default="true" id="a1a869c0-4852-40ce-ab45-9ae29e94a5c1" name="Default" comment="attaching Neigbours To Frame Image">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/Frame.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Image.py" beforeDir="false" afterPath="$PROJECT_DIR$/Image.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ImageWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/ImageWindow.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cutVideoIntoFrames.py" beforeDir="false" afterPath="$PROJECT_DIR$/cutVideoIntoFrames.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/determineFrames.py" beforeDir="false" afterPath="$PROJECT_DIR$/determineFrames.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -23,8 +20,32 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/cutVideoIntoFrames.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="155">
-              <caret line="97" column="12" selection-start-line="97" selection-start-column="12" selection-end-line="97" selection-end-column="12" />
+            <state relative-caret-position="153">
+              <caret line="53" column="25" selection-start-line="53" selection-start-column="25" selection-end-line="53" selection-end-column="25" />
+              <folding>
+                <element signature="e#0#10#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/determineFrames.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="196">
+              <caret line="52" column="75" selection-start-line="52" selection-start-column="74" selection-end-line="52" selection-end-column="75" />
+              <folding>
+                <element signature="e#0#11#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/ImageWindow.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="102">
+              <caret line="6" column="6" selection-start-line="6" selection-start-column="6" selection-end-line="6" selection-end-column="6" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
               </folding>
@@ -33,27 +54,10 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/determineFrames.py">
-          <provider selected="true" editor-type-id="text-editor" />
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ImageWindow.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="255">
-              <caret line="15" column="32" selection-start-line="15" selection-start-column="29" selection-end-line="15" selection-end-column="32" />
-              <folding>
-                <element signature="e#0#10#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Frame.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="245">
-              <caret line="37" column="74" selection-start-line="37" selection-start-column="74" selection-end-line="37" selection-end-column="74" />
+            <state relative-caret-position="201">
+              <caret line="28" column="49" lean-forward="true" selection-start-line="28" selection-start-column="49" selection-end-line="28" selection-end-column="49" />
               <folding>
                 <element signature="e#0#23#0" expanded="true" />
               </folding>
@@ -64,8 +68,20 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/analyzeVideo.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-2001">
-              <caret line="11" selection-start-line="11" selection-end-line="11" selection-end-column="9" />
+            <state relative-caret-position="206">
+              <caret line="44" column="16" selection-start-line="44" selection-start-column="16" selection-end-line="44" selection-end-column="16" />
+              <folding>
+                <element signature="e#538#548#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/logger.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="119">
+              <caret line="7" selection-start-line="7" selection-end-line="23" selection-end-column="36" />
             </state>
           </provider>
         </entry>
@@ -77,6 +93,18 @@
               <caret line="22" column="19" selection-start-line="22" selection-start-column="8" selection-end-line="22" selection-end-column="19" />
               <folding>
                 <element signature="e#0#19#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/VelocityDetector.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="413">
+              <caret line="120" lean-forward="true" selection-start-line="120" selection-end-line="120" />
+              <folding>
+                <element signature="e#0#12#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -139,8 +167,8 @@
         <option value="$PROJECT_DIR$/ImageWindow.py" />
         <option value="$PROJECT_DIR$/Image.py" />
         <option value="$PROJECT_DIR$/Frame.py" />
-        <option value="$PROJECT_DIR$/cutVideoIntoFrames.py" />
         <option value="$PROJECT_DIR$/determineFrames.py" />
+        <option value="$PROJECT_DIR$/cutVideoIntoFrames.py" />
       </list>
     </option>
   </component>
@@ -205,6 +233,27 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/cutVideoIntoFrames.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="determineFrames" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="crabs-video-analysis" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/determineFrames.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -295,10 +344,12 @@
       <item itemvalue="Python.wip01" />
       <item itemvalue="Python.wip06" />
       <item itemvalue="Python.cutVideoIntoFrames" />
+      <item itemvalue="Python.determineFrames" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.cutVideoIntoFrames" />
+        <item itemvalue="Python.determineFrames" />
         <item itemvalue="Python.wip01" />
         <item itemvalue="Python.wip06" />
         <item itemvalue="Python.wip05" />
@@ -544,7 +595,14 @@
       <option name="project" value="LOCAL" />
       <updated>1555269691661</updated>
     </task>
-    <option name="localTasksCounter" value="33" />
+    <task id="LOCAL-00033" summary="attaching Neigbours To Frame Image">
+      <created>1556372529410</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1556372529410</updated>
+    </task>
+    <option name="localTasksCounter" value="34" />
     <servers />
   </component>
   <component name="TodoView">
@@ -560,11 +618,11 @@
     <frame x="-8" y="-8" width="1620" height="920" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.48594376" visible="true" weight="0.13846155" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.48594376" visible="true" weight="0.13846155" />
       <window_info id="Favorites" order="1" sideWeight="0.5150301" side_tool="true" weight="0.11439589" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" sideWeight="0.45641026" weight="0.27700126" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.6871795" visible="true" weight="0.21982211" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.6871795" visible="true" weight="0.29733163" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -641,7 +699,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="More Refactoring of VideoFrame" />
     <MESSAGE value="yet More Refactoring of VideoFrame" />
     <MESSAGE value="Refactored FeatureMatcher" />
     <MESSAGE value="Split red dots into two separate objects" />
@@ -666,7 +723,8 @@
     <MESSAGE value="refactored RedDotsDetector class" />
     <MESSAGE value="more refactoring of RedDots" />
     <MESSAGE value="added CutVideoIntoFrames script... its Work In Progress" />
-    <option name="LAST_COMMIT_MESSAGE" value="added CutVideoIntoFrames script... its Work In Progress" />
+    <MESSAGE value="attaching Neigbours To Frame Image" />
+    <option name="LAST_COMMIT_MESSAGE" value="attaching Neigbours To Frame Image" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://C:/old/Python27/Lib/collections.py">
@@ -719,15 +777,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17">
           <caret line="1" selection-start-line="1" selection-end-line="1" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/logger.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="1" lean-forward="true" selection-start-line="1" selection-end-line="1" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -735,7 +784,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="781">
           <caret line="80" column="45" selection-start-line="80" selection-start-column="36" selection-end-line="80" selection-end-column="45" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -744,7 +792,7 @@
         <state relative-caret-position="816">
           <caret line="54" selection-start-line="54" selection-end-line="54" />
           <folding>
-            <element signature="e#0#34#0" expanded="false" />
+            <element signature="e#0#34#0" />
           </folding>
         </state>
       </provider>
@@ -754,7 +802,7 @@
         <state relative-caret-position="238">
           <caret line="20" column="9" selection-start-line="20" selection-start-column="9" selection-end-line="20" selection-end-column="9" />
           <folding>
-            <element signature="e#0#10#0" expanded="false" />
+            <element signature="e#0#10#0" />
           </folding>
         </state>
       </provider>
@@ -772,16 +820,6 @@
         <state relative-caret-position="165">
           <caret line="70" column="3" selection-start-line="70" selection-start-column="3" selection-end-line="70" selection-end-column="3" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/VelocityDetector.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="529">
-          <caret line="105" column="22" selection-start-line="105" selection-start-column="8" selection-end-line="105" selection-end-column="22" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -816,16 +854,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ImageWindow.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="15" column="32" selection-start-line="15" selection-start-column="29" selection-end-line="15" selection-end-column="32" />
-          <folding>
-            <element signature="e#0#10#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Image.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="291">
@@ -833,13 +861,6 @@
           <folding>
             <element signature="e#0#19#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/analyzeVideo.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-2001">
-          <caret line="11" selection-start-line="11" selection-end-line="11" selection-end-column="9" />
         </state>
       </provider>
     </entry>
@@ -855,28 +876,72 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Frame.py">
+    <entry file="file://$PROJECT_DIR$/ImageWindow.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="245">
-          <caret line="37" column="74" selection-start-line="37" selection-start-column="74" selection-end-line="37" selection-end-column="74" />
-          <folding>
-            <element signature="e#0#23#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/cutVideoIntoFrames.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="155">
-          <caret line="97" column="12" selection-start-line="97" selection-start-column="12" selection-end-line="97" selection-end-column="12" />
+        <state relative-caret-position="102">
+          <caret line="6" column="6" selection-start-line="6" selection-start-column="6" selection-end-line="6" selection-end-column="6" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/VelocityDetector.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="413">
+          <caret line="120" lean-forward="true" selection-start-line="120" selection-end-line="120" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/analyzeVideo.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="206">
+          <caret line="44" column="16" selection-start-line="44" selection-start-column="16" selection-end-line="44" selection-end-column="16" />
+          <folding>
+            <element signature="e#538#548#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/logger.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="7" selection-start-line="7" selection-end-line="23" selection-end-column="36" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/determineFrames.py">
-      <provider selected="true" editor-type-id="text-editor" />
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="196">
+          <caret line="52" column="75" selection-start-line="52" selection-start-column="74" selection-end-line="52" selection-end-column="75" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/cutVideoIntoFrames.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="153">
+          <caret line="53" column="25" selection-start-line="53" selection-start-column="25" selection-end-line="53" selection-end-column="25" />
+          <folding>
+            <element signature="e#0#10#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Frame.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="201">
+          <caret line="28" column="49" lean-forward="true" selection-start-line="28" selection-start-column="49" selection-end-line="28" selection-end-column="49" />
+          <folding>
+            <element signature="e#0#23#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
     </entry>
   </component>
 </project>
