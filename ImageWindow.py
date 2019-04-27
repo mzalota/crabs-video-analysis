@@ -13,8 +13,8 @@ class ImageWindow:
         self.__windowName = windowName
         self.__windowPosition = position
         self.__windowPositionAndDimensionsInitialized = False
-        self.__windowWidth = 900
-        self.__windowHight = 600
+        self.__windowWidth = 960 #900
+        self.__windowHight = 540 #600
         #cv2.startWindowThread()
 
     @staticmethod

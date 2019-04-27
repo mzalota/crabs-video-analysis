@@ -20,6 +20,9 @@ class Image:
         if box:
             cv2.rectangle(self.__image, (box.topLeft.x, box.topLeft.y), (box.bottomRight.x, box.bottomRight.y), (0, 255, 0), 2)
 
+    def drawFrameID(self, frameID):
+        self.drawTextInBox(Box(Point(0, 0), Point(80, 50)), frameID)
+
     def drawTextInBox(self, box, text):
         font = cv2.FONT_HERSHEY_SIMPLEX
         bottomLeftCornerOfText = (box.topLeft.x, box.topLeft.y + 27)
@@ -42,7 +45,18 @@ class Image:
 
     def subImage(self, box):
         # type: (Box) -> Image
-        return Image(self.__image[box.topLeft.y:box.bottomRight.y, box.topLeft.x: box.bottomRight.x])
+        return Image(self.__image[box.topLeft.y:box.bottomRight.y, box.topLeft.x: box.bottomRight.x].copy())
+
+    def bottomPart(self, height):
+        # type: (integer) -> Image
+        box = Box(Point(0, self.height() - height), Point(self.width(), self.height()))
+        return self.subImage(box)
+
+    def topPart(self, height):
+        # type: (integer) -> Image
+        box = Box(Point(0, 0), Point(self.width(), height))
+        return self.subImage(box)
+
 
     def findBrightestSpot(self, image):
         # https://www.pyimagesearch.com/2014/09/29/finding-brightest-spot-image-using-python-opencv/
