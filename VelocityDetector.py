@@ -1,3 +1,5 @@
+import math
+
 import numpy
 
 from FeatureMatcher import FeatureMatcher
@@ -38,15 +40,70 @@ class VelocityDetector():
             driftAngles.append(drift.angle())
         return numpy.median(driftAngles)
 
+    def __isAbsoluteValueMoreThanTwiceBig(self, thisValue, medianValue):
+        if math.fabs(thisValue) > math.fabs(medianValue) * 2:
+        #if thisValue > medianValue * 2:
+            return True
+        else:
+            return False
+
+    def _isNegative(self, number):
+        if number < 0:
+            return True
+        else:
+            return False
+
+    def __bothHaveSameSign(self, number1, number2):
+        if number1 == 0 and number2 == 0:
+            return True
+
+        if number1 == 0 or number2 == 0:
+            #zero is neither negative nor positive. So if one number is zero, then the two numbers have SAME sign
+            return False
+
+        if self._isNegative(number1) and self._isNegative(number2):
+            return True
+        if not self._isNegative(number1) and not self._isNegative(number2):
+            return True
+        else:
+            return False
+
+    def excludeOutliers(self, driftsOld):
+        if len(driftsOld)<=0:
+            return None
+
+        medianLength = Vector.medianLengthOfVectorArray(driftsOld)
+
+        driftsNew = list()
+        for drift in driftsOld:
+            if  drift.isZeroVector():
+                continue
+
+            #print "medianLength "+str(medianLength)+ " drift.length() "+str(drift.length())+ " div two "+ str(medianLength / 2)
+            if (self.__isAbsoluteValueMoreThanTwiceBig(drift.length(),medianLength)):
+                continue
+
+            driftsNew.append(drift)
+
+        return driftsNew
+
+
     def getMedianDriftVector(self):
-        if len(self.__drifts)<=0:
+
+        withoutOutliers = self.excludeOutliers(self.__drifts)
+        if not withoutOutliers:
+            return None
+
+        if len(withoutOutliers) <= 0:
             return None
 
         driftX = list()
         driftY = list()
-        for drift in self.__drifts:
-            driftX.append(drift.x)
-            driftY.append(drift.y)
+
+        for drift in withoutOutliers:
+            if not drift.isZeroVector():
+                driftX.append(drift.x)
+                driftY.append(drift.y)
 
         medianXDrift = numpy.median(driftX)
         medianYDrift = numpy.median(driftY)
@@ -58,9 +115,18 @@ class VelocityDetector():
             section = fm.detectSeeFloorSections(frame)
             img = Image(image)
             section.drawFeatureOnFrame(img)
-            if not fm.detectionWasReset() and self.__prevFrame is not None:
-                drift = section.getDrift()
-                self.__drifts.append(drift)
+            if fm.detectionWasReset():
+                continue
+
+            #if self.__prevFrame is None:
+            #    continue
+
+            drift = section.getDrift()
+            if not drift:
+                continue
+
+            self.__drifts.append(drift)
+
             #section.showSubImage()
 
         self.__prevFrame = frame
@@ -94,11 +160,11 @@ class VelocityDetector():
         #    print fm.infoAboutFeature()
 
     def getDriftsAsString(self):
-        if len(self.__drifts) <= 0:
-            return ""
-
-        concatStr = [str(x) for x in self.__drifts]
-        return concatStr
+        return Vector.vectorArrayAsString(self.__drifts)
+        #if len(self.__drifts) <= 0:
+        #    return ""
+        #concatStr = [str(x) for x in self.__drifts]
+        #return concatStr
 
     def getDriftsCount(self):
         return len(self.__drifts)
@@ -109,6 +175,7 @@ class VelocityDetector():
         driftAngle = self.getMedianDriftAngle()
         driftsCount = self.getDriftsCount()
         driftsStr = self.getDriftsAsString()
+        driftsNoOutliersStr = Vector.vectorArrayAsString(self.excludeOutliers(self.__drifts))
 
         driftsRow = []
         if driftsStr:
@@ -118,6 +185,7 @@ class VelocityDetector():
             driftsRow.append(driftAngle)
             driftsRow.append(driftsCount)
             driftsRow.append(driftsStr)
+            driftsRow.append(driftsNoOutliersStr)
 
         return driftsRow
 
@@ -130,4 +198,5 @@ class VelocityDetector():
         row.append("driftAngle")
         row.append("driftsCount")
         row.append("drifts")
+        row.append("driftsNoOutliers")
         return row

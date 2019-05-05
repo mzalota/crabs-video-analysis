@@ -26,14 +26,31 @@ from common import Point, Box
 from logger import Logger
 
 
-filepath = "C:/workspaces/AnjutkaVideo/frames/frame1.jpg"
+rootDirectory = "C:/workspaces/AnjutkaVideo/"
+
+#vidcap = cv2.VideoCapture('C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi')
+
+videoFilenameFull = 'Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi'
+#videoFilenameFull = 'Kara_Sea_Crab_Video_st_5993_2018/V4__R_20180915_210447.avi'
+#videoFilenameFull = 'Kara_Sea_Crab_Video_st_5993_2018/V5__R_20180915_211343.avi'
+#videoFilenameFull = 'Kara_Sea_Crab_Video_st_5993_2018/V6__R_20180915_212238.avi'
+filenameFull = os.path.basename(videoFilenameFull)
+videoFilename = os.path.splitext(filenameFull)[0]
+
+videoStream = VideoStream(rootDirectory+"/"+videoFilenameFull)
+
+print "videoFilename is "+videoFilename
+#exit(0)
+
+#filepath = "C:/workspaces/AnjutkaVideo/frames/frame1.jpg"
 # filenameFull = os.path.basename(filepath)
 # filename = os.path.splitext(filenameFull)[0]
 
 
 # Open File where Frame Info will be written using Semicolumn as a delimiter. Write the Header row into the file
-csvFilePath = 'C:/workspaces/AnjutkaVideo/redDots_log08.csv'
-featuresFilePath = 'C:/workspaces/AnjutkaVideo/drifts_log08.csv'
+csvFilePath = rootDirectory+'/redDots_log09.csv'
+#featuresFilePath = rootDirectory+'/drifts_log09.csv'
+featuresFilePath = rootDirectory+videoFilename+'_drifts11.csv'
 logger = Logger(csvFilePath, featuresFilePath)
 
 headerRow = RedDotsDetector.infoHeaders()
@@ -54,7 +71,6 @@ logger.writeToDriftsFile(driftsFileHeaderRow)
 # vidcap = cv2.VideoCapture('C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/V2_R_20180911_165730.avi' )
 
 #vidcap = cv2.VideoCapture('C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi')
-videoStream = VideoStream('C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi')
 
 # vidcap = cv2.VideoCapture("D:/Video_Biology/Kara/2018/AMK72/2018_09_15_St_5993/V4__R_20180915_210447.avi")
 # ffmpeg -i "C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi" -strict -2 ../output_st_v3.mp4
@@ -63,9 +79,9 @@ videoStream = VideoStream('C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_599
 
 
 
-    # print "image shape"
-    # print image.shape
-    # (1080L, 1920L, 3L)
+# print "image shape"
+# print image.shape
+# (1080L, 1920L, 3L)
 
 
 print(cv2.__version__)
@@ -75,34 +91,36 @@ velocityDetector = VelocityDetector()
 vf = None
 imageWin = ImageWindow("mainWithRedDots", Point(700, 200))
 
-
-count =1015   #10000 #2500  # 5180 #23785  # 25130 # 26670 #25130 # 100 26215
+stepSize = 5
+startingFrameID = 30  #22380 #20350   #18200 #30   #10000 #2500  # 5180 #23785  # 25130 # 26670 #25130 # 100 26215
+prevDriftLength = 0
 
 success = True
 while success:
 
-    print 'Read a new frame: ', count
-    windowName = 'Detected_' + str(count)
+    print 'Read a new frame: ', startingFrameID
+    windowName = 'Detected_' + str(startingFrameID)
 
     try:
-        image = videoStream.readImage(count)
-        frame = Frame(count, videoStream)
+        image = videoStream.readImage(startingFrameID)
+        frame = Frame(startingFrameID, videoStream)
     except Exception as error:
         print ("no more frames to read from video ")
         print('Caught this error: ' + repr(error))
         break
 
+    '''
     vf_prev = vf
     vf = RedDotsDetector(frame, vf_prev)
     vf.isolateRedDots()
     withRedDotsObj = vf.drawBoxesAroundRedDots()
-    #withRedDots = withRedDotsObj.asNumpyArray()
     withRedDots = frame.getImgObj().asNumpyArray()
 
     row = vf.infoAboutFrame()
     row.insert(0, count)
     logger.writeToRedDotsFile(row)
     print row
+    '''
 
     # findBrightestSpot()
     '''
@@ -115,38 +133,53 @@ while success:
         fm.setFeatureLocation(firstFeature)
     '''
 
-    velocityDetector.detectVelocity(frame, withRedDots)
+    velocityDetector.detectVelocity(frame, image)
+    #velocityDetector.detectVelocity(frame, withRedDots)
     driftVector = velocityDetector.getMedianDriftVector()
 
-    driftsRow = velocityDetector.infoAboutDrift()
-    driftsRow.insert(0, count)
-    logger.writeToDriftsFile(driftsRow)
-    print driftsRow
+    print "prevDriftLength: "+ str(prevDriftLength)
+    if driftVector is not None:
+        driftLength = driftVector.length()
+
+        if prevDriftLength == 0:
+            #just for initialization
+            prevDriftLength = driftLength
+
+        driftsRow = velocityDetector.infoAboutDrift()
+        driftsRow.insert(0, startingFrameID)
+        print driftsRow
+
+        if abs(abs(driftLength)-abs(prevDriftLength)) < abs(prevDriftLength)/2:
+            prevDriftLength = driftLength
+        else:
+            # this is outlier. ignore it
+            print "OUTLIER"
+            driftsRow.append("OUTLIER")
+        logger.writeToDriftsFile(driftsRow)
 
     #print "drift distance/angle is: "+str(driftDistance) + "/" + str(driftAngle)
     #print "drift vector is: "+str(driftVector)
 
-    img = Image(withRedDots)
+    #img = Image(withRedDots)
+    img = Image(image)
     img.drawDriftVectorOnImage(driftVector)
 
     withRedDots = img.asNumpyArray()
 
-    #imageWin.showWindowAndWait(image, 1000)
-    imageWin.showWindowAndWait(withRedDots, 1000)
+    #imageWin.showWindowAndWait(img.asNumpyArray(), 1000)
 
     # imageWin.showWindowAndWaitForClick(withRedDots)
 
     # cv2.destroyAllWindows()
 
-    count += 5
+
+    startingFrameID += stepSize
 
     #gc.collect()
-    printMemoryUsage()
+    #printMemoryUsage()
 
-    if count > 99100:
+    if startingFrameID > 99100:
         break
-
-        # cv2.imwrite("frame%d.jpg" % count, image)     # save frame as JPEG file
 
 logger.closeFiles()
 

@@ -58,15 +58,19 @@ class SeeFloorSection:
 
     def getDrift(self):
         numOfFrames = len(self.__topLeftPoints)
-        if numOfFrames > 1:
-            lastFrame = self.__frameIDs[numOfFrames-1]
-            beforeLastFrame = self.__frameIDs[numOfFrames-2]
-            lastPoint = self.__topLeftPoints[lastFrame]
-            beforeLastPoint = self.__topLeftPoints[beforeLastFrame]
-            driftVector = Vector(lastPoint.x-beforeLastPoint.x, lastPoint.y-beforeLastPoint.y)
-            return driftVector
-            #return lastPoint.distanceTo(beforeLastPoint)
-        return None
+        if numOfFrames <= 1:
+            return None
+
+        lastFrame = self.__frameIDs[numOfFrames-1]
+        beforeLastFrame = self.__frameIDs[numOfFrames-2]
+        lastPoint = self.__topLeftPoints[lastFrame]
+        beforeLastPoint = self.__topLeftPoints[beforeLastFrame]
+        driftVector = Vector(lastPoint.x-beforeLastPoint.x, lastPoint.y-beforeLastPoint.y)
+        if (driftVector.isZeroVector()):
+            return None
+
+        return driftVector
+        #return lastPoint.distanceTo(beforeLastPoint)
 
     def drawFeatureOnFrame(self, image):
         #TODO: refactor image numpy array into Image class

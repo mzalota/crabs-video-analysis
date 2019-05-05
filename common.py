@@ -1,6 +1,8 @@
-from collections import namedtuple
+#from collections import namedtuple
 
 import math
+import numpy
+
 
 class Point:
     def __init__(self, x, y):
@@ -54,6 +56,30 @@ class Vector:
     def __init__(self, x,y):
         self.x = x
         self.y = y
+
+    @staticmethod
+    def vectorArrayAsString(vectorArray):
+        if len(vectorArray) <= 0:
+            return ""
+        concatStr = [str(x) for x in vectorArray]
+        return concatStr
+
+    @staticmethod
+    def medianLengthOfVectorArray(vectorArray):
+        if len(vectorArray) <= 0:
+            return None
+
+        drift_pixels = list()
+        for drift in vectorArray:
+            drift_pixels.append(drift.length())
+        return numpy.median(drift_pixels)
+
+
+    def isZeroVector(self):
+        if self.x == 0 and self.y == 0:
+            return True
+        else:
+            return False
 
     def length(self):
         zeroPoint = Point(0,0)
