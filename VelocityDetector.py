@@ -213,4 +213,5 @@ class VelocityDetector():
         row.append("driftsCount")
         row.append("drifts")
         row.append("driftsNoOutliers")
+        row.append("outlier")
         return row
