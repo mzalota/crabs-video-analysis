@@ -27,7 +27,7 @@ class TestVelocityDetector(TestCase):
         self.assertEqual( Vector.vectorArrayAsString(actual), Vector.vectorArrayAsString(expected))
 
 
-    def test_getDriftsCount_outlierIsSymmetricalOverZero(self):
+    def ttest_getDriftsCount_outlierIsSymmetricalOverZero(self):
         vd = VelocityDetector()
 
         actual = vd.excludeOutliers([Vector(0,30), Vector(0,30), Vector(0,-32)])
@@ -73,4 +73,13 @@ class TestVelocityDetector(TestCase):
         self.assertEqual(2, len(expected))
         self.assertEqual(2, len(actual))
         self.assertEqual( Vector.vectorArrayAsString(actual), Vector.vectorArrayAsString(expected))
+
+
+    def test_replaceOutlier(self):
+        vd = VelocityDetector()
+
+        actual = vd.replaceOutlier(29, 30, 300, 32, 33)
+
+        # Assert
+        self.assertEqual( actual, 31)
 

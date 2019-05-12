@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="a1a869c0-4852-40ce-ab45-9ae29e94a5c1" name="Default" comment="slicing non-overlaping frames from CSV file">
-      <change afterPath="$PROJECT_DIR$/test_velocityDetector.py" afterDir="false" />
+    <list default="true" id="a1a869c0-4852-40ce-ab45-9ae29e94a5c1" name="Default" comment="added code to recognize outliers. removes the obvous outliers in velocity detector">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SeeFloorSection.py" beforeDir="false" afterPath="$PROJECT_DIR$/SeeFloorSection.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/VelocityDetector.py" beforeDir="false" afterPath="$PROJECT_DIR$/VelocityDetector.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/analyzeVideo.py" beforeDir="false" afterPath="$PROJECT_DIR$/analyzeVideo.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common.py" beforeDir="false" afterPath="$PROJECT_DIR$/common.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_velocityDetector.py" beforeDir="false" afterPath="$PROJECT_DIR$/test_velocityDetector.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -23,7 +21,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/cutVideoIntoFrames.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="170">
+            <state relative-caret-position="51">
               <caret line="10" selection-start-line="9" selection-end-line="10" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
@@ -35,7 +33,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/determineFrames.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="430">
+            <state relative-caret-position="731">
               <caret line="52" column="75" selection-start-line="52" selection-start-column="74" selection-end-line="52" selection-end-column="75" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
@@ -47,8 +45,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/analyzeVideo.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="202">
-              <caret line="94" column="20" selection-start-line="94" selection-start-column="20" selection-end-line="94" selection-end-column="20" />
+            <state relative-caret-position="391">
+              <caret line="32" column="1" selection-start-line="32" selection-start-column="1" selection-end-line="32" selection-end-column="1" />
               <folding>
                 <element signature="e#538#548#0" expanded="true" />
               </folding>
@@ -57,31 +55,10 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/logger.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="217">
-              <caret line="14" column="8" selection-start-line="14" selection-start-column="8" selection-end-line="14" selection-end-column="8" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Image.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="340">
-              <caret line="22" column="19" selection-start-line="22" selection-start-column="8" selection-end-line="22" selection-end-column="19" />
-              <folding>
-                <element signature="e#0#19#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/VelocityDetector.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1632">
-              <caret line="96" column="35" selection-start-line="96" selection-start-column="35" selection-end-line="96" selection-end-column="35" />
+            <state relative-caret-position="1139">
+              <caret line="73" column="27" selection-start-line="73" selection-start-column="27" selection-end-line="73" selection-end-column="27" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
@@ -92,8 +69,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test_velocityDetector.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="224">
-              <caret line="38" column="99" lean-forward="true" selection-start-line="38" selection-start-column="99" selection-end-line="38" selection-end-column="99" />
+            <state relative-caret-position="1258">
+              <caret line="77" column="8" selection-start-line="77" selection-start-column="8" selection-end-line="77" selection-end-column="8" />
               <folding>
                 <element signature="e#0#29#0" expanded="true" />
               </folding>
@@ -102,18 +79,9 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/SeeFloorSection.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="190">
-              <caret line="64" column="56" lean-forward="true" selection-start-line="64" selection-start-column="56" selection-end-line="64" selection-end-column="56" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/common.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="113">
+            <state relative-caret-position="459">
               <caret line="28" column="8" selection-start-line="28" selection-start-column="8" selection-end-line="28" selection-end-column="8" />
               <folding>
                 <element signature="e#37#48#0" expanded="true" />
@@ -200,6 +168,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -211,7 +180,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -619,38 +587,45 @@
       <option name="project" value="LOCAL" />
       <updated>1556376012454</updated>
     </task>
-    <option name="localTasksCounter" value="35" />
+    <task id="LOCAL-00035" summary="added code to recognize outliers. removes the obvous outliers in velocity detector">
+      <created>1557062002290</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1557062002291</updated>
+    </task>
+    <option name="localTasksCounter" value="36" />
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="Unittests_for_test_velocityDetector_TestVelocityDetector - 2019.05.04 at 14h 02m 44s.xml">
-      <configuration name="Unittests for test_velocityDetector.TestVelocityDetector" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Unittests_for_test_velocityDetector_TestVelocityDetector - 2019.05.04 at 14h 07m 45s.xml">
-      <configuration name="Unittests for test_velocityDetector.TestVelocityDetector" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Unittests_for_test_velocityDetector_TestVelocityDetector - 2019.05.04 at 14h 08m 49s.xml">
-      <configuration name="Unittests for test_velocityDetector.TestVelocityDetector" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Unittests_for_test_velocityDetector_TestVelocityDetector - 2019.05.04 at 14h 24m 22s.xml">
-      <configuration name="Unittests for test_velocityDetector.TestVelocityDetector" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Unittests_for_test_velocityDetector_TestVelocityDetector - 2019.05.04 at 14h 24m 44s.xml">
-      <configuration name="Unittests for test_velocityDetector.TestVelocityDetector" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Unittests_for_test_velocityDetector_TestVelocityDetector - 2019.05.04 at 14h 25m 01s.xml">
-      <configuration name="Unittests for test_velocityDetector.TestVelocityDetector" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Unittests_for_test_velocityDetector_TestVelocityDetector - 2019.05.04 at 14h 26m 13s.xml">
-      <configuration name="Unittests for test_velocityDetector.TestVelocityDetector" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Unittests_for_test_velocityDetector_TestVelocityDetector - 2019.05.04 at 14h 26m 25s.xml">
-      <configuration name="Unittests for test_velocityDetector.TestVelocityDetector" configurationId="tests" />
-    </history-entry>
     <history-entry file="Unittests_for_test_velocityDetector_TestVelocityDetector - 2019.05.04 at 14h 26m 54s.xml">
       <configuration name="Unittests for test_velocityDetector.TestVelocityDetector" configurationId="tests" />
     </history-entry>
     <history-entry file="Unittests_for_test_velocityDetector_TestVelocityDetector - 2019.05.04 at 14h 29m 52s.xml">
+      <configuration name="Unittests for test_velocityDetector.TestVelocityDetector" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Unittests_for_test_velocityDetector_TestVelocityDetector - 2019.05.05 at 17h 56m 04s.xml">
+      <configuration name="Unittests for test_velocityDetector.TestVelocityDetector" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Unittests_for_test_velocityDetector_TestVelocityDetector - 2019.05.05 at 17h 58m 08s.xml">
+      <configuration name="Unittests for test_velocityDetector.TestVelocityDetector" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Unittests_for_test_velocityDetector_TestVelocityDetector - 2019.05.05 at 17h 58m 23s.xml">
+      <configuration name="Unittests for test_velocityDetector.TestVelocityDetector" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Unittests_for_test_velocityDetector_TestVelocityDetector - 2019.05.05 at 17h 58m 37s.xml">
+      <configuration name="Unittests for test_velocityDetector.TestVelocityDetector" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Unittests_for_test_velocityDetector_TestVelocityDetector - 2019.05.05 at 18h 00m 01s.xml">
+      <configuration name="Unittests for test_velocityDetector.TestVelocityDetector" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Unittests_for_test_velocityDetector_TestVelocityDetector - 2019.05.05 at 18h 03m 41s.xml">
+      <configuration name="Unittests for test_velocityDetector.TestVelocityDetector" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Unittests_for_test_velocityDetector_TestVelocityDetector - 2019.05.05 at 18h 04m 26s.xml">
+      <configuration name="Unittests for test_velocityDetector.TestVelocityDetector" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Unittests_for_test_velocityDetector_TestVelocityDetector - 2019.05.05 at 18h 05m 53s.xml">
       <configuration name="Unittests for test_velocityDetector.TestVelocityDetector" configurationId="tests" />
     </history-entry>
   </component>
@@ -666,11 +641,11 @@
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1616" height="876" extended-state="6" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.48594376" visible="true" weight="0.14010283" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.48594376" visible="true" weight="0.117609255" />
       <window_info id="Favorites" order="1" sideWeight="0.5150301" side_tool="true" weight="0.11439589" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" sideWeight="0.45641026" weight="0.29340512" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.6871795" visible="true" weight="0.5087483" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.6871795" weight="0.20861372" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -683,7 +658,7 @@
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="Data View" order="3" />
-      <window_info anchor="right" id="Structure" order="4" visible="true" weight="0.18316196" />
+      <window_info anchor="right" id="Structure" order="4" visible="true" weight="0.15167095" />
     </layout>
     <layout-to-restore>
       <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.48594376" visible="true" weight="0.13846155" />
@@ -747,7 +722,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Refactored FeatureMatcher" />
     <MESSAGE value="Split red dots into two separate objects" />
     <MESSAGE value="Able to ignore frames with undetected red dots" />
     <MESSAGE value="red dots written to file. pretty good detection" />
@@ -772,7 +746,8 @@
     <MESSAGE value="added CutVideoIntoFrames script... its Work In Progress" />
     <MESSAGE value="attaching Neigbours To Frame Image" />
     <MESSAGE value="slicing non-overlaping frames from CSV file" />
-    <option name="LAST_COMMIT_MESSAGE" value="slicing non-overlaping frames from CSV file" />
+    <MESSAGE value="added code to recognize outliers. removes the obvous outliers in velocity detector" />
+    <option name="LAST_COMMIT_MESSAGE" value="added code to recognize outliers. removes the obvous outliers in velocity detector" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://C:/old/Python27/Lib/collections.py">
@@ -928,33 +903,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/determineFrames.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="430">
-          <caret line="52" column="75" selection-start-line="52" selection-start-column="74" selection-end-line="52" selection-end-column="75" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/cutVideoIntoFrames.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="170">
-          <caret line="10" selection-start-line="9" selection-end-line="10" />
-          <folding>
-            <element signature="e#0#10#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/logger.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="217">
-          <caret line="14" column="8" selection-start-line="14" selection-start-column="8" selection-end-line="14" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/.PyCharmCE2019.1/system/python_stubs/1303523054/__builtin__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="165">
@@ -976,10 +924,47 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/logger.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="217">
+          <caret line="14" column="8" selection-start-line="14" selection-start-column="8" selection-end-line="14" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/cutVideoIntoFrames.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="51">
+          <caret line="10" selection-start-line="9" selection-end-line="10" />
+          <folding>
+            <element signature="e#0#10#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/determineFrames.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="731">
+          <caret line="52" column="75" selection-start-line="52" selection-start-column="74" selection-end-line="52" selection-end-column="75" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/VelocityDetector.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1139">
+          <caret line="73" column="27" selection-start-line="73" selection-start-column="27" selection-end-line="73" selection-end-column="27" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/test_velocityDetector.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="224">
-          <caret line="38" column="99" lean-forward="true" selection-start-line="38" selection-start-column="99" selection-end-line="38" selection-end-column="99" />
+        <state relative-caret-position="1258">
+          <caret line="77" column="8" selection-start-line="77" selection-start-column="8" selection-end-line="77" selection-end-column="8" />
           <folding>
             <element signature="e#0#29#0" expanded="true" />
           </folding>
@@ -988,7 +973,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/common.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="113">
+        <state relative-caret-position="459">
           <caret line="28" column="8" selection-start-line="28" selection-start-column="8" selection-end-line="28" selection-end-column="8" />
           <folding>
             <element signature="e#37#48#0" expanded="true" />
@@ -996,20 +981,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/VelocityDetector.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1632">
-          <caret line="96" column="35" selection-start-line="96" selection-start-column="35" selection-end-line="96" selection-end-column="35" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/analyzeVideo.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="202">
-          <caret line="94" column="20" selection-start-line="94" selection-start-column="20" selection-end-line="94" selection-end-column="20" />
+        <state relative-caret-position="391">
+          <caret line="32" column="1" selection-start-line="32" selection-start-column="1" selection-end-line="32" selection-end-column="1" />
           <folding>
             <element signature="e#538#548#0" expanded="true" />
           </folding>

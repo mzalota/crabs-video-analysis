@@ -68,6 +68,20 @@ class VelocityDetector():
         else:
             return False
 
+    def replaceOutlier(self, prev_prev, prev, this, next, next_next):
+
+        diff1 = prev - prev_prev
+        diff2 = this - prev
+        diff3 = next - this
+        diff4 = next_next - next
+
+        if abs(diff2) > 30 and abs(diff3) > 30:
+            #this is outlier
+            return prev + int(next-prev)/2
+
+        return this
+
+
     def excludeOutliers(self, driftsOld):
         if len(driftsOld)<=0:
             return None

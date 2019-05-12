@@ -30,7 +30,11 @@ rootDirectory = "C:/workspaces/AnjutkaVideo/"
 
 #vidcap = cv2.VideoCapture('C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi')
 
-videoFilenameFull = 'Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi'
+#videoFilenameFull = 'KaraSeaCrabVideoBlagopoluchiyaBay2018/V1_R_20180911_165259.avi'
+videoFilenameFull = 'KaraSeaCrabVideoBlagopoluchiyaBay2018/V2_R_20180911_165730.avi'
+#videoFilenameFull = '2018_09_16_St_5994/V3_R_20180916_012323.avi'
+#videoFilenameFull = 'Kara_Sea_Crab_Video_st_5993_2018/output_st_v4.mp4'
+#videoFilenameFull = 'Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi'
 #videoFilenameFull = 'Kara_Sea_Crab_Video_st_5993_2018/V4__R_20180915_210447.avi'
 #videoFilenameFull = 'Kara_Sea_Crab_Video_st_5993_2018/V5__R_20180915_211343.avi'
 #videoFilenameFull = 'Kara_Sea_Crab_Video_st_5993_2018/V6__R_20180915_212238.avi'
@@ -50,7 +54,7 @@ print "videoFilename is "+videoFilename
 # Open File where Frame Info will be written using Semicolumn as a delimiter. Write the Header row into the file
 csvFilePath = rootDirectory+'/redDots_log09.csv'
 #featuresFilePath = rootDirectory+'/drifts_log09.csv'
-featuresFilePath = rootDirectory+videoFilename+'_drifts11.csv'
+featuresFilePath = rootDirectory+videoFilename+'_drifts12.csv'
 logger = Logger(csvFilePath, featuresFilePath)
 
 headerRow = RedDotsDetector.infoHeaders()
@@ -92,8 +96,13 @@ vf = None
 imageWin = ImageWindow("mainWithRedDots", Point(700, 200))
 
 stepSize = 5
-startingFrameID = 30  #22380 #20350   #18200 #30   #10000 #2500  # 5180 #23785  # 25130 # 26670 #25130 # 100 26215
+startingFrameID = 80 #2000  #22380 #20350   #18200 #30   #10000 #2500  # 5180 #23785  # 25130 # 26670 #25130 # 100 26215
 prevDriftLength = 0
+
+prev1 = 0
+prev2 = 0
+prev3 = 0
+prev4 = 0
 
 success = True
 while success:
