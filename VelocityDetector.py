@@ -93,6 +93,14 @@ class VelocityDetector():
             if  drift.isZeroVector():
                 continue
 
+            if drift.y >150:
+                #the ship is not going to move that fast
+                continue
+
+            if drift.y < -30:
+                #the ship is not going to move backward faster that -30...
+                continue
+
             #print "medianLength "+str(medianLength)+ " drift.length() "+str(drift.length())+ " div two "+ str(medianLength / 2)
             if (self.__isAbsoluteValueMoreThanTwiceBig(drift.length(),medianLength)):
                 continue
@@ -144,7 +152,6 @@ class VelocityDetector():
             #section.showSubImage()
 
         self.__prevFrame = frame
-
 
 
         #sec1 = self.__fm[0].detectSeeFloorSections(frame)
