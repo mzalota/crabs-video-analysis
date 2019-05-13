@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a1a869c0-4852-40ce-ab45-9ae29e94a5c1" name="Default" comment="added code to recognize outliers. removes the obvous outliers in velocity detector">
-      <change beforePath="$PROJECT_DIR$/VelocityDetector.py" beforeDir="false" afterPath="$PROJECT_DIR$/VelocityDetector.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/analyzeVideo.py" beforeDir="false" afterPath="$PROJECT_DIR$/analyzeVideo.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ipython/.ipynb_checkpoints/smooth_drifts-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/ipython/.ipynb_checkpoints/smooth_drifts-checkpoint.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ipython/smooth_drifts.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/ipython/smooth_drifts.ipynb" afterDir="false" />
@@ -34,7 +33,7 @@
         <entry file="file://$PROJECT_DIR$/analyzeVideo.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="105">
-              <caret line="102" column="19" selection-start-line="102" selection-start-column="19" selection-end-line="102" selection-end-column="19" />
+              <caret line="32" column="79" selection-start-line="32" selection-start-column="59" selection-end-line="32" selection-end-column="79" />
               <folding>
                 <element signature="e#538#548#0" expanded="true" />
               </folding>
@@ -637,13 +636,12 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1616" height="876" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" sideWeight="0.48594376" visible="true" weight="0.1188946" />
       <window_info id="Favorites" order="1" sideWeight="0.5150301" side_tool="true" weight="0.11439589" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" sideWeight="0.45641026" weight="0.29340512" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.6871795" visible="true" weight="0.52624494" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.6871795" weight="0.52624494" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -982,7 +980,7 @@
     <entry file="file://$PROJECT_DIR$/analyzeVideo.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="105">
-          <caret line="102" column="19" selection-start-line="102" selection-start-column="19" selection-end-line="102" selection-end-column="19" />
+          <caret line="32" column="79" selection-start-line="32" selection-start-column="59" selection-end-line="32" selection-end-column="79" />
           <folding>
             <element signature="e#538#548#0" expanded="true" />
           </folding>
