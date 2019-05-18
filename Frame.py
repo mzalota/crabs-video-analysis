@@ -25,11 +25,11 @@ class Frame:
         return Image(self.__videoStream.readImage(self.__frameID))
 
     def saveImageToFile(self, rootDirectory):
-        imageFilePath = self.__constructFilePath(rootDirectory)
-        #print("image path is: " + imageFilePath)
+        imageFilePath = self.constructFilePath(rootDirectory)
+        print("image path is: " + imageFilePath)
         self.getImgObj().writeToFile(imageFilePath)
 
-    def __constructFilePath(self, rootDirectory):
+    def constructFilePath(self, rootDirectory):
         frameNumberString = str(self.__frameID).zfill(6)
         imageFileName = "frame" + frameNumberString + ".jpg"
         imageFilePath = rootDirectory + "/seqFrames/" + imageFileName
@@ -40,7 +40,41 @@ class Frame:
         image.drawFrameID(self.getFrameID())
         prevSubImage = self.__buildPrevImagePart(prevFrame, neighboursHeight)
         nextSubImage = self.__buildNextImagePart(nextFrame, neighboursHeight)
-        return self.__glueTogether(image, nextSubImage, prevSubImage)
+
+        mainCollage = self.__glueTogether(image, nextSubImage, prevSubImage)
+
+        collageHeight = self.getImgObj().height() + neighboursHeight * 2
+
+        rightCollage = self.constructRightCollage(collageHeight, nextFrame, prevFrame)
+        filler = Image.empty(collageHeight, 100, 0).asNumpyArray()
+
+        return np.concatenate((mainCollage, filler, rightCollage), axis=1)
+
+    def constructRightCollage(self, mainCollageHeight, nextFrame, prevFrame):
+        beforeMiddleImage = self.constructRightPrev(prevFrame)
+        afterMiddleImage = self.__constructRightNext(nextFrame)
+
+        rightCollageHeight = beforeMiddleImage.height() + afterMiddleImage.height()
+        fillerHeight = (mainCollageHeight - rightCollageHeight) / 2
+        fillerImage = Image.empty(fillerHeight, self.getImgObj().width(), 0).asNumpyArray()
+
+        return np.concatenate((fillerImage, afterMiddleImage.asNumpyArray(), beforeMiddleImage.asNumpyArray(), fillerImage))
+
+    def __constructRightNext(self, nextFrame):
+        nextFrameID = int(nextFrame.getFrameID())
+        afterMiddleFrameID = int(self.getFrameID()) + int((nextFrameID - int(self.getFrameID())) / 2)
+        afterMiddleFrame = Frame(afterMiddleFrameID, self.__videoStream)
+        afterMiddleImage = afterMiddleFrame.getImgObj()
+        afterMiddleImage.drawFrameID(str(afterMiddleFrameID))
+        return afterMiddleImage
+
+    def constructRightPrev(self, prevFrame):
+        prevFrameID = int(prevFrame.getFrameID())
+        beforeMiddleFrameID = prevFrameID + int((int(self.getFrameID()) - prevFrameID) / 2)
+        beforeMiddleFrame = Frame(beforeMiddleFrameID, self.__videoStream)
+        beforeMiddleImage = beforeMiddleFrame.getImgObj()
+        beforeMiddleImage.drawFrameID(str(beforeMiddleFrameID))
+        return beforeMiddleImage
 
     def __glueTogether(self, image, nextSubImage, prevSubImage):
         res = np.concatenate((nextSubImage.asNumpyArray(), image.asNumpyArray()))

@@ -15,8 +15,9 @@ import csv
 
 
 
-framesFilePath = rootDirectory+"/framesInFives.csv"
-cutFramesFilePath = rootDirectory+"/cutFrames2.csv"
+framesFilePath = rootDirectory+"/V5__R_20180915_211343_toCut_2.csv"
+#framesFilePath = rootDirectory+"/framesInFives.csv"
+cutFramesFilePath = rootDirectory+"/V5__R_20180915_211343_framesToCut.csv"
 
 cutFramesFile = open(cutFramesFilePath, 'wb')
 

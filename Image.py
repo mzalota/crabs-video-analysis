@@ -1,11 +1,17 @@
 from cv2 import cv2
 
+from pandas.compat.numpy import np
 from common import Point, Box
-
 
 class Image:
     def __init__(self, imageAsNumpyArray):
         self.__image = imageAsNumpyArray
+
+    @staticmethod
+    def empty(height, width, color):
+        image = np.zeros([height, width, 3], dtype=np.uint8)
+        image.fill(color)
+        return Image(image)
 
     def width(self):
         return self.__image.shape[1]

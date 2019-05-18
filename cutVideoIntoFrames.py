@@ -2,6 +2,7 @@ import cv2
 from pandas.compat.numpy import np
 
 from Frame import Frame
+from Image import Image
 from ImageWindow import ImageWindow
 from VelocityDetector import VelocityDetector
 from VideoStream import VideoStream
@@ -13,7 +14,7 @@ rootDirectory = "C:/workspaces/AnjutkaVideo/output/"
 
 
 # Open File where Frame Info will be written using Semicolumn as a delimiter. Write the Header row into the file
-csvFilePath = 'C:/workspaces/AnjutkaVideo/redDots_log08.csv'
+#csvFilePath = 'C:/workspaces/AnjutkaVideo/redDots_log08.csv'
 
 
 # src3 = cv2.imread("C:/Users/zal0001m/Documents/Private/AnjutkaVideo/IMG_20180814_181351.jpg")
@@ -42,7 +43,9 @@ vf = None
 #imageWin = ImageWindow("mainWithRedDots", Point(700, 200))
 imageWin2 = ImageWindow.createWindow("topSubimage",Box(Point(0,0),Point(960,740)))
 
-videoStream = VideoStream('C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi')
+videoFileName="V5__R_20180915_211343"
+
+videoStream = VideoStream("C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"+videoFileName+".avi")
 
 
 def processFrame(nextFrame, frame, prevFrame):
@@ -50,12 +53,16 @@ def processFrame(nextFrame, frame, prevFrame):
 
     try:
 
-        #frame = Frame(count, videoStream)
-        frame.saveImageToFile(rootDirectory)
 
-        image = frame.attachNeighbourFrames(nextFrame, prevFrame, 600)
+        #frame.saveImageToFile(rootDirectory+"/"+videoFileName+"/")
+        #frame.saveCollageToFile(rootDirectory+"/"+videoFileName+"/")
 
-        imageWin2.showWindowAndWaitForClick(image)
+        image = frame.attachNeighbourFrames(nextFrame, prevFrame, 800)
+        imgObj = Image(image)
+        imageFilePath = frame.constructFilePath(rootDirectory + "/" + videoFileName + "/")
+        imgObj.writeToFile(imageFilePath )
+
+        #imageWin2.showWindowAndWaitForClick(image)
 
 
     except Exception as error:
@@ -65,7 +72,7 @@ def processFrame(nextFrame, frame, prevFrame):
 
 import csv
 
-framesFilePath = rootDirectory+"/cutFrames2.csv"
+framesFilePath = rootDirectory+"/V5__R_20180915_211343_framesToCut.csv"
 nextFrameNumber = 0
 frameNumber = 0
 prevFrameNumber= 0
