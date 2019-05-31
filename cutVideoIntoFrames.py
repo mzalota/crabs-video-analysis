@@ -22,7 +22,7 @@ framesToSaveToFile = framesStitcher.determineFrames(rootDirectory, filename+"_to
 print("Dataframe Contains:", framesToSaveToFile)
 
 
-#exit()
+exit()
 
 
 

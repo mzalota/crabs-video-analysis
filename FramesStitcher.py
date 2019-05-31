@@ -6,66 +6,38 @@ from DriftData import DriftData
 
 
 class FramesStitcher:
-    #__image = None
+    #__heightOfFrame = None
+    #__framesToStitch = None
 
     def __init__(self):
         # type: () -> FramesStitcher
 
+        self.__heightOfFrame = 1080
         # Creating an empty Dataframe with column names only
-        self.__framesToStitch = pd.DataFrame(columns=['frameNumber', 'cumulativeDrift'])
+        self.__framesToStitch = pd.DataFrame(columns=['frameNumber'])
 
     def determineFrames(self, rootDirectory, csvFileName):
 
         framesFilePath = rootDirectory + "/" + csvFileName + ".csv"
 
-        driftData = pd.read_csv(framesFilePath, delimiter="\t", na_values="(null)")
-        self.__processRows(driftData)
+        ddFile = pd.read_csv(framesFilePath, delimiter="\t", na_values="(null)")
+        ddFile = ddFile.rename(columns={ddFile.columns[0]: "rowNum"}) # rename first column to be rowNum
+
+        driftData = DriftData(ddFile)
+        self.__constructFramesToStitch(driftData)
 
         return self.__framesToStitch
 
-    def __processRows(self, ddFile):
+    def __constructFramesToStitch(self, driftData):
 
+        nextFrameID = driftData.getFrameID(0)
+        while nextFrameID < driftData.maxFrameID():
+            #print ("nextFrameID", nextFrameID)
+            self.__addNextFrame(nextFrameID)
+            nextFrameID = driftData.getNextFrame(self.__heightOfFrame, nextFrameID)
+        self.__addNextFrame(driftData.maxFrameID())
 
-        cumulativeDrift = 0
-
-        driftData = DriftData(ddFile)
-
-        self.__addNextFrame(driftData.getFrameID(0), 0)
-
-        line_count =0
-        for index in range(1, driftData.getCount()):
-
-            yDrift = driftData.getYDrift(index)  #float(row[2].replace(",", "."))
-            cumulativeDrift += yDrift
-
-            #print (driftData.getFrameID(index), yDrift, cumulativeDrift, self.__nextCumulativeDriftToStop(), driftData.pixelsDriftPerFrame(index), index)
-            if cumulativeDrift >= self.__nextCumulativeDriftToStop():
-                self.__addFrameToStitch(cumulativeDrift, driftData, index)
-
-            line_count+=1
-
-        print('Processed ' + str(line_count) + ' lines.')
-
-
-    def __addFrameToStitch(self, cumulativeDrift, dd, index):
-
-        pixelsToBacktrack = cumulativeDrift - self.__nextCumulativeDriftToStop()
-        frameIDToStitch = dd.frameIDThatIsPixelsAwayFromIndex(index, pixelsToBacktrack)
-
-        pixelsActuallyBacktracked  = dd.pixelsToFrameIDFromIndex(index, frameIDToStitch)
-
-        cumulativeDriftForUsedFrame = int(cumulativeDrift - pixelsActuallyBacktracked)
-        #print ("addingToResult", int(frameIDToStitch), cumulativeDrift, cumulativeDriftForUsedFrame, pixelsToBacktrack, pixelsActuallyBacktracked)
-
-        self.__addNextFrame(frameIDToStitch, cumulativeDriftForUsedFrame)
-
-    def __nextCumulativeDriftToStop(self):
-        indexOfLastFrameToStitch = len(self.__framesToStitch.index) - 1
-        lastCumulativeDrift = int(self.__framesToStitch['cumulativeDrift'][indexOfLastFrameToStitch])
-        nextCumulativeDriftToStop = lastCumulativeDrift + 1080
-        return nextCumulativeDriftToStop
-
-    def __addNextFrame(self, frameID, cumulativeDrift):
-        self.__framesToStitch = self.__framesToStitch.append({'frameNumber': int(frameID), 'cumulativeDrift': cumulativeDrift}, ignore_index=True)
+    def __addNextFrame(self, frameID):
+        self.__framesToStitch = self.__framesToStitch.append({'frameNumber': int(frameID)}, ignore_index=True)
 
 
