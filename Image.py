@@ -1,4 +1,4 @@
-from cv2 import cv2
+from cv2 import cv2, os
 
 from pandas.compat.numpy import np
 from common import Point, Box
@@ -35,7 +35,7 @@ class Image:
         fontScale = 1
         fontColor = (0, 255, 0)
         lineType = 2
-        cv2.putText(self.__image, text,
+        cv2.putText(self.__image, str(text),
                     bottomLeftCornerOfText,
                     font,
                     fontScale,
@@ -98,4 +98,14 @@ class Image:
         return image_with_boxes
 
     def writeToFile(self, filepath):
+        self.__createDirectoriesIfNecessary(filepath)
         cv2.imwrite(filepath, self.asNumpyArray())  # save frame as JPEG file
+
+    def __createDirectoriesIfNecessary(self, filepath):
+
+        if not os.path.exists(os.path.dirname(filepath)):
+            try:
+                os.makedirs(os.path.dirname(filepath))
+            except OSError as exc:  # Guard against race condition
+                if exc.errno != errno.EEXIST:
+                    raise

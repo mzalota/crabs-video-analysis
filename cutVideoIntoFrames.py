@@ -1,92 +1,31 @@
+import traceback
+
 import cv2
-#from pandas.compat.numpy import np
 
-import math
 
-import csv
-import pandas as pd
 
 
 from Frame import Frame
+from FramesStitcher import FramesStitcher
 from Image import Image
 from ImageWindow import ImageWindow
 from VelocityDetector import VelocityDetector
 from VideoStream import VideoStream
 from common import Point, Box
 
+filename = "V6__R_20180915_212238"
+rootDirectory = "C:/workspaces/AnjutkaVideo/output/"
 
-def determineFrames():
+framesStitcher = FramesStitcher()
+framesToSaveToFile = framesStitcher.determineFrames(rootDirectory, filename+"_toCut")
 
-    rootDirectory = "C:/workspaces/AnjutkaVideo/output/"
-
-    framesFilePath = rootDirectory+"/V5__R_20180915_211343_toCut_2.csv"
-
-    #cutFramesFilePath = rootDirectory+"/V5__R_20180915_211343_framesToCut_aaaa.csv"
-    #cutFramesFile = open(cutFramesFilePath, 'wb')
-
-    # Creating an empty Dataframe with column names only
-    #dfObj = pd.DataFrame(columns=['FrameNumber', 'UserName', 'Action'])
-    dfObj = pd.DataFrame(columns=['frameNumber', 'count'])
-    #print("Dataframe Contens ", dfObj)
-
-    yDrift = 0
-    frameNumber = 0
-    prevFrameNumber= 0
-    cumulativeDrift = 0
-    printedFrames = 1
-    prevFrameToUse = 0
-    with open(framesFilePath) as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=';')
-        line_count = 0
-        for row in csv_reader:
-            if line_count == 0:
-                print('Column names are: '+", ".join(row))
-                line_count += 1
-            else:
-                prevFrameNumber = frameNumber
-                prevYDrift = yDrift
-
-                frameNumber = row[0]
-                yDrift = float(row[1].replace(",","."))
-
-                prevCumulativeDrift = cumulativeDrift
-                cumulativeDrift += yDrift
-
-                driftPerFrame = yDrift/(int(frameNumber)-int(prevFrameNumber))
-                #print (frameNumber, yDrift, cumulativeDrift, prevFrameNumber, prevYDrift, prevCumulativeDrift, driftPerFrame)
-
-                nextFrameBreak= 1080*printedFrames
-                if cumulativeDrift > (nextFrameBreak):
-                    pixelsToBacktrack = cumulativeDrift - nextFrameBreak
-                    framesToBacktrack = pixelsToBacktrack/driftPerFrame
-                    frameToUse = int(frameNumber)-math.floor(framesToBacktrack)
-                    frameJump = frameToUse - prevFrameToUse
-                    print (int(frameToUse), printedFrames, frameJump, cumulativeDrift, pixelsToBacktrack, framesToBacktrack, math.floor(framesToBacktrack))
-                    printedFrames = printedFrames+1
-                    prevFrameToUse = frameToUse
-
-                    dfObj = dfObj.append({'frameNumber': int(frameToUse), 'count': line_count}, ignore_index=True)
-
-                    #cutFramesFile.write(str(int(frameToUse)) + "\n")
-                    #cutFramesFile.flush()
-
-                line_count += 1
-        print('Processed '+str(line_count)+' lines.')
-
-    #print("Dataframe Contens ", dfObj)
-    return dfObj
-    #cutFramesFile.close()
-
-framesToSaveToFile = determineFrames()
-#print("Dataframe Contens ", framesToSaveToFile)
-
-
+print("Dataframe Contains:", framesToSaveToFile)
 
 
 #exit()
 
 
-rootDirectory = "C:/workspaces/AnjutkaVideo/output/"
+
 # filenameFull = os.path.basename(filepath)
 # filename = os.path.splitext(filenameFull)[0]
 
@@ -121,14 +60,15 @@ vf = None
 #imageWin = ImageWindow("mainWithRedDots", Point(700, 200))
 imageWin2 = ImageWindow.createWindow("topSubimage",Box(Point(0,0),Point(960,740)))
 
-videoFileName="V5__R_20180915_211343"
+#videoFileName="V5__R_20180915_211343"
+#videoFileName="V6__R_20180915_212238"
+videoFileName = filename
 
 videoStream = VideoStream("C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"+videoFileName+".avi")
 
 
 def processFrame(nextFrame, frame, prevFrame):
     print 'Read a new frame: ', nextFrameNumber
-    return
     try:
 
         #frame.saveImageToFile(rootDirectory+"/"+videoFileName+"/")
@@ -137,14 +77,15 @@ def processFrame(nextFrame, frame, prevFrame):
         image = frame.attachNeighbourFrames(nextFrame, prevFrame, 800)
         imgObj = Image(image)
         imageFilePath = frame.constructFilePath(rootDirectory + "/" + videoFileName + "/")
+        print "writing frame image to file: "+imageFilePath
         imgObj.writeToFile(imageFilePath )
 
         #imageWin2.showWindowAndWaitForClick(image)
 
-
     except Exception as error:
         print ("no more frames to read from video ")
         print('Caught this error: ' + repr(error))
+        traceback.print_exc()
 
 nextFrameNumber = 0
 frameNumber = 0
@@ -161,11 +102,6 @@ for index in range(len(framesToSaveToFile.index)-2):
     prevFrameNumber = framesToSaveToFile['frameNumber'][index]
     frameNumber = framesToSaveToFile['frameNumber'][index+1]
     nextFrameNumber = framesToSaveToFile['frameNumber'][index+2]
-    #print (nextFrameNumber)
-    #prevFrameNumber = frameNumber
-    #frameNumber = nextFrameNumber
-    #nextFrameNumber = row['frameNumber']
-
 
     if nextFrameNumber > 0 and frameNumber > 0:
         prevFrame = Frame(prevFrameNumber, videoStream)
@@ -175,38 +111,5 @@ for index in range(len(framesToSaveToFile.index)-2):
 
     line_count += 1
 print('Processed ' + str(line_count) + ' lines.')
-
-exit()
-
-import csv
-
-framesFilePath = rootDirectory+"/V5__R_20180915_211343_framesToCut.csv"
-nextFrameNumber = 0
-frameNumber = 0
-prevFrameNumber= 0
-with open(framesFilePath) as csv_file:
-    csv_reader = csv.reader(csv_file, delimiter=',')
-    line_count = 0
-    for row in csv_reader:
-        if line_count == 0:
-            print('Column names are: '+", ".join(row))
-            line_count += 1
-        else:
-            prevFrameNumber = frameNumber
-            frameNumber = nextFrameNumber
-            nextFrameNumber = row[0]
-            print (nextFrameNumber)
-
-            if nextFrameNumber > 0 and frameNumber > 0:
-                prevFrame = Frame(prevFrameNumber, videoStream)
-                frame = Frame(frameNumber, videoStream)
-                nextFrame = Frame(nextFrameNumber, videoStream)
-                processFrame(nextFrame, frame, prevFrame)
-
-            line_count += 1
-    print('Processed '+str(line_count)+' lines.')
-
-
-        # cv2.imwrite("frame%d.jpg" % count, image)     # save frame as JPEG file
 
 cv2.destroyAllWindows()
