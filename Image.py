@@ -22,6 +22,9 @@ class Image:
     def asNumpyArray(self):
         return self.__image
 
+    def drawLine(self, point1, point2):
+        cv2.line(self.__image, (point1.x, point1.y), (point2.x, point2.y), (0, 255, 0), 5)
+
     def drawBoxOnImage(self, box):
         if box:
             cv2.rectangle(self.__image, (box.topLeft.x, box.topLeft.y), (box.bottomRight.x, box.bottomRight.y), (0, 255, 0), 2)

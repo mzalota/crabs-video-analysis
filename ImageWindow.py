@@ -28,8 +28,10 @@ class ImageWindow:
     def waitForMouseClick(self):
         cv2.setMouseCallback(self.__windowName, self.click_and_crop)
         # cv2.setMouseCallback("mainWithRedDots", click_and_crop)
-        print "Click on a new feature"
-        cv2.waitKey(0)
+        #print "Click on a new feature"
+        keyPressed = cv2.waitKey(0)
+        return keyPressed
+
 
     def click_and_crop(self, event, x, y, flags, param):
         self.wasClicked(event, x, y)
@@ -40,7 +42,7 @@ class ImageWindow:
             self.featureCoordiate = Point(x, y)
             self.featureBox = self.featureCoordiate.boxAroundPoint(100)
             #cv2.rectangle(image, (max(x - 50, 1), max(y - 50, 1)), (x + 50, y + 50), (255, 0, 0), 2)
-            print "keyPress A"
+            #print "keyPress A"
             press('a')
 
     def showWindow(self, image):
@@ -53,7 +55,7 @@ class ImageWindow:
 
     def showWindowAndWaitForClick(self, image):
         self.showWindow(image)
-        self.waitForMouseClick()
+        return self.waitForMouseClick()
 
     def showWindowAndWait(self, image, delay):
         self.showWindow(image)
@@ -68,4 +70,15 @@ class ImageWindow:
         cv2.waitKey(1)
         cv2.waitKey(1)
         cv2.waitKey(1)
-        print "trying to close window " + self.__windowName
+        #print "trying to close window " + self.__windowName
+
+    def showWindowAndWaitForTwoClicks(self, image):
+        self.showWindow(image)
+
+        self.waitForMouseClick()
+        point1=self.featureCoordiate
+
+        self.waitForMouseClick()
+        point2=self.featureCoordiate
+
+        self.featureBox=Box(point1,point2)
