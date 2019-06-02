@@ -1,6 +1,7 @@
 import cv2
 from pyautogui import press
 
+from Image import Image
 from common import Point,Box
 
 
@@ -40,7 +41,7 @@ class ImageWindow:
         # check to see if the left mouse button was released
         if event == cv2.EVENT_LBUTTONDOWN:
             self.featureCoordiate = Point(x, y)
-            self.featureBox = self.featureCoordiate.boxAroundPoint(100)
+            #self.featureBox = self.featureCoordiate.boxAroundPoint(100)
             #cv2.rectangle(image, (max(x - 50, 1), max(y - 50, 1)), (x + 50, y + 50), (255, 0, 0), 2)
             #print "keyPress A"
             press('a')
@@ -75,10 +76,15 @@ class ImageWindow:
     def showWindowAndWaitForTwoClicks(self, image):
         self.showWindow(image)
 
+        img = Image(image)
+
         self.waitForMouseClick()
         point1=self.featureCoordiate
 
+        img.drawBoxOnImage(point1.boxAroundPoint(3))
+
         self.waitForMouseClick()
         point2=self.featureCoordiate
+        img.drawBoxOnImage(point2.boxAroundPoint(3))
 
         self.featureBox=Box(point1,point2)

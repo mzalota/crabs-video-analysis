@@ -34,16 +34,16 @@ class FeatureMatcher:
 
     def __resetFeatureIfNecessary(self, newTopLeftOfFeature):
         if newTopLeftOfFeature is None:
-            print "Did not detect feature: resetting Location to Default: "+self.__seeFloorSection.getID()
+            #print "Did not detect feature: resetting Location to Default: "+self.__seeFloorSection.getID()
             self.__resetReason = "NotDetected"
             wasReset = True
         elif ((newTopLeftOfFeature.y + self.__startingBox.hight()) > 980):
-            print "Got to the bottom of the screen: resetting location to default: "+self.__seeFloorSection.getID()
+            #print "Got to the bottom of the screen: resetting location to default: "+self.__seeFloorSection.getID()
             #print newTopLeftOfFeature
             self.__resetReason = "Bottom"
             wasReset = True
         elif newTopLeftOfFeature.x <= 20:
-            print "Got too close to the left edge: resetting location to default: "+self.__seeFloorSection.getID()
+            #print "Got too close to the left edge: resetting location to default: "+self.__seeFloorSection.getID()
             #print newTopLeftOfFeature
             self.__resetReason = "LeftEdge"
             wasReset = True

@@ -196,7 +196,8 @@ class VelocityDetector():
         driftAngle = self.getMedianDriftAngle()
         driftsCount = self.getDriftsCount()
         driftsStr = self.getDriftsAsString()
-        driftsNoOutliersStr = Vector.vectorArrayAsString(self.excludeOutliers(self.__drifts))
+        driftsWithoutOutliers = self.excludeOutliers(self.__drifts)
+        driftsNoOutliersStr = Vector.vectorArrayAsString(driftsWithoutOutliers)
 
         driftsRow = []
         if driftsStr:
@@ -204,6 +205,7 @@ class VelocityDetector():
             driftsRow.append(driftVector.y)
             driftsRow.append(driftDistance)
             driftsRow.append(driftAngle)
+            driftsRow.append(len(driftsWithoutOutliers))
             driftsRow.append(driftsCount)
             driftsRow.append(driftsStr)
             driftsRow.append(driftsNoOutliersStr)
@@ -217,6 +219,7 @@ class VelocityDetector():
         row.append("driftY")
         row.append("driftDistance")
         row.append("driftAngle")
+        row.append("driftsCountNoOutliers")
         row.append("driftsCount")
         row.append("drifts")
         row.append("driftsNoOutliers")
