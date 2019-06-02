@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="a1a869c0-4852-40ce-ab45-9ae29e94a5c1" name="Default" comment="markCrabs script works pretty well. Now need to save to CSV file">
+    <list default="true" id="a1a869c0-4852-40ce-ab45-9ae29e94a5c1" name="Default" comment="cleaned up analyzeVideo.py">
+      <change afterPath="$PROJECT_DIR$/detectDrift.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/markCrabs.py" beforeDir="false" afterPath="$PROJECT_DIR$/markCrabs.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/analyzeVideo.py" beforeDir="false" afterPath="$PROJECT_DIR$/detectRedDots.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logger.py" beforeDir="false" afterPath="$PROJECT_DIR$/logger.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -16,23 +19,23 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/markCrabs.py">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Image.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="154">
-              <caret line="61" selection-start-line="61" selection-end-line="61" />
-              <folding>
-                <element signature="e#300#331#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="295">
+              <caret line="24" column="16" selection-start-line="24" selection-start-column="8" selection-end-line="24" selection-end-column="16" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Image.py">
+        <entry file="file://$PROJECT_DIR$/VideoStream.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="142">
-              <caret line="24" column="16" selection-start-line="24" selection-start-column="8" selection-end-line="24" selection-end-column="16" />
+            <state relative-caret-position="170">
+              <caret line="10" column="8" selection-start-line="10" selection-start-column="8" selection-end-line="10" selection-end-column="8" />
+              <folding>
+                <element signature="e#0#13#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -40,8 +43,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ImageWindow.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1209">
-              <caret line="72" column="9" selection-start-line="72" selection-start-column="9" selection-end-line="72" selection-end-column="9" />
+            <state relative-caret-position="165">
+              <caret line="78" column="16" selection-start-line="78" selection-start-column="16" selection-end-line="78" selection-end-column="16" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
               </folding>
@@ -52,7 +55,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/determineFrames.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="340">
+            <state relative-caret-position="697">
               <caret line="56" column="20" selection-start-line="56" selection-start-column="20" selection-end-line="56" selection-end-column="114" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
@@ -64,10 +67,61 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/common.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="437">
-              <caret line="130" column="8" selection-start-line="130" selection-start-column="8" selection-end-line="130" selection-end-column="8" />
+            <state relative-caret-position="181">
+              <caret line="43" column="22" selection-start-line="43" selection-start-column="8" selection-end-line="43" selection-end-column="22" />
               <folding>
                 <element signature="e#37#48#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/logger.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="306">
+              <caret line="18" selection-start-line="18" selection-end-line="18" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/detectDrift.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="369">
+              <caret line="106" column="23" selection-start-line="106" selection-start-column="23" selection-end-line="106" selection-end-column="23" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/detectRedDots.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="329">
+              <caret line="89" selection-start-line="89" selection-end-line="89" selection-end-column="23" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/VelocityDetector.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="318">
+              <caret line="221" column="41" selection-start-line="221" selection-start-column="41" selection-end-line="221" selection-end-column="41" />
+              <folding>
+                <element signature="e#0#11#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/FeatureMatcher.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="70">
+              <caret line="33" lean-forward="true" selection-start-line="33" selection-end-line="33" />
+              <folding>
+                <element signature="e#0#23#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -84,12 +138,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>redDotsSearchArea</find>
-      <find>boxAroundPoint</find>
-      <find>__featureBoxSize</find>
-      <find>__prev_subImage</find>
-      <find>__featureLocation</find>
-      <find>__defaultStartingPoint</find>
       <find>__subImageWin</find>
       <find>int</find>
       <find>vidcap</find>
@@ -102,18 +150,24 @@
       <find>abs</find>
       <find>memory</find>
       <find>stati</find>
-      <find>csvFilePath</find>
       <find>__addFrameToStitch</find>
       <find>frameIDThatIsPixelsAwayFromIndex</find>
       <find>pixelsToFrameIDFromIndex</find>
       <find>Read a new frame:</find>
       <find>frameID is</find>
-      <find>print</find>
       <find>showWindowAndWaitForClick</find>
       <find>waitForMouseClick</find>
       <find>featureBox</find>
-      <find>press</find>
       <find>filename</find>
+      <find>press</find>
+      <find>csvFilePath</find>
+      <find>prev3</find>
+      <find>prev2</find>
+      <find>prev1</find>
+      <find>resetting Location to D</find>
+      <find>print</find>
+      <find>excludeOutliers</find>
+      <find>prevDriftLength</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -126,16 +180,12 @@
         <option value="$PROJECT_DIR$/wip05.py" />
         <option value="$PROJECT_DIR$/wip06.py" />
         <option value="$PROJECT_DIR$/Feature.py" />
-        <option value="$PROJECT_DIR$/FeatureMatcher.py" />
-        <option value="$PROJECT_DIR$/logger.py" />
         <option value="$PROJECT_DIR$/VideoFrame.py" />
         <option value="$PROJECT_DIR$/RedDot.py" />
         <option value="$PROJECT_DIR$/RedDotsDetector.py" />
         <option value="$PROJECT_DIR$/wip01.py" />
         <option value="$PROJECT_DIR$/SeeFloorSection.py" />
         <option value="$PROJECT_DIR$/test_velocityDetector.py" />
-        <option value="$PROJECT_DIR$/VelocityDetector.py" />
-        <option value="$PROJECT_DIR$/analyzeVideo.py" />
         <option value="$PROJECT_DIR$/determineFrames.py" />
         <option value="$PROJECT_DIR$/Frame.py" />
         <option value="$PROJECT_DIR$/DriftData.py" />
@@ -144,9 +194,15 @@
         <option value="$PROJECT_DIR$/cutVideoIntoFrames.py" />
         <option value="$PROJECT_DIR$/common.py" />
         <option value="$PROJECT_DIR$/Image.py" />
-        <option value="$PROJECT_DIR$/README.md" />
-        <option value="$PROJECT_DIR$/ImageWindow.py" />
         <option value="$PROJECT_DIR$/markCrabs.py" />
+        <option value="$PROJECT_DIR$/ImageWindow.py" />
+        <option value="$PROJECT_DIR$/FeatureMatcher.py" />
+        <option value="$PROJECT_DIR$/VelocityDetector.py" />
+        <option value="$PROJECT_DIR$/README.md" />
+        <option value="$PROJECT_DIR$/analyzeVideo.py" />
+        <option value="$PROJECT_DIR$/detectRedDots.py" />
+        <option value="$PROJECT_DIR$/detectDrift.py" />
+        <option value="$PROJECT_DIR$/logger.py" />
       </list>
     </option>
   </component>
@@ -197,8 +253,8 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.markCrabs">
-    <configuration name="cutVideoIntoFrames" type="PythonConfigurationType" factoryName="Python" temporary="true">
+  <component name="RunManager" selected="Python.detectDrift">
+    <configuration name="analyzeVideo" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="crabs-video-analysis" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -210,7 +266,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/cutVideoIntoFrames.py" />
+      <option name="SCRIPT_NAME" value="C:\workspaces\crabs-video-analysis\detectDrift.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -219,7 +275,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="determineFrames" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="detectDrift" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="crabs-video-analysis" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -231,7 +287,28 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/determineFrames.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/detectDrift.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="detectRedDots" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="crabs-video-analysis" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/detectRedDots.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -253,27 +330,6 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/markCrabs.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="wip03" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="crabs-video-analysis" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/wip03.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -318,19 +374,19 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.cutVideoIntoFrames" />
-      <item itemvalue="Python.determineFrames" />
-      <item itemvalue="Python.wip03" />
       <item itemvalue="Python.wip04" />
       <item itemvalue="Python.markCrabs" />
+      <item itemvalue="Python.analyzeVideo" />
+      <item itemvalue="Python.detectRedDots" />
+      <item itemvalue="Python.detectDrift" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.detectDrift" />
+        <item itemvalue="Python.detectRedDots" />
+        <item itemvalue="Python.analyzeVideo" />
         <item itemvalue="Python.markCrabs" />
         <item itemvalue="Python.wip04" />
-        <item itemvalue="Python.wip03" />
-        <item itemvalue="Python.cutVideoIntoFrames" />
-        <item itemvalue="Python.determineFrames" />
       </list>
     </recent_temporary>
   </component>
@@ -636,7 +692,21 @@
       <option name="project" value="LOCAL" />
       <updated>1559477112448</updated>
     </task>
-    <option name="localTasksCounter" value="42" />
+    <task id="LOCAL-00042" summary="markCrabs script works pretty well. need to refactor">
+      <created>1559477992465</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1559477992465</updated>
+    </task>
+    <task id="LOCAL-00043" summary="cleaned up analyzeVideo.py">
+      <created>1559504256475</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1559504256475</updated>
+    </task>
+    <option name="localTasksCounter" value="44" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -684,11 +754,11 @@
     <frame x="-8" y="-8" width="1616" height="876" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.48594376" visible="true" weight="0.16452442" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.48594376" visible="true" weight="0.16452442" />
       <window_info id="Favorites" order="1" sideWeight="0.5150301" side_tool="true" weight="0.11439589" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" sideWeight="0.45641026" weight="0.19784656" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.6871795" visible="true" weight="0.09690444" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.6871795" visible="true" weight="0.34320322" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -701,7 +771,7 @@
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="Data View" order="3" />
-      <window_info anchor="right" id="Structure" order="4" visible="true" weight="0.25" />
+      <window_info anchor="right" id="Structure" order="4" visible="true" weight="0.14910026" />
     </layout>
     <layout-to-restore>
       <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.48594376" visible="true" weight="0.13846155" />
@@ -765,8 +835,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Extracted mouse click logic into ImageWindow and fixed the bug so that the box is centered around click location" />
-    <MESSAGE value="Feature tracking seems to work pretty well. But code for Feature Tracking needs to be refactored still" />
     <MESSAGE value="trying to extract functionality into Feature class out of FeatureMatcher class" />
     <MESSAGE value="more refactoring to Feature class" />
     <MESSAGE value="Feature class is getting better" />
@@ -790,7 +858,9 @@
     <MESSAGE value="Refactored cutVideoIntoFrames into FramesStitcher and DriftData classes. More refactoring work to do" />
     <MESSAGE value="Refactored DriftData and FramesStitcher classes." />
     <MESSAGE value="markCrabs script works pretty well. Now need to save to CSV file" />
-    <option name="LAST_COMMIT_MESSAGE" value="markCrabs script works pretty well. Now need to save to CSV file" />
+    <MESSAGE value="markCrabs script works pretty well. need to refactor" />
+    <MESSAGE value="cleaned up analyzeVideo.py" />
+    <option name="LAST_COMMIT_MESSAGE" value="cleaned up analyzeVideo.py" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://C:/old/Python27/Lib/collections.py">
@@ -831,13 +901,6 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Feature.py">
       <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/FeatureMatcher.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="1" selection-start-line="1" selection-end-line="1" />
-        </state>
-      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/RedDot.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -900,16 +963,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/VelocityDetector.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="390">
-          <caret line="212" column="4" selection-start-line="212" selection-start-column="4" selection-end-line="212" selection-end-column="17" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/DriftData.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="337">
@@ -944,33 +997,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/VideoStream.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="374">
-          <caret line="27" column="14" selection-start-line="27" selection-start-column="9" selection-end-line="27" selection-end-column="14" />
-          <folding>
-            <element signature="e#0#13#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/logger.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="14" column="8" selection-start-line="14" selection-start-column="8" selection-end-line="14" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/analyzeVideo.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="867">
-          <caret line="67" column="18" lean-forward="true" selection-start-line="67" selection-start-column="18" selection-end-line="67" selection-end-column="18" />
-          <folding>
-            <element signature="e#538#548#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/wip02.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1071">
@@ -999,21 +1025,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider editor-type-id="text-editor">
-        <state relative-caret-position="204">
-          <caret line="12" column="28" selection-start-line="12" selection-start-column="28" selection-end-line="12" selection-end-column="28" />
-        </state>
-      </provider>
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="221">
-            <caret line="13" selection-start-line="13" selection-end-line="13" />
-          </first_editor>
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://C:/old/Python27/Lib/site-packages/pyautogui/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="150">
@@ -1028,43 +1039,36 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/markCrabs.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="306">
+          <caret line="48" column="7" selection-start-line="48" selection-start-column="7" selection-end-line="48" selection-end-column="7" />
+          <folding>
+            <element signature="e#300#331#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/wip04.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="187">
-          <caret line="143" column="21" lean-forward="true" selection-start-line="143" selection-start-column="21" selection-end-line="143" selection-end-column="28" />
+        <state relative-caret-position="204">
+          <caret line="99" column="8" lean-forward="true" selection-start-line="99" selection-start-column="8" selection-end-line="99" selection-end-column="62" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/ImageWindow.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1209">
-          <caret line="72" column="9" selection-start-line="72" selection-start-column="9" selection-end-line="72" selection-end-column="9" />
+        <state relative-caret-position="165">
+          <caret line="78" column="16" selection-start-line="78" selection-start-column="16" selection-end-line="78" selection-end-column="16" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/common.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="437">
-          <caret line="130" column="8" selection-start-line="130" selection-start-column="8" selection-end-line="130" selection-end-column="8" />
-          <folding>
-            <element signature="e#37#48#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Image.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="142">
-          <caret line="24" column="16" selection-start-line="24" selection-start-column="8" selection-end-line="24" selection-end-column="16" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/determineFrames.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="340">
+        <state relative-caret-position="697">
           <caret line="56" column="20" selection-start-line="56" selection-start-column="20" selection-end-line="56" selection-end-column="114" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
@@ -1072,13 +1076,86 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/markCrabs.py">
+    <entry file="file://$PROJECT_DIR$/Image.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="154">
-          <caret line="61" selection-start-line="61" selection-end-line="61" />
+        <state relative-caret-position="295">
+          <caret line="24" column="16" selection-start-line="24" selection-start-column="8" selection-end-line="24" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/VideoStream.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="170">
+          <caret line="10" column="8" selection-start-line="10" selection-start-column="8" selection-end-line="10" selection-end-column="8" />
           <folding>
-            <element signature="e#300#331#0" expanded="true" />
+            <element signature="e#0#13#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/FeatureMatcher.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="70">
+          <caret line="33" lean-forward="true" selection-start-line="33" selection-end-line="33" />
+          <folding>
+            <element signature="e#0#23#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/common.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="181">
+          <caret line="43" column="22" selection-start-line="43" selection-start-column="8" selection-end-line="43" selection-end-column="22" />
+          <folding>
+            <element signature="e#37#48#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/VelocityDetector.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="318">
+          <caret line="221" column="41" selection-start-line="221" selection-start-column="41" selection-end-line="221" selection-end-column="41" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider editor-type-id="text-editor">
+        <state relative-caret-position="204">
+          <caret line="12" column="28" selection-start-line="12" selection-start-column="28" selection-end-line="12" selection-end-column="28" />
+        </state>
+      </provider>
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="335">
+            <caret line="28" selection-start-line="28" selection-end-line="28" />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/detectRedDots.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="329">
+          <caret line="89" selection-start-line="89" selection-end-line="89" selection-end-column="23" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/detectDrift.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="369">
+          <caret line="106" column="23" selection-start-line="106" selection-start-column="23" selection-end-line="106" selection-end-column="23" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/logger.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="306">
+          <caret line="18" selection-start-line="18" selection-end-line="18" />
         </state>
       </provider>
     </entry>

@@ -2,23 +2,17 @@ from RedDotsDetector import RedDotsDetector
 
 
 class Logger:
-    __frameLogFile = None
-    __driftsLogFile = None
+    #__logFile = None
 
-    def __init__(self, redDotsFilePath, driftsFilePath):
-        self.__frameLogFile = open(redDotsFilePath, 'wb')
-        self.__driftsLogFile = open(driftsFilePath, 'wb')
+    def __init__(self, filePath):
+        self.__logFile = open(filePath, 'wb')
 
-    def writeToRedDotsFile(self, row):
-        self.__writeToCSVFile(self.__frameLogFile, row)
-
-    def writeToDriftsFile(self, row):
-        self.__writeToCSVFile(self.__driftsLogFile, row)
+    def writeToFile(self, row):
+        self.__writeToCSVFile(self.__logFile, row)
 
     def __writeToCSVFile(self, file, row):
         file.write("\t".join(str(x) for x in row) + "\n")
         file.flush()
 
-    def closeFiles(self):
-        self.__frameLogFile.close()
-        self.__driftsLogFile.close()
+    def closeFile(self):
+        self.__logFile.close()
