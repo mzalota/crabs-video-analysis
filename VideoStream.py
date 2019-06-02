@@ -25,8 +25,7 @@ class VideoStream:
         return Image(self.readImage(frameID))
 
     def __readFromVideoCapture(self, frameID):
-        print("frameID is")
-        print (frameID)
+        #print("frameID is",frameID)
         self.__vidcap.set(cv2.CAP_PROP_POS_FRAMES, float(frameID))
         success, image = self.__vidcap.read()
         if not success:

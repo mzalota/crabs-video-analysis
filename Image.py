@@ -73,9 +73,9 @@ class Image:
         (minVal, maxVal, minLoc, maxLoc) = cv2.minMaxLoc(gray)
         image = orig.copy()
         cv2.circle(image, maxLoc, radius_, (255, 0, 0), 2)
-        print "brigtest spot maxLoc"
-        print maxLoc
-        print maxVal
+        #print "brigtest spot maxLoc"
+        #print maxLoc
+        #print maxVal
         imageWin.showWindowAndWaitForClick(image)
 
     def drawBoxOnImage2(self):
