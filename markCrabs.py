@@ -1,13 +1,6 @@
-import matplotlib.pyplot as plt
-import numpy as np
-
+import pandas as pd
 import cv2
 
-
-# import the necessary packages
-import argparse
-import cv2
-import math
 
 from Image import Image
 from ImageWindow import ImageWindow
@@ -22,9 +15,12 @@ filepath="C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V6__R_2018
 filenameFull=os.path.basename(filepath)
 filename=os.path.splitext(filenameFull)[0]
 
+videoFileName = "V6__R_20180915_212238"
 
-directory ="C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V6__R_20180915_212238/V6__R_20180915_212238/seqFrames/"
+rootDir ="C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"
+framesDir =rootDir+"/"+videoFileName+"/seqFrames/"
 
+outputFilePath =rootDir+"/"+videoFileName+"/"+videoFileName+"_crabs.csv"
 
 def processImage(image, imageWin):
 
@@ -64,43 +60,28 @@ def getCrabWidth(imageWin, image):
 
 imageWin = ImageWindow("mainWindow", Point(700, 200))
 
-counter = 1
-for filename in os.listdir(directory):
+crabsDF = pd.DataFrame(columns=['dir', 'filename', 'crabNumber','crabWidthPixels','crabLocationX','crabLocationY','crabWidthLine'])
+
+crabNumber = 1
+for filename in os.listdir(framesDir):
+	if crabNumber >= 4:
+		break
+
 	if filename.endswith(".jpg"):
-		filepath = os.path.join(directory, filename)
+		filepath = os.path.join(framesDir, filename)
 		image = cv2.imread(filepath)
 		foundCrabs = processImage(image,imageWin)
 		for crab in foundCrabs:
-			print("crab", directory, filename, counter, crab.diagonal(),crab.centerPoint().x,crab.centerPoint().y, str(crab.centerPoint()), str(crab))
-			counter += 1
+			crabsDF = crabsDF.append({'dir': framesDir, 'filename': filename, 'crabNumber': crabNumber, 'crabWidthPixels': crab.diagonal(), 'crabLocationX': crab.centerPoint().x, 'crabLocationY': crab.centerPoint().y, 'crabWidthLine': crab}, ignore_index=True)
+
+			print("crab", framesDir, filename, crabNumber, crab.diagonal(),crab.centerPoint().x,crab.centerPoint().y, str(crab.centerPoint()), str(crab))
+			crabNumber += 1
 		continue
 	else:
-		print("Skipping some non JPG file", os.path.join(directory, filename))
+		print("Skipping some non JPG file", os.path.join(framesDir, filename))
 		continue
 
-
-
-exit()
-
-#csvData.append([filepath,x,y])
-
-framesData = [['frame_filepath', 'image_filename', 'distance', 'red_point_1_x', 'red_point_1_y','red_point_2_x', 'red_point_2_y']]
-crabsData =[['frame_filepath', 'image_filename', 'crab_id', 'crab_x', 'crab_y']]
-
-
-import csv	
-
-
-with open('C:/workspaces/AnjutkaVideo/frames_log.csv', 'wb') as framesFile:
-    writer = csv.writer(framesFile,delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-    writer.writerows(framesData)
-framesFile.close()
-
-with open('C:/workspaces/AnjutkaVideo/crabs_log.csv', 'wb') as crabsFile:
-    writer = csv.writer(crabsFile,delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-    writer.writerows(crabsData)
-crabsFile.close()
-			
+crabsDF.to_csv(outputFilePath, sep='\t')
 	
 # close all open windows
 cv2.destroyAllWindows()		
