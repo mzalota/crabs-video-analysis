@@ -1,13 +1,12 @@
 import cv2
 
-from Frame import Frame
-from Image import Image
-from ImageWindow import ImageWindow
-from VelocityDetector import VelocityDetector
-from RedDotsDetector import RedDotsDetector
-from VideoStream import VideoStream
-from common import Point, Box
-from logger import Logger
+from lib.Frame import Frame
+from lib.ImageWindow import ImageWindow
+from lib.VelocityDetector import VelocityDetector
+from lib.RedDotsDetector import RedDotsDetector
+from lib.VideoStream import VideoStream
+from lib.common import Point
+from lib.Logger import Logger
 
 
 rootDirectory = "C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"

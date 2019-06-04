@@ -2,9 +2,9 @@ import pandas as pd
 import cv2
 
 
-from Image import Image
-from ImageWindow import ImageWindow
-from common import Point, Box
+from lib.Image import Image
+from lib.ImageWindow import ImageWindow
+from lib.common import Point, Box
 import os
 
 #filepath="C:/workspaces/AnjutkaVideo/frames/frame1.jpg"

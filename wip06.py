@@ -13,11 +13,8 @@
 
 import cv2
 import numpy as np
-from skimage import measure
-from skimage.draw import polygon_perimeter
 
-from RedDot import isolateRedDots, drawContoursAroundRedDots
-from RedDotsDetector import drawBoxesAroundRedDots
+from lib.RedDot import drawContoursAroundRedDots
 
 frameFile = "C:/workspaces/AnjutkaVideo/frames/frame7.jpg"
 
