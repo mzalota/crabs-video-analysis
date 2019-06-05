@@ -5,6 +5,8 @@ import os
 
 from Image import Image
 
+class VideoStreamException(Exception):
+    pass
 
 class VideoStream:
 
@@ -29,7 +31,7 @@ class VideoStream:
         self.__vidcap.set(cv2.CAP_PROP_POS_FRAMES, float(frameID))
         success, image = self.__vidcap.read()
         if not success:
-            raise Exception("Could not read Videofile any more")
+            raise VideoStreamException("Could not read Videofile any more")
         return image
 
     def printMemoryUsage(self):

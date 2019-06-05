@@ -4,7 +4,7 @@ from lib.Frame import Frame
 from lib.Image import Image
 from lib.ImageWindow import ImageWindow
 from lib.VelocityDetector import VelocityDetector
-from lib.VideoStream import VideoStream
+from lib.VideoStream import VideoStream, VideoStreamException
 from lib.common import Point
 from lib.Logger import Logger
 
@@ -21,8 +21,8 @@ rootDirectory = "C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"
 #videoFilenameFull = 'Kara_Sea_Crab_Video_st_5993_2018/V5__R_20180915_211343.avi'
 #videoFilenameFull = 'Kara_Sea_Crab_Video_st_5993_2018/V6__R_20180915_212238.avi'
 
-videoFilename = "V6__R_20180915_212238"
-videoFilepath = rootDirectory+"V6__R_20180915_212238.avi"
+videoFilename = "V3__R_20180915_205551"
+videoFilepath = rootDirectory+"/"+videoFilename+".avi"
 videoStream = VideoStream(videoFilepath)
 print "videoFilepath is "+videoFilepath
 
@@ -47,18 +47,27 @@ vf = None
 imageWin = ImageWindow("mainWithRedDots", Point(700, 200))
 
 stepSize = 5
-startingFrameID = 5
+frameID = 5
 
 success = True
 while success:
 
-    windowName = 'Detected_' + str(startingFrameID)
+    windowName = 'Detected_' + str(frameID)
 
     try:
-        image = videoStream.readImage(startingFrameID)
-        frame = Frame(startingFrameID, videoStream)
+        image = videoStream.readImage(frameID)
+        frame = Frame(frameID, videoStream)
+    except VideoStreamException as error:
+        if frameID >1000:
+            print ("no more frames to read from video ")
+            print(repr(error))
+            break
+        else:
+            print "cannot read frame " + str(frameID) + ", skipping to next"
+            frameID += stepSize
+            continue
+
     except Exception as error:
-        print ("no more frames to read from video ")
         print('Caught this error: ' + repr(error))
         break
 
@@ -70,7 +79,7 @@ while success:
     if driftVector is None:
         #insert wrong values
         driftsRow = list()
-        driftsRow.append(startingFrameID)
+        driftsRow.append(frameID)
         driftsRow.append(-888)
         driftsRow.append(-999)
         driftsRow.append(-777)
@@ -84,21 +93,21 @@ while success:
     else:
         driftLength = driftVector.length()
         driftsRow = velocityDetector.infoAboutDrift()
-        driftsRow.insert(0, startingFrameID)
+        driftsRow.insert(0, frameID)
 
     print driftsRow
-    #logger.writeToFile(driftsRow)
+    logger.writeToFile(driftsRow)
 
     img = Image(image)
     img.drawDriftVectorOnImage(driftVector)
 
     #imageWin.showWindowAndWait(img.asNumpyArray(), 1000)
-    imageWin.showWindowAndWaitForClick(img.asNumpyArray())
+    #imageWin.showWindowAndWaitForClick(img.asNumpyArray())
 
 
-    startingFrameID += stepSize
+    frameID += stepSize
 
-    if startingFrameID > 99100:
+    if frameID > 99100:
         break
 
 
