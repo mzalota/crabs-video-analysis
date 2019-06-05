@@ -1,3 +1,5 @@
+import traceback
+
 import cv2
 
 from lib.Frame import Frame
@@ -21,7 +23,8 @@ rootDirectory = "C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"
 #videoFilenameFull = 'Kara_Sea_Crab_Video_st_5993_2018/V5__R_20180915_211343.avi'
 #videoFilenameFull = 'Kara_Sea_Crab_Video_st_5993_2018/V6__R_20180915_212238.avi'
 
-videoFilename = "V3__R_20180915_205551"
+#videoFilename = "V3__R_20180915_205551"
+videoFilename = "V6__R_20180915_212238"
 videoFilepath = rootDirectory+"/"+videoFilename+".avi"
 videoStream = VideoStream(videoFilepath)
 print "videoFilepath is "+videoFilepath
@@ -46,7 +49,7 @@ velocityDetector = VelocityDetector()
 vf = None
 imageWin = ImageWindow("mainWithRedDots", Point(700, 200))
 
-stepSize = 5
+stepSize = 2
 frameID = 5
 
 success = True
@@ -55,12 +58,13 @@ while success:
     windowName = 'Detected_' + str(frameID)
 
     try:
-        image = videoStream.readImage(frameID)
         frame = Frame(frameID, videoStream)
+        velocityDetector.detectVelocity(frame)
     except VideoStreamException as error:
-        if frameID >1000:
+        if frameID >300:
             print ("no more frames to read from video ")
             print(repr(error))
+            # traceback.print_exc()
             break
         else:
             print "cannot read frame " + str(frameID) + ", skipping to next"
@@ -69,27 +73,15 @@ while success:
 
     except Exception as error:
         print('Caught this error: ' + repr(error))
+        traceback.print_exc()
         break
 
     # findBrightestSpot()
 
-    velocityDetector.detectVelocity(frame, image)
     driftVector = velocityDetector.getMedianDriftVector()
-
     if driftVector is None:
-        #insert wrong values
-        driftsRow = list()
-        driftsRow.append(frameID)
-        driftsRow.append(-888)
-        driftsRow.append(-999)
-        driftsRow.append(-777)
-        driftsRow.append(-45)
-        driftsRow.append(0)
-        driftsRow.append(velocityDetector.getDriftsCount())
-        driftsRow.append("")
-        driftsRow.append(velocityDetector.getDriftsAsString())
-        driftsRow.append("EMPTY_DRIFTS")
-
+        driftsRow = velocityDetector.emptyRow()
+        driftsRow.insert(0, frameID)
     else:
         driftLength = driftVector.length()
         driftsRow = velocityDetector.infoAboutDrift()
@@ -98,12 +90,11 @@ while success:
     print driftsRow
     logger.writeToFile(driftsRow)
 
-    img = Image(image)
+    img = frame.getImgObj()
     img.drawDriftVectorOnImage(driftVector)
 
     #imageWin.showWindowAndWait(img.asNumpyArray(), 1000)
     #imageWin.showWindowAndWaitForClick(img.asNumpyArray())
-
 
     frameID += stepSize
 

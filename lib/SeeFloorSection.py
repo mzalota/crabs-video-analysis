@@ -3,6 +3,7 @@ import uuid
 import cv2
 
 from lib.Frame import Frame
+from lib.Image import Image
 from lib.ImageWindow import ImageWindow
 from common import Box, Point, Vector
 
@@ -43,11 +44,12 @@ class SeeFloorSection:
         return lastPoint
 
     def showSubImage(self):
-        img = self.getImage()
         if self.__subImageWin is None:
             self.__subImageWin = ImageWindow.createWindow(self.__getWindowName(), self.__defaultBoxAroundFeature())
+
+        img = self.getImage()
         if img is not None:
-            self.__subImageWin.showWindow(img)
+            self.__subImageWin.showWindow(img.asNumpyArray())
 
     def pluckFeature(self, frame, topLeftPoint):
         # type: (Frame, Point) -> None
@@ -56,6 +58,7 @@ class SeeFloorSection:
         self.__frameIDs.append(frame.getFrameID())
 
     def getDrift(self):
+        # type: () -> Vector
         numOfFrames = len(self.__topLeftPoints)
         if numOfFrames <= 1:
             return None
@@ -69,21 +72,19 @@ class SeeFloorSection:
             return None
 
         return driftVector
-        #return lastPoint.distanceTo(beforeLastPoint)
 
     def drawFeatureOnFrame(self, image):
-        #TODO: refactor image numpy array into Image class
         box = self.__defaultBoxAroundFeature()
         image.drawBoxOnImage(box)
         image.drawTextInBox(box,self.__id)
 
     def getImage(self):
+        # type: () -> Image
         if len(self.__frames)<1:
             return None
 
         img = self.__getLastFrame().getImgObj()
-        #img = Image(image)
-        return img.subImage(self.__defaultBoxAroundFeature()).asNumpyArray()
+        return img.subImage(self.__defaultBoxAroundFeature())
 
     def __getLastFrame(self):
         return self.__frames[max(self.__frames.keys())]
@@ -94,7 +95,7 @@ class SeeFloorSection:
 
     def findFeature(self, frame):
         # type: (Frame) -> Point
-        newLocation = self.__findSubImage(frame.getImage(), self.getImage())
+        newLocation = self.__findSubImage(frame.getImgObj().asNumpyArray(), self.getImage().asNumpyArray())
         if newLocation:
             self.pluckFeature(frame,newLocation)
         return newLocation

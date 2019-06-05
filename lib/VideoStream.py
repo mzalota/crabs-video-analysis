@@ -27,11 +27,11 @@ class VideoStream:
         return Image(self.readImage(frameID))
 
     def __readFromVideoCapture(self, frameID):
-        #print("frameID is",frameID)
         self.__vidcap.set(cv2.CAP_PROP_POS_FRAMES, float(frameID))
         success, image = self.__vidcap.read()
         if not success:
-            raise VideoStreamException("Could not read Videofile any more")
+            errorMessage = "Could not read frame " + str(frameID) + " from videofile"
+            raise VideoStreamException(errorMessage)
         return image
 
     def printMemoryUsage(self):

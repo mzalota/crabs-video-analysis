@@ -13,7 +13,6 @@ class Frame:
         self.__frameID = frameNumber
         self.__videoStream = videoStream
 
-
     def getFrameID(self):
         return self.__frameID
 

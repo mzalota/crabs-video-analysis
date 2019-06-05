@@ -10,15 +10,16 @@ from common import Box, Point, Vector
 class VelocityDetector():
     def __init__(self):
         self.__prevFrame = None
-        self.__fm = list()
+        self.__createFeatureMatchers()
 
-        self.__fm.append(FeatureMatcher(Box(Point(1250,75), Point(1250 + 100, 75 + 200))))
+    def __createFeatureMatchers(self):
+        self.__fm = list()
+        self.__fm.append(FeatureMatcher(Box(Point(1250, 75), Point(1250 + 100, 75 + 200))))
         self.__fm.append(FeatureMatcher(Box(Point(1250, 75), Point(1350 + 100, 75 + 100))))
         self.__fm.append(FeatureMatcher(Box(Point(1250, 75), Point(1450 + 200, 75 + 100))))
         self.__fm.append(FeatureMatcher(Box(Point(1300, 100), Point(1300 + 500, 100 + 300))))
         self.__fm.append(FeatureMatcher(Box(Point(200, 50), Point(200 + 600, 50 + 400))))
         self.__fm.append(FeatureMatcher(Box(Point(800, 50), Point(800 + 300, 50 + 200))))
-
         self.__fm.append(FeatureMatcher(Box(Point(200, 450), Point(200 + 200, 450 + 200))))
         self.__fm.append(FeatureMatcher(Box(Point(800, 300), Point(800 + 300, 300 + 200))))
 
@@ -42,7 +43,6 @@ class VelocityDetector():
 
     def __isAbsoluteValueMoreThanTwiceBig(self, thisValue, medianValue):
         if math.fabs(thisValue) > math.fabs(medianValue) * 2:
-        #if thisValue > medianValue * 2:
             return True
         else:
             return False
@@ -131,17 +131,15 @@ class VelocityDetector():
         medianYDrift = numpy.median(driftY)
         return Vector(medianXDrift, medianYDrift)
 
-    def detectVelocity(self,frame,image):
+    def detectVelocity(self,frame):
         self.__drifts = list()
         for fm in self.__fm:
+            #TODO: If the next line is moved one down we get exception for video files that don't have first frame
+            imgObj = frame.getImgObj()
             section = fm.detectSeeFloorSections(frame)
-            img = Image(image)
-            section.drawFeatureOnFrame(img)
+            section.drawFeatureOnFrame(imgObj)
             if fm.detectionWasReset():
                 continue
-
-            #if self.__prevFrame is None:
-            #    continue
 
             drift = section.getDrift()
             if not drift:
@@ -154,38 +152,8 @@ class VelocityDetector():
         self.__prevFrame = frame
 
 
-        #sec1 = self.__fm[0].detectSeeFloorSections(frame)
-        #sec2 = self.__fm[1].detectSeeFloorSections(frame)
-        #sec3 = self.__fm[2].detectSeeFloorSections(frame)
-        #sec4 = self.__fm[3].detectSeeFloorSections(frame)
-        # imageWinNoBoxes.showWindow(withRedDots)
-        # fm.showSubImage()
-        # fm2.showSubImage()
-        # fm3.showSubImage()
-        # fm4.showSubImage()
-        # sec1.showSubImage()
-        # sec2.showSubImage()
-        # sec3.showSubImage()
-        # sec4.showSubImage()
-        #sec1.drawFeatureOnFrame(withRedDots)
-        #sec2.drawFeatureOnFrame(withRedDots)
-        #sec3.drawFeatureOnFrame(withRedDots)
-        #sec4.drawFeatureOnFrame(withRedDots)
-
-        # fm.drawBoxOnImage(withRedDots)
-        # fm2.drawBoxOnImage(withRedDots)
-        # fm3.drawBoxOnImage(withRedDots)
-        # fm4.drawBoxOnImage(withRedDots)
-
-        #for fm in self.__fm:
-        #    print fm.infoAboutFeature()
-
     def getDriftsAsString(self):
         return Vector.vectorArrayAsString(self.__drifts)
-        #if len(self.__drifts) <= 0:
-        #    return ""
-        #concatStr = [str(x) for x in self.__drifts]
-        #return concatStr
 
     def getDriftsCount(self):
         return len(self.__drifts)
@@ -211,6 +179,19 @@ class VelocityDetector():
             driftsRow.append(driftsNoOutliersStr)
 
         return driftsRow
+
+    def emptyRow(self):
+        row = []
+        row.append(-888)
+        row.append(-999)
+        row.append(-777)
+        row.append(-45)
+        row.append(0)
+        row.append(self.getDriftsCount())
+        row.append("")
+        row.append(self.getDriftsAsString())
+        row.append("EMPTY_DRIFTS")
+        return row
 
     @staticmethod
     def infoHeaders():
