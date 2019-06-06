@@ -15,15 +15,16 @@ class FeatureMatcher:
 
     def detectSeeFloorSections(self, frame):
         # type: (Frame) -> SeeFloorSection
-        self.__seeFloorSection = self.detectSeeFloorSection(frame, self.__seeFloorSection)
+        self.__seeFloorSection = self.__detectSeeFloorSection(frame, self.__seeFloorSection)
         return self.__seeFloorSection
 
-    def detectSeeFloorSection(self, frame, section):
+    def __detectSeeFloorSection(self, frame, section):
         # type: (Frame, SeeFloorSection) -> SeeFloorSection
         if section is None:
             return SeeFloorSection(frame, self.__startingBox)
 
         newTopLeftOfFeature = section.findFeature(frame)
+
         wasReset = self.__resetFeatureIfNecessary(newTopLeftOfFeature)
         self.__detectionWasReset = wasReset
         if wasReset:
