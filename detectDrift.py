@@ -24,7 +24,8 @@ rootDirectory = "C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"
 #videoFilenameFull = 'Kara_Sea_Crab_Video_st_5993_2018/V6__R_20180915_212238.avi'
 
 #videoFilename = "V3__R_20180915_205551"
-videoFilename = "V6__R_20180915_212238"
+#videoFilename = "V6__R_20180915_212238"
+videoFilename = "V4__R_20180915_210447"
 videoFilepath = rootDirectory+"/"+videoFilename+".avi"
 videoStream = VideoStream(videoFilepath)
 print "videoFilepath is "+videoFilepath
@@ -49,7 +50,7 @@ velocityDetector = VelocityDetector()
 vf = None
 imageWin = ImageWindow("mainWithRedDots", Point(700, 200))
 
-stepSize = 2
+stepSize = 3
 frameID = 5
 
 success = True
