@@ -42,12 +42,14 @@ class Frame:
 
         mainCollage = self.__glueTogether(image, nextSubImage, prevSubImage)
 
-        collageHeight = self.getImgObj().height() + neighboursHeight * 2
+        #collageHeight = self.getImgObj().height() + neighboursHeight * 2
 
-        rightCollage = self.constructRightCollage(collageHeight, nextFrame, prevFrame)
-        filler = Image.empty(collageHeight, 100, 0).asNumpyArray()
+        #rightCollage = self.constructRightCollage(collageHeight, nextFrame, prevFrame)
+        #filler = Image.empty(collageHeight, 100, 0).asNumpyArray()
 
-        return np.concatenate((mainCollage, filler, rightCollage), axis=1)
+        #withImageOnTheRight = np.concatenate((mainCollage, filler, rightCollage), axis=1)
+        #return withImageOnTheRight
+        return image.asNumpyArray()
 
     def constructRightCollage(self, mainCollageHeight, nextFrame, prevFrame):
         beforeMiddleImage = self.constructRightPrev(prevFrame)
