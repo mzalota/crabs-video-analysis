@@ -100,6 +100,28 @@ class SeeFloorSection:
             self.pluckFeature(frame,newLocation)
         return newLocation
 
+    def findInAllFrames(self):
+        startingFrameID = self.__getLastFrame().getFrameID()
+        for i in range(1,500,5):
+            nextFrameID = int(startingFrameID) + i
+            print ("nextFrameID", nextFrameID, startingFrameID, i)
+            nextFrame = Frame(nextFrameID, self.__getLastFrame().getVideoStream())
+            newLocation = self.findFeature(nextFrame)
+            if newLocation is None:
+                break
+            print ("frame", self.infoAboutFeature())
+
+        for i in range(1,-500,-5):
+            nextFrameID = int(startingFrameID) + i
+            print ("nextFrameID", nextFrameID, startingFrameID, i)
+            nextFrame = Frame(nextFrameID, self.__getLastFrame().getVideoStream())
+            newLocation = self.findFeature(nextFrame)
+            if newLocation is None:
+                break
+            print ("frame", self.infoAboutFeature())
+
+
+
     def __findSubImage(self, image, subImage):
         if subImage is None:
             return None

@@ -16,6 +16,9 @@ class Frame:
     def getFrameID(self):
         return self.__frameID
 
+    def getVideoStream(self):
+        return self.__videoStream
+
     def getImage(self):
         return self.__videoStream.readImage(self.__frameID)
 
