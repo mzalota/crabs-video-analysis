@@ -11,7 +11,7 @@ from lib.common import Point
 from lib.Logger import Logger
 
 
-rootDirectory = "C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"
+rootDirectory = "C:/Users/User/Documents/data/Kara/Video/V_Analysis"
 
 #videoFilenameFull = 'KaraSeaCrabVideoBlagopoluchiyaBay2018/V1_R_20180911_165259.avi'
 #videoFilenameFull = 'KaraSeaCrabVideoBlagopoluchiyaBay2018/V2_R_20180911_165730.avi'

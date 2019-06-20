@@ -8,7 +8,9 @@
 #python -m pip install scikit-image
 #python -m pip install scipy
 #python -m pip install matplotlib
-#python -m pip install pyautogui
+#python -m pip install pyautogui ##ERROR#Command "python setup.py egg_info" failed with error code 1 in c:\users\user\appdata\local\temp\pip-install-fiv6z_\pygetwindow\
+#pip install pyautogui==0.9.35
+
 #python -m pip install psutil
 #python -m pip install pylru
 

@@ -15,7 +15,7 @@ imageWin2 = ImageWindow.createWindow("topSubimage",Box(Point(0,0),Point(960,740)
 #videoFileName="V5__R_20180915_211343"
 #videoFileName="V6__R_20180915_212238"
 filename = "V6__R_20180915_212238"
-rootDirectory = "C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"
+rootDirectory = "C:/Users/User/Documents/data/Kara/Video/V_Analysis/"
 csvFilesDirectory = rootDirectory+"/"+filename+"/"
 
 

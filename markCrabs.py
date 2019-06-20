@@ -17,7 +17,7 @@ filename=os.path.splitext(filenameFull)[0]
 
 videoFileName = "V6__R_20180915_212238"
 
-rootDir ="C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"
+rootDir ="C:/Users/User/Documents/data/Kara/Video/V_Analysis/"
 framesDir =rootDir+"/"+videoFileName+"/seqFrames/"
 
 outputFilePath =rootDir+"/"+videoFileName+"/"+videoFileName+"_crabs.csv"
