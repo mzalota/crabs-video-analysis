@@ -8,12 +8,12 @@ from lib.common import Point, Box
 import os
 
 #filepath="C:/workspaces/AnjutkaVideo/frames/frame1.jpg"
-filepath="C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V6__R_20180915_212238/V6__R_20180915_212238/seqFrames/frame003717.jpg"
+#filepath="C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V6__R_20180915_212238/V6__R_20180915_212238/seqFrames/frame003717.jpg"
 
 #filename=os.path.splitext(filepath)[0]
 
-filenameFull=os.path.basename(filepath)
-filename=os.path.splitext(filenameFull)[0]
+#filenameFull=os.path.basename(filepath)
+#filename=os.path.splitext(filenameFull)[0]
 
 videoFileName = "V6__R_20180915_212238"
 
