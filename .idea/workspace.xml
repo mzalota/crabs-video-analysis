@@ -1,13 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="a1a869c0-4852-40ce-ab45-9ae29e94a5c1" name="Default" comment="Did a little clean up, refactoring">
-      <change afterPath="$PROJECT_DIR$/lib/FolderStructure.py" afterDir="false" />
+    <list default="true" id="a1a869c0-4852-40ce-ab45-9ae29e94a5c1" name="Default" comment="created Tests for DetectDrift">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/detectDrift.py" beforeDir="false" afterPath="$PROJECT_DIR$/detectDrift.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/Frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/Frame.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/SeeFloorSection.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/SeeFloorSection.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/markCrabs.py" beforeDir="false" afterPath="$PROJECT_DIR$/markCrabs.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -206,6 +201,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
+    <property name="ChangesTree.GroupingKeys" value="" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/lib" />
     <property name="settings.editor.selected.configurable" value="vcs.Git" />
@@ -382,20 +378,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1548498920871</updated>
-    </task>
-    <task id="LOCAL-00001" summary="refactored Feature Recognission function">
-      <created>1548502935294</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1548502935294</updated>
-    </task>
-    <task id="LOCAL-00002" summary="red dots detection works!">
-      <created>1548573634898</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1548573634899</updated>
     </task>
     <task id="LOCAL-00003" summary="updated ReadMe with installation steps">
       <created>1548579003036</created>
@@ -726,7 +708,21 @@
       <option name="project" value="LOCAL" />
       <updated>1559889321135</updated>
     </task>
-    <option name="localTasksCounter" value="50" />
+    <task id="LOCAL-00050" summary="created Tests for DetectDrift">
+      <created>1561103594870</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1561103594872</updated>
+    </task>
+    <task id="LOCAL-00051" summary="created Tests for DetectDrift">
+      <created>1561103722029</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1561103722029</updated>
+    </task>
+    <option name="localTasksCounter" value="52" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -834,7 +830,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Feature uses dictionary" />
     <MESSAGE value="Feature displays id" />
     <MESSAGE value="Velocity calculation works, needs to be improved" />
     <MESSAGE value="Velocity calculation works - now with median trick" />
@@ -859,7 +854,8 @@
     <MESSAGE value="extracted logic out of detectDrift into detectRedDots.py" />
     <MESSAGE value="moved files into lib subdirectory" />
     <MESSAGE value="Did a little clean up, refactoring" />
-    <option name="LAST_COMMIT_MESSAGE" value="Did a little clean up, refactoring" />
+    <MESSAGE value="created Tests for DetectDrift" />
+    <option name="LAST_COMMIT_MESSAGE" value="created Tests for DetectDrift" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://C:/old/Python27/Lib/collections.py">
