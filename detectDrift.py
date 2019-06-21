@@ -11,9 +11,10 @@ from lib.common import Point
 from lib.Logger import Logger
 
 
+rootDirectory = "C:/Users/User/Documents/data/Kara/Video/V_Analysis"
 
     #rootDirectory = "C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"
-rootDirectory = "C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/"
+#rootDirectory = "C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/"
 
 #videoFilenameFull = 'KaraSeaCrabVideoBlagopoluchiyaBay2018/V1_R_20180911_165259.avi'
 #videoFilenameFull = 'KaraSeaCrabVideoBlagopoluchiyaBay2018/V2_R_20180911_165730.avi'
@@ -26,15 +27,8 @@ rootDirectory = "C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay201
 #videoFilenameFull = 'Kara_Sea_Crab_Video_st_5993_2018/V6__R_20180915_212238.avi'
 
 #videoFilename = "V3__R_20180915_205551"
-#videoFilename = "V6__R_20180915_212238"
-#videoFilename = "V4__R_20180915_210447"
-#videoFilename = "V5__R_20180915_211343"
-
-#videoFilename = "V3_R_20180911_170159"
-#videoFilename = "V2_R_20180911_165730"
-videoFilename = "V1_R_20180911_165259"
-
-videoFilepath = rootDirectory+"/"+videoFilename+".avi"  #
+videoFilename = "V6__R_20180915_212238"
+videoFilepath = rootDirectory+"/"+videoFilename+".avi"
 videoStream = VideoStream(videoFilepath)
 print "videoFilepath is "+videoFilepath
 
