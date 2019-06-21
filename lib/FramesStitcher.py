@@ -42,7 +42,7 @@ class FramesStitcher:
 
     def __constructFramesToStitch(self, driftData):
 
-        nextFrameID = driftData.getFrameID(0)
+        nextFrameID = driftData.minFrameID()
         while nextFrameID < driftData.maxFrameID():
             #print ("nextFrameID", nextFrameID)
             self.__addNextFrame(nextFrameID)
