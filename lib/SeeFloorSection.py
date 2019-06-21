@@ -47,7 +47,9 @@ class SeeFloorSection:
         if self.__subImageWin is None:
             self.__subImageWin = ImageWindow.createWindow(self.__getWindowName(), self.__defaultBoxAroundFeature())
 
+        frameID = self.__getLastFrame().getFrameID()
         img = self.getImage()
+        img.drawFrameID(frameID)
         if img is not None:
             self.__subImageWin.showWindow(img.asNumpyArray())
 
@@ -83,7 +85,9 @@ class SeeFloorSection:
         if len(self.__frames)<1:
             return None
 
+        #frameID = self.__getLastFrame().getFrameID()
         img = self.__getLastFrame().getImgObj()
+        #img.drawFrameID(frameID)
         return img.subImage(self.__defaultBoxAroundFeature())
 
     def __getLastFrame(self):
@@ -102,24 +106,26 @@ class SeeFloorSection:
 
     def findInAllFrames(self):
         startingFrameID = self.__getLastFrame().getFrameID()
-        for i in range(1,500,5):
+        for i in range(1,200,5):
             nextFrameID = int(startingFrameID) + i
             print ("nextFrameID", nextFrameID, startingFrameID, i)
             nextFrame = Frame(nextFrameID, self.__getLastFrame().getVideoStream())
             newLocation = self.findFeature(nextFrame)
             if newLocation is None:
                 break
-            print ("frame", self.infoAboutFeature())
+            print ("frame", newLocation, self.infoAboutFeature())
+            self.showSubImage()
 
-        for i in range(1,-500,-5):
+        '''  
+        for i in range(1,-200,-5):
             nextFrameID = int(startingFrameID) + i
             print ("nextFrameID", nextFrameID, startingFrameID, i)
             nextFrame = Frame(nextFrameID, self.__getLastFrame().getVideoStream())
             newLocation = self.findFeature(nextFrame)
             if newLocation is None:
                 break
-            print ("frame", self.infoAboutFeature())
-
+            print ("frame", newLocation, self.infoAboutFeature())
+        '''
 
 
     def __findSubImage(self, image, subImage):
@@ -156,6 +162,11 @@ class SeeFloorSection:
         row.append("featureId")
         row.append("featureX")
         row.append("featureY")
+        row.append("numberOfFrameIDs")
+        row.append("numberOfFrames")
+        row.append("numberOfTopLeftPoints")
+        row.append("maxFrameID")
+        row.append("minFrameID")
         return row
 
     def infoAboutFeature(self):
@@ -163,9 +174,22 @@ class SeeFloorSection:
         row.append(self.__id)
         row.append(self.getLocation().x)
         row.append(self.getLocation().y)
+        row.append(len(self.__frameIDs))
+        row.append(len(self.__frames))
+        row.append(len(self.__topLeftPoints))
+        row.append(self.getMaxFrameID())
+        row.append(self.getMinFrameID())
 
         return row
 
     def getID(self):
         # type: () -> String
         return self.__id
+
+    def getMaxFrameID(self):
+        # type: () -> String
+        return max(self.__frameIDs)
+
+    def getMinFrameID(self):
+        # type: () -> String
+        return min(self.__frameIDs)
