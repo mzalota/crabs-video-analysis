@@ -27,7 +27,9 @@ rootDirectory = "C:/Users/User/Documents/data/Kara/Video/V_Analysis"
 #videoFilenameFull = 'Kara_Sea_Crab_Video_st_5993_2018/V6__R_20180915_212238.avi'
 
 #videoFilename = "V3__R_20180915_205551"
-videoFilename = "V6__R_20180915_212238"
+#videoFilename = "V6__R_20180915_212238"
+videoFilename = "V3_R_20180911_170159"
+
 videoFilepath = rootDirectory+"/"+videoFilename+".avi"
 videoStream = VideoStream(videoFilepath)
 print "videoFilepath is "+videoFilepath
