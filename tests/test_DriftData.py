@@ -95,6 +95,19 @@ class TestDriftData(TestCase):
         # Assert
         self.assertEqual(result, 0)
 
+    def test_yPixelsBetweenFrames_betweenFirstAndSecondIndex_zeroPixels(self):
+        # Setup
+        df = pd.DataFrame()
+        df = df.append({'frameNumber': int(100), 'driftY': 0, 'driftX': 0}, ignore_index=True)
+        df = df.append({'frameNumber': int(104), 'driftY': 16, 'driftX': 0}, ignore_index=True)
+
+        # Exercise
+        driftData = DriftData(df)
+        result = driftData.yPixelsBetweenFrames(101,103)
+
+        # Assert
+        self.assertEqual(result, 8)
+
     def test_yPixelsBetweenFrames_bothFrameIDsInDataFrame_pixelsIsDrift(self):
         # Setup
         df = pd.DataFrame()
