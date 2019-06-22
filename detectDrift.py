@@ -11,7 +11,8 @@ from lib.common import Point
 from lib.Logger import Logger
 
 
-rootDirectory = "C:/Users/User/Documents/data/Kara/Video/V_Analysis"
+#rootDirectory = "C:/Users/User/Documents/data/Kara/Video/V_Analysis"
+rootDirectory = "C:/workspaces/AnjutkaVideo/seeps/c15"
 
 #rootDirectory = "C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"
 #rootDirectory = "C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/"
@@ -29,7 +30,8 @@ rootDirectory = "C:/Users/User/Documents/data/Kara/Video/V_Analysis"
 #specify filename again
 #videoFilename = "V3__R_20180915_205551"
 #videoFilename = "V6__R_20180915_212238"
-videoFilename = "V3_R_20180911_170159"
+#videoFilename = "V3_R_20180911_170159"
+videoFilename = "V20180825_191129_001"
 
 videoFilepath = rootDirectory+"/"+videoFilename+".avi"
 videoStream = VideoStream(videoFilepath)
