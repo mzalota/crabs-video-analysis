@@ -10,6 +10,12 @@ class ImageWindow:
     featureBox = None
     __windowPositionAndDimensionsInitialized = False
 
+    KEY_ARROW_DOWN = 2621440
+    KEY_ARROW_UP = 2490368
+    KEY_ARROW_RIGHT = 2555904
+    KEY_ARROW_LEFT = 2424832
+    KEY_SPACE = 32
+
     def __init__ (self,windowName, position):
         self.__windowName = windowName
         self.__windowPosition = position
@@ -30,7 +36,8 @@ class ImageWindow:
         cv2.setMouseCallback(self.__windowName, self.click_and_crop)
         # cv2.setMouseCallback("mainWithRedDots", click_and_crop)
         #print "Click on a new feature"
-        keyPressed = cv2.waitKey(0)
+        #keyPressed = cv2.waitKey(0)
+        keyPressed = cv2.waitKeyEx(0)
         return keyPressed
 
 

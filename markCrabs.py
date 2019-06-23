@@ -1,6 +1,7 @@
 import pandas as pd
 import cv2
 
+from lib.Logger import Logger
 from lib.SeeFloorSection import SeeFloorSection
 from lib.FolderStructure import FolderStructure
 from lib.Frame import Frame
@@ -9,6 +10,7 @@ from lib.ImageWindow import ImageWindow
 from lib.VideoStream import VideoStream
 from lib.common import Point, Box
 import os
+from datetime import datetime
 
 # filename=os.path.splitext(filepath)[0]
 # filenameFull=os.path.basename(filepath)
@@ -31,6 +33,8 @@ videoStream = VideoStream(folderStruct.getVideoFilepath())
 # framesDir = rootDir + "/" + videoFileName + "/seqFrames/"
 # outputFilePath = rootDir + "/" + videoFileName + "/" + videoFileName + "_crabs.csv"
 
+class UserWantsToQuitException(Exception):
+    pass
 
 def processImage(image, imageWin, frameID):
     origImage = image.copy()
@@ -38,14 +42,19 @@ def processImage(image, imageWin, frameID):
     mustExit = False
     while not mustExit:
         keyPressed = imageWin.showWindowAndWaitForClick(image)
-        print ("pressed button", keyPressed)
-        # if the 'n' key is pressed return
-        if keyPressed == ord("n") or keyPressed == 0:  # pressed right arrow
+        #print ("pressed button", keyPressed)
+
+        if keyPressed == ord("n") or keyPressed == imageWin.KEY_ARROW_DOWN or keyPressed == imageWin.KEY_ARROW_RIGHT or keyPressed == imageWin.KEY_SPACE:
+            # process next frame
             mustExit = True
         elif keyPressed == ord("r"):
-            # print "Pressed R button"
+            # print "Pressed R button" - reset. Remove all marked crabs
             foundCrabs = list()
             image = origImage.copy()
+        elif keyPressed == ord("q"):
+            # print "Pressed Q button" quit
+            message = "User pressed Q button"
+            raise UserWantsToQuitException(message)
         else:
             crabBox = getCrabWidth(imageWin, image, frameID)
             foundCrabs.append(crabBox)
@@ -110,38 +119,64 @@ def findViewsOfTheSameCrab(boxAroundCrab, frameID):
     #crabOnSeeFloor.closeWindow()
 
 
+def writeCrabsInfoToFile(crabNumber, foundCrabs, logger, crabsDF):
+    for crab in foundCrabs:
+        crabsDF = crabsDF.append(
+            {'dir': framesDir, 'filename': filename, 'frameID': frameID, 'crabNumber': crabNumber,
+             'crabWidthPixels': crab.diagonal(),
+             'crabLocationX': crab.centerPoint().x, 'crabLocationY': crab.centerPoint().y, 'crabWidthLine': crab},
+            ignore_index=True)
+
+        row = list()
+        row.append(framesDir)
+        row.append(filename)
+        row.append(frameID)
+        row.append(datetime.now().strftime('%Y-%m-%d_%H:%M:%S'))
+        row.append(crabNumber)
+        row.append(crab.diagonal())
+        row.append(crab.centerPoint().x)
+        row.append(crab.centerPoint().x)
+        row.append(str(crab.centerPoint()))
+        row.append(str(crab))
+
+        print ("row", row)
+
+        logger.writeToFile(row)
+
+
+        crabNumber += 1
+    return crabNumber
+
 imageWin = ImageWindow("mainWindow", Point(700, 200))
 
 crabsDF = pd.DataFrame(
     columns=['dir', 'filename', 'crabNumber', 'crabWidthPixels', 'crabLocationX', 'crabLocationY', 'crabWidthLine'])
-
 crabNumber = 1
+
 framesDir = folderStruct.getFramesDirpath()
+
+logger = Logger.openInAppendMode(folderStruct.getCrabsFilepath())
+
+
 for filename in os.listdir(framesDir):
-
-    if filename.endswith(".jpg"):
-        filepath = os.path.join(framesDir, filename)
-        image = cv2.imread(filepath)
-        frameID = int(filename[5:11])
-        # print ("frameStr", frameID)
-        foundCrabs = processImage(image, imageWin, frameID)
-        for crab in foundCrabs:
-            crabsDF = crabsDF.append(
-                {'dir': framesDir, 'filename': filename, 'frameID': frameID, 'crabNumber': crabNumber,
-                 'crabWidthPixels': crab.diagonal(),
-                 'crabLocationX': crab.centerPoint().x, 'crabLocationY': crab.centerPoint().y, 'crabWidthLine': crab},
-                ignore_index=True)
-
-            print("crab", framesDir, filename, frameID, crabNumber, crab.diagonal(), crab.centerPoint().x,
-                  crab.centerPoint().y,
-                  str(crab.centerPoint()), str(crab))
-            crabNumber += 1
-        continue
-    else:
+    if not filename.endswith(".jpg"):
         print("Skipping some non JPG file", os.path.join(framesDir, filename))
         continue
 
-crabsDF.to_csv(folderStruct.getCrabsFilepath(), sep='\t')
+    filepath = os.path.join(framesDir, filename)
+    image = cv2.imread(filepath)
+    frameID = int(filename[5:11])
+    # print ("frameStr", frameID)
+    try:
+        foundCrabs = processImage(image, imageWin, frameID)
+        crabNumber = writeCrabsInfoToFile(crabNumber, foundCrabs, logger, crabsDF)
+    except UserWantsToQuitException as error:
+        #print repr(error)
+        print("User requested to quit on frame: "+ str(frameID))
+        break
+
+logger.closeFile()
+#crabsDF.to_csv(folderStruct.getCrabsFilepath(), sep='\t')
 
 # close all open windows
 cv2.destroyAllWindows()

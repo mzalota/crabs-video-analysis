@@ -4,8 +4,15 @@ from RedDotsDetector import RedDotsDetector
 class Logger:
     #__logFile = None
 
-    def __init__(self, filePath):
-        self.__logFile = open(filePath, 'wb')
+
+    def __init__(self, filePath, fileMode = 'wb'):
+        self.__logFile = open(filePath, fileMode)
+
+    @staticmethod
+    def openInAppendMode(filePath):
+        # type: (String) -> Logger
+        logger = Logger(filePath, 'a')
+        return logger
 
     def writeToFile(self, row):
         self.__writeToCSVFile(self.__logFile, row)
