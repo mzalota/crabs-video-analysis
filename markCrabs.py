@@ -68,64 +68,47 @@ def getCrabWidth(imageWin, image, frameID):
     boxAroundCrab = crabPoint.boxAroundPoint(200)
     crabImage = mainImage.subImage(boxAroundCrab)
 
-    frame1 = Frame(frameID, videoStream)
-    # frame2 = Frame(frameID + 50, videoStream)
-    # frame3 = Frame(frameID - 50, videoStream)
-
-
-    crabOnSeeFloor = SeeFloorSection(frame1, boxAroundCrab)
-    crabOnSeeFloor.setThreshold(0.8)
-
-    crabOnSeeFloor.findInAllFrames()
-    #crabOnSeeFloor.showSubImageForFrame(crabOnSeeFloor.getMaxFrameID())
-    #crabImage2 = crabOnSeeFloor.getImageOnFrame(crabOnSeeFloor.getMaxFrameID() - 1)
-    #crabImage3 = crabOnSeeFloor.getImageOnFrame(crabOnSeeFloor.getMaxFrameID() - 2)
-
-    saveCrabToFile(crabOnSeeFloor,crabOnSeeFloor.getMaxFrameID())
-    saveCrabToFile(crabOnSeeFloor,crabOnSeeFloor.getMaxFrameID()-1)
-    saveCrabToFile(crabOnSeeFloor,crabOnSeeFloor.getMaxFrameID()-2)
-    saveCrabToFile(crabOnSeeFloor,crabOnSeeFloor.getMaxFrameID()-3)
-    saveCrabToFile(crabOnSeeFloor,crabOnSeeFloor.getMaxFrameID()-4)
-    saveCrabToFile(crabOnSeeFloor,crabOnSeeFloor.getMaxFrameID()-5)
-    saveCrabToFile(crabOnSeeFloor,crabOnSeeFloor.getMaxFrameID()-6)
-    saveCrabToFile(crabOnSeeFloor,crabOnSeeFloor.getMaxFrameID()-7)
-    saveCrabToFile(crabOnSeeFloor,crabOnSeeFloor.getMaxFrameID()-8)
-    saveCrabToFile(crabOnSeeFloor,crabOnSeeFloor.getMaxFrameID()-9)
-    saveCrabToFile(crabOnSeeFloor,crabOnSeeFloor.getMaxFrameID()-10)
-    saveCrabToFile(crabOnSeeFloor,crabOnSeeFloor.getMaxFrameID()-11)
-    saveCrabToFile(crabOnSeeFloor,crabOnSeeFloor.getMaxFrameID()-12)
-    saveCrabToFile(crabOnSeeFloor,crabOnSeeFloor.getMaxFrameID()-13)
-    saveCrabToFile(crabOnSeeFloor,crabOnSeeFloor.getMaxFrameID()-14)
-    saveCrabToFile(crabOnSeeFloor,crabOnSeeFloor.getMaxFrameID()-15)
-    saveCrabToFile(crabOnSeeFloor,crabOnSeeFloor.getMaxFrameID()-16)
-    saveCrabToFile(crabOnSeeFloor,crabOnSeeFloor.getMaxFrameID()-17)
-    saveCrabToFile(crabOnSeeFloor,crabOnSeeFloor.getMaxFrameID()-18)
-    saveCrabToFile(crabOnSeeFloor,crabOnSeeFloor.getMaxFrameID()-19)
-    saveCrabToFile(crabOnSeeFloor,crabOnSeeFloor.getMaxFrameID()-20)
-
-
-    # print ("frame1", crabOnSeeFloor.infoAboutFeature())
-    # crabOnSeeFloor.showSubImage()
-
-    # crabOnSeeFloor.findFeature(frame2)
-    # print ("frame2", crabOnSeeFloor.infoAboutFeature())
-
-    # crabOnSeeFloor.findFeature(frame3)
-    # print ("frame3",crabOnSeeFloor.infoAboutFeature())
-
-
-    # crabOnSeeFloor.showSubImage()
+    #findViewsOfTheSameCrab(boxAroundCrab, frameID)
 
     crabWin = ImageWindow.createWindow("crabImage", Box(Point(0, 0), Point(600, 600)))
     crabWin.showWindowAndWaitForTwoClicks(crabImage.asNumpyArray())
     crabWin.closeWindow()
 
-    crabOnSeeFloor.closeWindow()
-
     crabOnMainWindow = crabWin.featureBox.translateCoordinateToOuter(boxAroundCrab.topLeft)
     mainImage.drawLine(crabOnMainWindow.topLeft, crabOnMainWindow.bottomRight)
 
     return crabOnMainWindow
+
+
+def findViewsOfTheSameCrab(boxAroundCrab, frameID):
+    frame = Frame(frameID, videoStream)
+    crabOnSeeFloor = SeeFloorSection(frame, boxAroundCrab)
+    crabOnSeeFloor.setThreshold(0.8)
+    crabOnSeeFloor.findInAllFrames()
+    saveCrabToFile(crabOnSeeFloor, crabOnSeeFloor.getMaxFrameID())
+    saveCrabToFile(crabOnSeeFloor, crabOnSeeFloor.getMaxFrameID() - 1)
+    saveCrabToFile(crabOnSeeFloor, crabOnSeeFloor.getMaxFrameID() - 2)
+    saveCrabToFile(crabOnSeeFloor, crabOnSeeFloor.getMaxFrameID() - 3)
+    saveCrabToFile(crabOnSeeFloor, crabOnSeeFloor.getMaxFrameID() - 4)
+    saveCrabToFile(crabOnSeeFloor, crabOnSeeFloor.getMaxFrameID() - 5)
+    saveCrabToFile(crabOnSeeFloor, crabOnSeeFloor.getMaxFrameID() - 6)
+    saveCrabToFile(crabOnSeeFloor, crabOnSeeFloor.getMaxFrameID() - 7)
+    saveCrabToFile(crabOnSeeFloor, crabOnSeeFloor.getMaxFrameID() - 8)
+    saveCrabToFile(crabOnSeeFloor, crabOnSeeFloor.getMaxFrameID() - 9)
+    saveCrabToFile(crabOnSeeFloor, crabOnSeeFloor.getMaxFrameID() - 10)
+    saveCrabToFile(crabOnSeeFloor, crabOnSeeFloor.getMaxFrameID() - 11)
+    saveCrabToFile(crabOnSeeFloor, crabOnSeeFloor.getMaxFrameID() - 12)
+    saveCrabToFile(crabOnSeeFloor, crabOnSeeFloor.getMaxFrameID() - 13)
+    saveCrabToFile(crabOnSeeFloor, crabOnSeeFloor.getMaxFrameID() - 14)
+    saveCrabToFile(crabOnSeeFloor, crabOnSeeFloor.getMaxFrameID() - 15)
+    saveCrabToFile(crabOnSeeFloor, crabOnSeeFloor.getMaxFrameID() - 16)
+    saveCrabToFile(crabOnSeeFloor, crabOnSeeFloor.getMaxFrameID() - 17)
+    saveCrabToFile(crabOnSeeFloor, crabOnSeeFloor.getMaxFrameID() - 18)
+    saveCrabToFile(crabOnSeeFloor, crabOnSeeFloor.getMaxFrameID() - 19)
+    saveCrabToFile(crabOnSeeFloor, crabOnSeeFloor.getMaxFrameID() - 20)
+    crabOnSeeFloor.showSubImage()
+    #crabOnSeeFloor.closeWindow()
+
 
 imageWin = ImageWindow("mainWindow", Point(700, 200))
 

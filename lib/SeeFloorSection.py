@@ -160,16 +160,15 @@ class SeeFloorSection:
         return newLocation
 
     def findInAllFrames(self):
-        startingFrameID = self.__getLastFrame().getFrameID()
+        startingFrameID = self.getMaxFrameID()
         for i in range(1,50,1):
             nextFrameID = int(startingFrameID) + i
-            print ("nextFrameID", nextFrameID, startingFrameID, i)
             nextFrame = Frame(nextFrameID, self.__getLastFrame().getVideoStream())
             newLocation = self.findFeature(nextFrame)
             if newLocation is None:
                 break
-            print ("frame", newLocation, self.infoAboutFeature())
-            self.showSubImage()
+            print ("frame", startingFrameID, nextFrameID, i, str(newLocation), self.infoAboutFeature())
+
 
         '''  
         for i in range(1,-200,-5):
