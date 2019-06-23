@@ -9,12 +9,16 @@ from common import Box, Point, Vector
 
 
 class SeeFloorSection:
-    __threshold_for_matching = 0.6
+    #__threshold_for_matching = 0.6
+
+    def setThreshold(self,newThresholdForMatching):
+        self.__threshold_for_matching = newThresholdForMatching
 
     def __init__(self,frame, box):
+        self.setThreshold(0.6)
         self.__initialize()
         self.__startingBox = box
-        self.pluckFeature(frame, box.topLeft)
+        self.__pluckFeature(frame, box.topLeft)
 
     def __initialize(self):
         self.__id = str(uuid.uuid4().fields[-1])[:5]
@@ -37,23 +41,57 @@ class SeeFloorSection:
                             self.__getTopLeft().y + self.__startingBox.hight()))
         return box
 
-    def __getTopLeft(self):
+    def __boxAroundFeatureForFrame(self,frameID):
+        topLeftPoint = self.__getTopLeftForFrame(frameID)
+        box = Box(topLeftPoint,
+                  Point(topLeftPoint.x + self.__startingBox.width(),
+                        topLeftPoint.y + self.__startingBox.hight()))
+        return box
+
+    def __getTopLeft_old(self):
         if len(self.__topLeftPoints)<1:
             return None
         lastPoint = self.__topLeftPoints[max(self.__topLeftPoints.keys())]
         return lastPoint
 
-    def showSubImage(self):
+    def __getTopLeft(self):
+        return self.__getTopLeftForFrame(self.getMaxFrameID())
+
+    def __getTopLeftForFrame(self, frameID):
+        if len(self.__topLeftPoints)<1:
+            return None
+
+        if frameID not in (self.__topLeftPoints):
+            return None
+
+        return self.__topLeftPoints[frameID]
+
+    def showSubImage_old(self):
         if self.__subImageWin is None:
             self.__subImageWin = ImageWindow.createWindow(self.__getWindowName(), self.__defaultBoxAroundFeature())
 
         frameID = self.__getLastFrame().getFrameID()
         img = self.getImage()
-        img.drawFrameID(frameID)
         if img is not None:
+            img.drawFrameID(frameID)
             self.__subImageWin.showWindow(img.asNumpyArray())
 
-    def pluckFeature(self, frame, topLeftPoint):
+    def showSubImage(self):
+        frameID = self.getMaxFrameID()
+        return self.showSubImageForFrame(frameID)
+
+    def showSubImageForFrame(self, frameID):
+        if self.__subImageWin is None:
+            self.__subImageWin = ImageWindow.createWindow(self.__getWindowName(), self.__defaultBoxAroundFeature())
+
+        img = self.getImageOnFrame(frameID)
+        if img is not None:
+            img.drawFrameID(frameID)
+            self.__subImageWin.showWindow(img.asNumpyArray())
+
+
+
+    def __pluckFeature(self, frame, topLeftPoint):
         # type: (Frame, Point) -> None
         self.__topLeftPoints[frame.getFrameID()] = topLeftPoint #append
         self.__frames[frame.getFrameID()] = frame
@@ -80,7 +118,7 @@ class SeeFloorSection:
         image.drawBoxOnImage(box)
         image.drawTextInBox(box,self.__id)
 
-    def getImage(self):
+    def getImage_old(self):
         # type: () -> Image
         if len(self.__frames)<1:
             return None
@@ -90,8 +128,25 @@ class SeeFloorSection:
         #img.drawFrameID(frameID)
         return img.subImage(self.__defaultBoxAroundFeature())
 
+    def getImage(self):
+        # type: () -> Image
+        return self.getImageOnFrame(self.getMaxFrameID())
+
+    def getImageOnFrame(self,frameID):
+        # type: () -> Image
+        if len(self.__frames)<1:
+            return None
+
+        if frameID not in (self.__frames):
+            return None
+
+        frame = self.__frames[frameID]
+        imgObj = frame.getImgObj()
+        img = imgObj.subImage(self.__boxAroundFeatureForFrame(frameID))
+        return img
+
     def __getLastFrame(self):
-        return self.__frames[max(self.__frames.keys())]
+        return self.__frames[self.getMaxFrameID()]
 
     def getLocation(self):
         box = self.__defaultBoxAroundFeature()
@@ -101,12 +156,12 @@ class SeeFloorSection:
         # type: (Frame) -> Point
         newLocation = self.__findSubImage(frame.getImgObj().asNumpyArray(), self.getImage().asNumpyArray())
         if newLocation:
-            self.pluckFeature(frame,newLocation)
+            self.__pluckFeature(frame, newLocation)
         return newLocation
 
     def findInAllFrames(self):
         startingFrameID = self.__getLastFrame().getFrameID()
-        for i in range(1,200,5):
+        for i in range(1,50,1):
             nextFrameID = int(startingFrameID) + i
             print ("nextFrameID", nextFrameID, startingFrameID, i)
             nextFrame = Frame(nextFrameID, self.__getLastFrame().getVideoStream())
@@ -167,6 +222,7 @@ class SeeFloorSection:
         row.append("numberOfTopLeftPoints")
         row.append("maxFrameID")
         row.append("minFrameID")
+        row.append("correlation")
         return row
 
     def infoAboutFeature(self):
@@ -179,6 +235,7 @@ class SeeFloorSection:
         row.append(len(self.__topLeftPoints))
         row.append(self.getMaxFrameID())
         row.append(self.getMinFrameID())
+        row.append(self.__correlation)
 
         return row
 
