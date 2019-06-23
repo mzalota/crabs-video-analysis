@@ -14,6 +14,12 @@ class Logger:
         logger = Logger(filePath, 'a')
         return logger
 
+    @staticmethod
+    def openInOverwriteMode(filePath):
+        # type: (String) -> Logger
+        logger = Logger(filePath, 'wb')
+        return logger
+
     def writeToFile(self, row):
         self.__writeToCSVFile(self.__logFile, row)
 

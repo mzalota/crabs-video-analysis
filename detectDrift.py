@@ -2,6 +2,7 @@ import traceback
 
 import cv2
 
+from lib.FolderStructure import FolderStructure
 from lib.Frame import Frame
 from lib.Image import Image
 from lib.ImageWindow import ImageWindow
@@ -12,10 +13,10 @@ from lib.Logger import Logger
 
 
 #rootDirectory = "C:/Users/User/Documents/data/Kara/Video/V_Analysis"
-rootDirectory = "C:/workspaces/AnjutkaVideo/seeps/c15"
+#rootDirectory = "C:/workspaces/AnjutkaVideo/seeps/c15"
 
 #rootDirectory = "C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"
-#rootDirectory = "C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/"
+rootDirectory = "C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/"
 
 #videoFilenameFull = 'KaraSeaCrabVideoBlagopoluchiyaBay2018/V1_R_20180911_165259.avi'
 #videoFilenameFull = 'KaraSeaCrabVideoBlagopoluchiyaBay2018/V2_R_20180911_165730.avi'
@@ -28,18 +29,22 @@ rootDirectory = "C:/workspaces/AnjutkaVideo/seeps/c15"
 #videoFilenameFull = 'Kara_Sea_Crab_Video_st_5993_2018/V6__R_20180915_212238.avi'
 
 #specify filename again
+videoFilename = "V3_R_20180911_170159"
 #videoFilename = "V3__R_20180915_205551"
 #videoFilename = "V6__R_20180915_212238"
 #videoFilename = "V3_R_20180911_170159"
-videoFilename = "V20180825_191129_001"
 
-videoFilepath = rootDirectory+"/"+videoFilename+".avi"
-videoStream = VideoStream(videoFilepath)
-print "videoFilepath is "+videoFilepath
+#videoFilename = "V20180825_191129_001"
 
-driftsFilepath = rootDirectory + "/" + videoFilename + "/"+videoFilename + '_drifts.csv'
-logger = Logger(driftsFilepath)
+#videoFilepath = rootDirectory+"/"+videoFilename+".avi"
+#videoStream = VideoStream(videoFilepath)
+#print "videoFilepath is "+videoFilepath
 
+#driftsFilepath = rootDirectory + "/" + videoFilename + "/"+videoFilename + '_drifts.csv'
+
+folderStruct = FolderStructure(rootDirectory, videoFilename)
+videoStream = VideoStream(folderStruct.getVideoFilepath())
+logger = Logger.openInOverwriteMode(folderStruct.getDriftsFilepath())
 
 driftsFileHeaderRow = VelocityDetector.infoHeaders()
 driftsFileHeaderRow.insert(0, "frameNumber")
