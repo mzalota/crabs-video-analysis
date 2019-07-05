@@ -1,3 +1,5 @@
+import logging
+
 import pandas as pd
 import cv2
 
@@ -7,14 +9,12 @@ from lib.FolderStructure import FolderStructure
 from lib.Frame import Frame
 from lib.Image import Image
 from lib.ImageWindow import ImageWindow
+from lib.StreamToLogger import StreamToLogger
 from lib.VideoStream import VideoStream
 from lib.common import Point, Box
 import os
 from datetime import datetime
 
-# filename=os.path.splitext(filepath)[0]
-# filenameFull=os.path.basename(filepath)
-# filename=os.path.splitext(filenameFull)[0]
 
 # rootDir ="C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"
 rootDir = "C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/"
@@ -24,8 +24,9 @@ rootDir = "C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/"
 videoFileName = "V3_R_20180911_170159"
 # videoFileName = "V2_R_20180911_165730"
 
-
 folderStruct = FolderStructure(rootDir, videoFileName)
+StreamToLogger(folderStruct.getLogFilepath())
+
 
 videoStream = VideoStream(folderStruct.getVideoFilepath())
 

@@ -19,3 +19,5 @@ class FolderStructure:
     def __getSubDirpath(self):
         return self.__rootDirectory + "/" + self.__videoFilename + "/"
 
+    def getLogFilepath(self):
+        return self.__getSubDirpath() + 'stdout.log'
