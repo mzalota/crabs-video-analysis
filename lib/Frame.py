@@ -8,6 +8,9 @@ class Frame:
     #__frameID = None
     #__image = None
 
+    FRAME_HEIGHT = 1080
+    FRAME_WIDTH = 1920
+
     def __init__(self, frameNumber, videoStream):
         # type: (int, VideoStream) -> Frame
         self.__frameID = frameNumber

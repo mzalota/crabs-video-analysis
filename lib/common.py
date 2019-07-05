@@ -128,6 +128,9 @@ class Box:
     def diagonal(self):
         return self.topLeft.distanceTo(self.bottomRight)
 
+    def area(self):
+        return self.width() * self.hight()
+
     def centerPoint(self):
         return self.topLeft.calculateMidpoint(self.bottomRight)
 
