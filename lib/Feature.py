@@ -6,84 +6,92 @@ class Feature:
 
     def __init__(self,driftData, frameID, location):
         self.__driftData = driftData
-
-        self.__frameIDOfLastGoodImage = 0
-        self.__frameIDOfFirstGoodImage = 0
-
-        self.__lastFrameID = frameID
-        self.__firstFrameID = frameID
-        self.__maximumAreaFrameID = frameID
-
+        self.__frameID = frameID
         self.__location = location
 
-    def firstAndLastGoodCrabImages(self, frameID):
+        #self.__firstFrameID = frameID
+        #self.__lastFrameID = frameID
 
-        self.__goingUp(frameID, frameID)
-        self.__goingDown(frameID, frameID)
+    def firstAndLastGoodCrabImages(self, boxSize):
+        self.__determineFirstAndLastFrameID()
+        print ("firstFrameID and lastFrameID", self.__firstFrameID, self.__lastFrameID)
 
-        #print ("firstFrameID and lastFrameID", self.firstFrameID, self.lastFrameID)
-        maximumAreaFrameIDUp = self.__goingUp(frameID, self.__firstFrameID)
-        #print ("maximumAreaFrameIDUp", maximumAreaFrameIDUp)
-        maximumAreaFrameIDDown = self.__goingDown(frameID, self.__lastFrameID)
+        self.__frameIDOfFirstGoodImage = 0
+        self.__frameIDOfLastGoodImage = 0
+        self.__maximumAreaFrameID = self.__frameID
 
-        print ("maximumAreaFrameIDDown", maximumAreaFrameIDDown)
+        self.__getValues(self.__firstFrameID, self.__lastFrameID, boxSize)
+        print ("maximumAreaFrameIDDown", self.__maximumAreaFrameID, self.__maximumArea)
         print ("frameIDOfFirstGoodImage and frameIDOfLastGoodImage", self.__frameIDOfFirstGoodImage, self.__frameIDOfLastGoodImage)
 
-    def __goingUp(self, frameID, nextFrameID):
-        maximumAreaFrameID = 0
-        maximumArea = 0
+        if (self.__frameIDOfFirstGoodImage > 0 and self.__frameIDOfLastGoodImage >0):
+            return self.__frameIDOfFirstGoodImage, self.__frameIDOfLastGoodImage
+        else:
+            return self.__maximumAreaFrameID, self.__maximumAreaFrameID
+
+    def __determineFirstAndLastFrameID(self):
+        nextFrameID = self.__frameID
         while (True):
             nextFrameID = nextFrameID + 1
-            drift = self.__driftData.driftBetweenFrames(frameID, nextFrameID)
-            newPoint = self.__location.translateBy(drift)
-            topleft = Point(max(newPoint.x - 100, 0), max(newPoint.y - 100, 0))
-
-            bottomRight = Point(min(newPoint.x + 100, Frame.FRAME_WIDTH), min(newPoint.y + 100, Frame.FRAME_HEIGHT))
-            visibleBoxArea = Box(topleft, bottomRight)
-            if (visibleBoxArea.area() > maximumArea):
-                maximumAreaFrameID = nextFrameID
-                maximumArea = visibleBoxArea.area()
-
+            newPoint = self.__newPoint(nextFrameID)
             # print("drift:", frameID, str(crabPoint), nextFrameID, str(newPoint), str(drift), visibleBoxArea.area(), str(visibleBoxArea))
             if (newPoint.x <= 0 or newPoint.y <= 0):
+                print("drift:",  nextFrameID, str(newPoint))
                 self.__lastFrameID = nextFrameID - 1
                 break
 
             if (newPoint.x >= Frame.FRAME_WIDTH or newPoint.y >= Frame.FRAME_HEIGHT):
+                print("drift:",  nextFrameID, str(newPoint))
                 self.__lastFrameID = nextFrameID - 1
                 break
 
-            if visibleBoxArea.area() >= 200 * 200:
-                # print "thats your last good image of crab"
-                self.__frameIDOfLastGoodImage = nextFrameID
-
-        return maximumAreaFrameID
-
-    def __goingDown(self, frameID, nextFrameID):
-        maximumArea = 0
-        maximumAreaFrameID = 0
+        nextFrameID = self.__frameID
         while (True):
             nextFrameID = nextFrameID - 1
-            drift = self.__driftData.driftBetweenFrames(frameID, nextFrameID)
-            newPoint = self.__location.translateBy(drift)
-            topleft = Point(max(newPoint.x - 100, 0), max(newPoint.y - 100, 0))
-
-            bottomRight = Point(min(newPoint.x + 100, Frame.FRAME_WIDTH), min(newPoint.y + 100, Frame.FRAME_HEIGHT))
-            visibleBoxArea = Box(topleft, bottomRight)
-            if (visibleBoxArea.area() > maximumArea):
-                maximumAreaFrameID = nextFrameID
-                maximumArea = visibleBoxArea.area()
+            newPoint = self.__newPoint(nextFrameID)
             # print("drift:", frameID, str(crabPoint), nextFrameID, str(newPoint), str(drift), visibleBoxArea.area(), str(visibleBoxArea))
             if (newPoint.x <= 0 or newPoint.y <= 0):
+                print("drift:",  nextFrameID, str(newPoint))
                 self.__firstFrameID = nextFrameID + 1
                 break
 
             if (newPoint.x >= Frame.FRAME_WIDTH or newPoint.y >= Frame.FRAME_HEIGHT):
+                print("drift:",  nextFrameID, str(newPoint))
                 self.__firstFrameID = nextFrameID + 1
                 break
 
-            if visibleBoxArea.area() >= 200 * 200:
-                # print "thats your last good image of crab"
-                self.__frameIDOfFirstGoodImage = nextFrameID
+    def __getValues(self, minFrameID, maxFrameID, boxSize):
+        nextFrameID = minFrameID
 
-        return maximumAreaFrameID
+        self.__maximumArea = 0
+        firstGoodImageFound = False
+        while (nextFrameID<=maxFrameID):
+            visibleBoxArea = self.__constructVisibleArea(nextFrameID, boxSize)
+
+            if (visibleBoxArea.area() > self.__maximumArea):
+                self.__maximumAreaFrameID = nextFrameID
+                self.__maximumArea = visibleBoxArea.area()
+            # print("drift:", frameID, str(crabPoint), nextFrameID, str(newPoint), str(drift), visibleBoxArea.area(), str(visibleBoxArea))
+
+            if visibleBoxArea.area() >= boxSize * boxSize:
+                # print "thats your last good image of crab"
+                self.__frameIDOfLastGoodImage = nextFrameID
+                if not firstGoodImageFound:
+                    self.__frameIDOfFirstGoodImage = nextFrameID
+                    firstGoodImageFound = True
+
+            nextFrameID = nextFrameID + 1
+
+
+    def __constructVisibleArea(self, nextFrameID, boxSize):
+        offset = int(boxSize / 2)
+        newPoint = self.__newPoint(nextFrameID)
+        topleft = Point(max(newPoint.x - offset, 0), max(newPoint.y - offset, 0))
+        bottomRight = Point(min(newPoint.x + offset, Frame.FRAME_WIDTH), min(newPoint.y + offset, Frame.FRAME_HEIGHT))
+        visibleBoxArea = Box(topleft, bottomRight)
+        return visibleBoxArea
+
+    def __newPoint(self, nextFrameID):
+        drift = self.__driftData.driftBetweenFrames(self.__frameID, nextFrameID)
+        newPoint = self.__location.translateBy(drift)
+        return newPoint

@@ -51,23 +51,54 @@ class CrabMarker:
         crabPoint = self.__imageWin.featureCoordiate
 
         crabFeature = Feature(self.__driftData, frameID, crabPoint)
-        crabFeature.firstAndLastGoodCrabImages(frameID)
+        firstFrameID, lastFrameID = crabFeature.firstAndLastGoodCrabImages(200)
+        print ("fist and last", firstFrameID, lastFrameID)
+
+        crabWin2, frame2Win = self.showCrab(crabPoint, firstFrameID, frameID)
+        crabWin3, frame3Win = self.showCrab(crabPoint, lastFrameID, frameID)
+        middleFrameID = ceil(lastFrameID - (lastFrameID - firstFrameID) / 2)
+        crabWin4, frame4Win = self.showCrab(crabPoint, middleFrameID, frameID)
 
         boxAroundCrab = crabPoint.boxAroundPoint(200)
         crabImage = mainImage.subImage(boxAroundCrab)
-
+        crabImage.drawFrameID(frameID)
         #self.findViewsOfTheSameCrab(boxAroundCrab, frameID)
 
         crabWin = ImageWindow.createWindow("crabImage", Box(Point(0, 0), Point(600, 600)))
         crabWin.showWindowAndWaitForTwoClicks(crabImage.asNumpyArray())
         crabWin.closeWindow()
+        crabWin2.closeWindow()
+        crabWin3.closeWindow()
+        crabWin4.closeWindow()
+        frame2Win.closeWindow()
+        frame3Win.closeWindow()
+        frame4Win.closeWindow()
 
         crabOnMainWindow = crabWin.featureBox.translateCoordinateToOuter(boxAroundCrab.topLeft)
         mainImage.drawLine(crabOnMainWindow.topLeft, crabOnMainWindow.bottomRight)
 
         return crabOnMainWindow
 
+    def showCrab(self, crabPoint, firstFrameID, frameID):
+        firstFrameImage = self.__videoStream.readImageObj(firstFrameID)
+        firstFrameImage.drawFrameID(firstFrameID)
 
+        drift = self.__driftData.driftBetweenFrames(frameID, firstFrameID)
+        crabPointFirst = crabPoint.translateBy(drift)
+        boxAroundCrabFirst = crabPointFirst.boxAroundPoint(200)
+        crabImage2 = firstFrameImage.subImage(boxAroundCrabFirst)
+        crabImage2.drawFrameID(firstFrameID)
+        print ("h w", crabImage2.height(), crabImage2.width())
+        print ("details", str(boxAroundCrabFirst), str(crabPointFirst), str(crabPoint), str(drift))
+        # crabWin2 = ImageWindow.createWindow("crabImage2", Box(Point(0, 0), Point(boxAroundCrabFirst.width(), boxAroundCrabFirst.hight())))
+        crabWin2 = ImageWindow.createWindow("crabImage"+str(firstFrameID), Box(Point(0, 0), Point(600, 600)))
+        nnnp = crabImage2.asNumpyArray()
+        # print ("size" , nnnp.size())
+        # print (nnnp)
+        crabWin2.showWindow(nnnp)
+        frame2Win = ImageWindow.createWindow("wholeImage"+str(firstFrameID), Box(Point(0, 0),Point(960, 540)))
+        frame2Win.showWindow(firstFrameImage.asNumpyArray())
+        return crabWin2, frame2Win
 
     def saveCrabToFile(self, crabOnSeeFloor, frameID):
         crabImage1 = crabOnSeeFloor.getImageOnFrame(frameID)

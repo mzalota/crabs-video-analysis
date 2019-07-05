@@ -2,6 +2,9 @@ from cv2 import cv2, os
 
 from pandas.compat.numpy import np
 from common import Point, Box
+#from Frame import Frame
+#from lib.Frame import Frame
+
 
 class Image:
     def __init__(self, imageAsNumpyArray):
@@ -54,7 +57,8 @@ class Image:
 
     def subImage(self, box):
         # type: (Box) -> Image
-        return Image(self.__image[box.topLeft.y:box.bottomRight.y, box.topLeft.x: box.bottomRight.x].copy())
+        #return Image(self.__image[box.topLeft.y:box.bottomRight.y, box.topLeft.x: box.bottomRight.x].copy())
+        return Image(self.__image[max(box.topLeft.y,1):min(box.bottomRight.y,1080), max(box.topLeft.x,1): min(box.bottomRight.x,1920)].copy())
 
     def bottomPart(self, height):
         # type: (integer) -> Image
