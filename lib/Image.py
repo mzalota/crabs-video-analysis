@@ -104,6 +104,44 @@ class Image:
             image_with_boxes[rr, cc] = 1  # set color white
         return image_with_boxes
 
+    def concatenateToTheBottom(self, imageObj):
+
+        if self.width() < imageObj.width():
+            fillerWidth = imageObj.width() - self.width()
+            fillerImage = Image.empty(self.height(), fillerWidth, 0)
+            tmpImg = np.concatenate((self.asNumpyArray(), fillerImage.asNumpyArray()), axis=1)
+            resultImg = np.concatenate((tmpImg, imageObj.asNumpyArray()))
+
+        if self.width() > imageObj.width():
+            fillerWidth = self.width() - imageObj.width()
+            fillerImage = Image.empty(imageObj.height(), fillerWidth, 0)
+            tmpImg = np.concatenate((imageObj.asNumpyArray(), fillerImage.asNumpyArray()), axis=1)
+            resultImg = np.concatenate((self.asNumpyArray(), tmpImg))
+
+        if self.width() == imageObj.width():
+           resultImg = np.concatenate((self.asNumpyArray(), imageObj.asNumpyArray()))
+
+        return Image(resultImg)
+
+    def concatenateToTheRight(self, imageObj):
+
+        if self.height() < imageObj.height():
+            fillerHeight = imageObj.height() - self.height()
+            fillerImage = Image.empty(fillerHeight, self.width(), 0)
+            tmpImg = np.concatenate((self.asNumpyArray(), fillerImage.asNumpyArray()))
+            resultImg = np.concatenate((tmpImg, imageObj.asNumpyArray()), axis=1)
+
+        if self.height() > imageObj.height():
+            fillerHeight = self.height() - imageObj.height()
+            fillerImage = Image.empty(fillerHeight, imageObj.width(), 0)
+            tmpImg = np.concatenate((imageObj.asNumpyArray(), fillerImage.asNumpyArray()))
+            resultImg = np.concatenate((self.asNumpyArray(), tmpImg), axis=1)
+
+        if self.height() == imageObj.height():
+            resultImg = np.concatenate((self.asNumpyArray(), imageObj.asNumpyArray()), axis=1)
+
+        return Image(resultImg)
+
     def writeToFile(self, filepath):
         self.__createDirectoriesIfNecessary(filepath)
         cv2.imwrite(filepath, self.asNumpyArray())  # save frame as JPEG file
