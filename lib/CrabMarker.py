@@ -18,7 +18,7 @@ class CrabMarker:
         self.__folderStruct = folderStruct
         self.__videoStream = videoStream
         self.__driftData = DriftData.createFromFile(folderStruct.getDriftsFilepath())
-
+        self.__crabNumber = 0
 
     def processImage(self, image, frameID):
         origImage = image.copy()
@@ -40,88 +40,101 @@ class CrabMarker:
                 message = "User pressed Q button"
                 raise UserWantsToQuitException(message)
             else:
-                crabBox = self.__getCrabWidth(image, frameID)
-                foundCrabs.append(crabBox)
-            # print("foundCrab", str(crabBox), crabBox.diagonal(), str(crabBox.centerPoint()))
+                crabPoint = self.__imageWin.featureCoordiate
+                crabOnFrameID, crabBox = self.__getCrabWidth(crabPoint, frameID)
+
+                foundCrabs.append((self.__crabNumber, crabOnFrameID, crabBox))
+
+                #draw an X on where the User clicked.
+                mainImage = Image(image)
+                mainImage.drawCross(crabPoint)
+
+                self.__crabNumber += 1
 
         return foundCrabs
 
-    def __getCrabWidth(self, image, frameID):
-        mainImage = Image(image)
-        crabPoint = self.__imageWin.featureCoordiate
+    def __getCrabWidth(self, crabPoint, frameID):
 
         crabFeature = Feature(self.__driftData, frameID, crabPoint)
         firstFrameID, lastFrameID = crabFeature.firstAndLastGoodCrabImages(200)
-        #print ("determened frames: first, last", firstFrameID, lastFrameID)
 
         if firstFrameID == lastFrameID:
+            #The crab is not properly visible on any of the frames. pick some "good enough" frames
             middleFrameID = firstFrameID
             firstFrameID = int(ceil(middleFrameID - (middleFrameID - crabFeature.getFirstFrameID() ) / 2))
             lastFrameID = int(ceil(crabFeature.getLastFrameID() - (crabFeature.getLastFrameID() - middleFrameID) / 2))
         else:
             middleFrameID = int(ceil(lastFrameID - (lastFrameID - firstFrameID) / 2))
 
-        #print ("frames used for display: first, middle, last", firstFrameID, middleFrameID, lastFrameID)
+        boxAroundCrabThis = self.__boxAroundCrabOnItsFrame(crabPoint, frameID, frameID)
+        boxAroundCrabFirst = self.__boxAroundCrabOnItsFrame(crabPoint, frameID, firstFrameID)
+        boxAroundCrabLast = self.__boxAroundCrabOnItsFrame(crabPoint, frameID, lastFrameID)
+        boxAroundCrabMiddle = self.__boxAroundCrabOnItsFrame(crabPoint, frameID, middleFrameID)
 
-        crabImageFirst, boxAroundCrabFirst = self.showCrab(crabPoint, firstFrameID, frameID)
-        crabImageLast, boxAroundCrabLast = self.showCrab(crabPoint, lastFrameID, frameID)
-        crabImageMiddle, boxAroundCrabMiddle = self.showCrab(crabPoint, middleFrameID, frameID)
-
-        boxAroundCrab = crabPoint.boxAroundPoint(200)
-        crabImage = mainImage.subImage(boxAroundCrab)
-        crabImage.drawFrameID(frameID)
-
+        crabImageThis = self.__crabImageOnFrame(boxAroundCrabThis, frameID)
+        crabImageFirst = self.__crabImageOnFrame(boxAroundCrabFirst, firstFrameID)
+        crabImageLast = self.__crabImageOnFrame(boxAroundCrabLast, lastFrameID)
+        crabImageMiddle = self.__crabImageOnFrame(boxAroundCrabMiddle, middleFrameID)
+        markedLine = self.__showCrabWindow(crabImageFirst, crabImageLast, crabImageMiddle, crabImageThis)
 
         #self.findViewsOfTheSameCrab(boxAroundCrab, frameID)
 
+        if markedLine.topLeft.x >=200 and markedLine.topLeft.y>=200:
+            #user marked crab is on "imageThis", which is the bottom right image
+            offsetOfCrabImageFrom0x0 = Vector(-200, -200)
+            crabOnItsFrame = self.__crabCoordinatesOnItsFrame(boxAroundCrabThis, markedLine, offsetOfCrabImageFrom0x0)
+            frameIDOfCrab = frameID
+
+        if markedLine.topLeft.x <200 and markedLine.topLeft.y>=200:
+            #user marked crab is on "imageFirst", which is bottom left image
+            offsetOfCrabImageFrom0x0 = Vector(0, -200)
+            crabOnItsFrame = self.__crabCoordinatesOnItsFrame(boxAroundCrabFirst, markedLine, offsetOfCrabImageFrom0x0)
+            frameIDOfCrab = firstFrameID
+
+        if markedLine.topLeft.x >=200 and markedLine.topLeft.y<200:
+            #user marked crab is on "imageLast", which is top right image
+            offsetOfCrabImageFrom0x0 = Vector(-200, 0)
+            crabOnItsFrame = self.__crabCoordinatesOnItsFrame(boxAroundCrabLast, markedLine, offsetOfCrabImageFrom0x0)
+            frameIDOfCrab = lastFrameID
+
+        if markedLine.topLeft.x <200 and markedLine.topLeft.y<200:
+            #user marked crab is on "imageMiddle", which is top left image
+            offsetOfCrabImageFrom0x0 = Vector(0, 0)
+            crabOnItsFrame = self.__crabCoordinatesOnItsFrame(boxAroundCrabMiddle, markedLine, offsetOfCrabImageFrom0x0)
+            frameIDOfCrab = middleFrameID
+
+        return frameIDOfCrab, crabOnItsFrame
+
+    def __showCrabWindow(self, crabImageFirst, crabImageLast, crabImageMiddle, crabImageThis):
         leftImageToShow = crabImageMiddle.concatenateToTheBottom(crabImageFirst)
-        rightImageToShow = crabImageLast.concatenateToTheBottom(crabImage)
-        imgToShow = leftImageToShow.concatenateToTheRight(rightImageToShow)
+        rightImageToShow = crabImageLast.concatenateToTheBottom(crabImageThis)
+        imageToShow = leftImageToShow.concatenateToTheRight(rightImageToShow)
 
         crabWin = ImageWindow.createWindow("crabImage", Box(Point(0, 0), Point(800, 800)))
-        crabWin.showWindowAndWaitForTwoClicks(imgToShow.asNumpyArray())
+        crabWin.showWindowAndWaitForTwoClicks(imageToShow.asNumpyArray())
         crabWin.closeWindow()
 
         markedLine = crabWin.featureBox
-        print ("markedLine", str(markedLine))
+        return markedLine
 
-        if markedLine.topLeft.x >=200 and markedLine.topLeft.y>=200:
-            #user marked crab is on "imageThis"
-            crabThisOnMainWindow = markedLine.translateCoordinateToOuter(boxAroundCrab.topLeft)
-            crabTopLeft = crabThisOnMainWindow.topLeft.translateBy(Vector(-200,-200))
-            crabBottomRight = crabThisOnMainWindow.bottomRight.translateBy(Vector(-200,-200))
-            crabOnMainWindow = Box(crabTopLeft, crabBottomRight)
+    def __crabCoordinatesOnItsFrame(self, boxAroundCrabOnItsFrame, lineMarkedByUser, offsetOfCrabImageOnCrabWindow):
+        lineNormalizedTo0x0 = lineMarkedByUser.translateBy(offsetOfCrabImageOnCrabWindow)
+        lineCoordinatesOnItsFrame = lineNormalizedTo0x0.translateCoordinateToOuter(boxAroundCrabOnItsFrame.topLeft)
+        return  lineCoordinatesOnItsFrame
 
-        if markedLine.topLeft.x <200 and markedLine.topLeft.y<200:
-            #user marked crab is on "imageMiddle"
-            crabMiddleOnMainWindow = markedLine.translateCoordinateToOuter(boxAroundCrabMiddle.topLeft)
-            drift = self.__driftData.driftBetweenFrames(middleFrameID, frameID)
-
-            crabTopLeft = crabMiddleOnMainWindow.topLeft.translateBy(drift)
-            crabBottomRight = crabMiddleOnMainWindow.bottomRight.translateBy(drift)
-
-            print ("drift, crabMiddleOnMainWindow", frameID, middleFrameID, str(drift), str(crabMiddleOnMainWindow), str(crabTopLeft), str(crabBottomRight))
-            crabOnMainWindow = Box(crabTopLeft, crabBottomRight)
-
-        print ("crabOnMainWindow", str(crabOnMainWindow))
-
-
-        mainImage.drawLine(crabOnMainWindow.topLeft, crabOnMainWindow.bottomRight)
-
-        return crabOnMainWindow
-
-    def showCrab(self, crabPoint, firstFrameID, frameID):
-        firstFrameImage = self.__videoStream.readImageObj(firstFrameID)
-        firstFrameImage.drawFrameID(firstFrameID)
-
-        drift = self.__driftData.driftBetweenFrames(frameID, firstFrameID)
-        crabPointFirst = crabPoint.translateBy(drift)
-        boxAroundCrab = crabPointFirst.boxAroundPoint(200)
-        crabImage = firstFrameImage.subImage(boxAroundCrab)
+    def __crabImageOnFrame(self, boxAroundCrab, frameID):
+        frameImage = self.__videoStream.readImageObj(frameID)
+        crabImage = frameImage.subImage(boxAroundCrab)
         crabImage = crabImage.growImage(200, 200)
-        crabImage.drawFrameID(firstFrameID)
+        crabImage.drawFrameID(frameID)
+        return crabImage
 
-        return crabImage, boxAroundCrab
+    def __boxAroundCrabOnItsFrame(self, crabPoint, frameID, firstFrameID):
+        drift = self.__driftData.driftBetweenFrames(frameID, firstFrameID)
+        crabPointOnItsFrame = crabPoint.translateBy(drift)
+
+        boxAroundCrab = crabPointOnItsFrame.boxAroundPoint(200)
+        return boxAroundCrab
 
     def saveCrabToFile(self, crabOnSeeFloor, frameID):
         crabImage1 = crabOnSeeFloor.getImageOnFrame(frameID)

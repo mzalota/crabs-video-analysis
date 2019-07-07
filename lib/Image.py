@@ -1,7 +1,9 @@
 from cv2 import cv2, os
 
 from pandas.compat.numpy import np
-from common import Point, Box
+from common import Point, Box, Vector
+
+
 #from Frame import Frame
 #from lib.Frame import Frame
 
@@ -27,6 +29,10 @@ class Image:
 
     def drawLine(self, point1, point2):
         cv2.line(self.__image, (point1.x, point1.y), (point2.x, point2.y), (0, 255, 0), 5)
+
+    def drawCross(self, point, size=8):
+        self.drawLine(point.translateBy(Vector(-size, -size)), point.translateBy(Vector(size, size)))
+        self.drawLine(point.translateBy(Vector(size, -size)), point.translateBy(Vector(-size, size)))
 
     def drawBoxOnImage(self, box):
         if box:

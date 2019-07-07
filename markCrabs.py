@@ -35,16 +35,15 @@ videoStream = VideoStream(folderStruct.getVideoFilepath())
 # framesDir = rootDir + "/" + videoFileName + "/seqFrames/"
 # outputFilePath = rootDir + "/" + videoFileName + "/" + videoFileName + "_crabs.csv"
 
-
-
-
-
-def writeCrabsInfoToFile(crabNumber, foundCrabs, logger, crabsDF):
-    for crab in foundCrabs:
+def writeCrabsInfoToFile(foundCrabs, logger, crabsDF):
+    for crabTuple in foundCrabs:
+        crabNumber = crabTuple[0]
+        frameID = crabTuple[1]
+        crabCoordinate = crabTuple[2]
         crabsDF = crabsDF.append(
             {'dir': framesDir, 'filename': filename, 'frameID': frameID, 'crabNumber': crabNumber,
-             'crabWidthPixels': crab.diagonal(),
-             'crabLocationX': crab.centerPoint().x, 'crabLocationY': crab.centerPoint().y, 'crabWidthLine': crab},
+             'crabWidthPixels': crabCoordinate.diagonal(),
+             'crabLocationX': crabCoordinate.centerPoint().x, 'crabLocationY': crabCoordinate.centerPoint().y, 'crabWidthLine': crabCoordinate},
             ignore_index=True)
 
         row = list()
@@ -53,24 +52,22 @@ def writeCrabsInfoToFile(crabNumber, foundCrabs, logger, crabsDF):
         row.append(frameID)
         row.append(datetime.now().strftime('%Y-%m-%d_%H:%M:%S'))
         row.append(crabNumber)
-        row.append(crab.diagonal())
-        row.append(crab.centerPoint().x)
-        row.append(crab.centerPoint().x)
-        row.append(str(crab.centerPoint()))
-        row.append(str(crab))
+        row.append(crabCoordinate.diagonal())
+        row.append(crabCoordinate.centerPoint().x)
+        row.append(crabCoordinate.centerPoint().y)
+        row.append(str(crabCoordinate.centerPoint()))
+        row.append(str(crabCoordinate))
 
         print ("row", row)
 
         logger.writeToFile(row)
 
-
-        crabNumber += 1
-    return crabNumber
+        #crabNumber += 1
+    #return crabNumber
 
 
 crabsDF = pd.DataFrame(
     columns=['dir', 'filename', 'crabNumber', 'crabWidthPixels', 'crabLocationX', 'crabLocationY', 'crabWidthLine'])
-crabNumber = 1
 
 imageWin = ImageWindow("mainWindow", Point(700, 200))
 crabMarker = CrabMarker(imageWin,folderStruct,videoStream)
@@ -88,7 +85,7 @@ for filename in os.listdir(framesDir):
     # print ("frameStr", frameID)
     try:
         foundCrabs = crabMarker.processImage(image, frameID)
-        crabNumber = writeCrabsInfoToFile(crabNumber, foundCrabs, logger, crabsDF)
+        writeCrabsInfoToFile(foundCrabs, logger, crabsDF)
     except UserWantsToQuitException as error:
         #print repr(error)
         print("User requested to quit on frame: "+ str(frameID))

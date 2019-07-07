@@ -147,6 +147,11 @@ class Box:
 
         return Box(Point(topLeftX, topLeftY), Point(bottomRightX, bottomRightY))
 
+    def translateBy(self, vector):
+        newTopLeft = self.topLeft.translateBy(vector)
+        newBottomRight = self.bottomRight.translateBy(vector)
+        return Box(newTopLeft,newBottomRight)
+
 def boxAroundBoxes(box1, box2):
     topLeft= Point(min(box1.topLeft.x, box2.topLeft.x), min(box1.topLeft.y, box2.topLeft.y))
     bottomRight= Point(max(box1.bottomRight.x, box2.bottomRight.x), max(box1.bottomRight.y, box2.bottomRight.y))

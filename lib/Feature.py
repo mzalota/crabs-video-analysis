@@ -4,7 +4,7 @@ from lib.common import Point, Box
 
 class Feature:
 
-    def __init__(self,driftData, frameID, location):
+    def __init__(self, driftData, frameID, location):
         self.__driftData = driftData
         self.__frameID = frameID
         self.__location = location
@@ -13,7 +13,7 @@ class Feature:
         #self.__lastFrameID = frameID
 
         self.__determineFirstAndLastFrameID()
-        print ("firstFrameID and lastFrameID", self.__firstFrameID, self.__lastFrameID)
+        #print ("firstFrameID and lastFrameID", self.__firstFrameID, self.__lastFrameID)
 
     def getFirstFrameID(self):
         return self.__firstFrameID
@@ -27,8 +27,8 @@ class Feature:
         self.__maximumAreaFrameID = self.__frameID
 
         self.__getValues(self.__firstFrameID, self.__lastFrameID, boxSize)
-        print ("maximumAreaFrameIDDown", self.__maximumAreaFrameID, self.__maximumArea)
-        print ("frameIDOfFirstGoodImage and frameIDOfLastGoodImage", self.__frameIDOfFirstGoodImage, self.__frameIDOfLastGoodImage)
+        #print ("maximumAreaFrameIDDown", self.__maximumAreaFrameID, self.__maximumArea)
+        #print ("frameIDOfFirstGoodImage and frameIDOfLastGoodImage", self.__frameIDOfFirstGoodImage, self.__frameIDOfLastGoodImage)
 
         if (self.__frameIDOfFirstGoodImage > 0 and self.__frameIDOfLastGoodImage >0):
             return self.__frameIDOfFirstGoodImage, self.__frameIDOfLastGoodImage
@@ -42,12 +42,12 @@ class Feature:
             newPoint = self.__newPoint(nextFrameID)
             # print("drift:", frameID, str(crabPoint), nextFrameID, str(newPoint), str(drift), visibleBoxArea.area(), str(visibleBoxArea))
             if (newPoint.x <= 0 or newPoint.y <= 0):
-                print("drift:",  nextFrameID, str(newPoint))
+                #print("drift:",  nextFrameID, str(newPoint))
                 self.__lastFrameID = nextFrameID - 1
                 break
 
             if (newPoint.x >= Frame.FRAME_WIDTH or newPoint.y >= Frame.FRAME_HEIGHT):
-                print("drift:",  nextFrameID, str(newPoint))
+                #print("drift:",  nextFrameID, str(newPoint))
                 self.__lastFrameID = nextFrameID - 1
                 break
 
@@ -57,12 +57,12 @@ class Feature:
             newPoint = self.__newPoint(nextFrameID)
             # print("drift:", frameID, str(crabPoint), nextFrameID, str(newPoint), str(drift), visibleBoxArea.area(), str(visibleBoxArea))
             if (newPoint.x <= 0 or newPoint.y <= 0):
-                print("drift:",  nextFrameID, str(newPoint))
+                #print("drift:",  nextFrameID, str(newPoint))
                 self.__firstFrameID = nextFrameID + 1
                 break
 
             if (newPoint.x >= Frame.FRAME_WIDTH or newPoint.y >= Frame.FRAME_HEIGHT):
-                print("drift:",  nextFrameID, str(newPoint))
+                #print("drift:",  nextFrameID, str(newPoint))
                 self.__firstFrameID = nextFrameID + 1
                 break
 
