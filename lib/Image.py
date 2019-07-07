@@ -58,7 +58,7 @@ class Image:
     def subImage(self, box):
         # type: (Box) -> Image
         #return Image(self.__image[box.topLeft.y:box.bottomRight.y, box.topLeft.x: box.bottomRight.x].copy())
-        return Image(self.__image[max(box.topLeft.y,1):min(box.bottomRight.y,1080), max(box.topLeft.x,1): min(box.bottomRight.x,1920)].copy())
+        return Image(self.__image[max(box.topLeft.y,1):min(box.bottomRight.y,self.height()), max(box.topLeft.x,1): min(box.bottomRight.x,self.width())].copy())
 
     def bottomPart(self, height):
         # type: (integer) -> Image
@@ -104,43 +104,50 @@ class Image:
             image_with_boxes[rr, cc] = 1  # set color white
         return image_with_boxes
 
+
     def concatenateToTheBottom(self, imageObj):
 
-        if self.width() < imageObj.width():
-            fillerWidth = imageObj.width() - self.width()
-            fillerImage = Image.empty(self.height(), fillerWidth, 0)
-            tmpImg = np.concatenate((self.asNumpyArray(), fillerImage.asNumpyArray()), axis=1)
-            resultImg = np.concatenate((tmpImg, imageObj.asNumpyArray()))
+        maxWidth = max(self.width(), imageObj.width())
 
-        if self.width() > imageObj.width():
-            fillerWidth = self.width() - imageObj.width()
-            fillerImage = Image.empty(imageObj.height(), fillerWidth, 0)
-            tmpImg = np.concatenate((imageObj.asNumpyArray(), fillerImage.asNumpyArray()), axis=1)
-            resultImg = np.concatenate((self.asNumpyArray(), tmpImg))
+        # get objects to the same width. Leave their heights unchanged
+        topImageObj = self.growImage(maxWidth, self.height())
+        bottomImageObj = imageObj.growImage(maxWidth, imageObj.height())
 
-        if self.width() == imageObj.width():
-           resultImg = np.concatenate((self.asNumpyArray(), imageObj.asNumpyArray()))
-
+        resultImg = self.__concatenateNumpyArrayToTheBottom(topImageObj.asNumpyArray(), bottomImageObj.asNumpyArray())
         return Image(resultImg)
+
 
     def concatenateToTheRight(self, imageObj):
 
-        if self.height() < imageObj.height():
-            fillerHeight = imageObj.height() - self.height()
-            fillerImage = Image.empty(fillerHeight, self.width(), 0)
-            tmpImg = np.concatenate((self.asNumpyArray(), fillerImage.asNumpyArray()))
-            resultImg = np.concatenate((tmpImg, imageObj.asNumpyArray()), axis=1)
+        maxHeight = max(self.height(), imageObj.height())
 
-        if self.height() > imageObj.height():
-            fillerHeight = self.height() - imageObj.height()
-            fillerImage = Image.empty(fillerHeight, imageObj.width(), 0)
-            tmpImg = np.concatenate((imageObj.asNumpyArray(), fillerImage.asNumpyArray()))
-            resultImg = np.concatenate((self.asNumpyArray(), tmpImg), axis=1)
+        #get objects to the same height. Leave their widths unchanged
+        leftImageObj = self.growImage(self.width(), maxHeight)
+        rightImageObj = imageObj.growImage(imageObj.width(), maxHeight)
 
-        if self.height() == imageObj.height():
-            resultImg = np.concatenate((self.asNumpyArray(), imageObj.asNumpyArray()), axis=1)
-
+        resultImg = self.__concatenateNumpyArrayToTheRight(leftImageObj.asNumpyArray(), rightImageObj.asNumpyArray())
         return Image(resultImg)
+
+    def growImage(self, newWidth, newHeight):
+        fillerWidth = newWidth - self.width()
+        fillerHeight = newHeight - self.height()
+
+        return Image(self.__padFillers(self, fillerWidth, fillerHeight))
+
+    def __padFillers(self, imgObj, fillerWidth, fillerHeight):
+
+        fillerBottom = Image.empty(fillerHeight, imgObj.width(), 0)
+        tmpImg = self.__concatenateNumpyArrayToTheBottom(imgObj.asNumpyArray(), fillerBottom.asNumpyArray())
+
+        newHeight = imgObj.height() + fillerHeight
+        fillerRight = Image.empty(newHeight, fillerWidth, 0)
+        return self.__concatenateNumpyArrayToTheRight(tmpImg, fillerRight.asNumpyArray())
+
+    def __concatenateNumpyArrayToTheBottom(self, topImg, bottomImg):
+        return np.concatenate((topImg, bottomImg))
+
+    def __concatenateNumpyArrayToTheRight(self, leftImg, rightImg):
+        return np.concatenate((leftImg, rightImg), axis=1)
 
     def writeToFile(self, filepath):
         self.__createDirectoriesIfNecessary(filepath)

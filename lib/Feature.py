@@ -12,10 +12,16 @@ class Feature:
         #self.__firstFrameID = frameID
         #self.__lastFrameID = frameID
 
-    def firstAndLastGoodCrabImages(self, boxSize):
         self.__determineFirstAndLastFrameID()
         print ("firstFrameID and lastFrameID", self.__firstFrameID, self.__lastFrameID)
 
+    def getFirstFrameID(self):
+        return self.__firstFrameID
+
+    def getLastFrameID(self):
+        return self.__lastFrameID
+
+    def firstAndLastGoodCrabImages(self, boxSize):
         self.__frameIDOfFirstGoodImage = 0
         self.__frameIDOfLastGoodImage = 0
         self.__maximumAreaFrameID = self.__frameID
