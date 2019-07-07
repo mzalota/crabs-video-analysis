@@ -6,7 +6,7 @@ from lib.Frame import Frame
 from lib.Image import Image
 from lib.ImageWindow import ImageWindow
 from lib.SeeFloorSection import SeeFloorSection
-from lib.common import Box, Point
+from lib.common import Box, Point, Vector
 
 
 class UserWantsToQuitException(Exception):
@@ -63,39 +63,49 @@ class CrabMarker:
 
         #print ("frames used for display: first, middle, last", firstFrameID, middleFrameID, lastFrameID)
 
-        crabImage2 = self.showCrab(crabPoint, firstFrameID, frameID)
-        crabImage3 = self.showCrab(crabPoint, lastFrameID, frameID)
-        crabImage4 = self.showCrab(crabPoint, middleFrameID, frameID)
-
-        crabImage2 = crabImage2.growImage(200,200)
-        crabImage3 = crabImage3.growImage(200,200)
-        crabImage4 = crabImage4.growImage(200,200)
+        crabImageFirst, boxAroundCrabFirst = self.showCrab(crabPoint, firstFrameID, frameID)
+        crabImageLast, boxAroundCrabLast = self.showCrab(crabPoint, lastFrameID, frameID)
+        crabImageMiddle, boxAroundCrabMiddle = self.showCrab(crabPoint, middleFrameID, frameID)
 
         boxAroundCrab = crabPoint.boxAroundPoint(200)
         crabImage = mainImage.subImage(boxAroundCrab)
         crabImage.drawFrameID(frameID)
+
+
         #self.findViewsOfTheSameCrab(boxAroundCrab, frameID)
 
-        leftImageToShow = crabImage4.concatenateToTheBottom(crabImage2)
-        rightImageToShow = crabImage3.concatenateToTheBottom(crabImage)
+        leftImageToShow = crabImageMiddle.concatenateToTheBottom(crabImageFirst)
+        rightImageToShow = crabImageLast.concatenateToTheBottom(crabImage)
         imgToShow = leftImageToShow.concatenateToTheRight(rightImageToShow)
 
-        #topImageToShow = crabImage.concatenateToTheRight(crabImage2)
-        #bottomImageToShow = crabImage3.concatenateToTheRight(crabImage4)
-        #imgToShow = topImageToShow.concatenateToTheBottom(bottomImageToShow)
-
-        crabWin = ImageWindow.createWindow("crabImage", Box(Point(0, 0), Point(600, 600)))
+        crabWin = ImageWindow.createWindow("crabImage", Box(Point(0, 0), Point(800, 800)))
         crabWin.showWindowAndWaitForTwoClicks(imgToShow.asNumpyArray())
         crabWin.closeWindow()
 
-        #crabWin2.closeWindow()
-        #crabWin3.closeWindow()
-        #crabWin4.closeWindow()
-        #frame2Win.closeWindow()
-        #frame3Win.closeWindow()
-        #frame4Win.closeWindow()
+        markedLine = crabWin.featureBox
+        print ("markedLine", str(markedLine))
 
-        crabOnMainWindow = crabWin.featureBox.translateCoordinateToOuter(boxAroundCrab.topLeft)
+        if markedLine.topLeft.x >=200 and markedLine.topLeft.y>=200:
+            #user marked crab is on "imageThis"
+            crabThisOnMainWindow = markedLine.translateCoordinateToOuter(boxAroundCrab.topLeft)
+            crabTopLeft = crabThisOnMainWindow.topLeft.translateBy(Vector(-200,-200))
+            crabBottomRight = crabThisOnMainWindow.bottomRight.translateBy(Vector(-200,-200))
+            crabOnMainWindow = Box(crabTopLeft, crabBottomRight)
+
+        if markedLine.topLeft.x <200 and markedLine.topLeft.y<200:
+            #user marked crab is on "imageMiddle"
+            crabMiddleOnMainWindow = markedLine.translateCoordinateToOuter(boxAroundCrabMiddle.topLeft)
+            drift = self.__driftData.driftBetweenFrames(middleFrameID, frameID)
+
+            crabTopLeft = crabMiddleOnMainWindow.topLeft.translateBy(drift)
+            crabBottomRight = crabMiddleOnMainWindow.bottomRight.translateBy(drift)
+
+            print ("drift, crabMiddleOnMainWindow", frameID, middleFrameID, str(drift), str(crabMiddleOnMainWindow), str(crabTopLeft), str(crabBottomRight))
+            crabOnMainWindow = Box(crabTopLeft, crabBottomRight)
+
+        print ("crabOnMainWindow", str(crabOnMainWindow))
+
+
         mainImage.drawLine(crabOnMainWindow.topLeft, crabOnMainWindow.bottomRight)
 
         return crabOnMainWindow
@@ -106,20 +116,12 @@ class CrabMarker:
 
         drift = self.__driftData.driftBetweenFrames(frameID, firstFrameID)
         crabPointFirst = crabPoint.translateBy(drift)
-        boxAroundCrabFirst = crabPointFirst.boxAroundPoint(200)
-        crabImage2 = firstFrameImage.subImage(boxAroundCrabFirst)
-        crabImage2.drawFrameID(firstFrameID)
-        #print ("h w", crabImage2.height(), crabImage2.width())
-        #print ("details", str(boxAroundCrabFirst), str(crabPointFirst), str(crabPoint), str(drift))
-        # crabWin2 = ImageWindow.createWindow("crabImage2", Box(Point(0, 0), Point(boxAroundCrabFirst.width(), boxAroundCrabFirst.hight())))
-        #crabWin2 = ImageWindow.createWindow("crabImage"+str(firstFrameID), Box(Point(0, 0), Point(600, 600)))
-        #nnnp = crabImage2.asNumpyArray()
-        # print ("size" , nnnp.size())
-        # print (nnnp)
-        #crabWin2.showWindow(nnnp)
-        #frame2Win = ImageWindow.createWindow("wholeImage"+str(firstFrameID), Box(Point(0, 0),Point(960, 540)))
-        #frame2Win.showWindow(firstFrameImage.asNumpyArray())
-        return crabImage2 #crabWin2, frame2Win
+        boxAroundCrab = crabPointFirst.boxAroundPoint(200)
+        crabImage = firstFrameImage.subImage(boxAroundCrab)
+        crabImage = crabImage.growImage(200, 200)
+        crabImage.drawFrameID(firstFrameID)
+
+        return crabImage, boxAroundCrab
 
     def saveCrabToFile(self, crabOnSeeFloor, frameID):
         crabImage1 = crabOnSeeFloor.getImageOnFrame(frameID)
