@@ -1,6 +1,3 @@
-from RedDotsDetector import RedDotsDetector
-
-
 class Logger:
     #__logFile = None
 

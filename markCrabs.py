@@ -74,8 +74,8 @@ crabsDF = pd.DataFrame(
 driftData = DriftData.createFromFile(folderStruct.getDriftsFilepath())
 
 imageWin = ImageWindow("mainWindow", Point(700, 200))
-crabUI = CrabUI(folderStruct, videoStream, driftData)
-scientistUI = ScientistUI(imageWin, crabUI)
+#crabUI = CrabUI(folderStruct, videoStream, driftData)
+scientistUI = ScientistUI(imageWin, folderStruct, videoStream, driftData)
 
 logger = Logger.openInAppendMode(folderStruct.getCrabsFilepath())
 framesDir = folderStruct.getFramesDirpath()

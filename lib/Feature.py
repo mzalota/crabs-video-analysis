@@ -1,10 +1,12 @@
+from math import ceil
+
 from lib.Frame import Frame
 from lib.common import Point, Box
 
 
 class Feature:
 
-    def __init__(self, driftData, frameID, location):
+    def __init__(self, driftData, frameID, location, boxSize):
         self.__driftData = driftData
         self.__frameID = frameID
         self.__location = location
@@ -14,6 +16,8 @@ class Feature:
 
         self.__determineFirstAndLastFrameID()
         #print ("firstFrameID and lastFrameID", self.__firstFrameID, self.__lastFrameID)
+
+        self.__firstAndLastGoodCrabImages(boxSize)
 
     def getInitFrameID(self):
         return self.__frameID
@@ -27,12 +31,35 @@ class Feature:
     def getLastFrameID(self):
         return self.__lastFrameID
 
-    def getCoordinateInFrameAAA(self, frameID):
-        # type: (String) -> Point
-        drift = self.__driftData.driftBetweenFrames(self.__frameID, frameID)
-        return self.__location.translateBy(drift)
+    def getFirstGoodFrameID(self):
+        # type: () -> Point
+        if (self.isNeverFullyVisible()):
+            num_of_frames_between_middle_and_first = self.getMiddleGoodFrameID() - self.getFirstFrameID()
+            return int(ceil(self.getMiddleGoodFrameID() - num_of_frames_between_middle_and_first/2))
+        else:
+            return self.__frameIDOfFirstGoodImage
 
-    def firstAndLastGoodCrabImages(self, boxSize):
+    def getLastGoodFrameID(self):
+        # type: () -> Point
+        if (self.isNeverFullyVisible()):
+            num_of_frames_between_middle_and_last = self.getLastFrameID() - self.getMiddleGoodFrameID()
+            return int(ceil(self.getLastFrameID() - num_of_frames_between_middle_and_last/ 2))
+        else:
+            return self.__frameIDOfLastGoodImage
+
+    def getMiddleGoodFrameID(self):
+        # type: () -> Point
+        if (self.isNeverFullyVisible()):
+            return self.__maximumAreaFrameID
+        else:
+            num_of_frames_between_first_good_and_last_good = self.getLastGoodFrameID() - self.getFirstGoodFrameID()
+            return int(ceil(self.getLastGoodFrameID() - num_of_frames_between_first_good_and_last_good/2))
+
+
+    def isNeverFullyVisible(self):
+        return self.__frameIDOfLastGoodImage <= 0 or self.__frameIDOfFirstGoodImage <= 0
+
+    def __firstAndLastGoodCrabImages(self, boxSize):
         self.__frameIDOfFirstGoodImage = 0
         self.__frameIDOfLastGoodImage = 0
         self.__maximumAreaFrameID = self.__frameID

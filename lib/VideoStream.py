@@ -38,7 +38,6 @@ class VideoStream:
         process = psutil.Process(os.getpid())
         print("memoryUsed: "+self.__toMegaBytes(process.memory_info().rss))
 
-
     def __toMegaBytes(self, memoryInBytes):
         memoryInMegabytes = int(memoryInBytes) / (1024 * 1024)
         return str(memoryInMegabytes) + "MB"

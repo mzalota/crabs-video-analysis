@@ -1,9 +1,5 @@
-#from Image import Image
 from pandas.compat.numpy import np
-
-from common import Point, Box
 from lib.Image import Image
-
 
 class Frame:
     #__frameID = None

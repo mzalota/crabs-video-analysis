@@ -1,3 +1,4 @@
+from lib.CrabUI import CrabUI
 from lib.DriftData import DriftData
 from lib.Image import Image
 from lib.ImageWindow import ImageWindow
@@ -7,10 +8,13 @@ class UserWantsToQuitException(Exception):
     pass
 
 class ScientistUI:
-    def __init__(self, imageWin, crabUI):
+    def __init__(self, imageWin, folderStruct, videoStream, driftData):
         self.__imageWin = imageWin
+        self.__folderStruct = folderStruct
+        self.__videoStream = videoStream
+        self.__driftData = driftData
+
         self.__crabNumber = 0
-        self.__crabUI = crabUI
 
     def processImage(self, image, frameID):
         origImage = image.copy()
@@ -33,13 +37,26 @@ class ScientistUI:
                 raise UserWantsToQuitException(message)
             else:
                 crabPoint = self.__imageWin.featureCoordiate
-                crabOnFrameID, crabBox = self.__crabUI.getCrabWidth(crabPoint, frameID)
+
+                #self.__crabUI.showCrabWindow(crabPoint, frameID)
+
+                crabUI = CrabUI(self.__folderStruct, self.__videoStream, self.__driftData, frameID, crabPoint)
+                crabUI.showCrabWindow()
+
+                crabOnFrameID = crabUI.getFrameIDOfCrab()
+                crabBox = crabUI.getCrabLocation()
 
                 foundCrabs.append((self.__crabNumber, crabOnFrameID, crabBox))
 
                 #draw an X on where the User clicked.
                 mainImage = Image(image)
                 mainImage.drawCross(crabPoint)
+
+                #draw user-marked line on the main image. but first translate the coordinates to this frame
+                #drift = self.__driftData.driftBetweenFrames(crabOnFrameID, frameID)
+                #crabBoxTopLeft = crabBox.topLeft.translateBy(drift)
+                #crabBoxBottomRight = crabBox.bottomRight.translateBy(drift)
+                #mainImage.drawLine(crabBoxTopLeft, crabBoxBottomRight)
 
                 self.__crabNumber += 1
 
