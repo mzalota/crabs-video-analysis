@@ -1,6 +1,5 @@
 from math import ceil, floor
 
-from lib.DriftData import DriftData
 from lib.Feature import Feature
 from lib.Frame import Frame
 from lib.Image import Image
@@ -8,52 +7,13 @@ from lib.ImageWindow import ImageWindow
 from lib.SeeFloorSection import SeeFloorSection
 from lib.common import Box, Point, Vector
 
-
-class UserWantsToQuitException(Exception):
-    pass
-
-class CrabMarker:
-    def __init__(self,imageWin, folderStruct, videoStream):
-        self.__imageWin = imageWin
+class CrabUI:
+    def __init__(self, folderStruct, videoStream, driftData):
         self.__folderStruct = folderStruct
         self.__videoStream = videoStream
-        self.__driftData = DriftData.createFromFile(folderStruct.getDriftsFilepath())
-        self.__crabNumber = 0
+        self.__driftData = driftData
 
-    def processImage(self, image, frameID):
-        origImage = image.copy()
-        foundCrabs = list()
-        mustExit = False
-        while not mustExit:
-            keyPressed = self.__imageWin.showWindowAndWaitForClick(image)
-            #print ("pressed button", keyPressed)
-
-            if keyPressed == ord("n") or keyPressed == ImageWindow.KEY_ARROW_DOWN or keyPressed == ImageWindow.KEY_ARROW_RIGHT or keyPressed == ImageWindow.KEY_SPACE:
-                # process next frame
-                mustExit = True
-            elif keyPressed == ord("r"):
-                # print "Pressed R button" - reset. Remove all marked crabs
-                foundCrabs = list()
-                image = origImage.copy()
-            elif keyPressed == ord("q"):
-                # print "Pressed Q button" quit
-                message = "User pressed Q button"
-                raise UserWantsToQuitException(message)
-            else:
-                crabPoint = self.__imageWin.featureCoordiate
-                crabOnFrameID, crabBox = self.__getCrabWidth(crabPoint, frameID)
-
-                foundCrabs.append((self.__crabNumber, crabOnFrameID, crabBox))
-
-                #draw an X on where the User clicked.
-                mainImage = Image(image)
-                mainImage.drawCross(crabPoint)
-
-                self.__crabNumber += 1
-
-        return foundCrabs
-
-    def __getCrabWidth(self, crabPoint, frameID):
+    def getCrabWidth(self, crabPoint, frameID):
 
         crabFeature = Feature(self.__driftData, frameID, crabPoint)
         firstFrameID, lastFrameID = crabFeature.firstAndLastGoodCrabImages(200)
@@ -66,10 +26,10 @@ class CrabMarker:
         else:
             middleFrameID = int(ceil(lastFrameID - (lastFrameID - firstFrameID) / 2))
 
-        boxAroundCrabThis = self.__boxAroundCrabOnItsFrame(crabPoint, frameID, frameID)
-        boxAroundCrabFirst = self.__boxAroundCrabOnItsFrame(crabPoint, frameID, firstFrameID)
-        boxAroundCrabLast = self.__boxAroundCrabOnItsFrame(crabPoint, frameID, lastFrameID)
-        boxAroundCrabMiddle = self.__boxAroundCrabOnItsFrame(crabPoint, frameID, middleFrameID)
+        boxAroundCrabThis = self.__boxAroundCrabOnItsFrame(crabFeature, frameID)
+        boxAroundCrabFirst = self.__boxAroundCrabOnItsFrame(crabFeature, firstFrameID)
+        boxAroundCrabLast = self.__boxAroundCrabOnItsFrame(crabFeature, lastFrameID)
+        boxAroundCrabMiddle = self.__boxAroundCrabOnItsFrame(crabFeature, middleFrameID)
 
         crabImageThis = self.__crabImageOnFrame(boxAroundCrabThis, frameID)
         crabImageFirst = self.__crabImageOnFrame(boxAroundCrabFirst, firstFrameID)
@@ -129,9 +89,10 @@ class CrabMarker:
         crabImage.drawFrameID(frameID)
         return crabImage
 
-    def __boxAroundCrabOnItsFrame(self, crabPoint, frameID, firstFrameID):
-        drift = self.__driftData.driftBetweenFrames(frameID, firstFrameID)
-        crabPointOnItsFrame = crabPoint.translateBy(drift)
+    def __boxAroundCrabOnItsFrame(self, crabFeature, frameID):
+        crabPointOnItsFrame = crabFeature.getCoordinateInFrame(frameID)
+        #drift = self.__driftData.driftBetweenFrames(frameID, firstFrameID)
+        #crabPointOnItsFrame = crabPoint.translateBy(drift)
 
         boxAroundCrab = crabPointOnItsFrame.boxAroundPoint(200)
         return boxAroundCrab

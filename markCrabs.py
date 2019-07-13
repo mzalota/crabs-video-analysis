@@ -3,8 +3,10 @@ import logging
 import pandas as pd
 import cv2
 
-from lib.CrabMarker import CrabMarker, UserWantsToQuitException
+from lib.CrabUI import CrabUI
+from lib.DriftData import DriftData
 from lib.Logger import Logger
+from lib.ScientistUI import ScientistUI, UserWantsToQuitException
 from lib.SeeFloorSection import SeeFloorSection
 from lib.FolderStructure import FolderStructure
 from lib.Frame import Frame
@@ -69,8 +71,11 @@ def writeCrabsInfoToFile(foundCrabs, logger, crabsDF):
 crabsDF = pd.DataFrame(
     columns=['dir', 'filename', 'crabNumber', 'crabWidthPixels', 'crabLocationX', 'crabLocationY', 'crabWidthLine'])
 
+driftData = DriftData.createFromFile(folderStruct.getDriftsFilepath())
+
 imageWin = ImageWindow("mainWindow", Point(700, 200))
-crabMarker = CrabMarker(imageWin,folderStruct,videoStream)
+crabUI = CrabUI(folderStruct, videoStream, driftData)
+scientistUI = ScientistUI(imageWin, crabUI)
 
 logger = Logger.openInAppendMode(folderStruct.getCrabsFilepath())
 framesDir = folderStruct.getFramesDirpath()
@@ -84,7 +89,7 @@ for filename in os.listdir(framesDir):
     frameID = int(filename[5:11])
     # print ("frameStr", frameID)
     try:
-        foundCrabs = crabMarker.processImage(image, frameID)
+        foundCrabs = scientistUI.processImage(image, frameID)
         writeCrabsInfoToFile(foundCrabs, logger, crabsDF)
     except UserWantsToQuitException as error:
         #print repr(error)

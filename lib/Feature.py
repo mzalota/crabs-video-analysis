@@ -15,11 +15,22 @@ class Feature:
         self.__determineFirstAndLastFrameID()
         #print ("firstFrameID and lastFrameID", self.__firstFrameID, self.__lastFrameID)
 
+    def getInitFrameID(self):
+        return self.__frameID
+
+    def getInitFrameCoordinate(self):
+        return self.__location
+
     def getFirstFrameID(self):
         return self.__firstFrameID
 
     def getLastFrameID(self):
         return self.__lastFrameID
+
+    def getCoordinateInFrameAAA(self, frameID):
+        # type: (String) -> Point
+        drift = self.__driftData.driftBetweenFrames(self.__frameID, frameID)
+        return self.__location.translateBy(drift)
 
     def firstAndLastGoodCrabImages(self, boxSize):
         self.__frameIDOfFirstGoodImage = 0
@@ -39,7 +50,7 @@ class Feature:
         nextFrameID = self.__frameID
         while (True):
             nextFrameID = nextFrameID + 1
-            newPoint = self.__newPoint(nextFrameID)
+            newPoint = self.getCoordinateInFrame(nextFrameID)
             # print("drift:", frameID, str(crabPoint), nextFrameID, str(newPoint), str(drift), visibleBoxArea.area(), str(visibleBoxArea))
             if (newPoint.x <= 0 or newPoint.y <= 0):
                 #print("drift:",  nextFrameID, str(newPoint))
@@ -54,7 +65,7 @@ class Feature:
         nextFrameID = self.__frameID
         while (True):
             nextFrameID = nextFrameID - 1
-            newPoint = self.__newPoint(nextFrameID)
+            newPoint = self.getCoordinateInFrame(nextFrameID)
             # print("drift:", frameID, str(crabPoint), nextFrameID, str(newPoint), str(drift), visibleBoxArea.area(), str(visibleBoxArea))
             if (newPoint.x <= 0 or newPoint.y <= 0):
                 #print("drift:",  nextFrameID, str(newPoint))
@@ -91,13 +102,15 @@ class Feature:
 
     def __constructVisibleArea(self, nextFrameID, boxSize):
         offset = int(boxSize / 2)
-        newPoint = self.__newPoint(nextFrameID)
+        newPoint = self.getCoordinateInFrame(nextFrameID)
         topleft = Point(max(newPoint.x - offset, 0), max(newPoint.y - offset, 0))
         bottomRight = Point(min(newPoint.x + offset, Frame.FRAME_WIDTH), min(newPoint.y + offset, Frame.FRAME_HEIGHT))
         visibleBoxArea = Box(topleft, bottomRight)
         return visibleBoxArea
 
-    def __newPoint(self, nextFrameID):
-        drift = self.__driftData.driftBetweenFrames(self.__frameID, nextFrameID)
+
+    def getCoordinateInFrame(self, frameID):
+        # type: (String) -> Point
+        drift = self.__driftData.driftBetweenFrames(self.__frameID, frameID)
         newPoint = self.__location.translateBy(drift)
         return newPoint
