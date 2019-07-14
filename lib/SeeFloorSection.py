@@ -58,23 +58,13 @@ class SeeFloorSection:
         return self.__getTopLeftForFrame(self.getMaxFrameID())
 
     def __getTopLeftForFrame(self, frameID):
-        if len(self.__topLeftPoints)<1:
+        if len(self.__topLeftPoints) < 1:
             return None
 
         if frameID not in (self.__topLeftPoints):
             return None
 
         return self.__topLeftPoints[frameID]
-
-    def showSubImage_old(self):
-        if self.__subImageWin is None:
-            self.__subImageWin = ImageWindow.createWindow(self.__getWindowName(), self.__defaultBoxAroundFeature())
-
-        frameID = self.__getLastFrame().getFrameID()
-        img = self.getImage()
-        if img is not None:
-            img.drawFrameID(frameID)
-            self.__subImageWin.showWindow(img.asNumpyArray())
 
     def showSubImage(self):
         frameID = self.getMaxFrameID()

@@ -35,7 +35,8 @@ class CrabUI:
         leftHalfOfImageToShow = crabImageMiddle.concatenateToTheBottom(crabImageFirst) #image from middleFrameID is in top-left corner above image from firstFrameID
         rightHalfOfImageToShow = crabImageLast.concatenateToTheBottom(crabImageThis)  #image from thisFrameID is in bottom-right corner below image from lastFrameID
         imageToShow = leftHalfOfImageToShow.concatenateToTheRight(rightHalfOfImageToShow)
-        self.__showCrabWindow(imageToShow)
+
+        return self.__showCrabWindow(imageToShow)
 
         #self.findViewsOfTheSameCrab(boxAroundCrab, thisFrameID)
 
@@ -52,6 +53,20 @@ class CrabUI:
 
 
     def getCrabLocation(self):
+        if self.__user_clicked_in_right_half():
+            xOffset = -self.__boxSize
+        else:
+            xOffset = 0
+
+        if self.__user_clicked_in_bottom_half():
+            yOffset = -self.__boxSize
+        else:
+            yOffset = 0
+
+        offsetOfCrabImageFrom0x0 = Vector(xOffset, yOffset)
+        return self.__crabCoordinatesOnItsFrame(self.getFrameIDOfCrab(), offsetOfCrabImageFrom0x0)
+
+    def getCrabLocation_bck(self):
         if self.__user_clicked_in_right_half() and self.__user_clicked_in_bottom_half():
             # user marked crab is on "imageThis", which is the bottom right image
             offsetOfCrabImageFrom0x0 = Vector(-self.__boxSize, -self.__boxSize)
@@ -68,7 +83,7 @@ class CrabUI:
             # user marked crab is on "imageMiddle", which is top left image
             offsetOfCrabImageFrom0x0 = Vector(0, 0)
 
-        return self.__crabCoordinatesOnItsFrame(self.getFrameIDOfCrab(), offsetOfCrabImageFrom0x0)
+        #return self.__crabCoordinatesOnItsFrame(self.getFrameIDOfCrab(), offsetOfCrabImageFrom0x0)
 
     def getFrameIDOfCrab(self):
         if self.__user_clicked_in_right_half() and self.__user_clicked_in_bottom_half():
@@ -112,7 +127,11 @@ class CrabUI:
         crabWin.showWindowAndWaitForTwoClicks(imageToShow.asNumpyArray())
         crabWin.closeWindow()
 
-        self.__line_marked_by_user = crabWin.featureBox
+        if crabWin.userClickedMouseTwice():
+            self.__line_marked_by_user = crabWin.featureBox
+            return True
+        else:
+            return False
 
     def __crabCoordinatesOnItsFrame(self, frameID, offsetOfCrabImageOnCrabWindow):
 

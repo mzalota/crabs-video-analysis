@@ -41,23 +41,27 @@ class ScientistUI:
                 #self.__crabUI.showCrabWindow(crabPoint, frameID)
 
                 crabUI = CrabUI(self.__folderStruct, self.__videoStream, self.__driftData, frameID, crabPoint)
-                crabUI.showCrabWindow()
+                lineWasSelected = crabUI.showCrabWindow()
 
-                crabOnFrameID = crabUI.getFrameIDOfCrab()
-                crabBox = crabUI.getCrabLocation()
+                if lineWasSelected:
+                    crabOnFrameID = crabUI.getFrameIDOfCrab()
+                    crabBox = crabUI.getCrabLocation()
 
-                foundCrabs.append((self.__crabNumber, crabOnFrameID, crabBox))
+                    foundCrabs.append((self.__crabNumber, crabOnFrameID, crabBox))
 
-                #draw an X on where the User clicked.
-                mainImage = Image(image)
-                mainImage.drawCross(crabPoint)
+                    #draw an X on where the User clicked.
+                    mainImage = Image(image)
+                    mainImage.drawCross(crabPoint)
 
-                #draw user-marked line on the main image. but first translate the coordinates to this frame
-                #drift = self.__driftData.driftBetweenFrames(crabOnFrameID, frameID)
-                #crabBoxTopLeft = crabBox.topLeft.translateBy(drift)
-                #crabBoxBottomRight = crabBox.bottomRight.translateBy(drift)
-                #mainImage.drawLine(crabBoxTopLeft, crabBoxBottomRight)
+                    #self.__drawLineOnCrab(crabBox, crabOnFrameID, frameID, mainImage)
 
-                self.__crabNumber += 1
+                    self.__crabNumber += 1
 
         return foundCrabs
+
+    def __drawLineOnCrab(self, crabBox, crabOnFrameID, frameID, mainImage):
+        # draw user-marked line on the main image. but first translate the coordinates to this frame
+        drift = self.__driftData.driftBetweenFrames(crabOnFrameID, frameID)
+        crabBoxTopLeft = crabBox.topLeft.translateBy(drift)
+        crabBoxBottomRight = crabBox.bottomRight.translateBy(drift)
+        mainImage.drawLine(crabBoxTopLeft, crabBoxBottomRight)
