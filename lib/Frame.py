@@ -1,12 +1,12 @@
-from Image import Image
 from pandas.compat.numpy import np
-
-from common import Point, Box
-
+from lib.Image import Image
 
 class Frame:
     #__frameID = None
     #__image = None
+
+    FRAME_HEIGHT = 1080
+    FRAME_WIDTH = 1920
 
     def __init__(self, frameNumber, videoStream):
         # type: (int, VideoStream) -> Frame

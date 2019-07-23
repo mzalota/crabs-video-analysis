@@ -14,8 +14,12 @@ imageWin2 = ImageWindow.createWindow("topSubimage",Box(Point(0,0),Point(960,740)
 
 #videoFileName="V5__R_20180915_211343"
 #videoFileName="V6__R_20180915_212238"
-filename = "V6__R_20180915_212238"
-rootDirectory = "C:/Users/User/Documents/data/Kara/Video/V_Analysis/"
+#filename = "V6__R_20180915_212238"
+filename = "V3_R_20180911_170159"
+
+#rootDirectory = "C:/Users/User/Documents/data/Kara/Video/V_Analysis/"
+rootDirectory = "C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/"
+
 #filename = "V6__R_20180915_212238"
 #filename = "V4__R_20180915_210447"
 #filename = "V5__R_20180915_211343"

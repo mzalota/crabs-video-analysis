@@ -128,6 +128,9 @@ class Box:
     def diagonal(self):
         return self.topLeft.distanceTo(self.bottomRight)
 
+    def area(self):
+        return self.width() * self.hight()
+
     def centerPoint(self):
         return self.topLeft.calculateMidpoint(self.bottomRight)
 
@@ -143,6 +146,11 @@ class Box:
         bottomRightY = topLeftOuterPoint.y + self.bottomRight.y
 
         return Box(Point(topLeftX, topLeftY), Point(bottomRightX, bottomRightY))
+
+    def translateBy(self, vector):
+        newTopLeft = self.topLeft.translateBy(vector)
+        newBottomRight = self.bottomRight.translateBy(vector)
+        return Box(newTopLeft,newBottomRight)
 
 def boxAroundBoxes(box1, box2):
     topLeft= Point(min(box1.topLeft.x, box2.topLeft.x), min(box1.topLeft.y, box2.topLeft.y))

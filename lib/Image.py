@@ -1,7 +1,12 @@
 from cv2 import cv2, os
 
 from pandas.compat.numpy import np
-from common import Point, Box
+from common import Point, Box, Vector
+
+
+#from Frame import Frame
+#from lib.Frame import Frame
+
 
 class Image:
     def __init__(self, imageAsNumpyArray):
@@ -24,6 +29,10 @@ class Image:
 
     def drawLine(self, point1, point2):
         cv2.line(self.__image, (point1.x, point1.y), (point2.x, point2.y), (0, 255, 0), 5)
+
+    def drawCross(self, point, size=8):
+        self.drawLine(point.translateBy(Vector(-size, -size)), point.translateBy(Vector(size, size)))
+        self.drawLine(point.translateBy(Vector(size, -size)), point.translateBy(Vector(-size, size)))
 
     def drawBoxOnImage(self, box):
         if box:
@@ -54,7 +63,8 @@ class Image:
 
     def subImage(self, box):
         # type: (Box) -> Image
-        return Image(self.__image[box.topLeft.y:box.bottomRight.y, box.topLeft.x: box.bottomRight.x].copy())
+        #return Image(self.__image[box.topLeft.y:box.bottomRight.y, box.topLeft.x: box.bottomRight.x].copy())
+        return Image(self.__image[max(box.topLeft.y,1):min(box.bottomRight.y,self.height()), max(box.topLeft.x,1): min(box.bottomRight.x,self.width())].copy())
 
     def bottomPart(self, height):
         # type: (integer) -> Image
@@ -99,6 +109,51 @@ class Image:
             rr, cc = polygon_perimeter(r, c, image_with_boxes.shape)
             image_with_boxes[rr, cc] = 1  # set color white
         return image_with_boxes
+
+
+    def concatenateToTheBottom(self, imageObj):
+
+        maxWidth = max(self.width(), imageObj.width())
+
+        # get objects to the same width. Leave their heights unchanged
+        topImageObj = self.growImage(maxWidth, self.height())
+        bottomImageObj = imageObj.growImage(maxWidth, imageObj.height())
+
+        resultImg = self.__concatenateNumpyArrayToTheBottom(topImageObj.asNumpyArray(), bottomImageObj.asNumpyArray())
+        return Image(resultImg)
+
+
+    def concatenateToTheRight(self, imageObj):
+
+        maxHeight = max(self.height(), imageObj.height())
+
+        #get objects to the same height. Leave their widths unchanged
+        leftImageObj = self.growImage(self.width(), maxHeight)
+        rightImageObj = imageObj.growImage(imageObj.width(), maxHeight)
+
+        resultImg = self.__concatenateNumpyArrayToTheRight(leftImageObj.asNumpyArray(), rightImageObj.asNumpyArray())
+        return Image(resultImg)
+
+    def growImage(self, newWidth, newHeight):
+        fillerWidth = newWidth - self.width()
+        fillerHeight = newHeight - self.height()
+
+        return Image(self.__padFillers(self, fillerWidth, fillerHeight))
+
+    def __padFillers(self, imgObj, fillerWidth, fillerHeight):
+
+        fillerBottom = Image.empty(fillerHeight, imgObj.width(), 0)
+        tmpImg = self.__concatenateNumpyArrayToTheBottom(imgObj.asNumpyArray(), fillerBottom.asNumpyArray())
+
+        newHeight = imgObj.height() + fillerHeight
+        fillerRight = Image.empty(newHeight, fillerWidth, 0)
+        return self.__concatenateNumpyArrayToTheRight(tmpImg, fillerRight.asNumpyArray())
+
+    def __concatenateNumpyArrayToTheBottom(self, topImg, bottomImg):
+        return np.concatenate((topImg, bottomImg))
+
+    def __concatenateNumpyArrayToTheRight(self, leftImg, rightImg):
+        return np.concatenate((leftImg, rightImg), axis=1)
 
     def writeToFile(self, filepath):
         self.__createDirectoriesIfNecessary(filepath)

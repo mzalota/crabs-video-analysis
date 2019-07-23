@@ -44,7 +44,7 @@ videoFilename = "V3_R_20180911_170159"
 
 folderStruct = FolderStructure(rootDirectory, videoFilename)
 videoStream = VideoStream(folderStruct.getVideoFilepath())
-logger = Logger.openInOverwriteMode(folderStruct.getDriftsFilepath())
+logger = Logger.openInOverwriteMode(folderStruct.getRawDriftsFilepath())
 
 driftsFileHeaderRow = VelocityDetector.infoHeaders()
 driftsFileHeaderRow.insert(0, "frameNumber")

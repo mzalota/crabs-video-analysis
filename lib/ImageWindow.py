@@ -32,26 +32,30 @@ class ImageWindow:
         win.__windowHight = windowBox.hight()
         return win
 
-    def waitForMouseClick(self):
-        cv2.setMouseCallback(self.__windowName, self.click_and_crop)
-        # cv2.setMouseCallback("mainWithRedDots", click_and_crop)
-        #print "Click on a new feature"
-        #keyPressed = cv2.waitKey(0)
+    def __waitForMouseClick(self):
+        self.__mouseButtomWasClicked = False
+        cv2.setMouseCallback(self.__windowName, self.__click_event_handler)
         keyPressed = cv2.waitKeyEx(0)
         return keyPressed
 
+    def __click_event_handler(self, event, x, y, flags, param):
+        self.__wasClicked(event, x, y)
 
-    def click_and_crop(self, event, x, y, flags, param):
-        self.wasClicked(event, x, y)
-
-    def wasClicked(self, event, x, y):
+    def __wasClicked(self, event, x, y):
         # check to see if the left mouse button was released
         if event == cv2.EVENT_LBUTTONDOWN:
             self.featureCoordiate = Point(x, y)
-            #self.featureBox = self.featureCoordiate.boxAroundPoint(100)
-            #cv2.rectangle(image, (max(x - 50, 1), max(y - 50, 1)), (x + 50, y + 50), (255, 0, 0), 2)
-            #print "keyPress A"
-            press('a')
+            self.__mouseButtomWasClicked = True
+            press('a') #just pretend a key button 'a' was pressed, so that cv2 framework returns from cv2.waitKeyEx() function
+
+    def userClickedMouse(self):
+        return self.__mouseButtomWasClicked
+
+    def userClickedMouseTwice(self):
+        if self.featureBox is not None:
+            return True
+        else:
+            return False
 
     def showWindow(self, image):
         if not self.__windowPositionAndDimensionsInitialized:
@@ -63,7 +67,7 @@ class ImageWindow:
 
     def showWindowAndWaitForClick(self, image):
         self.showWindow(image)
-        return self.waitForMouseClick()
+        return self.__waitForMouseClick()
 
     def showWindowAndWait(self, image, delay):
         self.showWindow(image)
@@ -81,17 +85,20 @@ class ImageWindow:
         #print "trying to close window " + self.__windowName
 
     def showWindowAndWaitForTwoClicks(self, image):
-        self.showWindow(image)
+
+        keyPress = self.showWindowAndWaitForClick(image)
+        if not self.userClickedMouse():
+            return keyPress
+
+        point1 = self.featureCoordiate
 
         img = Image(image)
-
-        self.waitForMouseClick()
-        point1=self.featureCoordiate
-
         img.drawBoxOnImage(point1.boxAroundPoint(3))
 
-        self.waitForMouseClick()
-        point2=self.featureCoordiate
-        img.drawBoxOnImage(point2.boxAroundPoint(3))
+        keyPress = self.showWindowAndWaitForClick(image)
+        if not self.userClickedMouse():
+            return keyPress
 
-        self.featureBox=Box(point1,point2)
+        point2 = self.featureCoordiate
+
+        self.featureBox = Box(point1, point2)
