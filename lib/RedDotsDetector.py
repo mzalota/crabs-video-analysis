@@ -5,12 +5,20 @@ from common import Point, Box
 class RedDotsDetector:
     __initialDistanceForRedBoxSearchArea = 200
 
-    def __init__(self, frame, prevFrame=None):
+    def __init__(self, frame, prevDetector=None):
         # type: (Frame, RedDotsDetector) -> RedDotsDetector
         self.__frame = frame
-        self.__prevFrame = prevFrame
+        #self.__prevDetector = prevDetector
         self.__redDot1 = None
         self.__redDot2 = None
+
+    def getRedDot1(self):
+        # type: () -> RedDot
+        return self.__redDot1
+
+    def getRedDot2(self):
+        # type: () -> RedDot
+        return self.__redDot2
 
     def drawBoxesAroundRedDots(self):
         #img = self.__getImage()
@@ -32,8 +40,8 @@ class RedDotsDetector:
         if self.__redDot1.dotWasDetected() and self.__redDot2.dotWasDetected():
             return int(self.__redDot1.boxAroundDot.distanceTo(self.__redDot2.boxAroundDot))
 
-        if self.__prevFrame:
-            return int(self.__prevFrame.__distanceBetweenRedPoints())
+        #if self.__prevDetector:
+        #    return int(self.__prevDetector.__distanceBetweenRedPoints())
 
         return int(self.__initialDistanceForRedBoxSearchArea)
 
@@ -42,16 +50,16 @@ class RedDotsDetector:
         if self.__redDot1 and self.__redDot1.dotWasDetected():
             return self.__updateRedDotsSearchArea(self.__redDot1.boxAroundDot)
 
-        if self.__prevFrame:
-            return self.__prevFrame.__redDotsSearchArea1()
+        #if self.__prevDetector:
+        #    return self.__prevDetector.__redDotsSearchArea1()
 
         return Box(Point(600, 300), Point(900, 600))
 
     def __redDotsSearchArea2(self):
         if self.__redDot2 and self.__redDot2.dotWasDetected():
             return self.__updateRedDotsSearchArea(self.__redDot2.boxAroundDot)
-        if self.__prevFrame:
-            return self.__prevFrame.__redDotsSearchArea2()
+        #if self.__prevDetector:
+        #    return self.__prevDetector.__redDotsSearchArea2()
 
         return Box(Point(900, 300), Point(1400, 800))
 
@@ -68,6 +76,15 @@ class RedDotsDetector:
 
         redDotsSearchArea = Box(Point(topLeftX, topLeftY), Point(bottomRightX, bottomRightY))
         return redDotsSearchArea
+
+    def dotsWasDetected(self):
+        if not self.__redDot1.dotWasDetected():
+            return False
+
+        if not self.__redDot2.dotWasDetected():
+            return False
+
+        return True
 
     def infoAboutFrame(self):
         row = []

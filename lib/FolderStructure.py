@@ -7,6 +7,9 @@ class FolderStructure:
     def getVideoFilepath(self):
         return self.__rootDirectory + "/" + self.__videoFilename + ".avi"
 
+    def getRedDotsFilepath(self):
+        return self.__getSubDirpath() + self.__videoFilename + '_reddots.csv'
+
     def getRawDriftsFilepath(self):
         return self.__getSubDirpath() + self.__videoFilename + '_raw_drifts.csv'
 
