@@ -30,7 +30,8 @@ rootDir = "C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/"
 
 # videoFileName = "V4__R_20180915_210447"
 # videoFileName = "V6__R_20180915_212238"
-videoFileName = "V3_R_20180911_170159"
+#videoFileName = "V3_R_20180911_170159"
+videoFileName = "V2_R_20180911_165730"
 # videoFileName = "V2_R_20180911_165730"
 
 folderStruct = FolderStructure(rootDir, videoFileName)
