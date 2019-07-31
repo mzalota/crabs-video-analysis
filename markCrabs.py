@@ -73,6 +73,9 @@ crabsDF = pd.DataFrame(
 
 driftData = DriftData.createFromFile(folderStruct.getDriftsFilepath())
 
+redDotsData = DriftData.createFromFile(folderStruct.getRedDotsFilepath())
+
+
 imageWin = ImageWindow("mainWindow", Point(700, 200))
 #crabUI = CrabUI(folderStruct, videoStream, driftData)
 scientistUI = ScientistUI(imageWin, folderStruct, videoStream, driftData)

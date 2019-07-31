@@ -61,8 +61,10 @@ class FramesStitcher:
             #frame.saveCollageToFile(rootDirectory+"/"+videoFileName+"/")
 
             #image = frame.attachNeighbourFrames(nextFrame, prevFrame, 800)
-            image = frame.attachNeighbourFrames(nextFrame, prevFrame, 300)
-            imgObj = Image(image)
+            #image = frame.attachNeighbourFrames(nextFrame, prevFrame, 300)
+            #imgObj = Image(image)
+            imgObj = frame.getImgObj()
+            imgObj.drawFrameID(frame.getFrameID())
 
             imageFilePath = frame.constructFilePath(self.__imagesDir)
             print "writing frame image to file: " + imageFilePath
