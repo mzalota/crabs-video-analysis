@@ -29,8 +29,6 @@ class RedDotsData:
     @staticmethod
     def createFromPandasDataFrame(df):
         # type: (pd) -> RedDotsData
-
-        print "In CreatefromPandasDataFrame"
         newObj = RedDotsData()
         newObj.__driftData = df
         return newObj
@@ -41,11 +39,24 @@ class RedDotsData:
     def replaceOutlierBetweenTwo(self):
         dataRedDot2 = self.onlyRedDot2()
         self.__replaceOutlierBetweenTwo(dataRedDot2, "centerPoint_x")
-        return dataRedDot2
+        self.__replaceOutlierBetweenTwo(dataRedDot2, "centerPoint_y")
+
+        dataRedDot1 = self.onlyRedDot1()
+        self.__replaceOutlierBetweenTwo(dataRedDot1, "centerPoint_x")
+        self.__replaceOutlierBetweenTwo(dataRedDot1, "centerPoint_y")
+
+        self.__driftData = pd.concat([dataRedDot1, dataRedDot2], ignore_index=True)
+
+        #return dataRedDot2
 
     def onlyRedDot2(self):
-        dataRedDot2 = self.__driftData.loc[self.__driftData['dotName'] == 'redDot2']
+        # type: () -> pd
+        dataRedDot2 = self.__driftData.loc[self.__driftData['dotName'] == self.__VALUE_redDot2]
         return dataRedDot2
+
+    def onlyRedDot1(self):
+        # type: () -> pd
+        return self.__driftData.loc[self.__driftData['dotName'] == self.__VALUE_redDot1]
 
     def __replaceOutlierBetweenTwo(self, df, columnName):
         outlier_threshold = 100
@@ -57,19 +68,42 @@ class RedDotsData:
         single_outlier = (deviation > outlier_threshold) & (diffNextPrev < outlier_threshold)
         df.drop(df[single_outlier].index, inplace=True)
 
-    def getMiddleOfBiggestGap(self, newDF):
-        nextFrameID = newDF['frameNumber'].shift(periods=-1)
-        gaps = abs(newDF['frameNumber'] - nextFrameID)
-        value = max(gaps)
-        # gaps.index[value].tolist()
-        idx = pd.Index(gaps)
-        idxOfMaxGap = idx.get_loc(value)
-        gapStartFrameID = newDF.iloc[idxOfMaxGap, :]["frameNumber"]
-        gapEndFrameID = newDF.iloc[idxOfMaxGap + 1, :]["frameNumber"]
-        gapMiddleFrameID = gapEndFrameID - int((gapEndFrameID - gapStartFrameID) / 2)
+    def getMiddleOfBiggestGap(self):
+
+        redDots1 = self.onlyRedDot1().reset_index()
+        idxOfMaxGap1 = self.__indexOfBiggestGap(redDots1)
+        print ("idxOfMaxGap1", idxOfMaxGap1)
+        gapStartFrameID1 = redDots1.loc[idxOfMaxGap1, :][self.__COLNAME_frameNumber]
+        gapEndFrameID1 = redDots1.loc[idxOfMaxGap1 + 1, :][self.__COLNAME_frameNumber]
+        gapSize1 = gapEndFrameID1 - gapStartFrameID1
+
+        redDots2 = self.onlyRedDot2().reset_index()
+        idxOfMaxGap2 = self.__indexOfBiggestGap(redDots2)
+        print ("idxOfMaxGap2", idxOfMaxGap2)
+        gapStartFrameID2 = redDots2.loc[idxOfMaxGap2, :][self.__COLNAME_frameNumber]
+        gapEndFrameID2 = redDots2.loc[idxOfMaxGap2 + 1, :][self.__COLNAME_frameNumber]
+        gapSize2 = gapEndFrameID2 - gapStartFrameID2
+
+        print ("gaps and frames", gapSize1, gapSize2, gapStartFrameID1, gapStartFrameID2)
+        if gapSize2 > gapSize1:
+            gapMiddleFrameID = gapEndFrameID2 - int(gapSize2/ 2)
+        else:
+            gapMiddleFrameID = gapEndFrameID1 - int(gapSize1/ 2)
+
         return gapMiddleFrameID
-        # newDF[2]
-        # newDF.describe
+
+    def __indexOfBiggestGap(self, newDF):
+        nextFrameID = newDF[self.__COLNAME_frameNumber].shift(periods=-1)
+        gaps = abs(newDF[self.__COLNAME_frameNumber] - nextFrameID)
+        value = max(gaps)
+        print ("largest gap size", value)
+
+        #idx = pd.Index(gaps)
+        #idxOfMaxGap = idx.get_loc(value)
+
+        #idxOfMaxGap = gaps.index[int(value)].tolist()
+        idxOfMaxGap = gaps.idxmax()
+        return idxOfMaxGap
 
     def getCount(self):
         return len(self.__driftData.index)
@@ -117,10 +151,13 @@ class RedDotsData:
         rowRedDot2[self.__COLNAME_centerPoint_x] = box.bottomRight.x
         rowRedDot2[self.__COLNAME_centerPoint_y] = box.bottomRight.y
 
-        #rowRedDot1 = [iname, ipassword, iemail]
-        #df.loc[len(df)] = rowRedDot1
-        #df.to_csv("login.csv", index=False)
-
         # Pass the rowRedDot1 elements as key value pairs to append() function
         self.__driftData = self.__driftData.append(rowRedDot1, ignore_index=True)
         self.__driftData = self.__driftData.append(rowRedDot2, ignore_index=True)
+
+    def forPlotting(self):
+        dataRedDot1 = self.onlyRedDot1()[[self.__COLNAME_frameNumber,self.__COLNAME_centerPoint_x, self.__COLNAME_centerPoint_y]]
+        dataRedDot2 = self.onlyRedDot2()[[self.__COLNAME_frameNumber,self.__COLNAME_centerPoint_x, self.__COLNAME_centerPoint_y]]
+
+        dfToPlot = pd.merge(dataRedDot1, dataRedDot2, on='frameNumber', how='outer', suffixes=('_dot1', '_dot2'))
+        return dfToPlot.sort_values(by=['frameNumber'])

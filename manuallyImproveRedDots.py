@@ -38,10 +38,7 @@ redDotsData.sort()
 
 imageWin = ImageWindow("mainWithRedDots", Point(700, 200))
 
-df = redDotsData.onlyRedDot2()
-
-
-frameID = redDotsData.getMiddleOfBiggestGap(df)
+frameID = redDotsData.getMiddleOfBiggestGap()
 print ("frame",frameID)
 
 image = videoStream.readImageObj(frameID)
