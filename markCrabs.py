@@ -3,18 +3,14 @@ import logging
 import pandas as pd
 import cv2
 
-from lib.CrabUI import CrabUI
 from lib.DriftData import DriftData
 from lib.Logger import Logger
 from lib.ScientistUI import ScientistUI, UserWantsToQuitException
-from lib.SeeFloorSection import SeeFloorSection
 from lib.FolderStructure import FolderStructure
-from lib.Frame import Frame
-from lib.Image import Image
 from lib.ImageWindow import ImageWindow
 from lib.StreamToLogger import StreamToLogger
 from lib.VideoStream import VideoStream
-from lib.common import Point, Box
+from lib.common import Point
 import os
 from datetime import datetime
 
