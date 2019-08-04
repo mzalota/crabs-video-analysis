@@ -11,6 +11,9 @@ class FolderStructure:
     def getRedDotsRawFilepath(self):
         return self.__getSubDirpath() + self.__videoFilename + '_reddots_raw.csv'
 
+    def getRedDotsInterpolatedFilepath(self):
+        return self.__getSubDirpath() + self.__videoFilename + '_reddots_interpolated.csv'
+
     def getRedDotsManualFilepath(self):
         return self.__getSubDirpath() + self.__videoFilename + '_reddots_manual.csv'
 

@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy
 
+from lib.DriftData import DriftData
 from lib.FolderStructure import FolderStructure
 
 
@@ -18,8 +19,12 @@ class RedDotsData:
     __COLNAME_bottomRight_y = "bottomRight_x"
     __COLNAME_diagonal = "diagonal"
 
+    __COLNAME_mm_per_pixel = "mm_per_pixel"
+
     __VALUE_redDot1 = "redDot1"
     __VALUE_redDot2 = "redDot2"
+
+    __distance_between_reddots_mm = 300
 
     def __init__(self, folderStruct):
         self.__folderStruct = folderStruct
@@ -154,18 +159,16 @@ class RedDotsData:
     def minFrameID(self):
         return self.__combinedDF()[self.__COLNAME_frameNumber][0]
 
-    #def getIndex(self, frameID):
-    #    foundFrame = self.__rawDF.loc[self.__rawDF[self.__COLNAME_frameNumber] == frameID]
-    #    if len(foundFrame.index)==1:
-    #        return foundFrame.index[0]
-    #    else:
-    #        return None
-
     def maxFrameID(self):
-        return self.__rawDF[self.__COLNAME_frameNumber].max()
+        drifts = DriftData.createFromFile(self.__folderStruct.getDriftsFilepath())
+        return drifts.maxFrameID()
+        #return self.__rawDF[self.__COLNAME_frameNumber].max()
 
     def minFrameID(self):
-        return self.__rawDF[self.__COLNAME_frameNumber].min()
+        drifts = DriftData.createFromFile(self.__folderStruct.getDriftsFilepath())
+        return drifts.minFrameID()
+
+        #return self.__rawDF[self.__COLNAME_frameNumber].min()
 
     def addManualDots(self, frameID, box):
         #self.__driftData[self.__COLNAME_frameNumber][0]
@@ -187,7 +190,6 @@ class RedDotsData:
         self.__manualDF = self.__manualDF.append(rowRedDot2, ignore_index=True)
         self.__saveManualDFToFile()
 
-
     def forPlotting(self):
         dataRedDot1 = self.onlyRedDot1()[[self.__COLNAME_frameNumber,self.__COLNAME_centerPoint_x, self.__COLNAME_centerPoint_y]]
         dataRedDot2 = self.onlyRedDot2()[[self.__COLNAME_frameNumber,self.__COLNAME_centerPoint_x, self.__COLNAME_centerPoint_y]]
@@ -203,8 +205,10 @@ class RedDotsData:
         maxVal = self.maxFrameID()
         everyFrame = pd.DataFrame(numpy.arange(start=minVal, stop=maxVal, step=1), columns=["frameNumber"]).set_index("frameNumber")
         df = df.combine_first(everyFrame).reset_index()
-        df = df.interpolate()
+        df = df.interpolate(limit_direction = 'both')
         df['distance'] = pow(pow(df["centerPoint_x_dot2"] - df["centerPoint_x_dot1"], 2) + pow(df["centerPoint_y_dot2"] - df["centerPoint_y_dot1"], 2), 0.5) #.astype(int)
+
+        df[self.__COLNAME_mm_per_pixel] = self.__distance_between_reddots_mm/df['distance']
         return df
 
     def __saveManualDFToFile(self):
@@ -214,3 +218,8 @@ class RedDotsData:
     def __saveRawDFToFile(self, withoutOutliersDF):
         filepath = self.__folderStruct.getRedDotsRawFilepath()
         withoutOutliersDF.to_csv(filepath, sep='\t', index=False)
+
+    def saveInterpolatedDFToFile(self):
+        interpolatedDF = self.interpolated()
+        filepath = self.__folderStruct.getRedDotsInterpolatedFilepath()
+        interpolatedDF.to_csv(filepath, sep='\t', index=False)
