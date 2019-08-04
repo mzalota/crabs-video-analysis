@@ -1,7 +1,5 @@
-import math
 import pandas as pd
-
-from lib.common import Vector
+import numpy
 
 
 class RedDotsData:
@@ -161,3 +159,18 @@ class RedDotsData:
 
         dfToPlot = pd.merge(dataRedDot1, dataRedDot2, on='frameNumber', how='outer', suffixes=('_dot1', '_dot2'))
         return dfToPlot.sort_values(by=['frameNumber'])
+
+    def interpolated(self):
+        df = self.forPlotting().copy()
+
+
+        df = df.set_index("frameNumber")
+        #minVal = df.index.min()
+        #maxVal = df.index.max()
+        minVal = self.minFrameID()
+        maxVal = self.maxFrameID()
+        everyFrame = pd.DataFrame(numpy.arange(start=minVal, stop=maxVal, step=1), columns=["frameNumber"]).set_index("frameNumber")
+        df = df.combine_first(everyFrame).reset_index()
+        df = df.interpolate()
+        df['distance'] = pow(pow(df["centerPoint_x_dot2"] - df["centerPoint_x_dot1"], 2) + pow(df["centerPoint_y_dot2"] - df["centerPoint_y_dot1"], 2), 0.5).astype(int)
+        return df

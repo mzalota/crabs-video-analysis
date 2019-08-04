@@ -12,7 +12,7 @@ from lib.FolderStructure import FolderStructure
 from lib.ImageWindow import ImageWindow
 from lib.StreamToLogger import StreamToLogger
 from lib.VideoStream import VideoStream
-from lib.common import Point
+from lib.common import Point, Box
 import os
 from datetime import datetime
 
@@ -34,24 +34,73 @@ StreamToLogger(folderStruct.getLogFilepath())
 videoStream = VideoStream(folderStruct.getVideoFilepath())
 
 redDotsData = RedDotsData.createFromFile(folderStruct.getRedDotsFilepath())
-redDotsData.sort()
 
 imageWin = ImageWindow("mainWithRedDots", Point(700, 200))
+imageZoomWin = ImageWindow("zoomImg", Point(100, 100))
+zoomBox = Box(Point(800, 400), Point(1300, 700))
 
+redDotsData.sort()
 frameID = redDotsData.getMiddleOfBiggestGap()
-print ("frame",frameID)
 
-image = videoStream.readImageObj(frameID)
-frame = Frame(frameID, videoStream)
+mustExit = False
+while not mustExit:
+    #keyPressed = self.__imageWin.showWindowAndWaitForClick(image)
+    print ("frame", frameID)
 
-image.drawFrameID(frameID)
+    image = videoStream.readImageObj(frameID)
+    image.drawFrameID(frameID)
+    frame = Frame(frameID, videoStream)
 
-imageWin.showWindowAndWaitForTwoClicks(image.asNumpyArray())
-print imageWin.featureBox
-print(str(imageWin.featureBox))
+    # print ("pressed button", keyPressed)
+    imageWin.showWindow(image.asNumpyArray())
 
-redDotsData.addManualDots(frameID, imageWin.featureBox)
-redDotsData.saveToFile(folderStruct.getRedDotsFilepath())
+    zoomImage = image.subImage(zoomBox)
+    zoomImage.drawFrameID(frameID)
+
+    keyPressed = imageZoomWin.showWindowAndWaitForTwoClicks(zoomImage.asNumpyArray())
+
+    if keyPressed == ImageWindow.KEY_ARROW_DOWN  or keyPressed == ImageWindow.KEY_SPACE or keyPressed == ord("n"):
+        # process next frame
+        #mustExit = True
+        frameID = frameID+20
+
+    elif keyPressed == ImageWindow.KEY_ARROW_UP:
+        # process next frame
+        #mustExit = True
+        frameID = frameID-20
+
+    elif keyPressed == ImageWindow.KEY_ARROW_RIGHT:
+        # process next frame
+        #mustExit = True
+        frameID = frameID+2
+
+    elif keyPressed == ImageWindow.KEY_ARROW_LEFT:
+        # process next frame
+        #mustExit = True
+        frameID = frameID-2
+
+    #elif keyPressed == ord("r"):
+    #    # print "Pressed R button" - reset. Remove all marked crabs
+    #    foundCrabs = list()
+    #    image = origImage.copy()
+    elif keyPressed == ord("q"):
+        # print "Pressed Q button" quit
+        message = "User pressed Q button"
+        raise UserWantsToQuitException(message)
+    else:
+        redDotsBox = imageZoomWin.featureBox
+        print ("redDotsBox Not Translated ", str(redDotsBox))
+
+        redDotsBox = redDotsBox.translateCoordinateToOuter(zoomBox.topLeft)
+        print ("redDotsBox Translated ", str(redDotsBox))
+
+        redDotsData.addManualDots(frameID, redDotsBox)
+        redDotsData.saveToFile(folderStruct.getRedDotsFilepath())
+
+        redDotsData.sort()
+        frameID = redDotsData.getMiddleOfBiggestGap()
+
+cv2.destroyAllWindows()
 
 exit()
 
