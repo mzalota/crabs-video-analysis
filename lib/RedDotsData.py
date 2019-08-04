@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy
 
-from lib.DriftData import DriftData
 from lib.FolderStructure import FolderStructure
 
 
@@ -60,23 +59,23 @@ class RedDotsData:
     def manualDF(self):
         return self.__manualDF
 
-    def sort(self):
-        self.__rawDF.sort_values(by=[self.__COLNAME_frameNumber, self.__COLNAME_dotName], inplace=True)
-
     def replaceOutlierBetweenTwo(self):
         dataRedDot2 = self.onlyRedDot2()
         self.__replaceOutlierBetweenTwo(dataRedDot2, "centerPoint_x")
         self.__replaceOutlierBetweenTwo(dataRedDot2, "centerPoint_y")
 
         newRedDots2 = self.__dropRowsThatAppearInManualDF(dataRedDot2)
+        newRedDots2.sort_values(by=[self.__COLNAME_frameNumber, self.__COLNAME_dotName], inplace=True)
 
         dataRedDot1 = self.onlyRedDot1()
         self.__replaceOutlierBetweenTwo(dataRedDot1, "centerPoint_x")
         self.__replaceOutlierBetweenTwo(dataRedDot1, "centerPoint_y")
 
         newRedDots1 = self.__dropRowsThatAppearInManualDF(dataRedDot1)
+        newRedDots1.sort_values(by=[self.__COLNAME_frameNumber, self.__COLNAME_dotName], inplace=True)
 
         withoutOutliers = pd.concat([newRedDots1, newRedDots2], ignore_index=True)
+        #withoutOutliers = withoutOutliers.reset_index()
 
         self.__saveRawDFToFile(withoutOutliers)
 
@@ -92,7 +91,13 @@ class RedDotsData:
         return df.drop(toDrop2.index, errors="ignore")
 
     def __combinedDF(self):
-        combinedDF = pd.concat([self.__rawDF, self.__manualDF]).reset_index()
+        if self.__manualDF.count()[0] >0:
+            combinedDF = pd.concat([self.__rawDF, self.__manualDF]).reset_index(drop=True)
+        else:
+            #print("manualDF is empty")
+            combinedDF = self.__rawDF.copy().reset_index(drop=True)
+            combinedDF.reset_index(drop=True)
+
         combinedDF.sort_values(by=[self.__COLNAME_frameNumber, self.__COLNAME_dotName], inplace=True)
         return combinedDF
 
@@ -120,19 +125,17 @@ class RedDotsData:
 
         redDots1 = self.onlyRedDot1().reset_index()
         idxOfMaxGap1 = self.__indexOfBiggestGap(redDots1)
-        print ("idxOfMaxGap1", idxOfMaxGap1)
         gapStartFrameID1 = redDots1.loc[idxOfMaxGap1, :][self.__COLNAME_frameNumber]
         gapEndFrameID1 = redDots1.loc[idxOfMaxGap1 + 1, :][self.__COLNAME_frameNumber]
         gapSize1 = gapEndFrameID1 - gapStartFrameID1
 
         redDots2 = self.onlyRedDot2().reset_index()
         idxOfMaxGap2 = self.__indexOfBiggestGap(redDots2)
-        print ("idxOfMaxGap2", idxOfMaxGap2)
         gapStartFrameID2 = redDots2.loc[idxOfMaxGap2, :][self.__COLNAME_frameNumber]
         gapEndFrameID2 = redDots2.loc[idxOfMaxGap2 + 1, :][self.__COLNAME_frameNumber]
         gapSize2 = gapEndFrameID2 - gapStartFrameID2
 
-        print ("gaps and frames", gapSize1, gapSize2, gapStartFrameID1, gapStartFrameID2)
+        print ("gaps and frames", gapSize1, gapSize2, gapStartFrameID1, gapStartFrameID2,idxOfMaxGap1, idxOfMaxGap2)
         if gapSize2 > gapSize1:
             gapMiddleFrameID = gapEndFrameID2 - int(gapSize2/ 2)
         else:
@@ -141,34 +144,41 @@ class RedDotsData:
         return gapMiddleFrameID
 
     def __indexOfBiggestGap(self, newDF):
-        nextFrameID = newDF[self.__COLNAME_frameNumber].shift(periods=-1)
-        gaps = abs(newDF[self.__COLNAME_frameNumber] - nextFrameID)
-        value = max(gaps)
-        print ("largest gap size", value)
+        #nextFrameID = newDF[self.__COLNAME_frameNumber].shift(periods=-1)
+        #gaps = abs(newDF[self.__COLNAME_frameNumber] - nextFrameID)
+        #value = max(gaps)
+        #print ("largest gap size", value)
 
         #idx = pd.Index(gaps)
         #idxOfMaxGap = idx.get_loc(value)
 
-        #idxOfMaxGap = gaps.index[int(value)].tolist()
-        idxOfMaxGap = gaps.idxmax()
+
+        #idxOfMaxGap = gaps.idxmax()
+
+        #-----
+        #df = newDF.copy()
+        #df["nextFrameID"] = newDF[self.__COLNAME_frameNumber].shift(periods=-1)
+        #df["gap"] = nextFrameID - newDF[self.__COLNAME_frameNumber]
+
+        df = newDF.copy()
+
+        df["nextFrameID"] = df["frameNumber"].shift(periods=-1)
+        df["gap"] = df["nextFrameID"] - df["frameNumber"]
+        maxGap = df["gap"].max()
+        idxOfMaxGap = df.loc[df['gap'] == maxGap][:1].index[0]
+        #print ("idxOfMaxGap", idxOfMaxGap)
+        #print(df.loc[df['gap'] == maxGap][:1])
         return idxOfMaxGap
 
     def getCount(self):
         return len(self.__combinedDF().index)
 
-    def minFrameID(self):
+    def __minFrameIDInRawFile(self):
         return self.__combinedDF()[self.__COLNAME_frameNumber][0]
 
-    def maxFrameID(self):
-        drifts = DriftData.createFromFile(self.__folderStruct.getDriftsFilepath())
-        return drifts.maxFrameID()
-        #return self.__rawDF[self.__COLNAME_frameNumber].max()
+    def __maxFrameIDInRawFile(self):
+        return self.__rawDF[self.__COLNAME_frameNumber].max()
 
-    def minFrameID(self):
-        drifts = DriftData.createFromFile(self.__folderStruct.getDriftsFilepath())
-        return drifts.minFrameID()
-
-        #return self.__rawDF[self.__COLNAME_frameNumber].min()
 
     def addManualDots(self, frameID, box):
         #self.__driftData[self.__COLNAME_frameNumber][0]
@@ -197,12 +207,16 @@ class RedDotsData:
         dfToPlot = pd.merge(dataRedDot1, dataRedDot2, on='frameNumber', how='outer', suffixes=('_dot1', '_dot2'))
         return dfToPlot.sort_values(by=['frameNumber'])
 
-    def interpolated(self):
+    def interpolated(self, minVal=None, maxVal=None):
+
+        if not minVal:
+            minVal = self.__minFrameIDInRawFile()
+        if not maxVal:
+            maxVal = self.__maxFrameIDInRawFile()
+
         df = self.forPlotting().copy()
         df = df.set_index("frameNumber")
 
-        minVal = self.minFrameID()
-        maxVal = self.maxFrameID()
         everyFrame = pd.DataFrame(numpy.arange(start=minVal, stop=maxVal, step=1), columns=["frameNumber"]).set_index("frameNumber")
         df = df.combine_first(everyFrame).reset_index()
         df = df.interpolate(limit_direction = 'both')
@@ -219,7 +233,7 @@ class RedDotsData:
         filepath = self.__folderStruct.getRedDotsRawFilepath()
         withoutOutliersDF.to_csv(filepath, sep='\t', index=False)
 
-    def saveInterpolatedDFToFile(self):
-        interpolatedDF = self.interpolated()
+    def saveInterpolatedDFToFile(self, minFrameID=None, maxFrameID=None):
+        interpolatedDF = self.interpolated(minFrameID, maxFrameID)
         filepath = self.__folderStruct.getRedDotsInterpolatedFilepath()
         interpolatedDF.to_csv(filepath, sep='\t', index=False)

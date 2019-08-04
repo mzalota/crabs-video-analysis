@@ -11,8 +11,8 @@ from lib.Logger import Logger
 
 
 rootDir ="C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"
-videoFileName = "V3__R_20180915_205551"
-#videoFileName = "V4__R_20180915_210447"
+#videoFileName = "V3__R_20180915_205551"
+videoFileName = "V4__R_20180915_210447"
 #videoFileName = "V5__R_20180915_211343"
 #videoFileName = "V6__R_20180915_212238"
 
