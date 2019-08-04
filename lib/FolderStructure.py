@@ -1,3 +1,4 @@
+import os.path
 
 class FolderStructure:
     def __init__(self, rootDirectory, videoFilename):
@@ -7,8 +8,11 @@ class FolderStructure:
     def getVideoFilepath(self):
         return self.__rootDirectory + "/" + self.__videoFilename + ".avi"
 
-    def getRedDotsFilepath(self):
-        return self.__getSubDirpath() + self.__videoFilename + '_reddots.csv'
+    def getRedDotsRawFilepath(self):
+        return self.__getSubDirpath() + self.__videoFilename + '_reddots_raw.csv'
+
+    def getRedDotsManualFilepath(self):
+        return self.__getSubDirpath() + self.__videoFilename + '_reddots_manual.csv'
 
     def getRawDriftsFilepath(self):
         return self.__getSubDirpath() + self.__videoFilename + '_raw_drifts.csv'
@@ -27,3 +31,6 @@ class FolderStructure:
 
     def getLogFilepath(self):
         return self.__getSubDirpath() + 'stdout.log'
+
+    def fileExists(self, filepath):
+        return os.path.isfile(filepath)

@@ -101,4 +101,8 @@ class ImageWindow:
 
         point2 = self.featureCoordiate
 
-        self.featureBox = Box(point1, point2)
+        if point1.x<=point2.x:
+            self.featureBox = Box(point1, point2)
+        else:
+            #second Click was to the left of the first. Reverse the two points
+            self.featureBox = Box(point2, point1)

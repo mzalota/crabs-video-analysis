@@ -1,60 +1,105 @@
 import pandas as pd
 import numpy
 
+from lib.FolderStructure import FolderStructure
+
 
 class RedDotsData:
-    #__driftData = None
+    #__rawDF = None
+    #__manualDF = None
+
     __COLNAME_frameNumber = 'frameNumber'
     __COLNAME_dotName = "dotName"
     __COLNAME_centerPoint_x = "centerPoint_x"
     __COLNAME_centerPoint_y = "centerPoint_y"
     __COLNAME_topLeft_y = "topLeft_y"
-    __COLNAME_bottot_x = "topLeft_x"
-    __COLNAME_topLefmRight_x = "bottomRight_x"
+    __COLNAME_topLeft_x = "topLeft_x"
+    __COLNAME_bottomRight_x = "bottomRight_x"
     __COLNAME_bottomRight_y = "bottomRight_x"
     __COLNAME_diagonal = "diagonal"
 
     __VALUE_redDot1 = "redDot1"
     __VALUE_redDot2 = "redDot2"
 
-    @staticmethod
-    def createFromFile(filepath):
-        # type: (String) -> RedDotsData
+    def __init__(self, folderStruct):
+        self.__folderStruct = folderStruct
+
+        filepath = folderStruct.getRedDotsRawFilepath()
         dfRaw = pd.read_csv(filepath, delimiter="\t", na_values="(null)")
-        #dfRaw = dfRaw.rename(columns={dfRaw.columns[0]: "rowNum"}) # rename first column to be rowNum
-        return RedDotsData.createFromPandasDataFrame(dfRaw)
+
+        self.initializeManualDF(folderStruct)
+
+        # dfRaw = dfRaw.rename(columns={dfRaw.columns[0]: "rowNum"}) # rename first column to be rowNum
+
+        self.setRawDataFrame(dfRaw)
+
+    def initializeManualDF(self, folderStruct):
+        column_names = [self.__COLNAME_frameNumber, self.__COLNAME_dotName, self.__COLNAME_centerPoint_x, self.__COLNAME_centerPoint_y]
+
+        manual_filepath = folderStruct.getRedDotsManualFilepath()
+        if folderStruct.fileExists(manual_filepath):
+            self.__manualDF = pd.read_csv(manual_filepath, delimiter="\t", na_values="(null)")
+        else:
+            self.__manualDF = pd.DataFrame(columns=column_names)
 
     @staticmethod
-    def createFromPandasDataFrame(df):
-        # type: (pd) -> RedDotsData
-        newObj = RedDotsData()
-        newObj.__driftData = df
+    def createFromFile(folderStruct):
+        # type: (FolderStructure) -> RedDotsData
+        newObj = RedDotsData(folderStruct)
         return newObj
 
+    def setRawDataFrame(self, df):
+        # type: (pd) -> NaN
+        self.__rawDF = df
+
+    def manualDF(self):
+        return self.__manualDF
+
     def sort(self):
-        self.__driftData.sort_values(by=[self.__COLNAME_frameNumber, self.__COLNAME_dotName], inplace=True)
+        self.__rawDF.sort_values(by=[self.__COLNAME_frameNumber, self.__COLNAME_dotName], inplace=True)
 
     def replaceOutlierBetweenTwo(self):
         dataRedDot2 = self.onlyRedDot2()
         self.__replaceOutlierBetweenTwo(dataRedDot2, "centerPoint_x")
         self.__replaceOutlierBetweenTwo(dataRedDot2, "centerPoint_y")
 
+        newRedDots2 = self.__dropRowsThatAppearInManualDF(dataRedDot2)
+
         dataRedDot1 = self.onlyRedDot1()
         self.__replaceOutlierBetweenTwo(dataRedDot1, "centerPoint_x")
         self.__replaceOutlierBetweenTwo(dataRedDot1, "centerPoint_y")
 
-        self.__driftData = pd.concat([dataRedDot1, dataRedDot2], ignore_index=True)
+        newRedDots1 = self.__dropRowsThatAppearInManualDF(dataRedDot1)
 
-        #return dataRedDot2
+        withoutOutliers = pd.concat([newRedDots1, newRedDots2], ignore_index=True)
+
+        self.__saveRawDFToFile(withoutOutliers)
+
+    def __dropRowsThatAppearInManualDF(self, df):
+
+        # remove rows from
+        tmp2 = pd.merge(df[['frameNumber', "dotName"]], self.__manualDF[['frameNumber', "dotName"]],
+                        on='frameNumber',
+                        how='left', suffixes=('_all', '_man'))
+        toDrop2 = tmp2[tmp2['dotName_man'].notnull()]
+
+        #ingnore errors, because there are rows in manualDF that are not in DF and they generate unnecessary error/warning
+        return df.drop(toDrop2.index, errors="ignore")
+
+    def __combinedDF(self):
+        combinedDF = pd.concat([self.__rawDF, self.__manualDF]).reset_index()
+        combinedDF.sort_values(by=[self.__COLNAME_frameNumber, self.__COLNAME_dotName], inplace=True)
+        return combinedDF
 
     def onlyRedDot2(self):
         # type: () -> pd
-        dataRedDot2 = self.__driftData.loc[self.__driftData['dotName'] == self.__VALUE_redDot2]
+        dataRedDot2 = self.__combinedDF().loc[self.__combinedDF()['dotName'] == self.__VALUE_redDot2]
         return dataRedDot2
 
     def onlyRedDot1(self):
         # type: () -> pd
-        return self.__driftData.loc[self.__driftData['dotName'] == self.__VALUE_redDot1]
+        dataRedDot1 = self.__combinedDF().loc[self.__combinedDF()['dotName'] == self.__VALUE_redDot1]
+        return dataRedDot1
 
     def __replaceOutlierBetweenTwo(self, df, columnName):
         outlier_threshold = 100
@@ -104,35 +149,23 @@ class RedDotsData:
         return idxOfMaxGap
 
     def getCount(self):
-        return len(self.__driftData.index)
-
-    def __getXDrift(self, index):
-        return self.__driftData[self.__COLNAME_driftX][index]
-
-    def __getYDrift(self, index):
-        return self.__driftData[self.__COLNAME_driftY][index]
-
-    def __getFrameID(self, index):
-        return self.__driftData[self.__COLNAME_frameNumber][index]
+        return len(self.__combinedDF().index)
 
     def minFrameID(self):
-        return self.__driftData[self.__COLNAME_frameNumber][0]
+        return self.__combinedDF()[self.__COLNAME_frameNumber][0]
 
-    def getIndex(self, frameID):
-        foundFrame = self.__driftData.loc[self.__driftData[self.__COLNAME_frameNumber] == frameID]
-        if len(foundFrame.index)==1:
-            return foundFrame.index[0]
-        else:
-            return None
+    #def getIndex(self, frameID):
+    #    foundFrame = self.__rawDF.loc[self.__rawDF[self.__COLNAME_frameNumber] == frameID]
+    #    if len(foundFrame.index)==1:
+    #        return foundFrame.index[0]
+    #    else:
+    #        return None
 
     def maxFrameID(self):
-        return self.__driftData[self.__COLNAME_frameNumber].max()
+        return self.__rawDF[self.__COLNAME_frameNumber].max()
 
     def minFrameID(self):
-        return self.__driftData[self.__COLNAME_frameNumber].min()
-
-    def saveToFile(self, filepath):
-        self.__driftData.to_csv(filepath, sep='\t', index=False)
+        return self.__rawDF[self.__COLNAME_frameNumber].min()
 
     def addManualDots(self, frameID, box):
         #self.__driftData[self.__COLNAME_frameNumber][0]
@@ -150,8 +183,10 @@ class RedDotsData:
         rowRedDot2[self.__COLNAME_centerPoint_y] = box.bottomRight.y
 
         # Pass the rowRedDot1 elements as key value pairs to append() function
-        self.__driftData = self.__driftData.append(rowRedDot1, ignore_index=True)
-        self.__driftData = self.__driftData.append(rowRedDot2, ignore_index=True)
+        self.__manualDF = self.__manualDF.append(rowRedDot1, ignore_index=True)
+        self.__manualDF = self.__manualDF.append(rowRedDot2, ignore_index=True)
+        self.__saveManualDFToFile()
+
 
     def forPlotting(self):
         dataRedDot1 = self.onlyRedDot1()[[self.__COLNAME_frameNumber,self.__COLNAME_centerPoint_x, self.__COLNAME_centerPoint_y]]
@@ -162,15 +197,20 @@ class RedDotsData:
 
     def interpolated(self):
         df = self.forPlotting().copy()
-
-
         df = df.set_index("frameNumber")
-        #minVal = df.index.min()
-        #maxVal = df.index.max()
+
         minVal = self.minFrameID()
         maxVal = self.maxFrameID()
         everyFrame = pd.DataFrame(numpy.arange(start=minVal, stop=maxVal, step=1), columns=["frameNumber"]).set_index("frameNumber")
         df = df.combine_first(everyFrame).reset_index()
         df = df.interpolate()
-        df['distance'] = pow(pow(df["centerPoint_x_dot2"] - df["centerPoint_x_dot1"], 2) + pow(df["centerPoint_y_dot2"] - df["centerPoint_y_dot1"], 2), 0.5).astype(int)
+        df['distance'] = pow(pow(df["centerPoint_x_dot2"] - df["centerPoint_x_dot1"], 2) + pow(df["centerPoint_y_dot2"] - df["centerPoint_y_dot1"], 2), 0.5) #.astype(int)
         return df
+
+    def __saveManualDFToFile(self):
+        filepath = self.__folderStruct.getRedDotsManualFilepath()
+        self.__manualDF.to_csv(filepath, sep='\t', index=False)
+
+    def __saveRawDFToFile(self, withoutOutliersDF):
+        filepath = self.__folderStruct.getRedDotsRawFilepath()
+        withoutOutliersDF.to_csv(filepath, sep='\t', index=False)

@@ -10,29 +10,16 @@ from lib.common import Point
 from lib.Logger import Logger
 
 
-#rootDirectory = "C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"
+rootDir ="C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"
+videoFileName = "V3__R_20180915_205551"
+#videoFileName = "V4__R_20180915_210447"
+#videoFileName = "V5__R_20180915_211343"
+#videoFileName = "V6__R_20180915_212238"
 
-#videoFilenameFull = 'KaraSeaCrabVideoBlagopoluchiyaBay2018/V1_R_20180911_165259.avi'
-#videoFilenameFull = 'KaraSeaCrabVideoBlagopoluchiyaBay2018/V2_R_20180911_165730.avi'
-#videoFilenameFull = 'KaraSeaCrabVideoBlagopoluchiyaBay2018/V3_R_20180911_170159.avi'
-#videoFilenameFull = '2018_09_16_St_5994/V3_R_20180916_012323.avi'
-#videoFilenameFull = 'Kara_Sea_Crab_Video_st_5993_2018/output_st_v4.mp4'
-#videoFilenameFull = 'Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi'
-#videoFilenameFull = 'Kara_Sea_Crab_Video_st_5993_2018/V4__R_20180915_210447.avi'
-#videoFilenameFull = 'Kara_Sea_Crab_Video_st_5993_2018/V5__R_20180915_211343.avi'
-#videoFilenameFull = 'Kara_Sea_Crab_Video_st_5993_2018/V6__R_20180915_212238.avi'
-
-#videoFilename = "V6__R_20180915_212238"
-
-
-# rootDir ="C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"
-rootDir = "C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/"
-
-# videoFileName = "V4__R_20180915_210447"
-# videoFileName = "V6__R_20180915_212238"
+#rootDir = "C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/"
+#videoFileName = "V1_R_20180911_165259"
+#videoFileName = "V2_R_20180911_165730"
 #videoFileName = "V3_R_20180911_170159"
-videoFileName = "V2_R_20180911_165730"
-# videoFileName = "V2_R_20180911_165730"
 
 folderStruct = FolderStructure(rootDir, videoFileName)
 
@@ -40,8 +27,7 @@ folderStruct = FolderStructure(rootDir, videoFileName)
 
 videoStream = VideoStream(folderStruct.getVideoFilepath())
 
-reddotsFilepath = folderStruct.getRedDotsFilepath()
-#reddotsFilepath = rootDirectory + "/" + videoFilename + "/" + videoFilename + '_reddots.csv'
+reddotsFilepath = folderStruct.getRedDotsRawFilepath()
 
 logger = Logger(reddotsFilepath)
 

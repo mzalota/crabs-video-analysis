@@ -23,8 +23,8 @@ rootDir = "C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/"
 
 # videoFileName = "V4__R_20180915_210447"
 # videoFileName = "V6__R_20180915_212238"
-#videoFileName = "V3_R_20180911_170159"
-videoFileName = "V2_R_20180911_165730"
+videoFileName = "V3_R_20180911_170159"
+#videoFileName = "V2_R_20180911_165730"
 # videoFileName = "V2_R_20180911_165730"
 
 folderStruct = FolderStructure(rootDir, videoFileName)
@@ -33,14 +33,14 @@ StreamToLogger(folderStruct.getLogFilepath())
 
 videoStream = VideoStream(folderStruct.getVideoFilepath())
 
-redDotsData = RedDotsData.createFromFile(folderStruct.getRedDotsFilepath())
+rawRedDotsData = RedDotsData(folderStruct)
 
 imageWin = ImageWindow("mainWithRedDots", Point(700, 200))
 imageZoomWin = ImageWindow("zoomImg", Point(100, 100))
 zoomBox = Box(Point(800, 400), Point(1300, 700))
 
-redDotsData.sort()
-frameID = redDotsData.getMiddleOfBiggestGap()
+#rawRedDotsData.sort()
+frameID = rawRedDotsData.getMiddleOfBiggestGap()
 
 mustExit = False
 while not mustExit:
@@ -89,16 +89,17 @@ while not mustExit:
         raise UserWantsToQuitException(message)
     else:
         redDotsBox = imageZoomWin.featureBox
+
         print ("redDotsBox Not Translated ", str(redDotsBox))
 
         redDotsBox = redDotsBox.translateCoordinateToOuter(zoomBox.topLeft)
         print ("redDotsBox Translated ", str(redDotsBox))
 
-        redDotsData.addManualDots(frameID, redDotsBox)
-        redDotsData.saveToFile(folderStruct.getRedDotsFilepath())
+        rawRedDotsData.addManualDots(frameID, redDotsBox)
+        #rawRedDotsData.saveToFile(folderStruct)
 
-        redDotsData.sort()
-        frameID = redDotsData.getMiddleOfBiggestGap()
+        #rawRedDotsData.sort()
+        frameID = rawRedDotsData.getMiddleOfBiggestGap()
 
 cv2.destroyAllWindows()
 
