@@ -110,3 +110,16 @@ class RedDot:
         Ymax = int(np.max(contour[:, 0]))
         box = Box(Point(Xmin, Ymin), Point(Xmax, Ymax))
         return box
+
+    def infoAboutDot(self):
+        row = []
+        row.append(self.boxAroundDot.centerPoint().x)
+        row.append(self.boxAroundDot.centerPoint().y)
+        row.append(self.boxAroundDot.topLeft.x)
+        row.append(self.boxAroundDot.topLeft.y)
+        row.append(self.boxAroundDot.bottomRight.x)
+        row.append(self.boxAroundDot.bottomRight.y)
+        row.append(self.boxAroundDot.diagonal())
+
+        return row
+

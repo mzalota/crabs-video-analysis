@@ -132,6 +132,7 @@ class Box:
         return self.width() * self.hight()
 
     def centerPoint(self):
+        # type: () -> Point
         return self.topLeft.calculateMidpoint(self.bottomRight)
 
     def distanceTo(self, otherBox):
