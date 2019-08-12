@@ -16,7 +16,22 @@ class FramesStitcher:
     #__imagesDir = None
     #__framesToStitch = None
 
-    def __init__(self, videoStream, rootDirectory, videoFileName):
+
+    def __init__(self, folderStructure, videoStream):
+        # type: (FolderStructure, VideoStream) -> FramesStitcher
+
+        self.__heightOfFrame = 1080
+        self.__videoStream = videoStream
+
+        #csvFileName = videoFileName + "_toCut.csv"
+        self.__driftsFilePath = folderStructure.getDriftsFilepath() # rootDirectory + "/" + csvFileName
+        self.__imagesDir = folderStructure.getFramesDirpath() # rootDirectory #+ "/" + videoFileName + "/"
+
+        # Creating an empty Dataframe with column names only
+        self.__framesToStitch = pd.DataFrame(columns=['frameNumber'])
+
+
+    def AAAinit_old(self, videoStream, rootDirectory, videoFileName):
         # type: () -> FramesStitcher
 
         self.__heightOfFrame = 1080
@@ -31,9 +46,8 @@ class FramesStitcher:
 
 
     def determineFrames(self):
-
         dfRaw = pd.read_csv(self.__driftsFilePath, delimiter="\t", na_values="(null)")
-        dfRaw = dfRaw.rename(columns={dfRaw.columns[0]: "rowNum"}) # rename first column to be rowNum
+        #dfRaw = dfRaw.rename(columns={dfRaw.columns[0]: "rowNum"}) # rename first column to be rowNum
 
         driftData = DriftData(dfRaw)
         self.__constructFramesToStitch(driftData)
@@ -66,7 +80,9 @@ class FramesStitcher:
             imgObj = frame.getImgObj()
             imgObj.drawFrameID(frame.getFrameID())
 
-            imageFilePath = frame.constructFilePath(self.__imagesDir)
+            imageFileName = frame.constructFilename() #self.__imagesDir)
+            imageFilePath = self.__imagesDir + "/" + imageFileName
+
             print "writing frame image to file: " + imageFilePath
             imgObj.writeToFile(imageFilePath)
 

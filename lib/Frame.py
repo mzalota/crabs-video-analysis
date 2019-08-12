@@ -26,16 +26,10 @@ class Frame:
         # type: () -> Image
         return Image(self.__videoStream.readImage(self.__frameID))
 
-    def saveImageToFile(self, rootDirectory):
-        imageFilePath = self.constructFilePath(rootDirectory)
-        print("image path is: " + imageFilePath)
-        self.getImgObj().writeToFile(imageFilePath)
-
-    def constructFilePath(self, rootDirectory):
+    def constructFilename(self):
         frameNumberString = str(self.__frameID).zfill(6)
         imageFileName = "frame" + frameNumberString + ".jpg"
-        imageFilePath = rootDirectory + "/seqFrames/" + imageFileName
-        return imageFilePath
+        return imageFileName
 
     def attachNeighbourFrames(self, nextFrame, prevFrame, neighboursHeight):
         image = self.getImgObj()

@@ -11,7 +11,7 @@ class RedDotsUI:
     __zoomBox = Box(Point(400, 200), Point(1500, 900))
 
     def __init__(self, folderStruct, videoStream):
-        # type: (FolderStructure, VideoStream) -> object
+        # type: (FolderStructure, VideoStream) -> RedDotsUI
         self.__folderStruct = folderStruct
         self.__videoStream = videoStream
 

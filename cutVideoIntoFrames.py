@@ -1,47 +1,32 @@
 import cv2
 
+from lib.FolderStructure import FolderStructure
 from lib.FramesStitcher import FramesStitcher
 from lib.ImageWindow import ImageWindow
 from lib.VideoStream import VideoStream
 from lib.common import Point, Box
 
 print(cv2.__version__)
-cv2.startWindowThread()
 
-#imageWin = ImageWindow("mainWithRedDots", Point(700, 200))
-imageWin2 = ImageWindow.createWindow("topSubimage",Box(Point(0,0),Point(960,740)))
+#rootDir ="C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"
+#videoFileName = "V3__R_20180915_205551"
+#videoFileName = "V4__R_20180915_210447"
+#videoFileName = "V5__R_20180915_211343"
+#videoFileName = "V6__R_20180915_212238"
 
-
-#videoFileName="V5__R_20180915_211343"
-#videoFileName="V6__R_20180915_212238"
-#filename = "V6__R_20180915_212238"
-#filename = "V3_R_20180911_170159"
-filename = "V2_R_20180911_165730"
-
-#rootDirectory = "C:/Users/User/Documents/data/Kara/Video/V_Analysis/"
-rootDirectory = "C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/"
-
-#filename = "V6__R_20180915_212238"
-#filename = "V4__R_20180915_210447"
-#filename = "V5__R_20180915_211343"
-
-#filename = "V3_R_20180911_170159"
-#filename = "V2_R_20180911_165730"
-#rootDirectory = "C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"
-#rootDirectory = "C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/"
-csvFilesDirectory = rootDirectory+"/"+filename+"/"
+rootDir = "C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/"
+videoFileName = "V1_R_20180911_165259"
+#videoFileName = "V2_R_20180911_165730"
+#videoFileName = "V3_R_20180911_170159"
 
 
-videoFileName = filename
+folderStruct = FolderStructure(rootDir, videoFileName)
+videoStream = VideoStream(folderStruct.getVideoFilepath())
 
-#videoStream = VideoStream("C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"+videoFileName+".avi")
-videoStream = VideoStream(rootDirectory+"/"+videoFileName+".avi")
+framesStitcher = FramesStitcher(folderStruct, videoStream)
 
-framesStitcher = FramesStitcher(videoStream, csvFilesDirectory, videoFileName)
 #framesToSaveToFile = framesStitcher.determineFrames()
 #print("Dataframe Contains:", framesToSaveToFile)
 
 framesStitcher.saveFramesToFile()
 
-
-cv2.destroyAllWindows()
