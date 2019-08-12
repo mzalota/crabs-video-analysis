@@ -26,6 +26,14 @@ class FolderStructure:
     def getFramesDirpath(self):
         return self.__getSubDirpath() + "/seqFrames/"
 
+    def getFramesFilepaths(self):
+        framesDir = self.getFramesDirpath()
+        files = os.listdir(framesDir)
+        filepaths = []
+        for filename in files:
+            filepaths.append(os.path.join(framesDir, filename))
+        return filepaths
+
     def getCrabsFilepath(self):
         return self.__getSubDirpath() + "/" + self.__videoFilename + "_crabs.csv"
 

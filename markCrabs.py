@@ -4,6 +4,7 @@ import pandas as pd
 import cv2
 
 from lib.DriftData import DriftData
+from lib.Frame import Frame
 from lib.Logger import Logger
 from lib.ScientistUI import ScientistUI, UserWantsToQuitException
 from lib.FolderStructure import FolderStructure
@@ -13,7 +14,6 @@ from lib.VideoStream import VideoStream
 from lib.common import Point
 import os
 from datetime import datetime
-
 
 
 #rootDir ="C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"
@@ -31,14 +31,9 @@ videoFileName = "V1_R_20180911_165259"
 folderStruct = FolderStructure(rootDir, videoFileName)
 StreamToLogger(folderStruct.getLogFilepath())
 
-
 videoStream = VideoStream(folderStruct.getVideoFilepath())
 
-
-# framesDir = rootDir + "/" + videoFileName + "/seqFrames/"
-# outputFilePath = rootDir + "/" + videoFileName + "/" + videoFileName + "_crabs.csv"
-
-def writeCrabsInfoToFile(foundCrabs, logger, crabsDF):
+def writeCrabsInfoToFile(foundCrabs, logger, crabsDF, framesDir):
     for crabTuple in foundCrabs:
         crabNumber = crabTuple[0]
         frameID = crabTuple[1]
@@ -65,8 +60,7 @@ def writeCrabsInfoToFile(foundCrabs, logger, crabsDF):
 
         logger.writeToFile(row)
 
-        #crabNumber += 1
-    #return crabNumber
+
 
 
 crabsDF = pd.DataFrame(
@@ -75,23 +69,23 @@ crabsDF = pd.DataFrame(
 driftData = DriftData.createFromFile(folderStruct.getDriftsFilepath())
 
 imageWin = ImageWindow("mainWindow", Point(700, 200))
-#crabUI = CrabUI(folderStruct, videoStream, driftData)
+
 scientistUI = ScientistUI(imageWin, folderStruct, videoStream, driftData)
 
 logger = Logger.openInAppendMode(folderStruct.getCrabsFilepath())
-framesDir = folderStruct.getFramesDirpath()
-for filename in os.listdir(framesDir):
-    filepath = os.path.join(framesDir, filename)
+
+for filepath in folderStruct.getFramesFilepaths():
+    filename = os.path.basename(filepath)
     if not filename.endswith(".jpg"):
         print("Skipping some non JPG file", filepath)
         continue
 
     image = cv2.imread(filepath)
-    frameID = int(filename[5:11])
-    # print ("frameStr", frameID)
+
+    frameID = Frame.deconstructFilename(filename)
     try:
         foundCrabs = scientistUI.processImage(image, frameID)
-        writeCrabsInfoToFile(foundCrabs, logger, crabsDF)
+        writeCrabsInfoToFile(foundCrabs, logger, crabsDF, folderStruct.getFramesDirpath())
     except UserWantsToQuitException as error:
         #print repr(error)
         print("User requested to quit on frame: "+ str(frameID))

@@ -31,6 +31,11 @@ class Frame:
         imageFileName = "frame" + frameNumberString + ".jpg"
         return imageFileName
 
+    @staticmethod
+    def deconstructFilename(filename):
+        #returns FrameID that was embeded in the filename
+        return int(filename[5:11])
+
     def attachNeighbourFrames(self, nextFrame, prevFrame, neighboursHeight):
         image = self.getImgObj()
         image.drawFrameID(self.getFrameID())
