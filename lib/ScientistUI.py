@@ -1,5 +1,7 @@
 from lib.CrabUI import CrabUI
+from lib.CrabsData import CrabsData
 from lib.DriftData import DriftData
+from lib.Feature import Feature
 from lib.Frame import Frame
 from lib.FramesStitcher import FramesStitcher
 from lib.Image import Image
@@ -9,6 +11,8 @@ import pandas as pd
 import cv2
 import os
 import traceback
+
+from lib.common import Point
 
 
 class UserWantsToQuitException(Exception):
@@ -48,12 +52,12 @@ class ScientistUI:
 
     def __determine_next_frame(self, frame_id, keyPressed):
 
-        if keyPressed == ImageWindow.KEY_ARROW_RIGHT:
+        if keyPressed == ImageWindow.KEY_ARROW_DOWN:
             # scroll 50 frames forward
             new_frame_id = frame_id+50
             return new_frame_id
 
-        if keyPressed == ImageWindow.KEY_ARROW_LEFT:
+        if keyPressed == ImageWindow.KEY_ARROW_UP:
             # scroll 50 frames backward
             new_frame_id = frame_id-50
             return new_frame_id
@@ -67,10 +71,10 @@ class ScientistUI:
             return self.__driftData.minFrameID()
 
 
-        if keyPressed == ImageWindow.KEY_ARROW_DOWN or keyPressed == ImageWindow.KEY_SPACE or keyPressed == ord("n"):
+        if keyPressed == ImageWindow.KEY_ARROW_RIGHT or keyPressed == ImageWindow.KEY_SPACE or keyPressed == ord("n"):
             # show next frame
             pixels_to_jump = FramesStitcher.FRAME_HEIGHT
-        elif keyPressed == ImageWindow.KEY_ARROW_UP:
+        elif keyPressed == ImageWindow.KEY_ARROW_LEFT:
             # show previous frame
             pixels_to_jump = -FramesStitcher.FRAME_HEIGHT
         elif keyPressed == ImageWindow.KEY_PAGE_DOWN:
@@ -105,6 +109,9 @@ class ScientistUI:
                 frame_name = int(frame_id)
 
             mainImage.drawFrameID(frame_name)
+
+            self.markCrabsOnImage(mainImage, frame_id)
+
             keyPressed = self.__imageWin.showWindowAndWaitForClick(mainImage.asNumpyArray())
             #print ("pressed button", keyPressed, chr(ImageWindow.KEY_MOUSE_CLICK_EVENT), ImageWindow.KEY_MOUSE_CLICK_EVENT)
 
@@ -131,6 +138,34 @@ class ScientistUI:
                 mustExit = True
 
         return keyPressed
+
+    def markCrabsOnImage(self, mainImage, frame_id):
+        #crabsOnFrame = list()
+        #crabsOnFrame.append(Point(500, 500))
+        #crabsOnFrame.append(Point(600, 900))
+
+
+        nextFrame = self.__driftData.getNextFrame(FramesStitcher.FRAME_HEIGHT,frame_id)
+        prevFrame = self.__driftData.getNextFrame(-FramesStitcher.FRAME_HEIGHT,frame_id)
+
+        print("in markCrabsOnImage", frame_id,nextFrame, prevFrame)
+
+        crabsData = CrabsData(self.__folderStruct)
+        markedCrabs = crabsData.crabsBetweenFrames(prevFrame,nextFrame)
+
+        for markedCrab in markedCrabs:
+            print ('markedCrab', markedCrab)
+
+
+            frame_number = markedCrab['frameNumber']
+            crabLocation = Point(markedCrab['crabLocationX'], markedCrab['crabLocationY'])
+            crabFeature = Feature(self.__driftData, frame_number, crabLocation, 5)
+            crabLocation = crabFeature.getCoordinateInFrame(frame_id)
+
+            print ('crabLocation', str(crabLocation))
+
+            mainImage.drawCross(crabLocation)
+
 
     def __drawLineOnCrab(self, crabBox, crabOnFrameID, frameID, mainImage):
         # draw user-marked line on the main image. but first translate the coordinates to this frame
