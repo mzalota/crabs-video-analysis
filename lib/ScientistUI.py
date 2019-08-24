@@ -22,18 +22,6 @@ class ScientistUI:
         self.__videoStream = videoStream
         self.__driftData = driftData
 
-        column_names = ['dir', 'filename', 'frameID', 'createdOn', 'crabNumber', "crabWidthPixels", "crabLocationX",
-                        'crabLocationY', 'crabCoordinatePoint', 'cranbCoordinateBox']
-
-        self.__crabsDF = pd.read_csv(folderStruct.getCrabsFilepath(), delimiter="\t", na_values="(null)",header=None, names=column_names)  # 24 errors
-
-        #drop header row if it exists
-        if (self.__crabsDF.iloc[0][0] == 'dir'):
-            self.__crabsDF = self.__crabsDF[1:].reset_index(drop=True)
-
-
-        self.__crabNumber = 0
-
     def processVideo(self):
 
         frame_id = self.__driftData.minFrameID()
@@ -42,7 +30,6 @@ class ScientistUI:
 
             try:
                 frame = Frame(frame_id, self.__videoStream)
-                #image = frame.getImage()
                 keyPressed = self.processImage(frame.getImgObj(), frame_id)
 
             except UserWantsToQuitException as error:
@@ -106,39 +93,39 @@ class ScientistUI:
 
         return int(new_frame_id)
 
-    def processImage(self, mainImage, frameID):
-        origImage = mainImage.asNumpyArray().copy()
+    def processImage(self, mainImage, frame_id):
         mustExit = False
         while not mustExit:
-            mainImage.drawFrameID(int(frameID))
+
+            if frame_id == self.__driftData.minFrameID():
+                frame_name = str(int(frame_id))+" (First)"
+            elif frame_id == self.__driftData.maxFrameID():
+                frame_name = str(int(frame_id))+" (Last)"
+            else:
+                frame_name = int(frame_id)
+
+            mainImage.drawFrameID(frame_name)
             keyPressed = self.__imageWin.showWindowAndWaitForClick(mainImage.asNumpyArray())
             #print ("pressed button", keyPressed, chr(ImageWindow.KEY_MOUSE_CLICK_EVENT), ImageWindow.KEY_MOUSE_CLICK_EVENT)
 
-            if keyPressed == ord("r"):
-                # print "Pressed R button" - reset. Remove all marked crabs
-                mainImage = Image(origImage.copy())
-            elif keyPressed == ord("q"):
+            if keyPressed == ord("q"):
                 # print "Pressed Q button"
                 message = "User pressed Q button"
                 raise UserWantsToQuitException(message)
+
             elif keyPressed == ImageWindow.KEY_MOUSE_CLICK_EVENT:
                 crabPoint = self.__imageWin.featureCoordiate
 
                 #self.__crabUI.showCrabWindow(crabPoint, frameID)
 
-                crabUI = CrabUI(self.__folderStruct, self.__videoStream, self.__driftData, frameID, crabPoint)
+                crabUI = CrabUI(self.__folderStruct, self.__videoStream, self.__driftData, frame_id, crabPoint)
+
                 lineWasSelected = crabUI.showCrabWindow()
-
                 if lineWasSelected:
-                    crabOnFrameID = crabUI.getFrameIDOfCrab()
-                    crabBox = crabUI.getCrabLocation()
-
                     #draw an X on where the User clicked.
                     mainImage.drawCross(crabPoint)
-
                     #self.__drawLineOnCrab(crabBox, crabOnFrameID, frameID, mainImage)
-                    self.__add_crab_to_DF(crabOnFrameID, crabBox)
-                    self.__crabsDF.to_csv(self.__folderStruct.getCrabsFilepath(), sep='\t', index=False)
+
             else:
                 #print ("Ignoring the fact that user pressed button:", keyPressed)#, chr(keyPressed))
                 mustExit = True
@@ -152,21 +139,3 @@ class ScientistUI:
         crabBoxBottomRight = crabBox.bottomRight.translateBy(drift)
         mainImage.drawLine(crabBoxTopLeft, crabBoxBottomRight)
 
-
-    def __add_crab_to_DF(self, frameID, crabCoordinate):
-        framesDir = self.__folderStruct.getVideoFilepath()
-
-        row_to_append = {'dir': framesDir,
-                         'filename': "blabla.filename",
-                         'frameID': frameID,
-                         'createdOn': datetime.now().strftime('%Y-%m-%d_%H:%M:%S'),
-                         'crabNumber': "0",
-                         'crabWidthPixels': crabCoordinate.diagonal(),
-                         'crabLocationX': crabCoordinate.centerPoint().x,
-                         'crabLocationY': crabCoordinate.centerPoint().y,
-                         'crabCoordinatePoint': str(crabCoordinate.centerPoint()),
-                         'cranbCoordinateBox': str(crabCoordinate)
-                         }
-
-        print ("writing crab to file", row_to_append)
-        self.__crabsDF = self.__crabsDF.append( row_to_append, ignore_index=True)

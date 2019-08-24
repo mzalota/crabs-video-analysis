@@ -1,5 +1,6 @@
 from math import ceil, floor
 
+from lib.CrabsData import CrabsData
 from lib.Feature import Feature
 from lib.Frame import Frame
 from lib.Image import Image
@@ -7,7 +8,6 @@ from lib.ImageWindow import ImageWindow
 from lib.MyTimer import MyTimer
 from lib.SeeFloorSection import SeeFloorSection
 from lib.common import Box, Point, Vector
-
 
 
 class CrabUI:
@@ -36,9 +36,19 @@ class CrabUI:
         rightHalfOfImageToShow = crabImageLast.concatenateToTheBottom(crabImageThis)  #image from thisFrameID is in bottom-right corner below image from lastFrameID
         imageToShow = leftHalfOfImageToShow.concatenateToTheRight(rightHalfOfImageToShow)
 
-        return self.__showCrabWindow(imageToShow)
+        lineWasSelected =  self.__showCrabWindow(imageToShow)
+        if lineWasSelected:
+            self.__save_to_file()
 
+        return lineWasSelected
         #self.findViewsOfTheSameCrab(boxAroundCrab, thisFrameID)
+
+    def __save_to_file(self):
+        crabOnFrameID = self.getFrameIDOfCrab()
+        crabBox = self.getCrabLocation()
+        crabsData = CrabsData(self.__folderStruct)
+        appended_row = crabsData.add_crab_data(crabOnFrameID, crabBox)
+        print ("writing crab to file", appended_row)
 
     def __crabImageOnFrame(self, frameID):
 
