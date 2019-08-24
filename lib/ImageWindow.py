@@ -10,13 +10,15 @@ class ImageWindow:
     featureBox = None
     __windowPositionAndDimensionsInitialized = False
 
+    KEY_HOME = 2359296
+    KEY_END = 2293760
+    KEY_PAGE_UP = 2162688
+    KEY_PAGE_DOWN = 2228224
     KEY_ARROW_DOWN = 2621440
     KEY_ARROW_UP = 2490368
     KEY_ARROW_RIGHT = 2555904
     KEY_ARROW_LEFT = 2424832
     KEY_SPACE = 32
-    KEY_PAGE_DOWN = 2228224
-    KEY_PAGE_UP = 2162688
 
     KEY_MOUSE_CLICK_EVENT = 97
     KEY_A = 97

@@ -5,6 +5,9 @@ class FolderStructure:
         self.__rootDirectory = rootDirectory
         self.__videoFilename = videoFilename
 
+    def getRootDirectory(self):
+        return self.__rootDirectory
+
     def getVideoFilepath(self):
         return self.__rootDirectory + "/" + self.__videoFilename + ".avi"
 

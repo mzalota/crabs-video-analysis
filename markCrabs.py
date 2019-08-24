@@ -37,35 +37,13 @@ driftData = DriftData.createFromFile(folderStruct.getDriftsFilepath())
 
 imageWin = ImageWindow("mainWindow", Point(700, 200))
 
+#TODO: makring crabs on first and last frame gets some null pointer exception or something
+
 scientistUI = ScientistUI(imageWin, folderStruct, videoStream, driftData)
-
-logger = Logger.openInAppendMode(folderStruct.getCrabsFilepath())
-
-scientistUI.processVideo(logger)
+scientistUI.processVideo()
 
 # close all open windows
 cv2.destroyAllWindows()
 exit()
 
-
-
-
-for filepath in folderStruct.getFramesFilepaths():
-    filename = os.path.basename(filepath)
-    if not filename.endswith(".jpg"):
-        print("Skipping some non JPG file", filepath)
-        continue
-
-    image = cv2.imread(filepath)
-
-    frameID = Frame.deconstructFilename(filename)
-    try:
-         scientistUI.processImage(image, frameID, logger)
-    except UserWantsToQuitException as error:
-        #print repr(error)
-        print("User requested to quit on frame: "+ str(frameID))
-        break
-
-logger.closeFile()
-#crabsDF.to_csv(folderStruct.getCrabsFilepath(), sep='\t')
 
