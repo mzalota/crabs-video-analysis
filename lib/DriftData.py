@@ -121,17 +121,21 @@ class DriftData:
 
     def yPixelsBetweenFrames(self,fromFrameID, toFrameID):
         drift = self.driftBetweenFrames(fromFrameID, toFrameID)
+        #if drift.x ==0 and drift.y == 0:
         if drift is None:
             return None
 
         return drift.y
 
     def driftBetweenFrames(self,fromFrameID, toFrameID):
+        # type: (int, int) -> Vector
 
         if fromFrameID<self.minFrameID() or toFrameID < self.minFrameID():
+            #return Vector(0,0)
             return None
 
         if fromFrameID>self.maxFrameID() or toFrameID>self.maxFrameID():
+            #return Vector(0, 0)
             return None
 
         if (fromFrameID > toFrameID):

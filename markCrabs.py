@@ -37,8 +37,6 @@ driftData = DriftData.createFromFile(folderStruct.getDriftsFilepath())
 
 imageWin = ImageWindow("mainWindow", Point(700, 200))
 
-#TODO: makring crabs on first and last frame gets some null pointer exception or something
-
 scientistUI = ScientistUI(imageWin, folderStruct, videoStream, driftData)
 scientistUI.processVideo()
 

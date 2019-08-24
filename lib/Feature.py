@@ -7,9 +7,16 @@ from lib.common import Point, Box
 class Feature:
 
     def __init__(self, driftData, frameID, location, boxSize):
+        # type: (DriftData, int, Point, int) -> Feature
         self.__driftData = driftData
         self.__frameID = frameID
         self.__location = location
+
+        if frameID > driftData.maxFrameID():
+            raise ValueError("Frame Number above maximum. Passed frame: "+str(frameID)+". Maximum frame: "+str(int(driftData.maxFrameID())))
+
+        if frameID < driftData.minFrameID():
+            raise ValueError("Frame Number below minimum. Passed frame: "+str(frameID)+". Minimum frame: "+str(int(driftData.minFrameID())))
 
         #self.__firstFrameID = frameID
         #self.__lastFrameID = frameID
@@ -77,6 +84,10 @@ class Feature:
         nextFrameID = self.__frameID
         while (True):
             nextFrameID = nextFrameID + 1
+            if nextFrameID > self.__driftData.maxFrameID():
+                self.__lastFrameID = self.__driftData.maxFrameID()
+                break
+
             newPoint = self.getCoordinateInFrame(nextFrameID)
             # print("drift:", frameID, str(crabPoint), nextFrameID, str(newPoint), str(drift), visibleBoxArea.area(), str(visibleBoxArea))
             if (newPoint.x <= 0 or newPoint.y <= 0):
@@ -92,6 +103,11 @@ class Feature:
         nextFrameID = self.__frameID
         while (True):
             nextFrameID = nextFrameID - 1
+
+            if nextFrameID < self.__driftData.minFrameID():
+                self.__firstFrameID = self.__driftData.minFrameID()
+                break
+
             newPoint = self.getCoordinateInFrame(nextFrameID)
             # print("drift:", frameID, str(crabPoint), nextFrameID, str(newPoint), str(drift), visibleBoxArea.area(), str(visibleBoxArea))
             if (newPoint.x <= 0 or newPoint.y <= 0):
