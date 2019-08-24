@@ -15,6 +15,11 @@ class ImageWindow:
     KEY_ARROW_RIGHT = 2555904
     KEY_ARROW_LEFT = 2424832
     KEY_SPACE = 32
+    KEY_PAGE_DOWN = 2228224
+    KEY_PAGE_UP = 2162688
+
+    KEY_MOUSE_CLICK_EVENT = 97
+    KEY_A = 97
 
     def __init__ (self,windowName, position):
         self.__windowName = windowName
@@ -33,6 +38,7 @@ class ImageWindow:
         return win
 
     def __waitForMouseClick(self):
+        # type: () -> int
         self.__mouseButtomWasClicked = False
         cv2.setMouseCallback(self.__windowName, self.__click_event_handler)
         keyPressed = cv2.waitKeyEx(0)
@@ -46,7 +52,9 @@ class ImageWindow:
         if event == cv2.EVENT_LBUTTONDOWN:
             self.featureCoordiate = Point(x, y)
             self.__mouseButtomWasClicked = True
-            press('a') #just pretend a key button 'a' was pressed, so that cv2 framework returns from cv2.waitKeyEx() function
+
+            # just pretend a key button 'a'  was pressed, so that cv2 framework returns from cv2.waitKeyEx() function
+            press(chr(self.KEY_MOUSE_CLICK_EVENT))
 
     def userClickedMouse(self):
         return self.__mouseButtomWasClicked
@@ -58,6 +66,8 @@ class ImageWindow:
             return False
 
     def showWindow(self, image):
+        # type: (numpy)
+
         if not self.__windowPositionAndDimensionsInitialized:
             cv2.namedWindow(self.__windowName, cv2.WINDOW_NORMAL)  # WINDOW_AUTOSIZE
             cv2.resizeWindow(self.__windowName, self.__windowWidth, self.__windowHight)
@@ -66,6 +76,8 @@ class ImageWindow:
         cv2.imshow(self.__windowName, image)
 
     def showWindowAndWaitForClick(self, image):
+        # type: (numpy) -> int
+
         self.showWindow(image)
         return self.__waitForMouseClick()
 

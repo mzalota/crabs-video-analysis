@@ -77,7 +77,10 @@ class DriftData:
 
         driftPerFrame = self.__pixelsYDriftPerFrame(index)
 
-        framesToBacktrack = math.floor(pixelsAway / driftPerFrame)
+        if driftPerFrame == 0:
+            framesToBacktrack = 0
+        else:
+            framesToBacktrack = math.floor(pixelsAway / driftPerFrame)
 
         frameID = int(self.__getFrameID(index))
         frameToUse = frameID - framesToBacktrack
@@ -166,6 +169,7 @@ class DriftData:
         return Vector(cumulativeXDrift,cumulativeYDrift)
 
     def getNextFrame(self, yPixelsAway, fromFrameID):
+        # type: (int, int) -> int
 
         startingFrameIDInDataFrame = self.__nextFrameIDInFile(fromFrameID)
         startingFrameIndex = self.getIndex(startingFrameIDInDataFrame)

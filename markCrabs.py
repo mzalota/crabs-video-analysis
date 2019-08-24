@@ -29,7 +29,7 @@ videoFileName = "V1_R_20180911_165259"
 
 
 folderStruct = FolderStructure(rootDir, videoFileName)
-StreamToLogger(folderStruct.getLogFilepath())
+#StreamToLogger(folderStruct.getLogFilepath())
 
 videoStream = VideoStream(folderStruct.getVideoFilepath())
 

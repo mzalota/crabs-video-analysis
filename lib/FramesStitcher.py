@@ -15,12 +15,11 @@ class FramesStitcher:
     #__driftsFilePath = None
     #__imagesDir = None
     #__framesToStitch = None
-
+    FRAME_HEIGHT = 1080
 
     def __init__(self, folderStructure, videoStream):
         # type: (FolderStructure, VideoStream) -> FramesStitcher
 
-        self.__heightOfFrame = 1080
         self.__videoStream = videoStream
 
         #csvFileName = videoFileName + "_toCut.csv"
@@ -34,7 +33,7 @@ class FramesStitcher:
     def AAAinit_old(self, videoStream, rootDirectory, videoFileName):
         # type: () -> FramesStitcher
 
-        self.__heightOfFrame = 1080
+        self.FRAME_HEIGHT = 1080
         self.__videoStream = videoStream
 
         csvFileName = videoFileName + "_toCut.csv"
@@ -46,6 +45,7 @@ class FramesStitcher:
 
 
     def determineFrames(self):
+        # type: () -> pd.DataFrame
         dfRaw = pd.read_csv(self.__driftsFilePath, delimiter="\t", na_values="(null)")
         #dfRaw = dfRaw.rename(columns={dfRaw.columns[0]: "rowNum"}) # rename first column to be rowNum
 
@@ -60,7 +60,7 @@ class FramesStitcher:
         while nextFrameID < driftData.maxFrameID():
             #print ("nextFrameID", nextFrameID)
             self.__addNextFrame(nextFrameID)
-            nextFrameID = driftData.getNextFrame(self.__heightOfFrame, nextFrameID)
+            nextFrameID = driftData.getNextFrame(self.FRAME_HEIGHT, nextFrameID)
         self.__addNextFrame(driftData.maxFrameID())
 
     def __addNextFrame(self, frameID):
