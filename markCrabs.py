@@ -1,6 +1,6 @@
 import logging
 
-import pandas as pd
+
 import cv2
 
 from lib.DriftData import DriftData
@@ -13,7 +13,7 @@ from lib.StreamToLogger import StreamToLogger
 from lib.VideoStream import VideoStream
 from lib.common import Point
 import os
-from datetime import datetime
+
 
 
 #rootDir ="C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"
@@ -33,39 +33,6 @@ StreamToLogger(folderStruct.getLogFilepath())
 
 videoStream = VideoStream(folderStruct.getVideoFilepath())
 
-def writeCrabsInfoToFile(foundCrabs, logger, crabsDF, framesDir):
-    for crabTuple in foundCrabs:
-        crabNumber = crabTuple[0]
-        frameID = crabTuple[1]
-        crabCoordinate = crabTuple[2]
-        crabsDF = crabsDF.append(
-            {'dir': framesDir, 'filename': filename, 'frameID': frameID, 'crabNumber': crabNumber,
-             'crabWidthPixels': crabCoordinate.diagonal(),
-             'crabLocationX': crabCoordinate.centerPoint().x, 'crabLocationY': crabCoordinate.centerPoint().y, 'crabWidthLine': crabCoordinate},
-            ignore_index=True)
-
-        row = list()
-        row.append(framesDir)
-        row.append(filename)
-        row.append(frameID)
-        row.append(datetime.now().strftime('%Y-%m-%d_%H:%M:%S'))
-        row.append(crabNumber)
-        row.append(crabCoordinate.diagonal())
-        row.append(crabCoordinate.centerPoint().x)
-        row.append(crabCoordinate.centerPoint().y)
-        row.append(str(crabCoordinate.centerPoint()))
-        row.append(str(crabCoordinate))
-
-        print ("row", row)
-
-        logger.writeToFile(row)
-
-
-
-
-crabsDF = pd.DataFrame(
-    columns=['dir', 'filename', 'crabNumber', 'crabWidthPixels', 'crabLocationX', 'crabLocationY', 'crabWidthLine'])
-
 driftData = DriftData.createFromFile(folderStruct.getDriftsFilepath())
 
 imageWin = ImageWindow("mainWindow", Point(700, 200))
@@ -73,6 +40,15 @@ imageWin = ImageWindow("mainWindow", Point(700, 200))
 scientistUI = ScientistUI(imageWin, folderStruct, videoStream, driftData)
 
 logger = Logger.openInAppendMode(folderStruct.getCrabsFilepath())
+
+scientistUI.processVideo(logger)
+
+# close all open windows
+cv2.destroyAllWindows()
+exit()
+
+
+
 
 for filepath in folderStruct.getFramesFilepaths():
     filename = os.path.basename(filepath)
@@ -84,8 +60,7 @@ for filepath in folderStruct.getFramesFilepaths():
 
     frameID = Frame.deconstructFilename(filename)
     try:
-        foundCrabs = scientistUI.processImage(image, frameID)
-        writeCrabsInfoToFile(foundCrabs, logger, crabsDF, folderStruct.getFramesDirpath())
+         scientistUI.processImage(image, frameID, logger)
     except UserWantsToQuitException as error:
         #print repr(error)
         print("User requested to quit on frame: "+ str(frameID))
@@ -94,5 +69,3 @@ for filepath in folderStruct.getFramesFilepaths():
 logger.closeFile()
 #crabsDF.to_csv(folderStruct.getCrabsFilepath(), sep='\t')
 
-# close all open windows
-cv2.destroyAllWindows()
