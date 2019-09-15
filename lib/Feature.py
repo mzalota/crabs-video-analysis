@@ -1,6 +1,7 @@
 from math import ceil
 
 from lib.Frame import Frame
+from lib.MyTimer import MyTimer
 from lib.common import Point, Box
 
 
@@ -12,19 +13,24 @@ class Feature:
         self.__frameID = frameID
         self.__location = location
 
+        #timer = MyTimer("Feature constructor")
+
         if frameID > driftData.maxFrameID():
             raise ValueError("Frame Number above maximum. Passed frame: "+str(frameID)+". Maximum frame: "+str(int(driftData.maxFrameID())))
-
         if frameID < driftData.minFrameID():
             raise ValueError("Frame Number below minimum. Passed frame: "+str(frameID)+". Minimum frame: "+str(int(driftData.minFrameID())))
 
         #self.__firstFrameID = frameID
         #self.__lastFrameID = frameID
+        #timer.lap("shag 40")
 
         self.__determineFirstAndLastFrameID()
         #print ("firstFrameID and lastFrameID", self.__firstFrameID, self.__lastFrameID)
+        #timer.lap("shag 50")
 
         self.__firstAndLastGoodCrabImages(boxSize)
+        #timer.lap("shag 60")
+
 
     def getInitFrameID(self):
         return self.__frameID
@@ -71,9 +77,12 @@ class Feature:
         self.__frameIDOfLastGoodImage = 0
         self.__maximumAreaFrameID = self.__frameID
 
+        #timer = MyTimer("In Feature::__firstAndLastGoodCrabImages")
+
         self.__getValues(self.__firstFrameID, self.__lastFrameID, boxSize)
         #print ("maximumAreaFrameIDDown", self.__maximumAreaFrameID, self.__maximumArea)
         #print ("frameIDOfFirstGoodImage and frameIDOfLastGoodImage", self.__frameIDOfFirstGoodImage, self.__frameIDOfLastGoodImage)
+        #timer.lap("after get values")
 
         if (self.__frameIDOfFirstGoodImage > 0 and self.__frameIDOfLastGoodImage >0):
             return self.__frameIDOfFirstGoodImage, self.__frameIDOfLastGoodImage
@@ -82,6 +91,9 @@ class Feature:
 
     def __determineFirstAndLastFrameID(self):
         nextFrameID = self.__frameID
+        #timer = MyTimer("in Feature::__determineFirstAndLastFrameID")
+
+        loop_counter =0
         while (True):
             nextFrameID = nextFrameID + 1
             if nextFrameID > self.__driftData.maxFrameID():
@@ -99,7 +111,11 @@ class Feature:
                 #print("drift:",  nextFrameID, str(newPoint))
                 self.__lastFrameID = nextFrameID - 1
                 break
+            loop_counter += 1
 
+        #timer.lap("after first while: "+str(loop_counter))
+
+        loop_counter =0
         nextFrameID = self.__frameID
         while (True):
             nextFrameID = nextFrameID - 1
@@ -119,6 +135,9 @@ class Feature:
                 #print("drift:",  nextFrameID, str(newPoint))
                 self.__firstFrameID = nextFrameID + 1
                 break
+
+            loop_counter += 1
+        #timer.lap("after second while: "+str(loop_counter))
 
     def __getValues(self, minFrameID, maxFrameID, boxSize):
         nextFrameID = minFrameID
@@ -144,11 +163,16 @@ class Feature:
 
 
     def __constructVisibleArea(self, nextFrameID, boxSize):
+
+        #timer = MyTimer("__constructVisibleArea")
         offset = int(boxSize / 2)
         newPoint = self.getCoordinateInFrame(nextFrameID)
+        #timer.lap("calling Drift Data")
         topleft = Point(max(newPoint.x - offset, 0), max(newPoint.y - offset, 0))
         bottomRight = Point(min(newPoint.x + offset, Frame.FRAME_WIDTH), min(newPoint.y + offset, Frame.FRAME_HEIGHT))
         visibleBoxArea = Box(topleft, bottomRight)
+
+        #timer.lap()
         return visibleBoxArea
 
 

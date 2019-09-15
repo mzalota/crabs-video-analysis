@@ -1,6 +1,7 @@
 import math
 import pandas as pd
 
+from lib.MyTimer import MyTimer
 from lib.common import Vector
 
 
@@ -12,7 +13,19 @@ class DriftData:
 
     def __init__(self, driftData):
         # type: (pd.DataFrame) -> DriftData
+
         self.__driftData = driftData
+
+        dfIndexIsFrameNumber = driftData.reset_index().set_index(self.__COLNAME_frameNumber)
+        self.__tmpDict = dfIndexIsFrameNumber["index"].to_dict()
+
+        self.__maxFrameID = self.__driftData[self.__COLNAME_frameNumber].max()
+        self.__minFrameID = self.__driftData[self.__COLNAME_frameNumber].min()
+
+        self.__driftXDict = self.__driftData[self.__COLNAME_driftX].to_dict()
+        self.__driftYDict = self.__driftData[self.__COLNAME_driftY].to_dict()
+        self.__frameIDDict = self.__driftData[self.__COLNAME_frameNumber].to_dict()
+
         #print(driftData.count())
 
     @staticmethod
@@ -32,18 +45,39 @@ class DriftData:
         return len(self.__driftData.index)
 
     def __getXDrift(self, index):
-        return self.__driftData[self.__COLNAME_driftX][index]
+        return self.__driftXDict[index]
+        #return self.__driftData[self.__COLNAME_driftX][index]
 
     def __getYDrift(self, index):
-        return self.__driftData[self.__COLNAME_driftY][index]
+        return self.__driftYDict[index]
+        #return self.__driftData[self.__COLNAME_driftY][index]
 
     def __getFrameID(self, index):
-        return self.__driftData[self.__COLNAME_frameNumber][index]
-
-    def minFrameID(self):
-        return self.__driftData[self.__COLNAME_frameNumber][0]
+        return self.__frameIDDict[index]
+        #return self.__driftData[self.__COLNAME_frameNumber][index]
 
     def getIndex(self, frameID):
+
+        if frameID in self.__tmpDict:
+            return self.__tmpDict[frameID]
+        else:
+            return None
+
+        #print self.__tmpDriftData.head()
+        #foundFrame = self.__tmpDriftData[frameID]
+        if frameID in self.__tmpDriftData.index:
+            #print self.__tmpDriftData.loc[frameID]
+            return self.__tmpDriftData.loc[frameID]["index"]
+        else:
+            return None
+
+        #if len(foundFrame.index)==1:
+        #    return foundFrame["index"]
+        #else:
+        #    return None
+
+
+    def getIndex_orig(self, frameID):
         foundFrame = self.__driftData.loc[self.__driftData[self.__COLNAME_frameNumber] == frameID]
         if len(foundFrame.index)==1:
             return foundFrame.index[0]
@@ -114,10 +148,24 @@ class DriftData:
         return frameID
 
     def maxFrameID(self):
-        return self.__driftData[self.__COLNAME_frameNumber].max()
+        #if not self.__maxFrameID:
+        #if not hasattr(self, "__maxFrameID"):
+        #    self.__maxFrameID = self.__driftData[self.__COLNAME_frameNumber].max()
+
+        return self.__maxFrameID
+        #return self.__driftData[self.__COLNAME_frameNumber].max()
+
+    #def minFrameID(self):
+    #    return self.__driftData[self.__COLNAME_frameNumber].min()
 
     def minFrameID(self):
-        return self.__driftData[self.__COLNAME_frameNumber].min()
+        #if not self.__minFrameID:
+        if not hasattr(self, "__minFrameID"):
+            self.__minFrameID = self.__driftData[self.__COLNAME_frameNumber].min()
+        return self.__minFrameID
+
+        #return self.__driftData[self.__COLNAME_frameNumber][0]
+
 
     def yPixelsBetweenFrames(self,fromFrameID, toFrameID):
         drift = self.driftBetweenFrames(fromFrameID, toFrameID)
@@ -148,19 +196,30 @@ class DriftData:
         return self.__getDriftBetweenTwoFrames(fromFrameID, toFrameID)
 
     def __getDriftBetweenTwoFrames(self, fromFrameID, toFrameID):
+
+        #timer = MyTimer("__getDriftBetweenTwoFrames")
         #assuming fromFrameID is less than or equal to toFrameID and both are within valid range
         startingFrameIDInDataFrame = self.__nextFrameIDInFile(fromFrameID)
         startIndex = self.getIndex(startingFrameIDInDataFrame)
-
+        #timer.lap("here 10")
         endingFrameIDInDataFrame = self.__nextFrameIDInFile(toFrameID)
         endIndex = self.getIndex(endingFrameIDInDataFrame)
+        #timer.lap("here 20")
 
         driftToStartingFrame = self.__driftToNearbyFrame(startIndex, fromFrameID)
+        #timer.lap("here 30")
+
         cumulativeDrift = self.__driftBetweenFramesInDataFrame(endIndex, startIndex)
+        #timer.lap("here 40")
+
         driftFromEndingFrame = self.__driftToNearbyFrame(endIndex, toFrameID)
+        #timer.lap("here 50")
 
         totalYDrift = cumulativeDrift.y + driftToStartingFrame.y - driftFromEndingFrame.y
         totalXDrift = cumulativeDrift.x + driftToStartingFrame.x - driftFromEndingFrame.x
+
+        #timer.lap("here 80")
+
         return Vector(totalXDrift, totalYDrift)
 
     def __driftBetweenFramesInDataFrame(self, endIndex, nextIndex):

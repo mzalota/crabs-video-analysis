@@ -12,6 +12,7 @@ import cv2
 import os
 import traceback
 
+from lib.MyTimer import MyTimer
 from lib.common import Point
 
 
@@ -31,7 +32,7 @@ class ScientistUI:
         frame_id = self.__driftData.minFrameID()
         while True:
             print ("processing frame ID", int(frame_id))
-
+            timer = MyTimer()
             try:
                 frame = Frame(frame_id, self.__videoStream)
                 keyPressed = self.processImage(frame.getImgObj(), frame_id)
@@ -48,7 +49,7 @@ class ScientistUI:
                 break
 
             frame_id = self.__determine_next_frame(frame_id, keyPressed)
-
+            timer.lap("processVideo")
 
     def __determine_next_frame(self, frame_id, keyPressed):
 
@@ -100,6 +101,7 @@ class ScientistUI:
     def processImage(self, mainImage, frame_id):
         mustExit = False
         while not mustExit:
+            markCrabsTimer = MyTimer()
 
             if frame_id == self.__driftData.minFrameID():
                 frame_name = str(int(frame_id))+" (First)"
@@ -108,9 +110,12 @@ class ScientistUI:
             else:
                 frame_name = int(frame_id)
 
+            #markCrabsTimer.lap("processImage: step 10")
             mainImage.drawFrameID(frame_name)
 
+            #markCrabsTimer.lap("processImage: step 20")
             self.markCrabsOnImage(mainImage, frame_id)
+            markCrabsTimer.lap("markCrabsTimer")
 
             keyPressed = self.__imageWin.showWindowAndWaitForClick(mainImage.asNumpyArray())
             #print ("pressed button", keyPressed, chr(ImageWindow.KEY_MOUSE_CLICK_EVENT), ImageWindow.KEY_MOUSE_CLICK_EVENT)
@@ -128,14 +133,15 @@ class ScientistUI:
                 crabUI = CrabUI(self.__folderStruct, self.__videoStream, self.__driftData, frame_id, crabPoint)
 
                 lineWasSelected = crabUI.showCrabWindow()
-                if lineWasSelected:
+                #if lineWasSelected:
                     #draw an X on where the User clicked.
-                    mainImage.drawCross(crabPoint)
+                    #mainImage.drawCross(crabPoint)
                     #self.__drawLineOnCrab(crabBox, crabOnFrameID, frameID, mainImage)
 
             else:
                 #print ("Ignoring the fact that user pressed button:", keyPressed)#, chr(keyPressed))
                 mustExit = True
+
 
         return keyPressed
 
@@ -143,7 +149,6 @@ class ScientistUI:
         #crabsOnFrame = list()
         #crabsOnFrame.append(Point(500, 500))
         #crabsOnFrame.append(Point(600, 900))
-
 
         nextFrame = self.__driftData.getNextFrame(FramesStitcher.FRAME_HEIGHT,frame_id)
         prevFrame = self.__driftData.getNextFrame(-FramesStitcher.FRAME_HEIGHT,frame_id)
@@ -154,17 +159,22 @@ class ScientistUI:
         markedCrabs = crabsData.crabsBetweenFrames(prevFrame,nextFrame)
 
         for markedCrab in markedCrabs:
-            print ('markedCrab', markedCrab)
-
+            #print ('markedCrab', markedCrab)
+            timer = MyTimer("crabsOnFrame")
 
             frame_number = markedCrab['frameNumber']
+
             crabLocation = Point(markedCrab['crabLocationX'], markedCrab['crabLocationY'])
+
             crabFeature = Feature(self.__driftData, frame_number, crabLocation, 5)
+            #timer.lap("Step 150")
             crabLocation = crabFeature.getCoordinateInFrame(frame_id)
 
-            print ('crabLocation', str(crabLocation))
+            #print ('crabLocation', str(crabLocation))
 
             mainImage.drawCross(crabLocation)
+
+            timer.lap("crab: "+str(frame_number))
 
 
     def __drawLineOnCrab(self, crabBox, crabOnFrameID, frameID, mainImage):
