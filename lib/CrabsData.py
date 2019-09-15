@@ -83,7 +83,7 @@ class CrabsData:
         crabsDF["crabWidthPixels"] = pd.to_numeric(crabsDF["crabWidthPixels"], errors='coerce')
 
         tmpDF = crabsDF[(crabsDF['frameNumber'] <= upper_frame_id) & (crabsDF['frameNumber'] >= lower_frame_id)]
-        print ("count in tmpDF", len(tmpDF.index),len(self.__crabsDF))
+        #print ("count in tmpDF", len(tmpDF.index),len(self.__crabsDF))
         #example of the output
         #[{'crabLocationX': 221, 'crabLocationY': 368, 'frameNumber': 10026},
         # {'crabLocationX': 865, 'crabLocationY': 304, 'frameNumber': 10243},

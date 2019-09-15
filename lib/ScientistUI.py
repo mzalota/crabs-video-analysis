@@ -32,7 +32,7 @@ class ScientistUI:
         frame_id = self.__driftData.minFrameID()
         while True:
             print ("processing frame ID", int(frame_id))
-            timer = MyTimer()
+
             try:
                 frame = Frame(frame_id, self.__videoStream)
                 keyPressed = self.processImage(frame.getImgObj(), frame_id)
@@ -49,7 +49,7 @@ class ScientistUI:
                 break
 
             frame_id = self.__determine_next_frame(frame_id, keyPressed)
-            timer.lap("processVideo")
+
 
     def __determine_next_frame(self, frame_id, keyPressed):
 
@@ -153,7 +153,7 @@ class ScientistUI:
         nextFrame = self.__driftData.getNextFrame(FramesStitcher.FRAME_HEIGHT,frame_id)
         prevFrame = self.__driftData.getNextFrame(-FramesStitcher.FRAME_HEIGHT,frame_id)
 
-        print("in markCrabsOnImage", frame_id,nextFrame, prevFrame)
+        #print("in markCrabsOnImage", frame_id,nextFrame, prevFrame)
 
         crabsData = CrabsData(self.__folderStruct)
         markedCrabs = crabsData.crabsBetweenFrames(prevFrame,nextFrame)
