@@ -72,6 +72,12 @@ class ScientistUI:
             return self.__driftData.minFrameID()
 
 
+        if keyPressed == ord("b"):
+            print "Pressed B (bad frame) button"
+            new_frame_id = frame_id + 50
+            self.save_to_badframe_file(frame_id, new_frame_id)
+            return new_frame_id
+
         if keyPressed == ImageWindow.KEY_ARROW_RIGHT or keyPressed == ImageWindow.KEY_SPACE or keyPressed == ord("n"):
             # show next frame
             pixels_to_jump = FramesStitcher.FRAME_HEIGHT
@@ -84,6 +90,7 @@ class ScientistUI:
         elif keyPressed == ImageWindow.KEY_PAGE_UP:
             #Jump 10 screens backward
             pixels_to_jump = -(FramesStitcher.FRAME_HEIGHT * 10)
+
         else:
             print ("Ignoring the fact that user pressed button:", keyPressed)  # , chr(keyPressed))
             return frame_id
@@ -97,6 +104,21 @@ class ScientistUI:
             new_frame_id = self.__driftData.maxFrameID()
 
         return int(new_frame_id)
+
+    def save_to_badframe_file(self, frame_id, new_frame_id):
+        filepath_badframes = self.__folderStruct.getBadFramesFilepath()
+        if self.__folderStruct.fileExists(filepath_badframes):
+            df = pd.read_csv(filepath_badframes, delimiter="\t", na_values="(null)")
+        else:
+            column_names = ["startfFrameNumber", "endFrameNumber", "createdOn"]
+            df = pd.DataFrame(columns=column_names)
+        row = dict()
+        row["startfFrameNumber"] = frame_id
+        row["endFrameNumber"] = new_frame_id
+        row["createdOn"] = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+        # Pass the rowRedDot1 elements as key value pairs to append() function
+        df = df.append(row, ignore_index=True)
+        df.to_csv(filepath_badframes, sep='\t', index=False)
 
     def processImage(self, mainImage, frame_id):
         mustExit = False
