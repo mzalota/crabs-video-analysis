@@ -13,6 +13,7 @@ import os
 import traceback
 
 from lib.MyTimer import MyTimer
+from lib.UserInput import UserInput
 from lib.common import Point
 
 
@@ -20,6 +21,7 @@ class UserWantsToQuitException(Exception):
     pass
 
 class ScientistUI:
+
     def __init__(self, imageWin, folderStruct, videoStream, driftData):
         # type: (ImageWindow, FolderStructure, VideoStream, DriftData) -> ScientistUI
         self.__imageWin = imageWin
@@ -37,57 +39,65 @@ class ScientistUI:
                 frame = Frame(frame_id, self.__videoStream)
                 keyPressed = self.processImage(frame.getImgObj(), frame_id)
 
-            except UserWantsToQuitException as error:
-                print repr(error)
-                print("User requested to quit on frame: ", str(frame_id))
-                break
-
             except Exception as error:
                 print ("Failed to read next frame from video: ",frame_id )
                 print(repr(error))
                 traceback.print_exc()
                 break
 
-            frame_id = self.__determine_next_frame(frame_id, keyPressed)
+            user_input = UserInput(keyPressed)
+            if user_input.is_quit_command():
+                # print "Pressed Q button"
+                print("User requested to quit on frame: ", str(frame_id))
+                break
+
+            new_frame_id = self.__determine_next_frame(frame_id, keyPressed)
+
+            if user_input.is_bad_frame_command():
+                print "Pressed B (bad frame) button"
+                self.save_to_badframe_file(frame_id, new_frame_id)
+
+            frame_id = new_frame_id
 
 
+    #TODO: Figure out why pressing Right button and then left button does not return you to the same frame ID
     def __determine_next_frame(self, frame_id, keyPressed):
 
-        if keyPressed == ImageWindow.KEY_ARROW_DOWN:
+        user_input = UserInput(keyPressed)
+        if user_input.is_bad_frame_command():
+            new_frame_id = frame_id + 50
+            return new_frame_id
+
+        if user_input.is_key_arrow_down():
             # scroll 50 frames forward
             new_frame_id = frame_id+50
             return new_frame_id
 
-        if keyPressed == ImageWindow.KEY_ARROW_UP:
+        if user_input.is_key_arrow_up():
             # scroll 50 frames backward
             new_frame_id = frame_id-50
             return new_frame_id
 
-        if keyPressed == ImageWindow.KEY_END:
+        if user_input.is_key_end():
             # Go to the very last frame
             return self.__driftData.maxFrameID()
 
-        if keyPressed == ImageWindow.KEY_HOME:
+        if user_input.is_key_home():
             # Go to the very first frame
             return self.__driftData.minFrameID()
 
 
-        if keyPressed == ord("b"):
-            print "Pressed B (bad frame) button"
-            new_frame_id = frame_id + 50
-            self.save_to_badframe_file(frame_id, new_frame_id)
-            return new_frame_id
-
-        if keyPressed == ImageWindow.KEY_ARROW_RIGHT or keyPressed == ImageWindow.KEY_SPACE or keyPressed == ord("n"):
+        #if keyPressed == ImageWindow.KEY_ARROW_RIGHT or keyPressed == ImageWindow.KEY_SPACE or keyPressed == ord("n"):
+        if user_input.is_next_seefloor_slice_command():
             # show next frame
             pixels_to_jump = FramesStitcher.FRAME_HEIGHT
-        elif keyPressed == ImageWindow.KEY_ARROW_LEFT:
+        elif user_input.is_key_arrow_left():
             # show previous frame
             pixels_to_jump = -FramesStitcher.FRAME_HEIGHT
-        elif keyPressed == ImageWindow.KEY_PAGE_DOWN:
+        elif user_input.is_key_page_down():
             #Jump 10 screens forward
             pixels_to_jump = FramesStitcher.FRAME_HEIGHT * 10
-        elif keyPressed == ImageWindow.KEY_PAGE_UP:
+        elif user_input.is_key_page_up():
             #Jump 10 screens backward
             pixels_to_jump = -(FramesStitcher.FRAME_HEIGHT * 10)
 
@@ -142,12 +152,8 @@ class ScientistUI:
             keyPressed = self.__imageWin.showWindowAndWaitForClick(mainImage.asNumpyArray())
             #print ("pressed button", keyPressed, chr(ImageWindow.KEY_MOUSE_CLICK_EVENT), ImageWindow.KEY_MOUSE_CLICK_EVENT)
 
-            if keyPressed == ord("q"):
-                # print "Pressed Q button"
-                message = "User pressed Q button"
-                raise UserWantsToQuitException(message)
 
-            elif keyPressed == ImageWindow.KEY_MOUSE_CLICK_EVENT:
+            if keyPressed == ImageWindow.KEY_MOUSE_CLICK_EVENT:
                 crabPoint = self.__imageWin.featureCoordiate
 
                 #self.__crabUI.showCrabWindow(crabPoint, frameID)

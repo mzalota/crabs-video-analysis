@@ -10,15 +10,20 @@ from common import Box, Point, Vector
 
 class SeeFloorSection:
     #__threshold_for_matching = 0.6
+    #__startingBox
 
-    def setThreshold(self,newThresholdForMatching):
-        self.__threshold_for_matching = newThresholdForMatching
+    #__id
+    #__topLeftPoints
+    #__frameIDs
+    #__frames
+    #__startingBox
+    #__subImageWin
 
     def __init__(self,frame, box):
         self.setThreshold(0.6)
         self.__initialize()
         self.__startingBox = box
-        self.__pluckFeature(frame, box.topLeft)
+        self.__recordFeatureLocationOnFrame(frame, box.topLeft)
 
     def __initialize(self):
         self.__id = str(uuid.uuid4().fields[-1])[:5]
@@ -27,6 +32,9 @@ class SeeFloorSection:
         self.__topLeftPoints = dict()
         self.__startingBox = None
         self.__subImageWin = None
+
+    def setThreshold(self,newThresholdForMatching):
+        self.__threshold_for_matching = newThresholdForMatching
 
     def closeWindow(self):
         self.showSubImage()
@@ -47,12 +55,6 @@ class SeeFloorSection:
                   Point(topLeftPoint.x + self.__startingBox.width(),
                         topLeftPoint.y + self.__startingBox.hight()))
         return box
-
-    def __getTopLeft_old(self):
-        if len(self.__topLeftPoints)<1:
-            return None
-        lastPoint = self.__topLeftPoints[max(self.__topLeftPoints.keys())]
-        return lastPoint
 
     def __getTopLeft(self):
         return self.__getTopLeftForFrame(self.getMaxFrameID())
@@ -79,13 +81,11 @@ class SeeFloorSection:
             img.drawFrameID(frameID)
             self.__subImageWin.showWindow(img.asNumpyArray())
 
-
-
-    def __pluckFeature(self, frame, topLeftPoint):
+    def __recordFeatureLocationOnFrame(self, frame, topLeftPoint):
         # type: (Frame, Point) -> None
+        self.__frameIDs.append(frame.getFrameID())
         self.__topLeftPoints[frame.getFrameID()] = topLeftPoint #append
         self.__frames[frame.getFrameID()] = frame
-        self.__frameIDs.append(frame.getFrameID())
 
     def getDrift(self):
         # type: () -> Vector
@@ -108,16 +108,6 @@ class SeeFloorSection:
         image.drawBoxOnImage(box)
         image.drawTextInBox(box,self.__id)
 
-    def getImage_old(self):
-        # type: () -> Image
-        if len(self.__frames)<1:
-            return None
-
-        #frameID = self.__getLastFrame().getFrameID()
-        img = self.__getLastFrame().getImgObj()
-        #img.drawFrameID(frameID)
-        return img.subImage(self.__defaultBoxAroundFeature())
-
     def getImage(self):
         # type: () -> Image
         return self.getImageOnFrame(self.getMaxFrameID())
@@ -135,42 +125,16 @@ class SeeFloorSection:
         img = imgObj.subImage(self.__boxAroundFeatureForFrame(frameID))
         return img
 
-    def __getLastFrame(self):
-        return self.__frames[self.getMaxFrameID()]
-
     def getLocation(self):
         box = self.__defaultBoxAroundFeature()
         return box.topLeft.calculateMidpoint (box.bottomRight)
 
-    def findFeature(self, frame):
+    def findLocationInFrame(self, frame):
         # type: (Frame) -> Point
         newLocation = self.__findSubImage(frame.getImgObj().asNumpyArray(), self.getImage().asNumpyArray())
         if newLocation:
-            self.__pluckFeature(frame, newLocation)
+            self.__recordFeatureLocationOnFrame(frame, newLocation)
         return newLocation
-
-    def findInAllFrames(self):
-        startingFrameID = self.getMaxFrameID()
-        for i in range(1,50,1):
-            nextFrameID = int(startingFrameID) + i
-            nextFrame = Frame(nextFrameID, self.__getLastFrame().getVideoStream())
-            newLocation = self.findFeature(nextFrame)
-            if newLocation is None:
-                break
-            print ("frame", startingFrameID, nextFrameID, i, str(newLocation), self.infoAboutFeature())
-
-
-        '''  
-        for i in range(1,-200,-5):
-            nextFrameID = int(startingFrameID) + i
-            print ("nextFrameID", nextFrameID, startingFrameID, i)
-            nextFrame = Frame(nextFrameID, self.__getLastFrame().getVideoStream())
-            newLocation = self.findFeature(nextFrame)
-            if newLocation is None:
-                break
-            print ("frame", newLocation, self.infoAboutFeature())
-        '''
-
 
     def __findSubImage(self, image, subImage):
         if subImage is None:

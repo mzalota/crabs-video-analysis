@@ -5,7 +5,19 @@ from lib.MyTimer import MyTimer
 from lib.common import Point, Box
 
 
+#TODO: SeeFloorSection and Feature classes are very similar. The concepts are not clearly defined/separated. Refactor!
+
 class Feature:
+    #__maximumAreaFrameID
+    #__frameIDOfFirstGoodImage
+    #__frameIDOfLastGoodImage
+    #__firstFrameID
+    #__lastFrameID
+
+    #__frameID
+    #__location
+
+    #__driftData
 
     def __init__(self, driftData, frameID, location, boxSize):
         # type: (DriftData, int, Point, int) -> Feature
