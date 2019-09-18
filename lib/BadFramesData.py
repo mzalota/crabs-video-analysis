@@ -1,92 +1,63 @@
 import pandas as pd
-import numpy
 from datetime import datetime
 from lib.FolderStructure import FolderStructure
 
 
 class BadFramesData:
-
-    __COLNAME_dir = "dir"
-    __COLNAME_filename = "filename"
-    __COLNAME_frameNumber = 'frameNumber'
+    __COLNAME_startfFrameNumber = "startfFrameNumber"
+    __COLNAME_endFrameNumber = 'endFrameNumber'
     __COLNAME_createdOn = "createdOn"
-    __COLNAME_crabNumber = "crabNumber"
-    __COLNAME_crabWidthPixels = "crabWidthPixels"
-    __COLNAME_crabLocationX = "crabLocationX"
-    __COLNAME_crabLocationY = "crabLocationY"
-    __COLNAME_crabCoordinatePoint = "crabCoordinatePoint"
-    __COLNAME_cranbCoordinateBox = "cranbCoordinateBox"
 
-    def __init__(self, folderStruct):
-        # type: (FolderStructure) -> BadFramesData
+    # __df
+    # __folderStruct
+
+    def __init__(self, folderStruct, df):
+        # type: (FolderStructure, pd) -> object
         self.__folderStruct = folderStruct
+        if df is None:
+            df = self.__create_empty_df()
+        self.__df = df
 
-        self.__load_dataframe()
+    @staticmethod
+    def createFromDataFrame(folderStruct, df):
+        # type: (pd.DataFrame) -> BadFramesData
+        return BadFramesData(folderStruct, df)
 
-    def __load_dataframe(self):
-        column_names = [self.__COLNAME_dir,
-                        self.__COLNAME_filename,
-                        self.__COLNAME_frameNumber,
-                        self.__COLNAME_createdOn,
-                        self.__COLNAME_crabNumber,
-                        self.__COLNAME_crabWidthPixels,
-                        self.__COLNAME_crabLocationX,
-                        self.__COLNAME_crabLocationY,
-                        self.__COLNAME_crabCoordinatePoint,
-                        self.__COLNAME_cranbCoordinateBox]
-        filepath = self.__folderStruct.getCrabsFilepath()
-        self.__crabsDF = pd.read_csv(filepath, delimiter="\t", na_values="(null)", header=None, names=column_names)
+    @staticmethod
+    def createFromFile(folderStruct):
+        # type: (FolderStructure) -> BadFramesData
 
-        self.__drop_header_row()
-
-    def __drop_header_row(self):
-        if (self.__crabsDF.iloc[0][0] == 'dir'):
-            #we know its a header row because text in first row in first column is "dir"
-            self.__crabsDF = self.__crabsDF[1:] #.reset_index(drop=True)
+        filepath_badframes = folderStruct.getBadFramesFilepath()
+        if folderStruct.fileExists(filepath_badframes):
+            df = pd.read_csv(filepath_badframes, delimiter="\t", na_values="(null)")
         else:
-            #first row is not header. Leave it
-            pass
+            df = BadFramesData.__create_empty_df()
 
-    def add_crab_data(self, frame_number, crabCoordinate):
-        framesDir = self.__folderStruct.getVideoFilepath()
+        newObj = BadFramesData(folderStruct, df)
+        return newObj
 
-        row_to_append = {self.__COLNAME_dir: framesDir,
-                         self.__COLNAME_filename: "blabla.filename",
-                         self.__COLNAME_frameNumber: str(int(frame_number)),
-                         self.__COLNAME_createdOn: datetime.now().strftime('%Y-%m-%d_%H:%M:%S'),
-                         self.__COLNAME_crabNumber: "0",
-                         self.__COLNAME_crabWidthPixels: crabCoordinate.diagonal(),
-                         self.__COLNAME_crabLocationX: crabCoordinate.centerPoint().x,
-                         self.__COLNAME_crabLocationY: crabCoordinate.centerPoint().y,
-                         self.__COLNAME_crabCoordinatePoint: str(crabCoordinate.centerPoint()),
-                         self.__COLNAME_cranbCoordinateBox: str(crabCoordinate)
-                         }
+    def __create_empty_df(self):
+        # type: () -> pd
+        column_names = [self.__COLNAME_startfFrameNumber,
+                        self.__COLNAME_endFrameNumber,
+                        self.__COLNAME_createdOn]
+        return pd.DataFrame(columns=column_names)
 
-        self.__crabsDF = self.__crabsDF.append(row_to_append, ignore_index=True)
-        self.__crabsDF.to_csv(self.__folderStruct.getCrabsFilepath(), sep='\t', index=False)
+    def add_badframes(self, start_frame_id, end_frame_id):
+        row_to_append = dict()
+        row_to_append[self.__COLNAME_startfFrameNumber] = start_frame_id
+        row_to_append[self.__COLNAME_endFrameNumber] = end_frame_id
+        row_to_append[self.__COLNAME_createdOn] = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
 
+        self.__df = self.__df.append(row_to_append, ignore_index=True)
         return row_to_append
 
+    def save_to_file(self):
+        filepath_badframes = self.__folderStruct.getBadFramesFilepath()
+        self.__df.to_csv(filepath_badframes, sep='\t', index=False)
+
     def getCount(self):
-        return len(self.__crabsDF.index)
+        return len(self.__df.index)
 
     def getPandasDF(self):
-        return self.__crabsDF
-
-    def crabsBetweenFrames(self, lower_frame_id, upper_frame_id):
-
-        crabsDF = self.__crabsDF
-        crabsDF["frameNumber"] = pd.to_numeric(crabsDF["frameNumber"], errors='coerce')
-        crabsDF["frameNumber"] = crabsDF["frameNumber"].astype('int64')
-        crabsDF["crabLocationX"] = crabsDF["crabLocationX"].astype('int64')
-        crabsDF["crabLocationY"] = crabsDF["crabLocationY"].astype('int64')
-        crabsDF["crabWidthPixels"] = pd.to_numeric(crabsDF["crabWidthPixels"], errors='coerce')
-
-        tmpDF = crabsDF[(crabsDF['frameNumber'] <= upper_frame_id) & (crabsDF['frameNumber'] >= lower_frame_id)]
-        #print ("count in tmpDF", len(tmpDF.index),len(self.__crabsDF))
-        #example of the output
-        #[{'crabLocationX': 221, 'crabLocationY': 368, 'frameNumber': 10026},
-        # {'crabLocationX': 865, 'crabLocationY': 304, 'frameNumber': 10243},
-        # {'crabLocationX': 101, 'crabLocationY': 420, 'frameNumber': 10530}]
-
-        return tmpDF[["frameNumber", "crabLocationY", "crabLocationX"]].reset_index(drop=True).to_dict("records")
+        return self.__df

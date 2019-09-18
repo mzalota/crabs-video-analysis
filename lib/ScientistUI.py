@@ -1,3 +1,4 @@
+from lib.BadFramesData import BadFramesData
 from lib.CrabUI import CrabUI
 from lib.CrabsData import CrabsData
 from lib.DriftData import DriftData
@@ -30,6 +31,7 @@ class ScientistUI:
         self.__driftData = driftData
 
     def processVideo(self):
+        badFramesData = BadFramesData.createFromFile(self.__folderStruct)
 
         frame_id = self.__driftData.minFrameID()
         while True:
@@ -55,7 +57,8 @@ class ScientistUI:
 
             if user_input.is_bad_frame_command():
                 print "Pressed B (bad frame) button"
-                self.save_to_badframe_file(frame_id, new_frame_id)
+                badFramesData.add_badframes(frame_id, new_frame_id)
+                badFramesData.save_to_file()
 
             frame_id = new_frame_id
 
@@ -114,21 +117,6 @@ class ScientistUI:
             new_frame_id = self.__driftData.maxFrameID()
 
         return int(new_frame_id)
-
-    def save_to_badframe_file(self, frame_id, new_frame_id):
-        filepath_badframes = self.__folderStruct.getBadFramesFilepath()
-        if self.__folderStruct.fileExists(filepath_badframes):
-            df = pd.read_csv(filepath_badframes, delimiter="\t", na_values="(null)")
-        else:
-            column_names = ["startfFrameNumber", "endFrameNumber", "createdOn"]
-            df = pd.DataFrame(columns=column_names)
-        row = dict()
-        row["startfFrameNumber"] = frame_id
-        row["endFrameNumber"] = new_frame_id
-        row["createdOn"] = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
-        # Pass the rowRedDot1 elements as key value pairs to append() function
-        df = df.append(row, ignore_index=True)
-        df.to_csv(filepath_badframes, sep='\t', index=False)
 
     def processImage(self, mainImage, frame_id):
         mustExit = False
