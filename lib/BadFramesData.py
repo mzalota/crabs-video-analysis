@@ -4,9 +4,9 @@ from lib.FolderStructure import FolderStructure
 
 
 class BadFramesData:
-    __COLNAME_startfFrameNumber = "startfFrameNumber"
-    __COLNAME_endFrameNumber = 'endFrameNumber'
-    __COLNAME_createdOn = "createdOn"
+    COLNAME_startfFrameNumber = "startfFrameNumber"
+    COLNAME_endFrameNumber = 'endFrameNumber'
+    COLNAME_createdOn = "createdOn"
 
     # __df
     # __folderStruct
@@ -38,16 +38,16 @@ class BadFramesData:
 
     def __create_empty_df(self):
         # type: () -> pd
-        column_names = [self.__COLNAME_startfFrameNumber,
-                        self.__COLNAME_endFrameNumber,
-                        self.__COLNAME_createdOn]
+        column_names = [self.COLNAME_startfFrameNumber,
+                        self.COLNAME_endFrameNumber,
+                        self.COLNAME_createdOn]
         return pd.DataFrame(columns=column_names)
 
     def add_badframes(self, start_frame_id, end_frame_id):
         row_to_append = dict()
-        row_to_append[self.__COLNAME_startfFrameNumber] = start_frame_id
-        row_to_append[self.__COLNAME_endFrameNumber] = end_frame_id
-        row_to_append[self.__COLNAME_createdOn] = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+        row_to_append[self.COLNAME_startfFrameNumber] = start_frame_id
+        row_to_append[self.COLNAME_endFrameNumber] = end_frame_id
+        row_to_append[self.COLNAME_createdOn] = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
 
         self.__df = self.__df.append(row_to_append, ignore_index=True)
         return row_to_append
@@ -61,3 +61,54 @@ class BadFramesData:
 
     def getPandasDF(self):
         return self.__df
+
+    def is_bad_frame(self, frame_id):
+        if self.__get_bad_frame_below(frame_id) is None:
+            return False
+        else:
+            return True
+
+    def firstGoodFrameBefore(self, frame_id):
+        if not self.is_bad_frame(frame_id):
+            return frame_id
+
+        smaller_bad_frame = self.__get_bad_frame_below(frame_id)
+
+        #maybe "smaller_bad_frame" is a good frame. If not then search for frames below smaller_bad_frame to find the first good one.
+        frame_below = smaller_bad_frame-1
+
+        # hopefully frame below "smaller_bad_frame" is a good frame. But we are not sure because entries in badframes.csv could be overlapping and nested
+        # Call firstGoodFrameBefore recursively till we are sure to find a good frame
+        return self.firstGoodFrameBefore(frame_below)
+
+    def firstGoodFrameAfter(self, frame_id):
+        if not self.is_bad_frame(frame_id):
+            return frame_id
+
+        larger_bad_frame = self.__get_bad_frame_above(frame_id)
+
+        frame_above = larger_bad_frame + 1
+        # hopefully frame above "larger_bad_frame" is a good frame. but we are not sure because entries in badframes.csv could be overlapping and nested
+        # Call firstGoodFrameAfter recursively till we are sure to find a good frame
+        return self.firstGoodFrameAfter(frame_above)
+
+    def __get_bad_frame_below(self, frame_id):
+        result_df = self.__rows_containing(frame_id)
+        if len(result_df.index)>0:
+            return int(result_df[self.COLNAME_startfFrameNumber].min())
+        else:
+            # frame_id is a good one. It cannot be found in any of the ranges in badframes.csv
+            return None
+
+    def __get_bad_frame_above(self, frame_id):
+        result_df = self.__rows_containing(frame_id)
+        if len(result_df.index)>0:
+            return int(result_df[self.COLNAME_endFrameNumber].max())
+        else:
+            #frame_id is a good one. It cannot be found in any of the ranges in badframes.csv
+            return None
+
+    def __rows_containing(self, frame_id):
+        result_df = self.__df.loc[(self.__df[self.COLNAME_startfFrameNumber] <= frame_id) & (
+                    self.__df[self.COLNAME_endFrameNumber] >= frame_id)]
+        return result_df

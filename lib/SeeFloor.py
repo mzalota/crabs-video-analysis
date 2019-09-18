@@ -1,14 +1,15 @@
+from lib.BadFramesData import BadFramesData
 from lib.DriftData import DriftData
-from lib.FolderStructure import FolderStructure
+from lib.RedDotsData import RedDotsData
 
 
 class SeeFloor:
+    def __init__(self, driftsData, badFramesData, redDotsData):
+        # type: (DriftData, BadFramesData, RedDotsData) -> SeeFloor
+        self.__driftsData = driftsData
 
-    def __init__(self,driftsData, folderStructure):
-        # type: (DriftData, FolderStructure) -> SeeFloor
+    def maxFrameID(self):
+        return self.__driftsData.maxFrameID()
 
-
-
-        self.folderStructure = folderStructure
-        self.setThreshold(0.6)
-        self.__initialize()
+    def minFrameID(self):
+        return self.__driftsData.minFrameID()
