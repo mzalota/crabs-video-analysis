@@ -5,6 +5,16 @@ from lib.BadFramesData import BadFramesData
 
 
 class TestBadFramesData(TestCase):
+
+    def test_isBadFrame_emptyDF(self):
+        # Setup
+        badframesData = BadFramesData.createFromDataFrame(None, None)
+        # Exercise
+        # Assert
+        self.assertFalse(badframesData.is_bad_frame(50))
+        self.assertEqual(55, badframesData.firstGoodFrameAfter(55))
+        self.assertEqual(45, badframesData.firstGoodFrameBefore(45))
+
     def test_isBadFrame(self):
         # Setup
         badframes_df = pd.DataFrame()
@@ -17,7 +27,6 @@ class TestBadFramesData(TestCase):
         badframesData = BadFramesData.createFromDataFrame(None, badframes_df)
 
         # Exercise
-
         # Assert
 
         # --- first BadFrame range
@@ -123,7 +132,7 @@ class TestBadFramesData(TestCase):
         self.assertEqual(badframesData.firstGoodFrameBefore(223), 223)
 
 
-    def test_firstGoodFrameBefore_overlapingEntries(self):
+    def test_firstGoodFrame_overlapingEntries(self):
         # Setup
         badframes_df = pd.DataFrame()
 

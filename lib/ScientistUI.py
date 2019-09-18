@@ -16,6 +16,7 @@ import traceback
 from lib.MyTimer import MyTimer
 from lib.UserInput import UserInput
 from lib.common import Point
+from lib.SeeFloor import SeeFloor
 
 
 class UserWantsToQuitException(Exception):
@@ -29,6 +30,9 @@ class ScientistUI:
         self.__folderStruct = folderStruct
         self.__videoStream = videoStream
         self.__driftData = driftData
+
+        self.__badFramesData = BadFramesData.createFromFile(folderStruct)
+        self.__seeFloor = SeeFloor(driftData, self.__badFramesData, None)
 
     def processVideo(self):
         badFramesData = BadFramesData.createFromFile(self.__folderStruct)
@@ -74,28 +78,41 @@ class ScientistUI:
         if user_input.is_key_arrow_down():
             # scroll 50 frames forward
             new_frame_id = frame_id+50
+            if new_frame_id > self.__driftData.maxFrameID():
+                new_frame_id = self.__driftData.maxFrameID()
             return new_frame_id
 
         if user_input.is_key_arrow_up():
             # scroll 50 frames backward
             new_frame_id = frame_id-50
+            if new_frame_id < self.__driftData.minFrameID():
+                new_frame_id = self.__driftData.minFrameID()
             return new_frame_id
 
         if user_input.is_key_end():
             # Go to the very last frame
-            return self.__driftData.maxFrameID()
+            return self.__seeFloor.maxFrameID()
 
         if user_input.is_key_home():
             # Go to the very first frame
-            return self.__driftData.minFrameID()
-
+            return self.__seeFloor.minFrameID()
 
         #if keyPressed == ImageWindow.KEY_ARROW_RIGHT or keyPressed == ImageWindow.KEY_SPACE or keyPressed == ord("n"):
         if user_input.is_next_seefloor_slice_command():
             # show next frame
+            if self.__badFramesData.is_bad_frame(frame_id):
+                new_frame_id = self.__badFramesData.firstGoodFrameAfter(frame_id)
+                if new_frame_id > self.__driftData.maxFrameID():
+                    new_frame_id = self.__driftData.maxFrameID()
+                return new_frame_id
             pixels_to_jump = FramesStitcher.FRAME_HEIGHT
         elif user_input.is_key_arrow_left():
             # show previous frame
+            if self.__badFramesData.is_bad_frame(frame_id):
+                new_frame_id = self.__badFramesData.firstGoodFrameBefore(frame_id)
+                if new_frame_id < self.__driftData.minFrameID():
+                    new_frame_id = self.__driftData.minFrameID()
+                return new_frame_id
             pixels_to_jump = -FramesStitcher.FRAME_HEIGHT
         elif user_input.is_key_page_down():
             #Jump 10 screens forward
@@ -127,6 +144,8 @@ class ScientistUI:
                 frame_name = str(int(frame_id))+" (First)"
             elif frame_id == self.__driftData.maxFrameID():
                 frame_name = str(int(frame_id))+" (Last)"
+            elif self.__badFramesData.is_bad_frame(frame_id):
+                frame_name = str(int(frame_id)) + " (Bad)"
             else:
                 frame_name = int(frame_id)
 

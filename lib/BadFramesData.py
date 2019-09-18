@@ -63,10 +63,16 @@ class BadFramesData:
         return self.__df
 
     def is_bad_frame(self, frame_id):
-        if self.__get_bad_frame_below(frame_id) is None:
+        result_df = self.__rows_containing(frame_id)
+        if len(result_df.index) <= 0:
             return False
         else:
             return True
+
+    def __rows_containing(self, frame_id):
+        result_df = self.__df.loc[(self.__df[self.COLNAME_startfFrameNumber] <= frame_id) & (
+                    self.__df[self.COLNAME_endFrameNumber] >= frame_id)]
+        return result_df
 
     def firstGoodFrameBefore(self, frame_id):
         if not self.is_bad_frame(frame_id):
@@ -94,21 +100,22 @@ class BadFramesData:
 
     def __get_bad_frame_below(self, frame_id):
         result_df = self.__rows_containing(frame_id)
-        if len(result_df.index)>0:
-            return int(result_df[self.COLNAME_startfFrameNumber].min())
-        else:
+        if len(result_df.index)<=0:
             # frame_id is a good one. It cannot be found in any of the ranges in badframes.csv
             return None
 
+        # possibly more than one row in badframes.csv contains frame_id.
+        # Select row with minimum value in startFrameNumer column and return that value
+        return int(result_df[self.COLNAME_startfFrameNumber].min())
+
     def __get_bad_frame_above(self, frame_id):
         result_df = self.__rows_containing(frame_id)
-        if len(result_df.index)>0:
-            return int(result_df[self.COLNAME_endFrameNumber].max())
-        else:
-            #frame_id is a good one. It cannot be found in any of the ranges in badframes.csv
+        if len(result_df.index) <= 0:
+            # frame_id is a good one. It cannot be found in any of the ranges in badframes.csv
             return None
 
-    def __rows_containing(self, frame_id):
-        result_df = self.__df.loc[(self.__df[self.COLNAME_startfFrameNumber] <= frame_id) & (
-                    self.__df[self.COLNAME_endFrameNumber] >= frame_id)]
-        return result_df
+        #possibly more than one row in badframes.csv contains frame_id.
+        # Select row with maximum value in endFrameNumber column and return that value
+        return int(result_df[self.COLNAME_endFrameNumber].max())
+
+

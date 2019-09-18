@@ -17,7 +17,9 @@ class TestSeeFloor(TestCase):
         df = df.append({'frameNumber': int(98), 'driftY': 16, 'driftX': 0}, ignore_index=True)
         driftData = DriftData(df)
 
-        seeFloor = SeeFloor(driftData, None, None)
+
+        badframesData = BadFramesData(None,None)
+        seeFloor = SeeFloor(driftData, badframesData, None)
 
         # Exercise
         maxFrameID = seeFloor.maxFrameID()
@@ -37,14 +39,15 @@ class TestSeeFloor(TestCase):
 
         badframes_df = pd.DataFrame()
         badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber : int(99), BadFramesData.COLNAME_endFrameNumber: 101}, ignore_index=True)
+        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber : int(92), BadFramesData.COLNAME_endFrameNumber: 95}, ignore_index=True)
         badframesData = BadFramesData.createFromDataFrame(None, badframes_df)
 
         seeFloor = SeeFloor(driftData, badframesData, None)
 
         # Exercise
-        maxFrameID = seeFloor.maxFrameID()
         minFrameID = seeFloor.minFrameID()
+        maxFrameID = seeFloor.maxFrameID()
 
         # Assert
-        self.assertEqual(minFrameID, 95)
-        self.assertEqual(maxFrameID, 97)
+        self.assertEqual(minFrameID, 96)
+        self.assertEqual(maxFrameID, 98)
