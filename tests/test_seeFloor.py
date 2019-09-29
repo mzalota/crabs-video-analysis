@@ -126,7 +126,7 @@ class TestSeeFloor(TestCase):
         self.assertEqual(107, seeFloor.jumpToSeefloorSlice(109, -1)) #<-- out-of-bound frame
 
 
-    def test_jumpToSeefloorSlice_multiSlice(self):
+    def test_jumpToSeefloorSlice_multiSlice_goingUpward(self):
         # Setup
         pixels_in_frame = FramesStitcher.FRAME_HEIGHT
         pixels_in_half_frame = int(pixels_in_frame/2)
@@ -217,8 +217,36 @@ class TestSeeFloor(TestCase):
         self.assertEqual(625, seeFloor.jumpToSeefloorSlice(180,3))
         self.assertEqual(689, seeFloor.jumpToSeefloorSlice(180,4))
         self.assertEqual(700, seeFloor.jumpToSeefloorSlice(180,5))
-        #self.assertEqual(35444, seeFloor.jumpToSeefloorSlice(150,1))
 
+
+
+    def test_jumpToSeefloorSlice_multiSlice_goingDownward(self):
+        # Setup
+        pixels_in_frame = FramesStitcher.FRAME_HEIGHT
+        pixels_in_half_frame = int(pixels_in_frame/2)
+
+        drifts_df = pd.DataFrame()
+        drifts_df = drifts_df.append({'frameNumber': int(100), 'driftY': 0, 'driftX': 0}, ignore_index=True)
+        drifts_df = drifts_df.append({'frameNumber': int(200), 'driftY': pixels_in_half_frame, 'driftX': 0}, ignore_index=True)
+        drifts_df = drifts_df.append({'frameNumber': int(300), 'driftY': pixels_in_half_frame, 'driftX': 0}, ignore_index=True)
+        drifts_df = drifts_df.append({'frameNumber': int(400), 'driftY': pixels_in_half_frame, 'driftX': 0}, ignore_index=True)
+        drifts_df = drifts_df.append({'frameNumber': int(500), 'driftY': pixels_in_half_frame, 'driftX': 0}, ignore_index=True)
+        drifts_df = drifts_df.append({'frameNumber': int(600), 'driftY': pixels_in_half_frame, 'driftX': 0}, ignore_index=True)
+        drifts_df = drifts_df.append({'frameNumber': int(700), 'driftY': pixels_in_half_frame, 'driftX': 0}, ignore_index=True)
+        driftData = DriftData(drifts_df)
+
+        badframes_df = pd.DataFrame()
+        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber : int(90), BadFramesData.COLNAME_endFrameNumber: 149}, ignore_index=True)
+        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber : int(575), BadFramesData.COLNAME_endFrameNumber: 624}, ignore_index=True)
+        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber : int(690), BadFramesData.COLNAME_endFrameNumber: 790}, ignore_index=True)
+        badframesData = BadFramesData.createFromDataFrame(None, badframes_df)
+
+        #--- good frames are 150-574 and 625-689. startFrame is 100, endFrame is 700
+
+        seeFloor = SeeFloor(driftData, badframesData, None)
+
+        # Exercise
+        # Assert
 
         self.assertEqual(100, seeFloor.jumpToSeefloorSlice(10,-1)) # if parameter is out of bounds show first/last frame
         self.assertEqual(100, seeFloor.jumpToSeefloorSlice(99,-1))
