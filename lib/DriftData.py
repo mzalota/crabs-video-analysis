@@ -14,15 +14,21 @@ class DriftData:
     def __init__(self, driftData):
         # type: (pd.DataFrame) -> DriftData
 
-        self.__driftData = driftData
+        self.__driftData = self.__sort_by_frameNumber(driftData)
 
-        self.__initializePerfOptimizingVariables(driftData)
+        self.__initializePerfOptimizingVariables()
 
         #print(driftData.count())
 
-    def __initializePerfOptimizingVariables(self, driftData):
-        dfIndexIsFrameNumber = driftData.reset_index().set_index(self.__COLNAME_frameNumber)
+    def __sort_by_frameNumber(self, driftData):
+        df_tmp = driftData.copy().sort_values(by=[self.__COLNAME_frameNumber])
+        return df_tmp.reset_index(drop=True)
+
+    def __initializePerfOptimizingVariables(self):
+        df_copy = self.__driftData.copy()
+        dfIndexIsFrameNumber = df_copy.reset_index().set_index(self.__COLNAME_frameNumber)
         self.__indexDict = dfIndexIsFrameNumber["index"].to_dict()
+
         self.__maxFrameID = self.__driftData[self.__COLNAME_frameNumber].max()
         self.__minFrameID = self.__driftData[self.__COLNAME_frameNumber].min()
         self.__driftXDict = self.__driftData[self.__COLNAME_driftX].to_dict()
@@ -52,6 +58,7 @@ class DriftData:
         return self.__driftYDict[index]
 
     def __getFrameID(self, index):
+        #print("driftData.____getFrameID index", index,self.__frameIDDict)
         return self.__frameIDDict[index]
 
     def __getIndexOfFrame(self, frameID):
@@ -195,6 +202,7 @@ class DriftData:
         cumulativeYDrift= yPixelsToStartingFrame
         while cumulativeYDrift < yPixelsAway and nextFrameIDInDataFrame < self.maxFrameID():
             #keep checking next frameID in DataFrame until found one that is just a bit further away from "fromFrameID" than "pixelsAway"
+            #print("DriftData::getNextFrame nextFrameIDInDataFrame", nextFrameIDInDataFrame)
             nextIndex = self.__getIndexOfFrame(nextFrameIDInDataFrame) + 1
             nextFrameIDInDataFrame = self.__getFrameID(nextIndex)
             cumulativeYDrift += self.__getYDrift(nextIndex)
@@ -202,5 +210,11 @@ class DriftData:
         #go back zero-to-four frames to minimize the number of pixels overshot.
         pixelsToBacktrack = cumulativeYDrift - yPixelsAway
         searchedFrameID = self.__frameIDThatIsYPixelsAwayFromIndex(nextFrameIDInDataFrame, pixelsToBacktrack)
+
+        if searchedFrameID < self.minFrameID():
+            searchedFrameID = self.minFrameID()
+
+        if searchedFrameID >= self.maxFrameID():
+            searchedFrameID = self.maxFrameID()
 
         return searchedFrameID

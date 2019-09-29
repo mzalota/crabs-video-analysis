@@ -100,20 +100,14 @@ class ScientistUI:
         #if keyPressed == ImageWindow.KEY_ARROW_RIGHT or keyPressed == ImageWindow.KEY_SPACE or keyPressed == ord("n"):
         if user_input.is_next_seefloor_slice_command():
             # show next frame
-            if self.__badFramesData.is_bad_frame(frame_id):
-                new_frame_id = self.__badFramesData.firstGoodFrameAfter(frame_id)
-                if new_frame_id > self.__driftData.maxFrameID():
-                    new_frame_id = self.__driftData.maxFrameID()
-                return new_frame_id
-            pixels_to_jump = FramesStitcher.FRAME_HEIGHT
+            return self.__seeFloor.jump_to_next_seefloor_slice(frame_id)
+
         elif user_input.is_key_arrow_left():
             # show previous frame
-            if self.__badFramesData.is_bad_frame(frame_id):
-                new_frame_id = self.__badFramesData.firstGoodFrameBefore(frame_id)
-                if new_frame_id < self.__driftData.minFrameID():
-                    new_frame_id = self.__driftData.minFrameID()
-                return new_frame_id
-            pixels_to_jump = -FramesStitcher.FRAME_HEIGHT
+            #return self.__jump_to_previous_seefloor_slice(frame_id)
+            return self.__seeFloor.jump_to_previous_seefloor_slice(frame_id)
+
+
         elif user_input.is_key_page_down():
             #Jump 10 screens forward
             pixels_to_jump = FramesStitcher.FRAME_HEIGHT * 10
@@ -127,13 +121,9 @@ class ScientistUI:
 
         new_frame_id = self.__driftData.getNextFrame(pixels_to_jump, frame_id)
 
-        if new_frame_id < self.__driftData.minFrameID():
-            new_frame_id = self.__driftData.minFrameID()
-
-        if new_frame_id >= self.__driftData.maxFrameID():
-            new_frame_id = self.__driftData.maxFrameID()
-
         return int(new_frame_id)
+
+
 
     def processImage(self, mainImage, frame_id):
         mustExit = False

@@ -118,4 +118,21 @@ class BadFramesData:
         # Select row with maximum value in endFrameNumber column and return that value
         return int(result_df[self.COLNAME_endFrameNumber].max())
 
+    def firstBadFrameAfter(self, frame_id):
+        if self.is_bad_frame(frame_id):
+            return frame_id
+        result_df = self.__df.loc[(self.__df[self.COLNAME_startfFrameNumber] > frame_id)]
+        if len(result_df.index) <= 0:
+            # frame_id is a good one. It cannot be found in any of the ranges in badframes.csv
+            return frame_id
+        return int(result_df[self.COLNAME_startfFrameNumber].min())
 
+
+    def firstBadFrameBefore(self, frame_id):
+        if self.is_bad_frame(frame_id):
+            return frame_id
+        result_df = self.__df.loc[(self.__df[self.COLNAME_endFrameNumber] < frame_id)]
+        if len(result_df.index) <= 0:
+            # frame_id is a good one. It cannot be found in any of the ranges in badframes.csv
+            return frame_id
+        return int(result_df[self.COLNAME_endFrameNumber].max())
