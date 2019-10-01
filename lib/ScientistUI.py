@@ -64,6 +64,11 @@ class ScientistUI:
                 badFramesData.add_badframes(frame_id, new_frame_id)
                 badFramesData.save_to_file()
 
+            elif keyPressed == ImageWindow.KEY_RIGHT_MOUSE_CLICK_EVENT:
+                markedPoint = self.__imageWin.featureCoordiate
+                print ("now need to mark coordinate ",str(markedPoint))
+                new_frame_id = frame_id + 50
+
             frame_id = new_frame_id
 
 
@@ -100,28 +105,30 @@ class ScientistUI:
         #if keyPressed == ImageWindow.KEY_ARROW_RIGHT or keyPressed == ImageWindow.KEY_SPACE or keyPressed == ord("n"):
         if user_input.is_next_seefloor_slice_command():
             # show next frame
-            return self.__seeFloor.jump_to_next_seefloor_slice(frame_id)
+            return self.__seeFloor.jumpToSeefloorSlice(frame_id, 1)
+            #return self.__seeFloor.jump_to_next_seefloor_slice(frame_id)
 
-        elif user_input.is_key_arrow_left():
+        if user_input.is_key_arrow_left():
             # show previous frame
             #return self.__jump_to_previous_seefloor_slice(frame_id)
-            return self.__seeFloor.jump_to_previous_seefloor_slice(frame_id)
+            return self.__seeFloor.jumpToSeefloorSlice(frame_id, -1)
+            #return self.__seeFloor.jump_to_previous_seefloor_slice(frame_id)
 
-
-        elif user_input.is_key_page_down():
+        if user_input.is_key_page_down():
             #Jump 10 screens forward
-            pixels_to_jump = FramesStitcher.FRAME_HEIGHT * 10
-        elif user_input.is_key_page_up():
+            return self.__seeFloor.jumpToSeefloorSlice(frame_id, 10)
+            #pixels_to_jump = FramesStitcher.FRAME_HEIGHT * 10
+        if user_input.is_key_page_up():
             #Jump 10 screens backward
-            pixels_to_jump = -(FramesStitcher.FRAME_HEIGHT * 10)
+            #pixels_to_jump = -(FramesStitcher.FRAME_HEIGHT * 10)
+            return self.__seeFloor.jumpToSeefloorSlice(frame_id, -10)
 
-        else:
-            print ("Ignoring the fact that user pressed button:", keyPressed)  # , chr(keyPressed))
-            return frame_id
 
-        new_frame_id = self.__driftData.getNextFrame(pixels_to_jump, frame_id)
+        print ("Ignoring the fact that user pressed button:", keyPressed)  # , chr(keyPressed))
+        return frame_id
 
-        return int(new_frame_id)
+        #new_frame_id = self.__driftData.getNextFrame(pixels_to_jump, frame_id)
+        #return int(new_frame_id)
 
 
 
@@ -149,6 +156,7 @@ class ScientistUI:
             keyPressed = self.__imageWin.showWindowAndWaitForClick(mainImage.asNumpyArray())
             #print ("pressed button", keyPressed, chr(ImageWindow.KEY_MOUSE_CLICK_EVENT), ImageWindow.KEY_MOUSE_CLICK_EVENT)
 
+            #print ("keyPressed:", keyPressed)#, chr(keyPressed))
 
             if keyPressed == ImageWindow.KEY_MOUSE_CLICK_EVENT:
                 crabPoint = self.__imageWin.featureCoordiate
@@ -162,9 +170,8 @@ class ScientistUI:
                     #draw an X on where the User clicked.
                     #mainImage.drawCross(crabPoint)
                     #self.__drawLineOnCrab(crabBox, crabOnFrameID, frameID, mainImage)
-
             else:
-                #print ("Ignoring the fact that user pressed button:", keyPressed)#, chr(keyPressed))
+                print ("Ignoring the fact that user pressed button:", keyPressed)#, chr(keyPressed))
                 mustExit = True
 
 

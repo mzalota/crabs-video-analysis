@@ -285,8 +285,6 @@ class TestBadFramesData(TestCase):
         self.assertEqual(30,badframesData.firstBadFrameBefore(31)) #<-- special case
         self.assertEqual(30,badframesData.firstBadFrameBefore(32)) #<-- special case
 
-
-
         self.assertEqual(10,badframesData.firstBadFrameAfter(8)) #<-- special case
         self.assertEqual(10,badframesData.firstBadFrameAfter(9)) #<-- special case
         self.assertEqual(10,badframesData.firstBadFrameAfter(10))
