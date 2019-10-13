@@ -1,4 +1,6 @@
 import math
+
+import numpy
 import pandas as pd
 
 from lib.MyTimer import MyTimer
@@ -47,6 +49,14 @@ class DriftData:
     def createFromDataFrame(driftData):
         # type: (pd.DataFrame) -> DriftData
         return DriftData(driftData)
+
+    def saveToFile(self,filepath):
+        # type: (String) -> None
+        #self.getDF().to_csv(filepath, sep='\t', index=False)
+        self.getDF().to_csv(filepath, sep='\t', index=False)
+
+    def getDF(self):
+        return self.__driftData
 
     def getCount(self):
         return len(self.__driftData.index)
@@ -189,6 +199,21 @@ class DriftData:
             cumulativeXDrift += self.__getXDrift(nextIndex)
         return Vector(cumulativeXDrift,cumulativeYDrift)
 
+    def interpolate(self):
+        self.__driftData = self.__interpolate(self.__driftData)
+
+    def __interpolate(self, data):
+        data.loc[data['driftY'] == -999, ['driftY', 'driftX']] = numpy.nan
+        data.loc[data['driftX'] == -888, ['driftX', 'driftY']] = numpy.nan
+
+        data.loc[data['driftX'] < -20, ['driftX', 'driftY']] = numpy.nan
+        data.loc[data['driftX'] > 30, ['driftX', 'driftY']] = numpy.nan
+
+        data.loc[data['driftY'] < -20, ['driftX', 'driftY']] = numpy.nan
+        data.loc[data['driftY'] > 80, ['driftX', 'driftY']] = numpy.nan
+
+        return data.interpolate(limit_direction='both')
+
     def getNextFrame(self, yPixelsAway, fromFrameID):
         # type: (int, int) -> int
 
@@ -218,3 +243,41 @@ class DriftData:
             searchedFrameID = self.maxFrameID()
 
         return searchedFrameID
+
+
+    # Correct "single outliers" (where prev and next data points are not outliers)
+    def replaceOutlierBetweenTwoPoints(self, data, colName, normalJump):
+        col = data[colName]
+        prev = col.shift(periods=1)
+        next = col.shift(periods=-1)
+        diffNextPrev = abs(prev - next)
+        meanPrevNext = (next + prev) / 2
+        deviation = abs(col - meanPrevNext)
+        single_outlier = (deviation > normalJump) & (diffNextPrev < normalJump)
+        data[colName] = col.mask(single_outlier, meanPrevNext)
+
+
+    def replaceIfThirdIsOutlier2(self, data, colName, normalJump, normalMin, normalMax):
+        # outlierThreshold = 30
+        # normalJump = 5
+
+        col = data[colName]
+        prevPrev = col.shift(periods=2)
+        nextNext = col.shift(periods=-2)
+        prev = col.shift(periods=1)
+        next = col.shift(periods=-1)
+
+        meanPrevs = (prevPrev + prev) / 2
+        deviation = abs(col - meanPrevs)
+
+        diffPrevs = prev - prevPrev
+
+        # outlier_fromPrevs = (deviationY > outlierThreshold) & (abs(diffPrevsY) < normalJump)
+        prevsAreNotOutliers = (abs(diffPrevs) < normalJump) & (prevPrev > normalMin) & (prevPrev < normalMax) & (
+                    prev > normalMin) & (prev < normalMax)
+
+        outlier_fromPrevs = ((col < normalMin) | (col > normalMax)) & (deviation > normalJump) & prevsAreNotOutliers
+
+        data["prevsAreNotOutliers"] = prevsAreNotOutliers
+        data["outlier_fromPrevs"] = outlier_fromPrevs
+        data[colName] = col.mask(outlier_fromPrevs, prev + diffPrevs)
