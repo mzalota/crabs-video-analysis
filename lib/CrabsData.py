@@ -20,10 +20,6 @@ class CrabsData:
     def __init__(self, folderStruct):
         # type: (FolderStructure) -> CrabsData
         self.__folderStruct = folderStruct
-
-        self.__load_dataframe()
-
-    def __load_dataframe(self):
         column_names = [self.__COLNAME_dir,
                         self.__COLNAME_filename,
                         self.__COLNAME_frameNumber,
@@ -34,10 +30,17 @@ class CrabsData:
                         self.__COLNAME_crabLocationY,
                         self.__COLNAME_crabCoordinatePoint,
                         self.__COLNAME_cranbCoordinateBox]
-        filepath = self.__folderStruct.getCrabsFilepath()
-        self.__crabsDF = pd.read_csv(filepath, delimiter="\t", na_values="(null)", header=None, names=column_names)
 
-        self.__drop_header_row()
+        self.__load_dataframe(column_names)
+
+    def __load_dataframe(self,column_names):
+        filepath = self.__folderStruct.getCrabsFilepath()
+
+        if self.__folderStruct.fileExists(filepath):
+            self.__crabsDF = pd.read_csv(filepath, delimiter="\t", na_values="(null)", header=None, names=column_names)
+            self.__drop_header_row()
+        else:
+            self.__crabsDF = pd.DataFrame(columns=column_names)
 
     def __drop_header_row(self):
         if (self.__crabsDF.iloc[0][0] == 'dir'):

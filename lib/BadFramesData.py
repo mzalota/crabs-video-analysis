@@ -15,7 +15,7 @@ class BadFramesData:
         # type: (FolderStructure, pd) -> object
         self.__folderStruct = folderStruct
         if df is None:
-            df = self.__create_empty_df()
+            df = BadFramesData.__create_empty_df()
         self.__df = df
 
     @staticmethod
@@ -36,11 +36,12 @@ class BadFramesData:
         newObj = BadFramesData(folderStruct, df)
         return newObj
 
-    def __create_empty_df(self):
+    @staticmethod
+    def __create_empty_df():
         # type: () -> pd
-        column_names = [self.COLNAME_startfFrameNumber,
-                        self.COLNAME_endFrameNumber,
-                        self.COLNAME_createdOn]
+        column_names = [BadFramesData.COLNAME_startfFrameNumber,
+                        BadFramesData.COLNAME_endFrameNumber,
+                        BadFramesData.COLNAME_createdOn]
         return pd.DataFrame(columns=column_names)
 
     def add_badframes(self, start_frame_id, end_frame_id):
