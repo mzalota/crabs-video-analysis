@@ -124,7 +124,7 @@ class ScientistUI:
             return self.__seeFloor.jumpToSeefloorSlice(frame_id, -10)
 
 
-        print ("Ignoring the fact that user pressed button:", keyPressed)  # , chr(keyPressed))
+        #print ("Ignoring the fact that user pressed button:", keyPressed)  # , chr(keyPressed))
         return frame_id
 
         #new_frame_id = self.__driftData.getNextFrame(pixels_to_jump, frame_id)
@@ -171,7 +171,7 @@ class ScientistUI:
                     #mainImage.drawCross(crabPoint)
                     #self.__drawLineOnCrab(crabBox, crabOnFrameID, frameID, mainImage)
             else:
-                print ("Ignoring the fact that user pressed button:", keyPressed)#, chr(keyPressed))
+                #print ("Ignoring the fact that user pressed button:", keyPressed)#, chr(keyPressed))
                 mustExit = True
 
 
@@ -206,7 +206,7 @@ class ScientistUI:
 
             mainImage.drawCross(crabLocation)
 
-            timer.lap("crab: "+str(frame_number))
+            #timer.lap("crab: "+str(frame_number))
 
 
     def __drawLineOnCrab(self, crabBox, crabOnFrameID, frameID, mainImage):
