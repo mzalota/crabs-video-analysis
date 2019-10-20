@@ -15,7 +15,7 @@ class BadFramesData:
         # type: (FolderStructure, pd) -> object
         self.__folderStruct = folderStruct
         if df is None:
-            df = BadFramesData.__create_empty_df()
+            df = BadFramesData.create_empty_df()
         self.__df = df
 
     @staticmethod
@@ -31,13 +31,13 @@ class BadFramesData:
         if folderStruct.fileExists(filepath_badframes):
             df = pd.read_csv(filepath_badframes, delimiter="\t", na_values="(null)")
         else:
-            df = BadFramesData.__create_empty_df()
+            df = BadFramesData.create_empty_df()
 
         newObj = BadFramesData(folderStruct, df)
         return newObj
 
     @staticmethod
-    def __create_empty_df():
+    def create_empty_df():
         # type: () -> pd
         column_names = [BadFramesData.COLNAME_startfFrameNumber,
                         BadFramesData.COLNAME_endFrameNumber,
@@ -71,6 +71,7 @@ class BadFramesData:
             return True
 
     def __rows_containing(self, frame_id):
+
         result_df = self.__df.loc[(self.__df[self.COLNAME_startfFrameNumber] <= frame_id) & (
                     self.__df[self.COLNAME_endFrameNumber] >= frame_id)]
         return result_df
@@ -122,18 +123,44 @@ class BadFramesData:
     def firstBadFrameAfter(self, frame_id):
         if self.is_bad_frame(frame_id):
             return frame_id
-        result_df = self.__df.loc[(self.__df[self.COLNAME_startfFrameNumber] > frame_id)]
+        result_df = self.__next_bad_frames_df(frame_id)
         if len(result_df.index) <= 0:
             # frame_id is a good one. It cannot be found in any of the ranges in badframes.csv
             return frame_id
         return int(result_df[self.COLNAME_startfFrameNumber].min())
 
+    def thereIsBadFrameAfter(self, frame_id):
+        if self.is_bad_frame(frame_id):
+            return True
+        result_df = self.__next_bad_frames_df(frame_id)
+        if len(result_df.index) <= 0:
+            return False
+        return True
 
     def firstBadFrameBefore(self, frame_id):
         if self.is_bad_frame(frame_id):
             return frame_id
-        result_df = self.__df.loc[(self.__df[self.COLNAME_endFrameNumber] < frame_id)]
+        result_df = self.__prev_bad_frames_df(frame_id)
         if len(result_df.index) <= 0:
             # frame_id is a good one. It cannot be found in any of the ranges in badframes.csv
             return frame_id
         return int(result_df[self.COLNAME_endFrameNumber].max())
+
+    def thereIsBadFrameBefore(self, frame_id):
+        if self.is_bad_frame(frame_id):
+            return True
+        result_df = self.__prev_bad_frames_df(frame_id)
+        if len(result_df.index) <= 0:
+            # frame_id is a good one. It cannot be found in any of the ranges in badframes.csv
+            return False
+        return True
+
+    def __prev_bad_frames_df(self, frame_id):
+        # type: (int) -> pd
+        result_df = self.__df.loc[(self.__df[self.COLNAME_endFrameNumber] < frame_id)]
+        return result_df
+
+    def __next_bad_frames_df(self, frame_id):
+        # type: (int) -> pd
+        result_df = self.__df.loc[(self.__df[self.COLNAME_startfFrameNumber] > frame_id)]
+        return result_df

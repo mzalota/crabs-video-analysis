@@ -11,12 +11,12 @@ class TestSeeFloor(TestCase):
 
     def test_maxFrameID_noBadFrames(self):
         # Setup
-        df = pd.DataFrame()
+        drifts_df = pd.DataFrame()
 
-        df = df.append({'frameNumber': int(95), 'driftY': 16, 'driftX': 0}, ignore_index=True)
-        df = df.append({'frameNumber': int(100), 'driftY': 16, 'driftX': 0}, ignore_index=True)
-        df = df.append({'frameNumber': int(98), 'driftY': 16, 'driftX': 0}, ignore_index=True)
-        driftData = DriftData(df)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 95, 0, 16)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 100, 0, 16)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 98, 0, 16)
+        driftData = DriftData(drifts_df)
 
 
         badframesData = BadFramesData(None,None)
@@ -33,14 +33,14 @@ class TestSeeFloor(TestCase):
     def test_maxFrameID_badFramesAtTheEnd(self):
         # Setup
         drifts_df = pd.DataFrame()
-        drifts_df = drifts_df.append({'frameNumber': int(95), 'driftY': 16, 'driftX': 0}, ignore_index=True)
-        drifts_df = drifts_df.append({'frameNumber': int(100), 'driftY': 16, 'driftX': 0}, ignore_index=True)
-        drifts_df = drifts_df.append({'frameNumber': int(98), 'driftY': 16, 'driftX': 0}, ignore_index=True)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 95, 0, 16)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 100, 0, 16)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 98, 0, 16)
         driftData = DriftData(drifts_df)
 
         badframes_df = pd.DataFrame()
-        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber : int(99), BadFramesData.COLNAME_endFrameNumber: 101}, ignore_index=True)
-        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber : int(92), BadFramesData.COLNAME_endFrameNumber: 95}, ignore_index=True)
+        badframes_df = self.__append_to_badframes_df(badframes_df, 99, 101)
+        badframes_df = self.__append_to_badframes_df(badframes_df, 92, 95)
         badframesData = BadFramesData.createFromDataFrame(None, badframes_df)
 
         seeFloor = SeeFloor(driftData, badframesData, None)
@@ -56,19 +56,19 @@ class TestSeeFloor(TestCase):
     def test_jumpToSeefloorSlice(self):
         # Setup
         drifts_df = pd.DataFrame()
-        drifts_df = drifts_df.append({'frameNumber': int(93), 'driftY': 0, 'driftX': 0}, ignore_index=True)
-        drifts_df = drifts_df.append({'frameNumber': int(95), 'driftY': 16, 'driftX': 0}, ignore_index=True)
-        drifts_df = drifts_df.append({'frameNumber': int(100), 'driftY': 16, 'driftX': 0}, ignore_index=True)
-        drifts_df = drifts_df.append({'frameNumber': int(102), 'driftY': 16, 'driftX': 0}, ignore_index=True)
-        drifts_df = drifts_df.append({'frameNumber': int(98), 'driftY': 16, 'driftX': 0}, ignore_index=True)
-        drifts_df = drifts_df.append({'frameNumber': int(104), 'driftY': 16, 'driftX': 0}, ignore_index=True)
-        drifts_df = drifts_df.append({'frameNumber': int(107), 'driftY': 16, 'driftX': 0}, ignore_index=True)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 93, 0, 0)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 95, 0, 16)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 100, 0, 16)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 102, 0, 16)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 98, 0, 16)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 104, 0, 16)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 107, 0, 16)
         driftData = DriftData(drifts_df)
 
         badframes_df = pd.DataFrame()
-        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber : int(99), BadFramesData.COLNAME_endFrameNumber: 101}, ignore_index=True)
-        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber : int(104), BadFramesData.COLNAME_endFrameNumber: 108}, ignore_index=True)
-        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber : int(92), BadFramesData.COLNAME_endFrameNumber: 95}, ignore_index=True)
+        badframes_df = self.__append_to_badframes_df(badframes_df, 99, 101)
+        badframes_df = self.__append_to_badframes_df(badframes_df, 104, 108)
+        badframes_df = self.__append_to_badframes_df(badframes_df, 92, 95)
         badframesData = BadFramesData.createFromDataFrame(None, badframes_df)
 
         #--- good frames are 96,97,98 and 102,103. startFrame is 93, endFrame is 107
@@ -132,19 +132,19 @@ class TestSeeFloor(TestCase):
         pixels_in_half_frame = int(pixels_in_frame/2)
 
         drifts_df = pd.DataFrame()
-        drifts_df = drifts_df.append({'frameNumber': int(100), 'driftY': 0, 'driftX': 0}, ignore_index=True)
-        drifts_df = drifts_df.append({'frameNumber': int(200), 'driftY': pixels_in_half_frame, 'driftX': 0}, ignore_index=True)
-        drifts_df = drifts_df.append({'frameNumber': int(300), 'driftY': pixels_in_half_frame, 'driftX': 0}, ignore_index=True)
-        drifts_df = drifts_df.append({'frameNumber': int(400), 'driftY': pixels_in_half_frame, 'driftX': 0}, ignore_index=True)
-        drifts_df = drifts_df.append({'frameNumber': int(500), 'driftY': pixels_in_half_frame, 'driftX': 0}, ignore_index=True)
-        drifts_df = drifts_df.append({'frameNumber': int(600), 'driftY': pixels_in_half_frame, 'driftX': 0}, ignore_index=True)
-        drifts_df = drifts_df.append({'frameNumber': int(700), 'driftY': pixels_in_half_frame, 'driftX': 0}, ignore_index=True)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 100, 0, 0)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 200, 0, pixels_in_half_frame)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 300, 0, pixels_in_half_frame)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 400, 0, pixels_in_half_frame)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 500, 0, pixels_in_half_frame)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 600, 0, pixels_in_half_frame)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 700, 0, pixels_in_half_frame)
         driftData = DriftData(drifts_df)
 
         badframes_df = pd.DataFrame()
-        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber : int(90), BadFramesData.COLNAME_endFrameNumber: 149}, ignore_index=True)
-        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber : int(575), BadFramesData.COLNAME_endFrameNumber: 624}, ignore_index=True)
-        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber : int(690), BadFramesData.COLNAME_endFrameNumber: 790}, ignore_index=True)
+        badframes_df = self.__append_to_badframes_df(badframes_df, 90, 149)
+        badframes_df = self.__append_to_badframes_df(badframes_df, 575, 624)
+        badframes_df = self.__append_to_badframes_df(badframes_df, 690, 790)
         badframesData = BadFramesData.createFromDataFrame(None, badframes_df)
 
         #--- good frames are 150-574 and 625-689. startFrame is 100, endFrame is 700
@@ -226,19 +226,19 @@ class TestSeeFloor(TestCase):
         pixels_in_half_frame = int(pixels_in_frame/2)
 
         drifts_df = pd.DataFrame()
-        drifts_df = drifts_df.append({'frameNumber': int(100), 'driftY': 0, 'driftX': 0}, ignore_index=True)
-        drifts_df = drifts_df.append({'frameNumber': int(200), 'driftY': pixels_in_half_frame, 'driftX': 0}, ignore_index=True)
-        drifts_df = drifts_df.append({'frameNumber': int(300), 'driftY': pixels_in_half_frame, 'driftX': 0}, ignore_index=True)
-        drifts_df = drifts_df.append({'frameNumber': int(400), 'driftY': pixels_in_half_frame, 'driftX': 0}, ignore_index=True)
-        drifts_df = drifts_df.append({'frameNumber': int(500), 'driftY': pixels_in_half_frame, 'driftX': 0}, ignore_index=True)
-        drifts_df = drifts_df.append({'frameNumber': int(600), 'driftY': pixels_in_half_frame, 'driftX': 0}, ignore_index=True)
-        drifts_df = drifts_df.append({'frameNumber': int(700), 'driftY': pixels_in_half_frame, 'driftX': 0}, ignore_index=True)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 100, 0, 0)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 200, 0, pixels_in_half_frame)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 300, 0, pixels_in_half_frame)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 400, 0, pixels_in_half_frame)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 500, 0, pixels_in_half_frame)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 600, 0, pixels_in_half_frame)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 700, 0, pixels_in_half_frame)
         driftData = DriftData(drifts_df)
 
         badframes_df = pd.DataFrame()
-        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber : int(90), BadFramesData.COLNAME_endFrameNumber: 149}, ignore_index=True)
-        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber : int(575), BadFramesData.COLNAME_endFrameNumber: 624}, ignore_index=True)
-        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber : int(690), BadFramesData.COLNAME_endFrameNumber: 790}, ignore_index=True)
+        badframes_df = self.__append_to_badframes_df(badframes_df, 90, 149)
+        badframes_df = self.__append_to_badframes_df(badframes_df, 575, 624)
+        badframes_df = self.__append_to_badframes_df(badframes_df, 690, 790)
         badframesData = BadFramesData.createFromDataFrame(None, badframes_df)
 
         #--- good frames are 150-574 and 625-689. startFrame is 100, endFrame is 700
@@ -339,3 +339,51 @@ class TestSeeFloor(TestCase):
         self.assertEqual(700, seeFloor.jumpToSeefloorSlice(701, -2))
         self.assertEqual(700, seeFloor.jumpToSeefloorSlice(701, -3))
         self.assertEqual(700, seeFloor.jumpToSeefloorSlice(702, -3))
+
+
+
+    def test_jumpToSeefloorSlice_badFramesEmpty(self):
+        # Setup
+        pixels_in_frame = FramesStitcher.FRAME_HEIGHT
+        pixels_in_half_frame = int(pixels_in_frame / 2)
+
+        drifts_df = pd.DataFrame()
+        drifts_df = self.__append_to_drifts_df(drifts_df, 100, 0, 0)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 200, 0, pixels_in_half_frame)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 300, 0, pixels_in_half_frame)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 400, 0, pixels_in_half_frame)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 500, 0, pixels_in_half_frame)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 600, 0, pixels_in_half_frame)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 700, 0, pixels_in_half_frame)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 800, 0, pixels_in_half_frame)
+        driftData = DriftData(drifts_df)
+
+        #badframes_df = pd.DataFrame()
+        badframes_df = BadFramesData.create_empty_df()
+        badframesData = BadFramesData.createFromDataFrame(None, badframes_df)
+
+        # --- good frames are 150-574 and 625-689. startFrame is 100, endFrame is 700
+
+        seeFloor = SeeFloor(driftData, badframesData, None)
+
+        # Exercise
+        # Assert
+        self.assertEqual(100, seeFloor.jumpToSeefloorSlice(10, 1))  # if parameter is out of bounds show first/last frame
+        self.assertEqual(100, seeFloor.jumpToSeefloorSlice(99, 1))
+        self.assertEqual(300, seeFloor.jumpToSeefloorSlice(100, 1))
+        self.assertEqual(600, seeFloor.jumpToSeefloorSlice(200, 2))
+        self.assertEqual(600, seeFloor.jumpToSeefloorSlice(800, -1))
+        self.assertEqual(400, seeFloor.jumpToSeefloorSlice(800, -2))
+        self.assertEqual(500, seeFloor.jumpToSeefloorSlice(700, -1))
+        self.assertEqual(300, seeFloor.jumpToSeefloorSlice(700, -2))
+
+
+    def __append_to_drifts_df(self, drifts_df, frame_id, drift_x, drift_y):
+        drifts_df = drifts_df.append({'frameNumber': int(frame_id), 'driftY': drift_y, 'driftX': drift_x},
+                                     ignore_index=True)
+        return drifts_df
+
+    def __append_to_badframes_df(self, badframes_df, start_frame_id, end_frame_id):
+        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber: int(start_frame_id),
+                                            BadFramesData.COLNAME_endFrameNumber: end_frame_id}, ignore_index=True)
+        return badframes_df

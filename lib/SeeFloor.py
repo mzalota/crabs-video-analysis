@@ -60,10 +60,13 @@ class SeeFloor:
             new_frame_id = self.__badFramesData.firstGoodFrameBefore(frame_id)
             return self.__adjust_outofbound_values(new_frame_id)
 
-        first_good_frame = self.__badFramesData.firstBadFrameBefore(frame_id) + 1
-        if frame_id == first_good_frame:
-            #frame_id is the first frame in this good segment. Jump over the previous bad segment
-            return self.__jump_to_previous_seefloor_slice(frame_id - 1)
+        if self.__badFramesData.thereIsBadFrameBefore(frame_id):
+            first_good_frame = self.__badFramesData.firstBadFrameBefore(frame_id) + 1
+            if frame_id == first_good_frame:
+                #frame_id is the first frame in this good segment. Jump over the previous bad segment
+                return self.__jump_to_previous_seefloor_slice(frame_id - 1)
+        else:
+            first_good_frame = self.__driftData.minFrameID()
 
         # we are in a good segment and not in its first frame.
         pixels_to_jump = FramesStitcher.FRAME_HEIGHT * (-1)
@@ -89,10 +92,13 @@ class SeeFloor:
             new_frame_id = self.__badFramesData.firstGoodFrameAfter(frame_id)
             return self.__adjust_outofbound_values(new_frame_id)
 
-        last_good_frame = self.__badFramesData.firstBadFrameAfter(frame_id) - 1
-        if frame_id == last_good_frame:
-            #Frame_id is the last good frame before a bad segment. Jump over this bad segment to the first next good frame
-            return self.__jump_to_next_seefloor_slice(frame_id + 1)
+        if self.__badFramesData.thereIsBadFrameAfter(frame_id):
+            last_good_frame = self.__badFramesData.firstBadFrameAfter(frame_id) - 1
+            if frame_id == last_good_frame:
+                #frame_id is the last good frame before a bad segment. Jump over this bad segment to the first next good frame
+                return self.__jump_to_next_seefloor_slice(frame_id + 1)
+        else:
+            last_good_frame= self.__driftData.maxFrameID()
 
         # we are in a good segment and not in its last frame.
         pixels_to_jump = FramesStitcher.FRAME_HEIGHT
