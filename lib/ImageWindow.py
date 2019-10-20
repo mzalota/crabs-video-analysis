@@ -21,6 +21,7 @@ class ImageWindow:
     KEY_SPACE = 32
 
     KEY_MOUSE_CLICK_EVENT = 97
+    KEY_RIGHT_MOUSE_CLICK_EVENT = 65
     KEY_A = 97
 
     def __init__ (self,windowName, position):
@@ -51,12 +52,20 @@ class ImageWindow:
 
     def __wasClicked(self, event, x, y):
         # check to see if the left mouse button was released
+        #print ("__wasClicked",event)
         if event == cv2.EVENT_LBUTTONDOWN:
             self.featureCoordiate = Point(x, y)
             self.__mouseButtomWasClicked = True
 
             # just pretend a key button 'a'  was pressed, so that cv2 framework returns from cv2.waitKeyEx() function
             press(chr(self.KEY_MOUSE_CLICK_EVENT))
+
+        if event == cv2.EVENT_RBUTTONDOWN:
+            self.featureCoordiate = Point(x, y)
+            self.__mouseButtomWasClicked = True
+
+            # just pretend a key button 'a'  was pressed, so that cv2 framework returns from cv2.waitKeyEx() function
+            press(chr(self.KEY_RIGHT_MOUSE_CLICK_EVENT))
 
     def userClickedMouse(self):
         return self.__mouseButtomWasClicked

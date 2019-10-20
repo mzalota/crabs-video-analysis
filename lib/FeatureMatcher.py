@@ -23,7 +23,7 @@ class FeatureMatcher:
         if section is None:
             return SeeFloorSection(frame, self.__startingBox)
 
-        newTopLeftOfFeature = section.findFeature(frame)
+        newTopLeftOfFeature = section.findLocationInFrame(frame)
 
         wasReset = self.__resetFeatureIfNecessary(newTopLeftOfFeature)
         self.__detectionWasReset = wasReset
@@ -34,6 +34,7 @@ class FeatureMatcher:
             return section
 
     def __resetFeatureIfNecessary(self, newTopLeftOfFeature):
+        # type: (Point) -> bool
         if newTopLeftOfFeature is None:
             #print "Did not detect feature: resetting Location to Default: "+self.__seeFloorSection.getID()
             self.__resetReason = "NotDetected"

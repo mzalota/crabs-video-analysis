@@ -20,10 +20,6 @@ class CrabsData:
     def __init__(self, folderStruct):
         # type: (FolderStructure) -> CrabsData
         self.__folderStruct = folderStruct
-
-        self.__load_dataframe()
-
-    def __load_dataframe(self):
         column_names = [self.__COLNAME_dir,
                         self.__COLNAME_filename,
                         self.__COLNAME_frameNumber,
@@ -34,10 +30,17 @@ class CrabsData:
                         self.__COLNAME_crabLocationY,
                         self.__COLNAME_crabCoordinatePoint,
                         self.__COLNAME_cranbCoordinateBox]
-        filepath = self.__folderStruct.getCrabsFilepath()
-        self.__crabsDF = pd.read_csv(filepath, delimiter="\t", na_values="(null)", header=None, names=column_names)
 
-        self.__drop_header_row()
+        self.__load_dataframe(column_names)
+
+    def __load_dataframe(self,column_names):
+        filepath = self.__folderStruct.getCrabsFilepath()
+
+        if self.__folderStruct.fileExists(filepath):
+            self.__crabsDF = pd.read_csv(filepath, delimiter="\t", na_values="(null)", header=None, names=column_names)
+            self.__drop_header_row()
+        else:
+            self.__crabsDF = pd.DataFrame(columns=column_names)
 
     def __drop_header_row(self):
         if (self.__crabsDF.iloc[0][0] == 'dir'):
@@ -66,3 +69,27 @@ class CrabsData:
         self.__crabsDF.to_csv(self.__folderStruct.getCrabsFilepath(), sep='\t', index=False)
 
         return row_to_append
+
+    def getCount(self):
+        return len(self.__crabsDF.index)
+
+    def getPandasDF(self):
+        return self.__crabsDF
+
+    def crabsBetweenFrames(self, lower_frame_id, upper_frame_id):
+
+        crabsDF = self.__crabsDF
+        crabsDF["frameNumber"] = pd.to_numeric(crabsDF["frameNumber"], errors='coerce')
+        crabsDF["frameNumber"] = crabsDF["frameNumber"].astype('int64')
+        crabsDF["crabLocationX"] = crabsDF["crabLocationX"].astype('int64')
+        crabsDF["crabLocationY"] = crabsDF["crabLocationY"].astype('int64')
+        crabsDF["crabWidthPixels"] = pd.to_numeric(crabsDF["crabWidthPixels"], errors='coerce')
+
+        tmpDF = crabsDF[(crabsDF['frameNumber'] <= upper_frame_id) & (crabsDF['frameNumber'] >= lower_frame_id)]
+        #print ("count in tmpDF", len(tmpDF.index),len(self.__crabsDF))
+        #example of the output
+        #[{'crabLocationX': 221, 'crabLocationY': 368, 'frameNumber': 10026},
+        # {'crabLocationX': 865, 'crabLocationY': 304, 'frameNumber': 10243},
+        # {'crabLocationX': 101, 'crabLocationY': 420, 'frameNumber': 10530}]
+
+        return tmpDF[["frameNumber", "crabLocationY", "crabLocationX"]].reset_index(drop=True).to_dict("records")

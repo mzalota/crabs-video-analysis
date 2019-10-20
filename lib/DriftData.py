@@ -1,6 +1,9 @@
 import math
+
+import numpy
 import pandas as pd
 
+from lib.MyTimer import MyTimer
 from lib.common import Vector
 
 
@@ -12,8 +15,27 @@ class DriftData:
 
     def __init__(self, driftData):
         # type: (pd.DataFrame) -> DriftData
-        self.__driftData = driftData
+
+        self.__driftData = self.__sort_by_frameNumber(driftData)
+
+        self.__initializePerfOptimizingVariables()
+
         #print(driftData.count())
+
+    def __sort_by_frameNumber(self, driftData):
+        df_tmp = driftData.copy().sort_values(by=[self.__COLNAME_frameNumber])
+        return df_tmp.reset_index(drop=True)
+
+    def __initializePerfOptimizingVariables(self):
+        df_copy = self.__driftData.copy()
+        dfIndexIsFrameNumber = df_copy.reset_index().set_index(self.__COLNAME_frameNumber)
+        self.__indexDict = dfIndexIsFrameNumber["index"].to_dict()
+
+        self.__maxFrameID = self.__driftData[self.__COLNAME_frameNumber].max()
+        self.__minFrameID = self.__driftData[self.__COLNAME_frameNumber].min()
+        self.__driftXDict = self.__driftData[self.__COLNAME_driftX].to_dict()
+        self.__driftYDict = self.__driftData[self.__COLNAME_driftY].to_dict()
+        self.__frameIDDict = self.__driftData[self.__COLNAME_frameNumber].to_dict()
 
     @staticmethod
     def createFromFile(filepath):
@@ -28,25 +50,30 @@ class DriftData:
         # type: (pd.DataFrame) -> DriftData
         return DriftData(driftData)
 
+    def saveToFile(self,filepath):
+        # type: (String) -> None
+        #self.getDF().to_csv(filepath, sep='\t', index=False)
+        self.getDF().to_csv(filepath, sep='\t', index=False)
+
+    def getDF(self):
+        return self.__driftData
+
     def getCount(self):
         return len(self.__driftData.index)
 
     def __getXDrift(self, index):
-        return self.__driftData[self.__COLNAME_driftX][index]
+        return self.__driftXDict[index]
 
     def __getYDrift(self, index):
-        return self.__driftData[self.__COLNAME_driftY][index]
+        return self.__driftYDict[index]
 
     def __getFrameID(self, index):
-        return self.__driftData[self.__COLNAME_frameNumber][index]
+        #print("driftData.____getFrameID index", index,self.__frameIDDict)
+        return self.__frameIDDict[index]
 
-    def minFrameID(self):
-        return self.__driftData[self.__COLNAME_frameNumber][0]
-
-    def getIndex(self, frameID):
-        foundFrame = self.__driftData.loc[self.__driftData[self.__COLNAME_frameNumber] == frameID]
-        if len(foundFrame.index)==1:
-            return foundFrame.index[0]
+    def __getIndexOfFrame(self, frameID):
+        if frameID in self.__indexDict:
+            return self.__indexDict[frameID]
         else:
             return None
 
@@ -73,10 +100,8 @@ class DriftData:
         return numberOfFramesJumped
 
     def __frameIDThatIsYPixelsAwayFromIndex(self, frameID, pixelsAway):
-        index = self.getIndex(frameID)
-
+        index = self.__getIndexOfFrame(frameID)
         driftPerFrame = self.__pixelsYDriftPerFrame(index)
-
         if driftPerFrame == 0:
             framesToBacktrack = 0
         else:
@@ -106,22 +131,21 @@ class DriftData:
         if int(frameID) <= int(self.minFrameID()):
             return self.minFrameID()
 
-        index = self.getIndex(frameID)
+        index = self.__getIndexOfFrame(frameID)
         while index is None:
             frameID+=1
-            index = self.getIndex(frameID)
+            index = self.__getIndexOfFrame(frameID)
 
         return frameID
 
     def maxFrameID(self):
-        return self.__driftData[self.__COLNAME_frameNumber].max()
+        return self.__maxFrameID
 
     def minFrameID(self):
-        return self.__driftData[self.__COLNAME_frameNumber].min()
+        return self.__minFrameID
 
     def yPixelsBetweenFrames(self,fromFrameID, toFrameID):
         drift = self.driftBetweenFrames(fromFrameID, toFrameID)
-        #if drift.x ==0 and drift.y == 0:
         if drift is None:
             return None
 
@@ -148,19 +172,22 @@ class DriftData:
         return self.__getDriftBetweenTwoFrames(fromFrameID, toFrameID)
 
     def __getDriftBetweenTwoFrames(self, fromFrameID, toFrameID):
+
         #assuming fromFrameID is less than or equal to toFrameID and both are within valid range
         startingFrameIDInDataFrame = self.__nextFrameIDInFile(fromFrameID)
-        startIndex = self.getIndex(startingFrameIDInDataFrame)
-
+        startIndex = self.__getIndexOfFrame(startingFrameIDInDataFrame)
         endingFrameIDInDataFrame = self.__nextFrameIDInFile(toFrameID)
-        endIndex = self.getIndex(endingFrameIDInDataFrame)
+        endIndex = self.__getIndexOfFrame(endingFrameIDInDataFrame)
 
         driftToStartingFrame = self.__driftToNearbyFrame(startIndex, fromFrameID)
+
         cumulativeDrift = self.__driftBetweenFramesInDataFrame(endIndex, startIndex)
+
         driftFromEndingFrame = self.__driftToNearbyFrame(endIndex, toFrameID)
 
         totalYDrift = cumulativeDrift.y + driftToStartingFrame.y - driftFromEndingFrame.y
         totalXDrift = cumulativeDrift.x + driftToStartingFrame.x - driftFromEndingFrame.x
+
         return Vector(totalXDrift, totalYDrift)
 
     def __driftBetweenFramesInDataFrame(self, endIndex, nextIndex):
@@ -172,11 +199,26 @@ class DriftData:
             cumulativeXDrift += self.__getXDrift(nextIndex)
         return Vector(cumulativeXDrift,cumulativeYDrift)
 
+    def interpolate(self):
+        self.__driftData = self.__interpolate(self.__driftData)
+
+    def __interpolate(self, data):
+        data.loc[data['driftY'] == -999, ['driftY', 'driftX']] = numpy.nan
+        data.loc[data['driftX'] == -888, ['driftX', 'driftY']] = numpy.nan
+
+        data.loc[data['driftX'] < -20, ['driftX', 'driftY']] = numpy.nan
+        data.loc[data['driftX'] > 30, ['driftX', 'driftY']] = numpy.nan
+
+        data.loc[data['driftY'] < -20, ['driftX', 'driftY']] = numpy.nan
+        data.loc[data['driftY'] > 80, ['driftX', 'driftY']] = numpy.nan
+
+        return data.interpolate(limit_direction='both')
+
     def getNextFrame(self, yPixelsAway, fromFrameID):
         # type: (int, int) -> int
 
         startingFrameIDInDataFrame = self.__nextFrameIDInFile(fromFrameID)
-        startingFrameIndex = self.getIndex(startingFrameIDInDataFrame)
+        startingFrameIndex = self.__getIndexOfFrame(startingFrameIDInDataFrame)
 
         driftToStartingFrame = self.__driftToNearbyFrame(startingFrameIndex, fromFrameID)
         yPixelsToStartingFrame = driftToStartingFrame.y
@@ -185,7 +227,8 @@ class DriftData:
         cumulativeYDrift= yPixelsToStartingFrame
         while cumulativeYDrift < yPixelsAway and nextFrameIDInDataFrame < self.maxFrameID():
             #keep checking next frameID in DataFrame until found one that is just a bit further away from "fromFrameID" than "pixelsAway"
-            nextIndex = self.getIndex(nextFrameIDInDataFrame) + 1
+            #print("DriftData::getNextFrame nextFrameIDInDataFrame", nextFrameIDInDataFrame)
+            nextIndex = self.__getIndexOfFrame(nextFrameIDInDataFrame) + 1
             nextFrameIDInDataFrame = self.__getFrameID(nextIndex)
             cumulativeYDrift += self.__getYDrift(nextIndex)
 
@@ -193,4 +236,48 @@ class DriftData:
         pixelsToBacktrack = cumulativeYDrift - yPixelsAway
         searchedFrameID = self.__frameIDThatIsYPixelsAwayFromIndex(nextFrameIDInDataFrame, pixelsToBacktrack)
 
+        if searchedFrameID < self.minFrameID():
+            searchedFrameID = self.minFrameID()
+
+        if searchedFrameID >= self.maxFrameID():
+            searchedFrameID = self.maxFrameID()
+
         return searchedFrameID
+
+
+    # Correct "single outliers" (where prev and next data points are not outliers)
+    def replaceOutlierBetweenTwoPoints(self, data, colName, normalJump):
+        col = data[colName]
+        prev = col.shift(periods=1)
+        next = col.shift(periods=-1)
+        diffNextPrev = abs(prev - next)
+        meanPrevNext = (next + prev) / 2
+        deviation = abs(col - meanPrevNext)
+        single_outlier = (deviation > normalJump) & (diffNextPrev < normalJump)
+        data[colName] = col.mask(single_outlier, meanPrevNext)
+
+
+    def replaceIfThirdIsOutlier2(self, data, colName, normalJump, normalMin, normalMax):
+        # outlierThreshold = 30
+        # normalJump = 5
+
+        col = data[colName]
+        prevPrev = col.shift(periods=2)
+        nextNext = col.shift(periods=-2)
+        prev = col.shift(periods=1)
+        next = col.shift(periods=-1)
+
+        meanPrevs = (prevPrev + prev) / 2
+        deviation = abs(col - meanPrevs)
+
+        diffPrevs = prev - prevPrev
+
+        # outlier_fromPrevs = (deviationY > outlierThreshold) & (abs(diffPrevsY) < normalJump)
+        prevsAreNotOutliers = (abs(diffPrevs) < normalJump) & (prevPrev > normalMin) & (prevPrev < normalMax) & (
+                    prev > normalMin) & (prev < normalMax)
+
+        outlier_fromPrevs = ((col < normalMin) | (col > normalMax)) & (deviation > normalJump) & prevsAreNotOutliers
+
+        data["prevsAreNotOutliers"] = prevsAreNotOutliers
+        data["outlier_fromPrevs"] = outlier_fromPrevs
+        data[colName] = col.mask(outlier_fromPrevs, prev + diffPrevs)

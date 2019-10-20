@@ -23,8 +23,8 @@ import os
 #videoFileName = "V6__R_20180915_212238"
 
 rootDir = "C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/"
-videoFileName = "V1_R_20180911_165259"
-#videoFileName = "V2_R_20180911_165730"
+#videoFileName = "V1_R_20180911_165259"
+videoFileName = "V2_R_20180911_165730"
 #videoFileName = "V3_R_20180911_170159"
 
 
