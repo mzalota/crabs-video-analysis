@@ -10,6 +10,9 @@ class SeeFloor:
         self.__badFramesData = badFramesData
         self.__driftData = driftsData
 
+    def setBadFramesData(self, badFramesData):
+        self.__badFramesData = badFramesData
+
     def maxFrameID(self):
         maxFrameID = self.__driftData.maxFrameID()
         maxFrameID = self.__badFramesData.firstGoodFrameBefore(maxFrameID)

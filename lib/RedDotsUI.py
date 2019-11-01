@@ -36,7 +36,7 @@ class RedDotsUI:
 
             keyPressed = imageZoomWin.showWindowAndWaitForTwoClicks(zoomImage.asNumpyArray())
 
-            if keyPressed == ImageWindow.KEY_ARROW_DOWN or keyPressed == ImageWindow.KEY_SPACE or keyPressed == ord("n"):
+            if keyPressed == ImageWindow.KEY_ARROW_DOWN or keyPressed == ord("n"):
                 # show frame +20 away
                 frameID = frameID + 20
 

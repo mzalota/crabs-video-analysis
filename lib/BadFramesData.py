@@ -8,6 +8,8 @@ class BadFramesData:
     COLNAME_endFrameNumber = 'endFrameNumber'
     COLNAME_createdOn = "createdOn"
 
+
+
     # __df
     # __folderStruct
 

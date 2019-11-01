@@ -12,8 +12,10 @@ class UserInput():
     KEY_ARROW_RIGHT = 2555904
     KEY_ARROW_LEFT = 2424832
     KEY_SPACE = 32
+    KEY_BACKSPACE = 8
 
-    KEY_MOUSE_CLICK_EVENT = 97
+    #KEY_UNDERSCORE = 95
+    #KEY_MOUSE_CLICK_EVENT = 95 #97
     KEY_A = 97
 
 
@@ -42,8 +44,8 @@ class UserInput():
     def is_next_seefloor_slice_command(self):
         if self.is_key_arrow_right():
             return True
-        if self.__key == self.KEY_SPACE:
-            return True
+        #if self.__key == self.KEY_SPACE:
+        #    return True
         if self.__key == ord("n"):
             return True
         if self.__key == ord("N"):
@@ -88,5 +90,15 @@ class UserInput():
 
     def is_key_page_up(self):
         if self.__key == self.KEY_PAGE_UP:
+            return True
+        return False
+
+    def is_small_step_forward(self):
+        if self.__key == self.KEY_SPACE:
+            return True
+        return False
+
+    def is_small_step_backward(self):
+        if self.__key == self.KEY_BACKSPACE:
             return True
         return False

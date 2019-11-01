@@ -23,6 +23,7 @@ class UserWantsToQuitException(Exception):
     pass
 
 class ScientistUI:
+    __badFramesJump = 50 # how many frames to mark as bad when user presses B key
 
     def __init__(self, imageWin, folderStruct, videoStream, driftData):
         # type: (ImageWindow, FolderStructure, VideoStream, DriftData) -> ScientistUI
@@ -35,7 +36,6 @@ class ScientistUI:
         self.__seeFloor = SeeFloor(driftData, self.__badFramesData, None)
 
     def processVideo(self):
-        badFramesData = BadFramesData.createFromFile(self.__folderStruct)
 
         frame_id = self.__driftData.minFrameID()
         while True:
@@ -61,8 +61,10 @@ class ScientistUI:
 
             if user_input.is_bad_frame_command():
                 print "Pressed B (bad frame) button"
-                badFramesData.add_badframes(frame_id, new_frame_id)
-                badFramesData.save_to_file()
+                end_frame_id = frame_id + self.__badFramesJump
+                self.__badFramesData.add_badframes(frame_id, end_frame_id)
+                self.__badFramesData.save_to_file()
+                self.__seeFloor.setBadFramesData(self.__badFramesData)
 
             elif keyPressed == ImageWindow.KEY_RIGHT_MOUSE_CLICK_EVENT:
                 markedPoint = self.__imageWin.featureCoordiate
@@ -75,61 +77,72 @@ class ScientistUI:
     #TODO: Figure out why pressing Right button and then left button does not return you to the same frame ID
     def __determine_next_frame(self, frame_id, keyPressed):
 
+        new_frame_id = self.__determine_next_frame_2(frame_id, keyPressed)
+
+        if new_frame_id > self.__driftData.maxFrameID():
+            new_frame_id = self.__driftData.maxFrameID()
+
+        if new_frame_id < self.__driftData.minFrameID():
+            new_frame_id = self.__driftData.minFrameID()
+
+        return new_frame_id
+
+    def __determine_next_frame_2(self, frame_id, keyPressed):
+
         user_input = UserInput(keyPressed)
+
+
         if user_input.is_bad_frame_command():
-            new_frame_id = frame_id + 50
+            new_frame_id = frame_id + self.__badFramesJump + 1
+            return new_frame_id
+
+        if user_input.is_small_step_forward():
+            # scroll 7 frames forward
+            new_frame_id = frame_id+7
+            return new_frame_id
+
+        if user_input.is_small_step_backward():
+            # scroll 7 frames backward
+            new_frame_id = frame_id-7
             return new_frame_id
 
         if user_input.is_key_arrow_down():
             # scroll 50 frames forward
             new_frame_id = frame_id+50
-            if new_frame_id > self.__driftData.maxFrameID():
-                new_frame_id = self.__driftData.maxFrameID()
             return new_frame_id
 
         if user_input.is_key_arrow_up():
             # scroll 50 frames backward
             new_frame_id = frame_id-50
-            if new_frame_id < self.__driftData.minFrameID():
-                new_frame_id = self.__driftData.minFrameID()
             return new_frame_id
 
         if user_input.is_key_end():
-            # Go to the very last frame
+            # Go to the very last seefloor slice
             return self.__seeFloor.maxFrameID()
 
         if user_input.is_key_home():
-            # Go to the very first frame
+            # Go to the very first seefloor slice
             return self.__seeFloor.minFrameID()
 
-        #if keyPressed == ImageWindow.KEY_ARROW_RIGHT or keyPressed == ImageWindow.KEY_SPACE or keyPressed == ord("n"):
         if user_input.is_next_seefloor_slice_command():
-            # show next frame
+            # show next seefloor slices
             return self.__seeFloor.jumpToSeefloorSlice(frame_id, 1)
-            #return self.__seeFloor.jump_to_next_seefloor_slice(frame_id)
 
         if user_input.is_key_arrow_left():
-            # show previous frame
-            #return self.__jump_to_previous_seefloor_slice(frame_id)
+            # show previous seefloor slices
             return self.__seeFloor.jumpToSeefloorSlice(frame_id, -1)
-            #return self.__seeFloor.jump_to_previous_seefloor_slice(frame_id)
 
         if user_input.is_key_page_down():
-            #Jump 10 screens forward
+            #Jump 10 steps forward
             return self.__seeFloor.jumpToSeefloorSlice(frame_id, 10)
-            #pixels_to_jump = FramesStitcher.FRAME_HEIGHT * 10
+
         if user_input.is_key_page_up():
-            #Jump 10 screens backward
-            #pixels_to_jump = -(FramesStitcher.FRAME_HEIGHT * 10)
+            #Jump 10 steps backward
             return self.__seeFloor.jumpToSeefloorSlice(frame_id, -10)
 
 
-        #print ("Ignoring the fact that user pressed button:", keyPressed)  # , chr(keyPressed))
+        print ("Ignoring the fact that user pressed button:", keyPressed)  # , chr(keyPressed))
         return frame_id
-
-        #new_frame_id = self.__driftData.getNextFrame(pixels_to_jump, frame_id)
-        #return int(new_frame_id)
-
 
 
     def processImage(self, mainImage, frame_id):

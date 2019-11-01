@@ -20,9 +20,11 @@ class ImageWindow:
     KEY_ARROW_LEFT = 2424832
     KEY_SPACE = 32
 
-    KEY_MOUSE_CLICK_EVENT = 97
+    KEY_MOUSE_CLICK_EVENT = 95
     KEY_RIGHT_MOUSE_CLICK_EVENT = 65
     KEY_A = 97
+    KEY_UNDERSCORE = 95
+
 
     def __init__ (self,windowName, position):
         self.__windowName = windowName
