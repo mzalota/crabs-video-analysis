@@ -2,6 +2,7 @@ import cv2
 
 from lib.ImageWindow import ImageWindow
 from lib.RedDotsData import RedDotsData
+from lib.UserInput import UserInput
 from lib.common import Box, Point
 
 
@@ -35,30 +36,29 @@ class RedDotsUI:
             zoomImage.drawFrameID(frameID)
 
             keyPressed = imageZoomWin.showWindowAndWaitForTwoClicks(zoomImage.asNumpyArray())
+            user_input = UserInput(keyPressed)
 
-            if keyPressed == ImageWindow.KEY_ARROW_DOWN or keyPressed == ord("n"):
-                # show frame +20 away
-                frameID = frameID + 20
-
-            elif keyPressed == ImageWindow.KEY_ARROW_UP:
-                # show frame -20 away
-                frameID = frameID - 20
-
-            elif keyPressed == ImageWindow.KEY_ARROW_RIGHT:
+            if user_input.is_key_arrow_down():
                 # show frame +2 away
                 frameID = frameID + 2
 
-            elif keyPressed == ImageWindow.KEY_ARROW_LEFT:
+            elif user_input.is_key_arrow_up():
                 # show frame -2 away
                 frameID = frameID - 2
 
-            elif keyPressed == ord("q"):
+            elif user_input.is_key_arrow_right():
+                # show frame +20 away
+                frameID = frameID + 20
+
+            elif user_input.is_key_arrow_left():
+                # show frame -20 away
+                frameID = frameID - 20
+
+            elif user_input.is_quit_command():
                 # print "Pressed Q button" quit
                 message = "User pressed Q button"
-                # mustExit = True
                 print message
                 break
-                # raise UserWantsToQuitException(message)
             else:
                 # user clicked with a mouse, presumably
                 self.__processRedDots(frameID, imageZoomWin.featureBox, rawRedDotsData)

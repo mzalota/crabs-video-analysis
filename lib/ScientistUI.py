@@ -18,10 +18,6 @@ from lib.UserInput import UserInput
 from lib.common import Point
 from lib.SeeFloor import SeeFloor
 
-
-class UserWantsToQuitException(Exception):
-    pass
-
 class ScientistUI:
     __badFramesJump = 50 # how many frames to mark as bad when user presses B key
 
@@ -43,21 +39,26 @@ class ScientistUI:
 
             try:
                 frame = Frame(frame_id, self.__videoStream)
-                keyPressed = self.processImage(frame.getImgObj(), frame_id)
-
             except Exception as error:
                 print ("Failed to read next frame from video: ",frame_id )
                 print(repr(error))
                 traceback.print_exc()
                 break
 
+            #keyPressed = self._showFrame(frame.getImgObj(), frame_id)
+            keyPressed = self.showFrame(frame)
             user_input = UserInput(keyPressed)
+
             if user_input.is_quit_command():
                 # print "Pressed Q button"
                 print("User requested to quit on frame: ", str(frame_id))
                 break
 
-            new_frame_id = self.__determine_next_frame(frame_id, keyPressed)
+            if user_input.is_mouse_click(): # keyPressed == ImageWindow.KEY_MOUSE_CLICK_EVENT:
+                crabPoint = self.__imageWin.featureCoordiate
+                crabUI = CrabUI(self.__folderStruct, self.__videoStream, self.__driftData, frame_id, crabPoint)
+                crabUI.showCrabWindow()
+                continue
 
             if user_input.is_bad_frame_command():
                 print "Pressed B (bad frame) button"
@@ -66,18 +67,26 @@ class ScientistUI:
                 self.__badFramesData.save_to_file()
                 self.__seeFloor.setBadFramesData(self.__badFramesData)
 
-            elif keyPressed == ImageWindow.KEY_RIGHT_MOUSE_CLICK_EVENT:
-                markedPoint = self.__imageWin.featureCoordiate
-                print ("now need to mark coordinate ",str(markedPoint))
-                new_frame_id = frame_id + 50
+            new_frame_id = self.__determine_next_frame_id(frame_id, keyPressed)
+
+            #elif keyPressed == ImageWindow.KEY_RIGHT_MOUSE_CLICK_EVENT:
+            #    markedPoint = self.__imageWin.featureCoordiate
+            #    print ("now need to mark coordinate ",str(markedPoint))
+            #    new_frame_id = frame_id + 50
 
             frame_id = new_frame_id
 
 
     #TODO: Figure out why pressing Right button and then left button does not return you to the same frame ID
-    def __determine_next_frame(self, frame_id, keyPressed):
-
-        new_frame_id = self.__determine_next_frame_2(frame_id, keyPressed)
+    def __determine_next_frame_id(self, frame_id, keyPressed):
+        user_input = UserInput(keyPressed)
+        if user_input.is_bad_frame_command():
+            new_frame_id = frame_id + self.__badFramesJump + 1
+        else:
+            new_frame_id = self.__process_jump_key(frame_id, user_input)
+            if new_frame_id is None:
+                print ("Ignoring the fact that user pressed button:", keyPressed)  # , chr(keyPressed))
+                new_frame_id = frame_id
 
         if new_frame_id > self.__driftData.maxFrameID():
             new_frame_id = self.__driftData.maxFrameID()
@@ -87,14 +96,7 @@ class ScientistUI:
 
         return new_frame_id
 
-    def __determine_next_frame_2(self, frame_id, keyPressed):
-
-        user_input = UserInput(keyPressed)
-
-
-        if user_input.is_bad_frame_command():
-            new_frame_id = frame_id + self.__badFramesJump + 1
-            return new_frame_id
+    def __process_jump_key(self, frame_id, user_input):
 
         if user_input.is_small_step_forward():
             # scroll 7 frames forward
@@ -140,61 +142,40 @@ class ScientistUI:
             #Jump 10 steps backward
             return self.__seeFloor.jumpToSeefloorSlice(frame_id, -10)
 
-
-        print ("Ignoring the fact that user pressed button:", keyPressed)  # , chr(keyPressed))
-        return frame_id
+        return None
 
 
-    def processImage(self, mainImage, frame_id):
-        mustExit = False
-        while not mustExit:
-            markCrabsTimer = MyTimer()
+    def showFrame(self, frame):
+        # type: (Frame) -> String
 
-            if frame_id == self.__driftData.minFrameID():
-                frame_name = str(int(frame_id))+" (First)"
-            elif frame_id == self.__driftData.maxFrameID():
-                frame_name = str(int(frame_id))+" (Last)"
-            elif self.__badFramesData.is_bad_frame(frame_id):
-                frame_name = str(int(frame_id)) + " (Bad)"
-            else:
-                frame_name = int(frame_id)
+        mainImage = frame.getImgObj()
+        frame_id = frame.getFrameID()
+        markCrabsTimer = MyTimer()
 
-            #markCrabsTimer.lap("processImage: step 10")
-            mainImage.drawFrameID(frame_name)
+        self.__drawFrameID(frame_id, mainImage)
+        #markCrabsTimer.lap("processImage: step 20")
 
-            #markCrabsTimer.lap("processImage: step 20")
-            self.markCrabsOnImage(mainImage, frame_id)
-            markCrabsTimer.lap("markCrabsTimer")
+        self.__markCrabsOnImage(mainImage, frame_id)
+        markCrabsTimer.lap("markCrabsTimer")
 
-            keyPressed = self.__imageWin.showWindowAndWaitForClick(mainImage.asNumpyArray())
-            #print ("pressed button", keyPressed, chr(ImageWindow.KEY_MOUSE_CLICK_EVENT), ImageWindow.KEY_MOUSE_CLICK_EVENT)
+        keyPressed = self.__imageWin.showWindowAndWaitForClick(mainImage.asNumpyArray())
 
-            #print ("keyPressed:", keyPressed)#, chr(keyPressed))
-
-            if keyPressed == ImageWindow.KEY_MOUSE_CLICK_EVENT:
-                crabPoint = self.__imageWin.featureCoordiate
-
-                #self.__crabUI.showCrabWindow(crabPoint, frameID)
-
-                crabUI = CrabUI(self.__folderStruct, self.__videoStream, self.__driftData, frame_id, crabPoint)
-
-                lineWasSelected = crabUI.showCrabWindow()
-                #if lineWasSelected:
-                    #draw an X on where the User clicked.
-                    #mainImage.drawCross(crabPoint)
-                    #self.__drawLineOnCrab(crabBox, crabOnFrameID, frameID, mainImage)
-            else:
-                #print ("Ignoring the fact that user pressed button:", keyPressed)#, chr(keyPressed))
-                mustExit = True
-
-
+        #print ("keyPressed:", keyPressed)#, chr(keyPressed))
         return keyPressed
 
-    def markCrabsOnImage(self, mainImage, frame_id):
-        #crabsOnFrame = list()
-        #crabsOnFrame.append(Point(500, 500))
-        #crabsOnFrame.append(Point(600, 900))
 
+    def __drawFrameID(self, frame_id, mainImage):
+        if frame_id == self.__driftData.minFrameID():
+            frame_name = str(int(frame_id)) + " (First)"
+        elif frame_id == self.__driftData.maxFrameID():
+            frame_name = str(int(frame_id)) + " (Last)"
+        elif self.__badFramesData.is_bad_frame(frame_id):
+            frame_name = str(int(frame_id)) + " (Bad)"
+        else:
+            frame_name = int(frame_id)
+        mainImage.drawFrameID(frame_name)
+
+    def __markCrabsOnImage(self, mainImage, frame_id):
         nextFrame = self.__driftData.getNextFrame(FramesStitcher.FRAME_HEIGHT,frame_id)
         prevFrame = self.__driftData.getNextFrame(-FramesStitcher.FRAME_HEIGHT,frame_id)
 
@@ -220,12 +201,3 @@ class ScientistUI:
             mainImage.drawCross(crabLocation)
 
             #timer.lap("crab: "+str(frame_number))
-
-
-    def __drawLineOnCrab(self, crabBox, crabOnFrameID, frameID, mainImage):
-        # draw user-marked line on the main image. but first translate the coordinates to this frame
-        drift = self.__driftData.driftBetweenFrames(crabOnFrameID, frameID)
-        crabBoxTopLeft = crabBox.topLeft.translateBy(drift)
-        crabBoxBottomRight = crabBox.bottomRight.translateBy(drift)
-        mainImage.drawLine(crabBoxTopLeft, crabBoxBottomRight)
-

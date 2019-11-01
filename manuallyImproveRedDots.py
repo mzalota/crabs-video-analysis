@@ -3,7 +3,6 @@ import cv2
 
 from lib.RedDotsData import RedDotsData
 from lib.RedDotsUI import RedDotsUI
-from lib.ScientistUI import UserWantsToQuitException
 from lib.FolderStructure import FolderStructure
 from lib.ImageWindow import ImageWindow
 from lib.StreamToLogger import StreamToLogger

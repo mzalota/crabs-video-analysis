@@ -16,12 +16,17 @@ class UserInput():
 
     #KEY_UNDERSCORE = 95
     #KEY_MOUSE_CLICK_EVENT = 95 #97
-    KEY_A = 97
+    #KEY_A = 97
 
 
     def __init__(self, key_pressed):
         # type: (int) -> UserInput
         self.__key = key_pressed
+
+    def is_mouse_click(self):
+        if self.__key == ImageWindow.KEY_MOUSE_CLICK_EVENT:
+            return True
+        return False
 
     def is_quit_command(self):
         if self.__key == ord("q"):

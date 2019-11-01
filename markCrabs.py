@@ -6,7 +6,7 @@ import cv2
 from lib.DriftData import DriftData
 from lib.Frame import Frame
 from lib.Logger import Logger
-from lib.ScientistUI import ScientistUI, UserWantsToQuitException
+from lib.ScientistUI import ScientistUI
 from lib.FolderStructure import FolderStructure
 from lib.ImageWindow import ImageWindow
 from lib.StreamToLogger import StreamToLogger
