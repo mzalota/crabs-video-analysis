@@ -63,8 +63,8 @@ class Image:
 
     def subImage(self, box):
         # type: (Box) -> Image
-        #return Image(self.__image[box.topLeft.y:box.bottomRight.y, box.topLeft.x: box.bottomRight.x].copy())
-        return Image(self.__image[max(box.topLeft.y,1):min(box.bottomRight.y,self.height()), max(box.topLeft.x,1): min(box.bottomRight.x,self.width())].copy())
+        #return Image(self.__image[max(box.topLeft.y,1):min(box.bottomRight.y,self.height()), max(box.topLeft.x,1): min(box.bottomRight.x,self.width())].copy())
+        return Image(self.__image[max(box.topLeft.y,0):min(box.bottomRight.y,self.height()), max(box.topLeft.x,0): min(box.bottomRight.x,self.width())].copy())
 
     def bottomPart(self, height):
         # type: (integer) -> Image

@@ -37,6 +37,7 @@ class Frame:
         return int(filename[5:11])
 
     def attachNeighbourFrames(self, nextFrame, prevFrame, neighboursHeight):
+        # type: (Frame, Frame, Int) -> np
         image = self.getImgObj()
         image.drawFrameID(self.getFrameID())
         prevSubImage = self.__buildPrevImagePart(prevFrame, neighboursHeight)
@@ -44,16 +45,17 @@ class Frame:
 
         mainCollage = self.__glueTogether(image, nextSubImage, prevSubImage)
 
-        #collageHeight = self.getImgObj().height() + neighboursHeight * 2
+        collageHeight = self.getImgObj().height() + neighboursHeight * 2
 
-        #rightCollage = self.constructRightCollage(collageHeight, nextFrame, prevFrame)
-        #filler = Image.empty(collageHeight, 100, 0).asNumpyArray()
+        rightCollage = self.constructRightCollage(nextFrame, prevFrame, collageHeight)
+        filler = Image.empty(collageHeight, 100, 0).asNumpyArray()
 
-        #withImageOnTheRight = np.concatenate((mainCollage, filler, rightCollage), axis=1)
-        #return withImageOnTheRight
-        return image.asNumpyArray()
+        withImageOnTheRight = np.concatenate((mainCollage, filler, rightCollage), axis=1)
+        return withImageOnTheRight
 
-    def constructRightCollage(self, mainCollageHeight, nextFrame, prevFrame):
+
+    def constructRightCollage(self, nextFrame, prevFrame, mainCollageHeight):
+        # type: (Frame, Frame, int) -> np
         beforeMiddleImage = self.constructRightPrev(prevFrame)
         afterMiddleImage = self.__constructRightNext(nextFrame)
 
@@ -64,6 +66,7 @@ class Frame:
         return np.concatenate((fillerImage, afterMiddleImage.asNumpyArray(), beforeMiddleImage.asNumpyArray(), fillerImage))
 
     def __constructRightNext(self, nextFrame):
+        # type: (Frame) -> Image
         nextFrameID = int(nextFrame.getFrameID())
         afterMiddleFrameID = int(self.getFrameID()) + int((nextFrameID - int(self.getFrameID())) / 2)
         afterMiddleFrame = Frame(afterMiddleFrameID, self.__videoStream)
@@ -80,6 +83,7 @@ class Frame:
         return beforeMiddleImage
 
     def __glueTogether(self, image, nextSubImage, prevSubImage):
+        # type: (Image, Image, Image) -> object
         res = np.concatenate((nextSubImage.asNumpyArray(), image.asNumpyArray()))
         res2 = np.concatenate((res, prevSubImage.asNumpyArray()))
         return res2

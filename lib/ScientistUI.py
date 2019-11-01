@@ -23,6 +23,7 @@ class ScientistUI:
 
     def __init__(self, imageWin, folderStruct, videoStream, driftData):
         # type: (ImageWindow, FolderStructure, VideoStream, DriftData) -> ScientistUI
+        self.__zoom = False
         self.__imageWin = imageWin
         self.__folderStruct = folderStruct
         self.__videoStream = videoStream
@@ -48,6 +49,13 @@ class ScientistUI:
             #keyPressed = self._showFrame(frame.getImgObj(), frame_id)
             keyPressed = self.showFrame(frame)
             user_input = UserInput(keyPressed)
+
+            if keyPressed == ord("z"):
+                #toggle Zoom flag
+                if self.__zoom == True:
+                    self.__zoom = False
+                else:
+                    self.__zoom = True
 
             if user_input.is_quit_command():
                 # print "Pressed Q button"
@@ -158,7 +166,19 @@ class ScientistUI:
         self.__markCrabsOnImage(mainImage, frame_id)
         markCrabsTimer.lap("markCrabsTimer")
 
-        keyPressed = self.__imageWin.showWindowAndWaitForClick(mainImage.asNumpyArray())
+        if self.__zoom:
+            prevFrameID = self.__seeFloor.jumpToSeefloorSlice(frame_id, +1)
+            nextFrameID = self.__seeFloor.jumpToSeefloorSlice(frame_id, -1)
+            prevFrame = Frame(prevFrameID, self.__videoStream)
+            nextFrame = Frame(nextFrameID, self.__videoStream)
+
+            self.__markCrabsOnImage(prevFrame.getImgObj(), prevFrameID)
+            self.__markCrabsOnImage(nextFrame.getImgObj(), nextFrameID)
+            image_as_numpy_array = frame.attachNeighbourFrames(prevFrame, nextFrame, Frame.FRAME_HEIGHT/2)
+        else:
+            image_as_numpy_array = mainImage.asNumpyArray()
+
+        keyPressed = self.__imageWin.showWindowAndWaitForClick(image_as_numpy_array)
 
         #print ("keyPressed:", keyPressed)#, chr(keyPressed))
         return keyPressed
