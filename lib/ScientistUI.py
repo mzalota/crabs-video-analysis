@@ -8,6 +8,8 @@ from lib.FramesStitcher import FramesStitcher
 from lib.Image import Image
 from lib.ImageWindow import ImageWindow
 from lib.ImagesCollage import ImagesCollage
+from lib.FrameDecorators import DecoMarkedCrabs
+
 #from datetime import datetime
 #import pandas as pd
 #import cv2
@@ -157,31 +159,27 @@ class ScientistUI:
     def showFrame(self, frame):
         # type: (Frame) -> String
 
-        mainImage = frame.getImgObj()
+        #mainImage = frame.getImgObj()
         frame_id = frame.getFrameID()
         markCrabsTimer = MyTimer()
+
+        crabsData = CrabsData(self.__folderStruct)
+        frame = DecoMarkedCrabs(frame_id, self.__videoStream, self.__driftData, crabsData)
+        mainImage = frame.getImgObj()
 
         self.__drawFrameID(frame_id, mainImage)
         #markCrabsTimer.lap("processImage: step 20")
 
-        self.__markCrabsOnImage(mainImage, frame_id)
         markCrabsTimer.lap("markCrabsTimer")
 
         if self.__zoom:
-            #prevFrameID = self.__seeFloor.jumpToSeefloorSlice(frame_id, +1)
-            #nextFrameID = self.__seeFloor.jumpToSeefloorSlice(frame_id, -1)
-            #prevFrame = Frame(prevFrameID, self.__videoStream)
-            #nextFrame = Frame(nextFrameID, self.__videoStream)
-
-            #self.__markCrabsOnImage(prevFrame.getImgObj(), prevFrameID)
-            #self.__markCrabsOnImage(nextFrame.getImgObj(), nextFrameID)
-
-            collage = ImagesCollage(frame.getVideoStream(), self.__seeFloor)
+            collage = ImagesCollage(frame.getVideoStream(), self.__seeFloor, crabsData)
 
             image_as_numpy_array = collage.attachNeighbourFrames(frame, Frame.FRAME_HEIGHT/2)
         else:
             image_as_numpy_array = mainImage.asNumpyArray()
 
+        markCrabsTimer.lap("processImage: step 30")
         keyPressed = self.__imageWin.showWindowAndWaitForClick(image_as_numpy_array)
 
         #print ("keyPressed:", keyPressed)#, chr(keyPressed))
@@ -199,7 +197,7 @@ class ScientistUI:
             frame_name = int(frame_id)
         mainImage.drawFrameID(frame_name)
 
-    def __markCrabsOnImage(self, mainImage, frame_id):
+    def __markCrabsOnImage_old(self, mainImage, frame_id):
         nextFrame = self.__driftData.getNextFrame(FramesStitcher.FRAME_HEIGHT,frame_id)
         prevFrame = self.__driftData.getNextFrame(-FramesStitcher.FRAME_HEIGHT,frame_id)
 

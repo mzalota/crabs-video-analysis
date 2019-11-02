@@ -1,13 +1,15 @@
 from pandas.compat.numpy import np
 
 from lib.Frame import Frame
+from lib.FrameDecorators import DecoMarkedCrabs
 from lib.Image import Image
 
 
 class ImagesCollage:
-    def __init__(self, videoStream, seeFloorGeometry):
+    def __init__(self, videoStream, seeFloorGeometry, crabsData):
         self.__videoStream = videoStream
         self.__seeFloorGeometry = seeFloorGeometry
+        self.__crabsData = crabsData
 
     def attachNeighbourFrames(self, thisFrame, neighboursHeight):
         # type: (Frame, Int) -> np
@@ -32,13 +34,18 @@ class ImagesCollage:
 
     def __getNextFrame(self, thisFrame):
         nextFrameID = self.__seeFloorGeometry.jumpToSeefloorSlice(thisFrame.getFrameID(), +1)
-        nextFrame = Frame(nextFrameID, self.__videoStream)
+        nextFrame = self.__constructFrame(nextFrameID)
         return nextFrame
 
     def __getPrevFrame(self, thisFrame):
         prevFrameID = self.__seeFloorGeometry.jumpToSeefloorSlice(thisFrame.getFrameID(), -1)
-        prevFrame = Frame(prevFrameID, self.__videoStream)
+        prevFrame = self.__constructFrame(prevFrameID)
         return prevFrame
+
+    def __constructFrame(self, newFrameID):
+        driftData = self.__seeFloorGeometry.getDriftData()
+        frame = DecoMarkedCrabs(newFrameID, self.__videoStream, driftData, self.__crabsData)
+        return frame
 
     def constructRightCollage(self, thisFrame, nextFrame, prevFrame, mainCollageHeight):
         # type: (Frame, Frame, int) -> np
@@ -55,7 +62,7 @@ class ImagesCollage:
         # type: (Frame) -> Image
         nextFrameID = int(nextFrame.getFrameID())
         afterMiddleFrameID = int(thisFrame.getFrameID()) + int((nextFrameID - int(thisFrame.getFrameID())) / 2)
-        afterMiddleFrame = Frame(afterMiddleFrameID, self.__videoStream)
+        afterMiddleFrame = self.__constructFrame(afterMiddleFrameID)
         afterMiddleImage = afterMiddleFrame.getImgObj()
         afterMiddleImage.drawFrameID(str(afterMiddleFrameID))
         return afterMiddleImage
@@ -63,7 +70,8 @@ class ImagesCollage:
     def __constructRightPrev(self, thisFrame, prevFrame):
         prevFrameID = int(prevFrame.getFrameID())
         beforeMiddleFrameID = prevFrameID + int((int(thisFrame.getFrameID()) - prevFrameID) / 2)
-        beforeMiddleFrame = Frame(beforeMiddleFrameID, self.__videoStream)
+        beforeMiddleFrame = self.__constructFrame(beforeMiddleFrameID)
+
         beforeMiddleImage = beforeMiddleFrame.getImgObj()
         beforeMiddleImage.drawFrameID(str(beforeMiddleFrameID))
         return beforeMiddleImage

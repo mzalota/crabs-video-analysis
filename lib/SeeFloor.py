@@ -10,6 +10,9 @@ class SeeFloor:
         self.__badFramesData = badFramesData
         self.__driftData = driftsData
 
+    def getDriftData(self):
+        return self.__driftData
+
     def setBadFramesData(self, badFramesData):
         self.__badFramesData = badFramesData
 
