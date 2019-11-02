@@ -1,5 +1,5 @@
+import importlib
 import logging
-
 
 import cv2
 
@@ -13,8 +13,6 @@ from lib.StreamToLogger import StreamToLogger
 from lib.VideoStream import VideoStream
 from lib.common import Point
 import os
-
-
 
 #rootDir ="C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"
 #videoFileName = "V3__R_20180915_205551"

@@ -7,10 +7,11 @@ from lib.Frame import Frame
 from lib.FramesStitcher import FramesStitcher
 from lib.Image import Image
 from lib.ImageWindow import ImageWindow
-from datetime import datetime
-import pandas as pd
-import cv2
-import os
+from lib.ImagesCollage import ImagesCollage
+#from datetime import datetime
+#import pandas as pd
+#import cv2
+#import os
 import traceback
 
 from lib.MyTimer import MyTimer
@@ -167,14 +168,17 @@ class ScientistUI:
         markCrabsTimer.lap("markCrabsTimer")
 
         if self.__zoom:
-            prevFrameID = self.__seeFloor.jumpToSeefloorSlice(frame_id, +1)
-            nextFrameID = self.__seeFloor.jumpToSeefloorSlice(frame_id, -1)
-            prevFrame = Frame(prevFrameID, self.__videoStream)
-            nextFrame = Frame(nextFrameID, self.__videoStream)
+            #prevFrameID = self.__seeFloor.jumpToSeefloorSlice(frame_id, +1)
+            #nextFrameID = self.__seeFloor.jumpToSeefloorSlice(frame_id, -1)
+            #prevFrame = Frame(prevFrameID, self.__videoStream)
+            #nextFrame = Frame(nextFrameID, self.__videoStream)
 
-            self.__markCrabsOnImage(prevFrame.getImgObj(), prevFrameID)
-            self.__markCrabsOnImage(nextFrame.getImgObj(), nextFrameID)
-            image_as_numpy_array = frame.attachNeighbourFrames(prevFrame, nextFrame, Frame.FRAME_HEIGHT/2)
+            #self.__markCrabsOnImage(prevFrame.getImgObj(), prevFrameID)
+            #self.__markCrabsOnImage(nextFrame.getImgObj(), nextFrameID)
+
+            collage = ImagesCollage(frame.getVideoStream(), self.__seeFloor)
+
+            image_as_numpy_array = collage.attachNeighbourFrames(frame, Frame.FRAME_HEIGHT/2)
         else:
             image_as_numpy_array = mainImage.asNumpyArray()
 
