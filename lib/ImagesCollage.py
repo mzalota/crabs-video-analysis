@@ -3,6 +3,7 @@ from pandas.compat.numpy import np
 from lib.Frame import Frame
 from lib.FrameDecorators import DecoMarkedCrabs, DecoGridLines
 from lib.Image import Image
+from lib.common import Point, Box, Vector
 
 
 class ImagesCollage:
@@ -19,8 +20,9 @@ class ImagesCollage:
 
         image = thisFrame.getImgObj()
         image.drawFrameID(thisFrame.getFrameID())
-        prevSubImage = self.__buildPrevImagePart(prevFrame, neighboursHeight)
-        nextSubImage = self.__buildNextImagePart(nextFrame, neighboursHeight)
+
+        prevSubImage = self.__buildPrevImagePart(thisFrame, prevFrame, neighboursHeight)
+        nextSubImage = self.__buildNextImagePart(thisFrame, nextFrame, neighboursHeight)
 
         mainCollage = self.__glueTogether(image, nextSubImage, prevSubImage)
 
@@ -86,15 +88,44 @@ class ImagesCollage:
         beforeMiddleImage.drawFrameID(str(beforeMiddleFrameID))
         return beforeMiddleImage
 
-    def __buildPrevImagePart(self, prevFrame, height):
-        prevSubImage = prevFrame.getImgObj().topPart(height)
-        prevSubImage.drawFrameID(prevFrame.getFrameID())
-        return prevSubImage
 
-    def __buildNextImagePart(self, nextFrame, height):
-        nextSubImage = nextFrame.getImgObj().bottomPart(height)
-        nextSubImage.drawFrameID(nextFrame.getFrameID())
-        return nextSubImage
+    def __buildPrevImagePart(self, thisFrame, prevFrame, height):
+        subImage = prevFrame.getImgObj().topPart(height)
+
+        xDrift = self.__xDriftBetweenFrames(thisFrame.getFrameID(), prevFrame.getFrameID())
+        imageToReturn = self.__shiftImageHorizontally(subImage, xDrift)
+
+        imageToReturn.drawFrameID(prevFrame.getFrameID())
+        return imageToReturn
+
+    def __buildNextImagePart(self, thisFrame, nextFrame, height):
+        subImage = nextFrame.getImgObj().bottomPart(height)
+
+        xDrift = self.__xDriftBetweenFrames(thisFrame.getFrameID(), nextFrame.getFrameID())
+        imageToReturn = self.__shiftImageHorizontally(subImage, xDrift)
+
+        imageToReturn.drawFrameID(nextFrame.getFrameID())
+        return imageToReturn
+
+    def __xDriftBetweenFrames(self, thisFrameID, nextFrameID):
+        drift = self.__seeFloorGeometry.getDriftData().driftBetweenFrames(thisFrameID, nextFrameID)
+        xDrift = int(drift.x)
+        return xDrift
+
+    def __shiftImageHorizontally(self, subImage, xDrift):
+
+        #add filler to both sides of subImage.
+        fillerWidth = abs(xDrift)
+        fillerImage = Image.empty(subImage.height(), fillerWidth, 0)
+        result = np.concatenate((fillerImage.asNumpyArray(), subImage.asNumpyArray(), fillerImage.asNumpyArray()), axis=1)
+        subImageWithFillerOnBothSides = Image(result)
+        boxAroundImage = Box(Point(fillerWidth, 0), Point(fillerWidth + subImage.width(), subImage.height()))
+
+        #slide "boxAroundImage" to the left or to the right depending if xDrift is negative or positive
+        boxAroundAreaThatWeNeedToKeep = boxAroundImage.translateBy(Vector(xDrift,0))
+        imageToReturn = subImageWithFillerOnBothSides.subImage(boxAroundAreaThatWeNeedToKeep)
+
+        return imageToReturn
 
     def __glueTogether(self, image, nextSubImage, prevSubImage):
         # type: (Image, Image, Image) -> object
