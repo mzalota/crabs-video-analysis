@@ -14,6 +14,8 @@
 #python -m pip install psutil
 #python -m pip install pylru
 
+#python -m pip install pandas-compat
+
 #https://www.pyimagesearch.com/2015/03/09/capturing-mouse-click-events-with-python-and-opencv/
 
 #from skimage.measure import structural_similarity as ssim

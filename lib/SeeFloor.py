@@ -9,9 +9,13 @@ class SeeFloor:
         # type: (DriftData, BadFramesData, RedDotsData) -> SeeFloor
         self.__badFramesData = badFramesData
         self.__driftData = driftsData
+        self.__redDotsData = redDotsData
 
     def getDriftData(self):
         return self.__driftData
+
+    def getRedDotsData(self):
+        return self.__redDotsData
 
     def setBadFramesData(self, badFramesData):
         self.__badFramesData = badFramesData

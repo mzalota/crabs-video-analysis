@@ -8,8 +8,8 @@ from lib.FramesStitcher import FramesStitcher
 from lib.Image import Image
 from lib.ImageWindow import ImageWindow
 from lib.ImagesCollage import ImagesCollage
-from lib.FrameDecorators import DecoMarkedCrabs
-
+from lib.FrameDecorators import DecoMarkedCrabs, DecoGridLines
+from lib.RedDotsData import RedDotsData
 #from datetime import datetime
 #import pandas as pd
 #import cv2
@@ -33,7 +33,8 @@ class ScientistUI:
         self.__driftData = driftData
 
         self.__badFramesData = BadFramesData.createFromFile(folderStruct)
-        self.__seeFloor = SeeFloor(driftData, self.__badFramesData, None)
+        self.__redDotsData = RedDotsData.createFromFile(folderStruct)
+        self.__seeFloor = SeeFloor(driftData, self.__badFramesData, self.__redDotsData)
 
     def processVideo(self):
 
@@ -173,6 +174,9 @@ class ScientistUI:
         markCrabsTimer.lap("markCrabsTimer")
 
         if self.__zoom:
+            gridMidPoint = self.__redDotsData.midPoint(frame.getFrameID())
+            frame = DecoGridLines(frame_id, self.__videoStream, self.__redDotsData, gridMidPoint)
+
             collage = ImagesCollage(frame.getVideoStream(), self.__seeFloor, crabsData)
 
             image_as_numpy_array = collage.attachNeighbourFrames(frame, Frame.FRAME_HEIGHT/2)

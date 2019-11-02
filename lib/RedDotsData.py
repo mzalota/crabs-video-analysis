@@ -2,6 +2,7 @@ import pandas as pd
 import numpy
 
 from lib.FolderStructure import FolderStructure
+from lib.common import Point
 
 
 class RedDotsData:
@@ -110,6 +111,41 @@ class RedDotsData:
         # type: () -> pd
         dataRedDot1 = self.__combinedDF().loc[self.__combinedDF()['dotName'] == self.__VALUE_redDot1]
         return dataRedDot1
+
+    def __interpolatedDF(self):
+        # type: () -> pd
+        filepath = self.__folderStruct.getRedDotsInterpolatedFilepath()
+        dfInterpolated = pd.read_csv(filepath, delimiter="\t", na_values="(null)")
+        return dfInterpolated
+
+    def midPoint(self, frameId):
+        redDot1 = self.getRedDot1(frameId)
+        redDot2 = self.getRedDot2(frameId)
+        return redDot1.calculateMidpoint(redDot2)
+
+    def getRedDot1(self, frameId):
+        # type: (int) -> Point
+        dfResult = self.__rowForFrame(frameId)
+        x = dfResult["centerPoint_x_dot1"].iloc[0]
+        y = dfResult["centerPoint_y_dot1"].iloc[0]
+        return Point(int(x),int(y))
+
+    def getRedDot2(self, frameId):
+        # type: (int) -> Point
+        dfResult = self.__rowForFrame(frameId)
+        x = dfResult["centerPoint_x_dot2"].iloc[0]
+        y = dfResult["centerPoint_y_dot2"].iloc[0]
+        return Point(int(x),int(y))
+
+    def getDistancePixels(self, frameId):
+        # type: (int) -> float
+        dfResult = self.__rowForFrame(frameId)
+        return dfResult["distance"].iloc[0]
+
+    def __rowForFrame(self, frameId):
+        df = self.__interpolatedDF()
+        dfResult = df.loc[df[RedDotsData.__COLNAME_frameNumber] == frameId]
+        return dfResult
 
     def __replaceOutlierBetweenTwo(self, df, columnName):
         outlier_threshold = 100

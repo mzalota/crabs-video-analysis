@@ -27,8 +27,8 @@ class Image:
     def asNumpyArray(self):
         return self.__image
 
-    def drawLine(self, point1, point2):
-        cv2.line(self.__image, (point1.x, point1.y), (point2.x, point2.y), (0, 255, 0), 5)
+    def drawLine(self, point1, point2, thickness=5, color=(0, 255, 0)):
+        cv2.line(self.__image, (point1.x, point1.y), (point2.x, point2.y), color, thickness)
 
     def drawCross(self, point, size=8):
         self.drawLine(point.translateBy(Vector(-size, -size)), point.translateBy(Vector(size, size)))

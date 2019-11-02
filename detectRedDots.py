@@ -9,10 +9,12 @@ from lib.VideoStream import VideoStream
 from lib.common import Point
 from lib.Logger import Logger
 
+rootDir ="C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
+videoFileName = "V1"
 
-rootDir ="C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"
+#rootDir ="C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"
 #videoFileName = "V3__R_20180915_205551"
-videoFileName = "V4__R_20180915_210447"
+#videoFileName = "V4__R_20180915_210447"
 #videoFileName = "V5__R_20180915_211343"
 #videoFileName = "V6__R_20180915_212238"
 
@@ -54,7 +56,7 @@ vf = None
 imageWin = ImageWindow("mainWithRedDots", Point(700, 200))
 
 stepSize = 5
-startingFrameID = 150
+startingFrameID = 1
 
 success = True
 while success:

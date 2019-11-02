@@ -22,8 +22,8 @@ import os
 
 rootDir = "C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/"
 #videoFileName = "V1_R_20180911_165259"
-#videoFileName = "V2_R_20180911_165730"
-videoFileName = "V3_R_20180911_170159"
+videoFileName = "V2_R_20180911_165730"
+#videoFileName = "V3_R_20180911_170159"
 
 
 folderStruct = FolderStructure(rootDir, videoFileName)

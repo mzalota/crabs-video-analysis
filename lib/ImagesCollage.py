@@ -1,7 +1,7 @@
 from pandas.compat.numpy import np
 
 from lib.Frame import Frame
-from lib.FrameDecorators import DecoMarkedCrabs
+from lib.FrameDecorators import DecoMarkedCrabs, DecoGridLines
 from lib.Image import Image
 
 
@@ -33,18 +33,28 @@ class ImagesCollage:
         return withImageOnTheRight
 
     def __getNextFrame(self, thisFrame):
+        # type: (Frame) -> Frame
         nextFrameID = self.__seeFloorGeometry.jumpToSeefloorSlice(thisFrame.getFrameID(), +1)
-        nextFrame = self.__constructFrame(nextFrameID)
+        nextFrame = self.__constructFrame(nextFrameID, thisFrame.getFrameID())
         return nextFrame
 
+
     def __getPrevFrame(self, thisFrame):
+        # type: (Frame) -> Frame
         prevFrameID = self.__seeFloorGeometry.jumpToSeefloorSlice(thisFrame.getFrameID(), -1)
-        prevFrame = self.__constructFrame(prevFrameID)
+        prevFrame = self.__constructFrame(prevFrameID, thisFrame.getFrameID())
         return prevFrame
 
-    def __constructFrame(self, newFrameID):
+    def __constructFrame(self, newFrameID, thisFrameID):
+        # type: (int, int) -> Frame
         driftData = self.__seeFloorGeometry.getDriftData()
-        frame = DecoMarkedCrabs(newFrameID, self.__videoStream, driftData, self.__crabsData)
+        #frame = DecoMarkedCrabs(newFrameID, self.__videoStream, driftData, self.__crabsData)
+
+        gridMidPoint = self.__seeFloorGeometry.getRedDotsData().midPoint(thisFrameID)
+        drift = self.__seeFloorGeometry.getDriftData().driftBetweenFrames(thisFrameID, newFrameID)
+        newPoint = gridMidPoint.translateBy(drift)
+
+        frame = DecoGridLines(newFrameID, self.__videoStream, self.__seeFloorGeometry.getRedDotsData(), newPoint)
         return frame
 
     def constructRightCollage(self, thisFrame, nextFrame, prevFrame, mainCollageHeight):
@@ -59,35 +69,31 @@ class ImagesCollage:
         return np.concatenate((fillerImage, afterMiddleImage.asNumpyArray(), beforeMiddleImage.asNumpyArray(), fillerImage))
 
     def __constructRightNext(self, thisFrame, nextFrame):
-        # type: (Frame) -> Image
+        # type: (Frame, Frame) -> Image
         nextFrameID = int(nextFrame.getFrameID())
         afterMiddleFrameID = int(thisFrame.getFrameID()) + int((nextFrameID - int(thisFrame.getFrameID())) / 2)
-        afterMiddleFrame = self.__constructFrame(afterMiddleFrameID)
+        afterMiddleFrame = self.__constructFrame(afterMiddleFrameID, thisFrame.getFrameID())
         afterMiddleImage = afterMiddleFrame.getImgObj()
         afterMiddleImage.drawFrameID(str(afterMiddleFrameID))
         return afterMiddleImage
 
     def __constructRightPrev(self, thisFrame, prevFrame):
+        # type: (Frame, Frame) -> Image
         prevFrameID = int(prevFrame.getFrameID())
         beforeMiddleFrameID = prevFrameID + int((int(thisFrame.getFrameID()) - prevFrameID) / 2)
-        beforeMiddleFrame = self.__constructFrame(beforeMiddleFrameID)
-
+        beforeMiddleFrame = self.__constructFrame(beforeMiddleFrameID, thisFrame.getFrameID())
         beforeMiddleImage = beforeMiddleFrame.getImgObj()
         beforeMiddleImage.drawFrameID(str(beforeMiddleFrameID))
         return beforeMiddleImage
 
     def __buildPrevImagePart(self, prevFrame, height):
-        # boxLine = Box(Point(0, prevImage.height() - 3), Point(prevImage.width(), prevImage.height()))
-        # prevImage.drawBoxOnImage(boxLine)
         prevSubImage = prevFrame.getImgObj().topPart(height)
         prevSubImage.drawFrameID(prevFrame.getFrameID())
-
         return prevSubImage
 
     def __buildNextImagePart(self, nextFrame, height):
         nextSubImage = nextFrame.getImgObj().bottomPart(height)
         nextSubImage.drawFrameID(nextFrame.getFrameID())
-
         return nextSubImage
 
     def __glueTogether(self, image, nextSubImage, prevSubImage):
