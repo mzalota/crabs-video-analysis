@@ -109,10 +109,26 @@ class ImagesCollage:
 
 
     def __buildPrevImagePart(self, thisFrame, prevFrame, height):
+        # type: (FrameDecorator, FrameDecorator, int) -> Image
         subImage = prevFrame.getImgObj().topPart(height)
 
         xDrift = self.__xDriftBetweenFrames(thisFrame.getFrameID(), prevFrame.getFrameID())
-        imageToReturn = self.__shiftImageHorizontally(subImage, xDrift)
+        shiftedImage = self.__shiftImageHorizontally(subImage, xDrift)
+
+        scalingFactor = self.__calculateImageScalingFactor(thisFrame, prevFrame)
+        origHeight = shiftedImage.height()
+        newHeight = int(origHeight * scalingFactor)
+        origWidth = shiftedImage.width()
+        newWidth = int(origWidth * scalingFactor)
+        scaledImage = self.__resizeImage(shiftedImage, newHeight, newWidth)
+
+        if scalingFactor <1:
+            paddedOnTheBottom = scaledImage.padOnBottom(origHeight - newHeight)
+            imageToReturn = paddedOnTheBottom.padSidesToMakeWider((origWidth - newWidth))
+        else:
+            widthToCutOutLeft=int((newWidth-origWidth)/2)
+            areaToCut = Box(Point(widthToCutOutLeft,0), Point(widthToCutOutLeft+origWidth,origHeight))
+            imageToReturn = scaledImage.subImage(areaToCut)
 
         imageToReturn.drawFrameID(prevFrame.getFrameID())
         return imageToReturn
@@ -121,10 +137,33 @@ class ImagesCollage:
         subImage = nextFrame.getImgObj().bottomPart(height)
 
         xDrift = self.__xDriftBetweenFrames(thisFrame.getFrameID(), nextFrame.getFrameID())
-        imageToReturn = self.__shiftImageHorizontally(subImage, xDrift)
+        shiftedImage = self.__shiftImageHorizontally(subImage, xDrift)
+
+        #TODO: Reimplement the section below so that horizontal padding is not necessary. scale image, then cut bottom part.
+        scalingFactor = self.__calculateImageScalingFactor(thisFrame, nextFrame)
+        origHeight = shiftedImage.height()
+        newHeight = int(origHeight * scalingFactor)
+        origWidth = shiftedImage.width()
+        newWidth = int(origWidth * scalingFactor)
+        scaledImage = self.__resizeImage(shiftedImage,newHeight,newWidth)
+
+        if scalingFactor <1:
+            paddedOnTop = scaledImage.padOnTop(origHeight-newHeight)
+            imageToReturn = paddedOnTop.padSidesToMakeWider((origWidth - newWidth))
+        else:
+            widthToCutOutLeft = int((newWidth - origWidth) / 2)
+            areaToCut = Box(Point(widthToCutOutLeft, newHeight-origHeight), Point(widthToCutOutLeft + origWidth, newHeight))
+            imageToReturn = scaledImage.subImage(areaToCut)
 
         imageToReturn.drawFrameID(nextFrame.getFrameID())
         return imageToReturn
+
+    def __calculateImageScalingFactor(self, thisFrame, otherFrame):
+        distanceThis = self.__seeFloorGeometry.getRedDotsData().getDistancePixels(thisFrame.getFrameID())
+        distancePrev = self.__seeFloorGeometry.getRedDotsData().getDistancePixels(otherFrame.getFrameID())
+        scalingFactor = distanceThis / distancePrev
+        return scalingFactor
+
 
     def __xDriftBetweenFrames(self, thisFrameID, nextFrameID):
         drift = self.__seeFloorGeometry.getDriftData().driftBetweenFrames(thisFrameID, nextFrameID)

@@ -13,7 +13,7 @@ class Image:
         self.__image = imageAsNumpyArray
 
     @staticmethod
-    def empty(height, width, color):
+    def empty(height, width, color=0): #default color is black
         image = np.zeros([height, width, 3], dtype=np.uint8)
         image.fill(color)
         return Image(image)
@@ -110,6 +110,28 @@ class Image:
             image_with_boxes[rr, cc] = 1  # set color white
         return image_with_boxes
 
+
+    def padOnBottom(self, height):
+        # type: (int) -> Image
+        fillerHorizontal = Image.empty(height, self.width())
+        return self.concatenateToTheBottom(fillerHorizontal)
+
+    def padOnTop(self, height):
+        # type: (int) -> Image
+        fillerHorizontal = Image.empty(height, self.width())
+        return fillerHorizontal.concatenateToTheBottom(self)
+
+    def padSidesToMakeWider(self, widthToAdd):
+        #newWidth = self.width()
+        origHeight = self.height()
+
+        #widthToAdd = (origWidth - newWidth)
+
+        fillerVertical1 = Image.empty(origHeight, int(widthToAdd / 2))
+        fillerVertical2 = Image.empty(origHeight, widthToAdd - int(widthToAdd / 2))
+        tmp2 = self.concatenateToTheRight(fillerVertical1)
+        imageToReturn = fillerVertical2.concatenateToTheRight(tmp2)
+        return imageToReturn
 
     def concatenateToTheBottom(self, imageObj):
 
