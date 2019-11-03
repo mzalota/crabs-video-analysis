@@ -165,8 +165,8 @@ class ScientistUI:
         markCrabsTimer = MyTimer()
 
         crabsData = CrabsData(self.__folderStruct)
-        frame = DecoMarkedCrabs(frame_id, self.__videoStream, self.__driftData, crabsData)
-        mainImage = frame.getImgObj()
+        frameDeco = DecoMarkedCrabs(frame, self.__driftData, crabsData)
+        mainImage = frameDeco.getImgObj()
 
         self.__drawFrameID(frame_id, mainImage)
         #markCrabsTimer.lap("processImage: step 20")
@@ -175,11 +175,11 @@ class ScientistUI:
 
         if self.__zoom:
             gridMidPoint = self.__redDotsData.midPoint(frame.getFrameID())
-            frame = DecoGridLines(frame_id, self.__videoStream, self.__redDotsData, gridMidPoint)
+            frameDeco = DecoGridLines(frameDeco, self.__redDotsData, gridMidPoint)
 
             collage = ImagesCollage(frame.getVideoStream(), self.__seeFloor, crabsData)
 
-            image_as_numpy_array = collage.attachNeighbourFrames(frame, Frame.FRAME_HEIGHT/2)
+            image_as_numpy_array = collage.attachNeighbourFrames(frameDeco, Frame.FRAME_HEIGHT/2)
         else:
             image_as_numpy_array = mainImage.asNumpyArray()
 

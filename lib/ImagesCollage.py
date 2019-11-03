@@ -1,7 +1,7 @@
 from pandas.compat.numpy import np
 
 from lib.Frame import Frame
-from lib.FrameDecorators import DecoMarkedCrabs, DecoGridLines
+from lib.FrameDecorators import DecoMarkedCrabs, DecoGridLines, FrameDecorator
 from lib.Image import Image
 from lib.common import Point, Box, Vector
 
@@ -37,27 +37,31 @@ class ImagesCollage:
     def __getNextFrame(self, thisFrame):
         # type: (Frame) -> Frame
         nextFrameID = self.__seeFloorGeometry.jumpToSeefloorSlice(thisFrame.getFrameID(), +1)
-        nextFrame = self.__constructFrame(nextFrameID, thisFrame.getFrameID())
+        nextFrame = self.__constructFrame(nextFrameID, thisFrame)
         return nextFrame
 
 
     def __getPrevFrame(self, thisFrame):
         # type: (Frame) -> Frame
         prevFrameID = self.__seeFloorGeometry.jumpToSeefloorSlice(thisFrame.getFrameID(), -1)
-        prevFrame = self.__constructFrame(prevFrameID, thisFrame.getFrameID())
+        prevFrame = self.__constructFrame(prevFrameID, thisFrame)
         return prevFrame
 
-    def __constructFrame(self, newFrameID, thisFrameID):
-        # type: (int, int) -> Frame
+    def __constructFrame(self, newFrameID, thisFrame):
+        # type: (int, Frame) -> FrameDecorator
+
+        thisFrameID = thisFrame.getFrameID()
+        newFrame = Frame(newFrameID, self.__videoStream)
+
         driftData = self.__seeFloorGeometry.getDriftData()
-        #frame = DecoMarkedCrabs(newFrameID, self.__videoStream, driftData, self.__crabsData)
+        frameDeco = DecoMarkedCrabs(newFrame, driftData, self.__crabsData)
 
         gridMidPoint = self.__seeFloorGeometry.getRedDotsData().midPoint(thisFrameID)
         drift = self.__seeFloorGeometry.getDriftData().driftBetweenFrames(thisFrameID, newFrameID)
         newPoint = gridMidPoint.translateBy(drift)
 
-        frame = DecoGridLines(newFrameID, self.__videoStream, self.__seeFloorGeometry.getRedDotsData(), newPoint)
-        return frame
+        frameDeco2 = DecoGridLines(frameDeco, self.__seeFloorGeometry.getRedDotsData(), newPoint)
+        return frameDeco2
 
     def constructRightCollage(self, thisFrame, nextFrame, prevFrame, mainCollageHeight):
         # type: (Frame, Frame, int) -> np
@@ -74,7 +78,9 @@ class ImagesCollage:
         # type: (Frame, Frame) -> Image
         nextFrameID = int(nextFrame.getFrameID())
         afterMiddleFrameID = int(thisFrame.getFrameID()) + int((nextFrameID - int(thisFrame.getFrameID())) / 2)
-        afterMiddleFrame = self.__constructFrame(afterMiddleFrameID, thisFrame.getFrameID())
+
+
+        afterMiddleFrame = self.__constructFrame(afterMiddleFrameID, thisFrame)
         afterMiddleImage = afterMiddleFrame.getImgObj()
         afterMiddleImage.drawFrameID(str(afterMiddleFrameID))
         return afterMiddleImage
@@ -83,7 +89,7 @@ class ImagesCollage:
         # type: (Frame, Frame) -> Image
         prevFrameID = int(prevFrame.getFrameID())
         beforeMiddleFrameID = prevFrameID + int((int(thisFrame.getFrameID()) - prevFrameID) / 2)
-        beforeMiddleFrame = self.__constructFrame(beforeMiddleFrameID, thisFrame.getFrameID())
+        beforeMiddleFrame = self.__constructFrame(beforeMiddleFrameID, thisFrame)
         beforeMiddleImage = beforeMiddleFrame.getImgObj()
         beforeMiddleImage.drawFrameID(str(beforeMiddleFrameID))
         return beforeMiddleImage

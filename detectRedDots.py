@@ -10,7 +10,7 @@ from lib.common import Point
 from lib.Logger import Logger
 
 rootDir ="C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
-videoFileName = "V1"
+videoFileName = "V2"
 
 #rootDir ="C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"
 #videoFileName = "V3__R_20180915_205551"

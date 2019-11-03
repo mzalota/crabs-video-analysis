@@ -38,7 +38,7 @@ from lib.Logger import Logger
 
 
 rootDirectory ="C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
-videoFilename = "V1"
+videoFilename = "V2"
 
 #videoFilepath = rootDirectory+"/"+videoFilename+".avi"
 #videoStream = VideoStream(videoFilepath)

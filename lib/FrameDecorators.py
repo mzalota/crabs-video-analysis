@@ -5,18 +5,30 @@ from lib.FramesStitcher import FramesStitcher
 from lib.MyTimer import MyTimer
 from lib.common import Point, Vector
 
+class FrameDecorator:
 
-class DecoGridLines(Frame):
+    def __init__(self, frameDeco):
+        # type: (FrameDecorator) -> FrameDecorator
+        self.frameDeco = frameDeco
 
-    def __init__(self, frameNumber, videoStream, redDotsData, startPoint):
-        Frame.__init__(self, frameNumber, videoStream)
+    def getFrameID(self):
+        return self.frameDeco.getFrameID()
+
+    #def getImgObj(self):
+    #    # type: () -> Image
+    #    return self.frameDeco.getImgObj()
+
+class DecoGridLines(FrameDecorator):
+
+    def __init__(self, frameDeco, redDotsData, startPoint):
+        FrameDecorator.__init__(self, frameDeco)
         self.__redDotsData = redDotsData
         self.__startPoint = startPoint
 
     def getImgObj(self):
         # type: () -> Image
-        imgObj = Frame.getImgObj(self)
-        frame_id = self.getFrameID()
+        imgObj = self.frameDeco.getImgObj()
+        frame_id = self.frameDeco.getFrameID()
 
         distancePix = int(self.__redDotsData.getDistancePixels(frame_id))
 
@@ -37,16 +49,19 @@ class DecoGridLines(Frame):
         imgObj.drawLine(horisontalLeft, horisontalRight, thickness=3, color=(255, 255, 0))
 
 
-class DecoMarkedCrabs(Frame):
+class DecoMarkedCrabs(FrameDecorator):
 
-    def __init__(self, frameNumber, videoStream, driftData, crabsData):
-        Frame.__init__(self, frameNumber, videoStream)
+    #def __init__(self, frameNumber, videoStream, driftData, crabsData):
+    def __init__(self, frameDeco, driftData, crabsData):
+        FrameDecorator.__init__(self, frameDeco)
+        #Frame.__init__(self, frameNumber, videoStream)
         self.__driftData = driftData
         self.__crabsData = crabsData
 
     def getImgObj(self):
         # type: () -> Image
-        imgObj = Frame.getImgObj(self)
+        #imgObj = Frame.getImgObj(self)
+        imgObj = self.frameDeco.getImgObj()
         self.__markCrabsOnImage(imgObj, self.getFrameID())
         return imgObj
 
