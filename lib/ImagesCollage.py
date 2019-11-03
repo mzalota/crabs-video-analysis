@@ -1,5 +1,7 @@
 from pandas.compat.numpy import np
 
+import cv2
+
 from lib.Frame import Frame
 from lib.FrameDecorators import DecoMarkedCrabs, DecoGridLines, FrameDecorator
 from lib.Image import Image
@@ -26,13 +28,24 @@ class ImagesCollage:
 
         mainCollage = self.__glueTogether(image, nextSubImage, prevSubImage)
 
+        #resize leftCollage
+        newWidth = mainCollage.width()
+        newHeight = mainCollage.height()
+        leftCollage = self.__resizeImage(mainCollage, newHeight, newWidth)
+
         collageHeight = thisFrame.getImgObj().height() + neighboursHeight * 2
 
         rightCollage = self.constructRightCollage(thisFrame, nextFrame, prevFrame, collageHeight)
         filler = Image.empty(collageHeight, 100, 0).asNumpyArray()
 
-        withImageOnTheRight = np.concatenate((mainCollage, filler, rightCollage), axis=1)
+        withImageOnTheRight = np.concatenate((leftCollage.asNumpyArray(), filler, rightCollage.asNumpyArray()), axis=1)
         return withImageOnTheRight
+
+    def __resizeImage(self, mainCollage, newHeight, newWidth):
+        # type: (Image, int, int) -> Image
+        mainCollageNP = cv2.resize(mainCollage.asNumpyArray(), dsize=(newWidth, newHeight),
+                                   interpolation=cv2.INTER_CUBIC)
+        return Image(mainCollageNP)
 
     def __getNextFrame(self, thisFrame):
         # type: (Frame) -> Frame
@@ -64,7 +77,7 @@ class ImagesCollage:
         return frameDeco2
 
     def constructRightCollage(self, thisFrame, nextFrame, prevFrame, mainCollageHeight):
-        # type: (Frame, Frame, int) -> np
+        # type: (Frame, Frame, int) -> Image
         beforeMiddleImage = self.__constructRightPrev(thisFrame, prevFrame)
         afterMiddleImage = self.__constructRightNext(thisFrame, nextFrame)
 
@@ -72,13 +85,13 @@ class ImagesCollage:
         fillerHeight = (mainCollageHeight - rightCollageHeight) / 2
         fillerImage = Image.empty(fillerHeight, thisFrame.getImgObj().width(), 0).asNumpyArray()
 
-        return np.concatenate((fillerImage, afterMiddleImage.asNumpyArray(), beforeMiddleImage.asNumpyArray(), fillerImage))
+        collageNP = np.concatenate((fillerImage, afterMiddleImage.asNumpyArray(), beforeMiddleImage.asNumpyArray(), fillerImage))
+        return Image(collageNP)
 
     def __constructRightNext(self, thisFrame, nextFrame):
         # type: (Frame, Frame) -> Image
         nextFrameID = int(nextFrame.getFrameID())
         afterMiddleFrameID = int(thisFrame.getFrameID()) + int((nextFrameID - int(thisFrame.getFrameID())) / 2)
-
 
         afterMiddleFrame = self.__constructFrame(afterMiddleFrameID, thisFrame)
         afterMiddleImage = afterMiddleFrame.getImgObj()
@@ -134,8 +147,8 @@ class ImagesCollage:
         return imageToReturn
 
     def __glueTogether(self, image, nextSubImage, prevSubImage):
-        # type: (Image, Image, Image) -> object
+        # type: (Image, Image, Image) -> Image
         res = np.concatenate((nextSubImage.asNumpyArray(), image.asNumpyArray()))
         res2 = np.concatenate((res, prevSubImage.asNumpyArray()))
-        return res2
+        return Image(res2)
 
