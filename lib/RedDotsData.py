@@ -60,6 +60,12 @@ class RedDotsData:
     def manualDF(self):
         return self.__manualDF
 
+    def interpolatedDF(self):
+        # type: () -> pd
+        filepath = self.__folderStruct.getRedDotsInterpolatedFilepath()
+        interpolatedDF = pd.read_csv(filepath, delimiter="\t", na_values="(null)")
+        return interpolatedDF
+
     def replaceOutlierBetweenTwo(self):
         dataRedDot2 = self.onlyRedDot2()
         self.__replaceOutlierBetweenTwo(dataRedDot2, "centerPoint_x")

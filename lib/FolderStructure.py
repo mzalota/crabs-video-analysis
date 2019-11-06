@@ -26,6 +26,9 @@ class FolderStructure:
     def getDriftsFilepath(self):
         return self.__getSubDirpath() + self.__videoFilename + '_drifts.csv'
 
+    def getSeefloorFilepath(self):
+        return self.__getSubDirpath() + self.__videoFilename + '_seefloor.csv'
+
     def getBadFramesFilepath(self):
         return self.__getSubDirpath() + self.__videoFilename + '_badframes.csv'
 

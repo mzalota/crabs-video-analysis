@@ -2,9 +2,14 @@ from lib.BadFramesData import BadFramesData
 from lib.DriftData import DriftData
 from lib.FramesStitcher import FramesStitcher
 from lib.RedDotsData import RedDotsData
-
+import pandas as pd
+import numpy
 
 class SeeFloor:
+    __COLNAME_driftX = 'driftX'
+    __COLNAME_driftY = 'driftY'
+    __COLNAME_frameNumber = 'frameNumber'
+
     def __init__(self, driftsData, badFramesData, redDotsData):
         # type: (DriftData, BadFramesData, RedDotsData) -> SeeFloor
         self.__badFramesData = badFramesData
@@ -121,3 +126,30 @@ class SeeFloor:
         else:
             return new_frame_id
 
+    def scienceData(self, filepath):
+
+        minVal = self.minFrameID()
+        maxVal = self.maxFrameID()
+
+        df = self.getDriftData().getInterpolatedDF().copy()
+        df = df.set_index("frameNumber")
+
+        everyFrame = pd.DataFrame(numpy.arange(start=minVal, stop=maxVal, step=1),
+                                  columns=["frameNumber"]).set_index("frameNumber")
+        df = df.combine_first(everyFrame).reset_index()
+        df = df.interpolate(limit_direction='both')
+        # df['distance'] = pow(pow(df["centerPoint_x_dot2"] - df["centerPoint_x_dot1"], 2) + pow(
+        #   df["centerPoint_y_dot2"] - df["centerPoint_y_dot1"], 2), 0.5)  # .astype(int)
+
+        # df[self.__COLNAME_mm_per_pixel] = self.__distance_between_reddots_mm / df['distance']
+        df = df[[self.__COLNAME_frameNumber, self.__COLNAME_driftX, self.__COLNAME_driftY]]
+
+        dfRedDots = self.getRedDotsData().interpolatedDF()
+
+        dfRedDots = dfRedDots[["frameNumber","distance", "mm_per_pixel"]]
+        dfMerged = pd.merge(df, dfRedDots, on='frameNumber', how='outer', suffixes=('_drift', '_reddots'))
+        dfMerged.to_csv(filepath, sep='\t', index=False)
+
+        return dfMerged.sort_values(by=['frameNumber'])
+
+        #return df

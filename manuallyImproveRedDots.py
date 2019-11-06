@@ -23,7 +23,7 @@ from datetime import datetime
 #videoFileName = "V3_R_20180911_170159"
 
 rootDir ="C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
-videoFileName = "V1"
+videoFileName = "V2"
 
 folderStruct = FolderStructure(rootDir, videoFileName)
 #StreamToLogger(folderStruct.getLogFilepath())

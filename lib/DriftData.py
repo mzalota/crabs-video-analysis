@@ -56,7 +56,12 @@ class DriftData:
         self.getDF().to_csv(filepath, sep='\t', index=False)
 
     def getDF(self):
+        # type: () -> pd.DataFrame
         return self.__driftData
+
+    def getInterpolatedDF(self):
+        # type: () -> pd.DataFrame
+        return self.__interpolate(self.__driftData)
 
     def getCount(self):
         return len(self.__driftData.index)
@@ -281,3 +286,4 @@ class DriftData:
         data["prevsAreNotOutliers"] = prevsAreNotOutliers
         data["outlier_fromPrevs"] = outlier_fromPrevs
         data[colName] = col.mask(outlier_fromPrevs, prev + diffPrevs)
+
