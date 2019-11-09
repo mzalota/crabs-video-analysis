@@ -48,7 +48,7 @@ class RedDotsData:
             self.__manualDF = pd.DataFrame(columns=column_names)
 
     @staticmethod
-    def createFromFile(folderStruct):
+    def createFromFolderStruct(folderStruct):
         # type: (FolderStructure) -> RedDotsData
         newObj = RedDotsData(folderStruct)
         return newObj

@@ -24,7 +24,7 @@ class BadFramesData:
         return BadFramesData(folderStruct, df)
 
     @staticmethod
-    def createFromFile(folderStruct):
+    def createFromFolderStruct(folderStruct):
         # type: (FolderStructure) -> BadFramesData
 
         filepath_badframes = folderStruct.getBadFramesFilepath()

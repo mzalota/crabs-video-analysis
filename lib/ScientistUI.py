@@ -32,10 +32,10 @@ class ScientistUI:
         self.__videoStream = videoStream
         self.__driftData = driftData
 
-        self.__badFramesData = BadFramesData.createFromFile(folderStruct)
-        self.__redDotsData = RedDotsData.createFromFile(folderStruct)
+        self.__badFramesData = BadFramesData.createFromFolderStruct(folderStruct)
+        self.__redDotsData = RedDotsData.createFromFolderStruct(folderStruct)
         #self.__seeFloor = SeeFloor(driftData, self.__badFramesData, self.__redDotsData)
-        self.__seeFloor = SeeFloor.createFromFile(folderStruct)
+        self.__seeFloor = SeeFloor.createFromFolderStruct(folderStruct)
 
 
     def processVideo(self):

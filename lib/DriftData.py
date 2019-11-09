@@ -5,6 +5,7 @@ import pandas as pd
 
 from lib.MyTimer import MyTimer
 from lib.common import Vector
+from lib.FolderStructure import FolderStructure
 
 
 class DriftData:
@@ -38,8 +39,9 @@ class DriftData:
         self.__frameIDDict = self.__driftData[self.__COLNAME_frameNumber].to_dict()
 
     @staticmethod
-    def createFromFile(filepath):
-        # type: (String) -> DriftData
+    def createFromFile(folderStruct):
+        # type: (FolderStructure) -> DriftData
+        filepath = folderStruct.getDriftsFilepath()
         dfRaw = pd.read_csv(filepath, delimiter="\t", na_values="(null)")
         #dfRaw = dfRaw.rename(columns={dfRaw.columns[0]: "rowNum"}) # rename first column to be rowNum
 
@@ -208,6 +210,7 @@ class DriftData:
         self.__driftData = self.__interpolate(self.__driftData)
 
     def __interpolate(self, data):
+        # type: (pd) -> pd
         data.loc[data['driftY'] == -999, ['driftY', 'driftX']] = numpy.nan
         data.loc[data['driftX'] == -888, ['driftX', 'driftY']] = numpy.nan
 
@@ -218,6 +221,23 @@ class DriftData:
         data.loc[data['driftY'] > 80, ['driftX', 'driftY']] = numpy.nan
 
         return data.interpolate(limit_direction='both')
+
+    def interpolate2(self):
+        # type: () -> pd
+        minVal = self.minFrameID()
+        maxVal = self.maxFrameID()
+
+        df = self.getInterpolatedDF().copy()
+
+        df = df.set_index("frameNumber")
+        everyFrame = pd.DataFrame(numpy.arange(start=minVal, stop=maxVal, step=1), columns=["frameNumber"]).set_index(
+            "frameNumber")
+        df = df.combine_first(everyFrame).reset_index()
+        df = df.interpolate(limit_direction='both')
+        df["driftX"] = df["driftX"] / 2
+        df["driftY"] = df["driftY"] / 2
+        df = df[[self.__COLNAME_frameNumber, self.__COLNAME_driftX, self.__COLNAME_driftY]]
+        return df
 
     def getNextFrame(self, yPixelsAway, fromFrameID):
         # type: (int, int) -> int
