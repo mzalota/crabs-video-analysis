@@ -90,3 +90,20 @@ class DecoMarkedCrabs(FrameDecorator):
             mainImage.drawCross(crabLocation)
 
             #timer.lap("crab: "+str(frame_number))
+
+
+class DecoRedDots(FrameDecorator):
+    def __init__(self, frameDeco, redDotsData):
+        # type: (FrameDecorator, RedDotsData) -> object
+        FrameDecorator.__init__(self, frameDeco)
+        self.__redDotsData = redDotsData
+
+    def getImgObj(self):
+        # type: () -> Image
+        imgObj = self.frameDeco.getImgObj()
+
+        redDot1 = self.__redDotsData.getRedDot1(self.getFrameID())
+        imgObj.drawCross(redDot1,5, color=(255, 0, 0))
+
+        return imgObj
+

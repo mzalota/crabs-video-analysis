@@ -3,7 +3,7 @@ from pandas.compat.numpy import np
 import cv2
 
 from lib.Frame import Frame
-from lib.FrameDecorators import DecoMarkedCrabs, DecoGridLines, FrameDecorator
+from lib.FrameDecorators import DecoMarkedCrabs, DecoGridLines, FrameDecorator, DecoRedDots
 from lib.Image import Image
 from lib.common import Point, Box, Vector
 
@@ -74,7 +74,8 @@ class ImagesCollage:
         newPoint = gridMidPoint.translateBy(drift)
 
         frameDeco2 = DecoGridLines(frameDeco, self.__seeFloorGeometry.getRedDotsData(), newPoint)
-        return frameDeco2
+        frameDeco3 = DecoRedDots(frameDeco2,self.__seeFloorGeometry.getRedDotsData())
+        return frameDeco3
 
     def constructRightCollage(self, thisFrame, nextFrame, prevFrame, mainCollageHeight):
         # type: (Frame, Frame, int) -> Image
