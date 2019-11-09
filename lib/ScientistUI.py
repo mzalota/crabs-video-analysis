@@ -34,7 +34,9 @@ class ScientistUI:
 
         self.__badFramesData = BadFramesData.createFromFile(folderStruct)
         self.__redDotsData = RedDotsData.createFromFile(folderStruct)
-        self.__seeFloor = SeeFloor(driftData, self.__badFramesData, self.__redDotsData)
+        #self.__seeFloor = SeeFloor(driftData, self.__badFramesData, self.__redDotsData)
+        self.__seeFloor = SeeFloor.createFromFile(folderStruct)
+
 
     def processVideo(self):
 

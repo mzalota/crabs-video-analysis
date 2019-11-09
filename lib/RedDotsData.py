@@ -148,6 +148,11 @@ class RedDotsData:
         dfResult = self.__rowForFrame(frameId)
         return dfResult["distance"].iloc[0]
 
+    def getMMPerPixel(self, frameId):
+        # type: (int) -> float
+        dfResult = self.__rowForFrame(frameId)
+        return dfResult["mm_per_pixel"].iloc[0]
+
     def __rowForFrame(self, frameId):
         df = self.__interpolatedDF()
         dfResult = df.loc[df[RedDotsData.__COLNAME_frameNumber] == frameId]
