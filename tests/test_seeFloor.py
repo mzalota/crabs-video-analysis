@@ -20,7 +20,7 @@ class TestSeeFloor(TestCase):
 
 
         badframesData = BadFramesData(None,None)
-        seeFloor = SeeFloor(driftData, badframesData, None)
+        seeFloor = SeeFloor(driftData, badframesData, None, None)
 
         # Exercise
         maxFrameID = seeFloor.maxFrameID()
@@ -43,7 +43,7 @@ class TestSeeFloor(TestCase):
         badframes_df = self.__append_to_badframes_df(badframes_df, 92, 95)
         badframesData = BadFramesData.createFromDataFrame(None, badframes_df)
 
-        seeFloor = SeeFloor(driftData, badframesData, None)
+        seeFloor = SeeFloor(driftData, badframesData, None,None)
 
         # Exercise
         minFrameID = seeFloor.minFrameID()
@@ -73,7 +73,7 @@ class TestSeeFloor(TestCase):
 
         #--- good frames are 96,97,98 and 102,103. startFrame is 93, endFrame is 107
 
-        seeFloor = SeeFloor(driftData, badframesData, None)
+        seeFloor = SeeFloor(driftData, badframesData, None, None)
 
         # Exercise
 
@@ -149,7 +149,7 @@ class TestSeeFloor(TestCase):
 
         #--- good frames are 150-574 and 625-689. startFrame is 100, endFrame is 700
 
-        seeFloor = SeeFloor(driftData, badframesData, None)
+        seeFloor = SeeFloor(driftData, badframesData, None, None)
 
         # Exercise
         # Assert
@@ -243,7 +243,7 @@ class TestSeeFloor(TestCase):
 
         #--- good frames are 150-574 and 625-689. startFrame is 100, endFrame is 700
 
-        seeFloor = SeeFloor(driftData, badframesData, None)
+        seeFloor = SeeFloor(driftData, badframesData, None, None)
 
         # Exercise
         # Assert
@@ -364,7 +364,7 @@ class TestSeeFloor(TestCase):
 
         # --- good frames are 150-574 and 625-689. startFrame is 100, endFrame is 700
 
-        seeFloor = SeeFloor(driftData, badframesData, None)
+        seeFloor = SeeFloor(driftData, badframesData, None, None)
 
         # Exercise
         # Assert
