@@ -8,7 +8,7 @@ from lib.FramesStitcher import FramesStitcher
 from lib.Image import Image
 from lib.ImageWindow import ImageWindow
 from lib.ImagesCollage import ImagesCollage
-from lib.FrameDecorators import DecoMarkedCrabs, DecoGridLines
+from lib.FrameDecorators import DecoMarkedCrabs, DecoGridLines, DecoFrameID
 from lib.RedDotsData import RedDotsData
 #from datetime import datetime
 #import pandas as pd
@@ -163,27 +163,31 @@ class ScientistUI:
         # type: (Frame) -> String
 
         #mainImage = frame.getImgObj()
-        frame_id = frame.getFrameID()
+        #frame_id = frame.getFrameID()
         markCrabsTimer = MyTimer()
 
         crabsData = CrabsData(self.__folderStruct)
         frameDeco = DecoMarkedCrabs(frame, self.__seeFloor)
-        mainImage = frameDeco.getImgObj()
+        frameDeco2 = DecoFrameID(frameDeco, self.__driftData, self.__badFramesData)
 
-        self.__drawFrameID(frame_id, mainImage)
+        #mainImage = mainImage.getImgObj()
+
+        #self.__drawFrameID(frame_id, mainImage)
+
         #markCrabsTimer.lap("processImage: step 20")
 
         markCrabsTimer.lap("markCrabsTimer")
 
         if self.__zoom:
             gridMidPoint = self.__redDotsData.midPoint(frame.getFrameID())
-            frameDeco = DecoGridLines(frameDeco, self.__redDotsData, gridMidPoint)
+            frameDeco3 = DecoGridLines(frameDeco2, self.__redDotsData, gridMidPoint)
 
             collage = ImagesCollage(frame.getVideoStream(), self.__seeFloor, crabsData)
 
-            image_as_numpy_array = collage.attachNeighbourFrames(frameDeco, Frame.FRAME_HEIGHT/2)
+            image_as_numpy_array = collage.attachNeighbourFrames(frameDeco3, Frame.FRAME_HEIGHT/2)
         else:
-            image_as_numpy_array = mainImage.asNumpyArray()
+            image_as_numpy_array = frameDeco2.getImgObj().asNumpyArray()
+            #image_as_numpy_array = mainImage.asNumpyArray()
 
         markCrabsTimer.lap("processImage: step 30")
         keyPressed = self.__imageWin.showWindowAndWaitForClick(image_as_numpy_array)
@@ -203,29 +207,3 @@ class ScientistUI:
             frame_name = int(frame_id)
         mainImage.drawFrameID(frame_name)
 
-    def __markCrabsOnImage_old(self, mainImage, frame_id):
-        nextFrame = self.__driftData.getNextFrame(FramesStitcher.FRAME_HEIGHT,frame_id)
-        prevFrame = self.__driftData.getNextFrame(-FramesStitcher.FRAME_HEIGHT,frame_id)
-
-        #print("in markCrabsOnImage", frame_id,nextFrame, prevFrame)
-
-        crabsData = CrabsData(self.__folderStruct)
-        markedCrabs = crabsData.crabsBetweenFrames(prevFrame,nextFrame)
-
-        for markedCrab in markedCrabs:
-            #print ('markedCrab', markedCrab)
-            timer = MyTimer("crabsOnFrame")
-
-            frame_number = markedCrab['frameNumber']
-
-            crabLocation = Point(markedCrab['crabLocationX'], markedCrab['crabLocationY'])
-
-            crabFeature = Feature(self.__driftData, frame_number, crabLocation, 5)
-            #timer.lap("Step 150")
-            crabLocation = crabFeature.getCoordinateInFrame(frame_id)
-
-            #print ('crabLocation', str(crabLocation))
-
-            mainImage.drawCross(crabLocation)
-
-            #timer.lap("crab: "+str(frame_number))

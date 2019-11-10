@@ -87,7 +87,7 @@ class DecoMarkedCrabs(FrameDecorator):
 
 class DecoRedDots(FrameDecorator):
     def __init__(self, frameDeco, redDotsData):
-        # type: (FrameDecorator, RedDotsData) -> object
+        # type: (FrameDecorator, RedDotsData) -> DecoRedDots
         FrameDecorator.__init__(self, frameDeco)
         self.__redDotsData = redDotsData
 
@@ -103,3 +103,33 @@ class DecoRedDots(FrameDecorator):
 
         return imgObj
 
+            #timer.lap("crab: "+str(frame_number))
+
+
+class DecoFrameID(FrameDecorator):
+    def __init__(self, frameDeco, driftData, badFramesData):
+        # type: (FrameDecorator, DriftData, badFramesData) -> DecoFrameID
+        FrameDecorator.__init__(self, frameDeco)
+        self.__driftData = driftData
+        self.__badFramesData = badFramesData
+
+    def getImgObj(self):
+        # type: () -> Image
+        imgObj = self.frameDeco.getImgObj()
+
+        frame_name = self.__drawFrameID(self.getFrameID())
+
+        imgObj.drawFrameID(frame_name)
+        return imgObj
+
+    def __drawFrameID(self, frame_id):
+        # type: (int) -> str
+        if frame_id == self.__driftData.minFrameID():
+            frame_name = str(int(frame_id)) + " (First)"
+        elif frame_id == self.__driftData.maxFrameID():
+            frame_name = str(int(frame_id)) + " (Last)"
+        elif self.__badFramesData.is_bad_frame(frame_id):
+            frame_name = str(int(frame_id)) + " (Bad)"
+        else:
+            frame_name = int(frame_id)
+        return frame_name

@@ -224,8 +224,8 @@ class RedDotsData:
         return self.__combinedDF()[self.__COLNAME_frameNumber][0]
 
     def __maxFrameIDInRawFile(self):
+        #return self.__combinedDF[self.__COLNAME_frameNumber].max()
         return self.__rawDF[self.__COLNAME_frameNumber].max()
-
 
     def addManualDots(self, frameID, box):
         #self.__driftData[self.__COLNAME_frameNumber][0]
@@ -255,7 +255,6 @@ class RedDotsData:
         return dfToPlot.sort_values(by=['frameNumber'])
 
     def interpolated(self, minVal=None, maxVal=None):
-
         if not minVal:
             minVal = self.__minFrameIDInRawFile()
         if not maxVal:
