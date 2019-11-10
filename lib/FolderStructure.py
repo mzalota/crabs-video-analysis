@@ -35,6 +35,9 @@ class FolderStructure:
     def getFramesDirpath(self):
         return self.__getSubDirpath() + "/seqFrames/"
 
+    def getCrabFramesDirpath(self):
+        return self.__getSubDirpath() + "/crabFrames/"
+
     def getFramesFilepaths(self):
         framesDir = self.getFramesDirpath()
         files = os.listdir(framesDir)

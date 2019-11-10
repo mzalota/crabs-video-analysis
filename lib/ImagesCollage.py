@@ -49,14 +49,14 @@ class ImagesCollage:
 
     def __getNextFrame(self, thisFrame):
         # type: (Frame) -> Frame
-        nextFrameID = self.__seeFloorGeometry.jumpToSeefloorSlice(thisFrame.getFrameID(), +1)
+        nextFrameID = self.__seeFloorGeometry.getNextFrame(thisFrame.getFrameID()) #.jumpToSeefloorSlice(thisFrame.getFrameID(), +1)
         nextFrame = self.__constructFrame(nextFrameID, thisFrame)
         return nextFrame
 
 
     def __getPrevFrame(self, thisFrame):
         # type: (Frame) -> Frame
-        prevFrameID = self.__seeFloorGeometry.jumpToSeefloorSlice(thisFrame.getFrameID(), -1)
+        prevFrameID = self.__seeFloorGeometry.getPrevFrame(thisFrame.getFrameID()) # .jumpToSeefloorSlice(thisFrame.getFrameID(), -1)
         prevFrame = self.__constructFrame(prevFrameID, thisFrame)
         return prevFrame
 
@@ -67,7 +67,8 @@ class ImagesCollage:
         newFrame = Frame(newFrameID, self.__videoStream)
 
         driftData = self.__seeFloorGeometry.getDriftData()
-        frameDeco = DecoMarkedCrabs(newFrame, driftData, self.__crabsData)
+        #frameDeco = DecoMarkedCrabs(newFrame, driftData, self.__crabsData)
+        frameDeco = DecoMarkedCrabs(newFrame, self.__seeFloorGeometry)
 
         gridMidPoint = self.__seeFloorGeometry.getRedDotsData().midPoint(thisFrameID)
         drift = self.__seeFloorGeometry.getDriftData().driftBetweenFrames(thisFrameID, newFrameID)

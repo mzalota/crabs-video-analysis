@@ -7,6 +7,7 @@ import math
 from DriftData import DriftData
 from Frame import Frame
 from Image import Image
+from lib.SeeFloor import SeeFloor
 
 
 class FramesStitcher:
@@ -24,8 +25,8 @@ class FramesStitcher:
 
         #csvFileName = videoFileName + "_toCut.csv"
         self.__driftsFilePath = folderStructure.getDriftsFilepath() # rootDirectory + "/" + csvFileName
-        self.__imagesDir = folderStructure.getFramesDirpath() # rootDirectory #+ "/" + videoFileName + "/"
-
+        self.__folderStructure = folderStructure
+        self.__seefloorGeometry = SeeFloor.createFromFolderStruct(folderStructure)
         # Creating an empty Dataframe with column names only
         self.__framesToStitch = pd.DataFrame(columns=['frameNumber'])
 
@@ -81,10 +82,10 @@ class FramesStitcher:
             imgObj.drawFrameID(frame.getFrameID())
 
             imageFileName = frame.constructFilename() #self.__imagesDir)
-            imageFilePath = self.__imagesDir + "/" + imageFileName
 
-            print "writing frame image to file: " + imageFilePath
-            imgObj.writeToFile(imageFilePath)
+            self.__writeFrameImage(imageFileName, imgObj)
+
+            self.__writeCrabImage(imageFileName, imgObj, frame.getFrameID())
 
             #imageWin2.showWindowAndWaitForClick(image)
 
@@ -92,6 +93,19 @@ class FramesStitcher:
             print ("no more frames to read from video ")
             print('Caught this error: ' + repr(error))
             traceback.print_exc()
+
+    def __writeFrameImage(self, imageFileName, imgObj):
+        imageFilePath = self.__folderStructure.getFramesDirpath() + "/" + imageFileName
+        print "writing frame image to file: " + imageFilePath
+        imgObj.writeToFile(imageFilePath)
+
+    def __writeCrabImage(self, imageFileName, imgObj, frame_id):
+        crabs = self.__seefloorGeometry.crabsOnFrame(frame_id)
+        if crabs is not None:
+            if len(crabs) > 0:
+                crabImageFilePath = self.__folderStructure.getCrabFramesDirpath() + "/" + imageFileName
+                print ("Crabs on frame ", frame_id, crabs)
+                imgObj.writeToFile(crabImageFilePath)
 
     def saveFramesToFile(self):
 

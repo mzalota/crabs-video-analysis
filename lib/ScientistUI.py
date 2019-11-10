@@ -167,7 +167,7 @@ class ScientistUI:
         markCrabsTimer = MyTimer()
 
         crabsData = CrabsData(self.__folderStruct)
-        frameDeco = DecoMarkedCrabs(frame, self.__driftData, crabsData)
+        frameDeco = DecoMarkedCrabs(frame, self.__seeFloor)
         mainImage = frameDeco.getImgObj()
 
         self.__drawFrameID(frame_id, mainImage)

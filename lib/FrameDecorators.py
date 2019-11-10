@@ -3,6 +3,7 @@ from lib.Feature import Feature
 from lib.Frame import Frame
 from lib.FramesStitcher import FramesStitcher
 from lib.MyTimer import MyTimer
+from lib.SeeFloor import SeeFloor
 from lib.common import Point, Vector
 
 class FrameDecorator:
@@ -51,27 +52,19 @@ class DecoGridLines(FrameDecorator):
 
 class DecoMarkedCrabs(FrameDecorator):
 
-    #def __init__(self, frameNumber, videoStream, driftData, crabsData):
-    def __init__(self, frameDeco, driftData, crabsData):
+    def __init__(self, frameDeco, seefloorGeometry):
+        # type: (FrameDecorator, SeeFloor) -> DecoMarkedCrabs
         FrameDecorator.__init__(self, frameDeco)
-        #Frame.__init__(self, frameNumber, videoStream)
-        self.__driftData = driftData
-        self.__crabsData = crabsData
+        self.__seefloorGeometry = seefloorGeometry
 
     def getImgObj(self):
         # type: () -> Image
-        #imgObj = Frame.getImgObj(self)
         imgObj = self.frameDeco.getImgObj()
         self.__markCrabsOnImage(imgObj, self.getFrameID())
         return imgObj
 
     def __markCrabsOnImage(self, mainImage, frame_id):
-        nextFrame = self.__driftData.getNextFrame(FramesStitcher.FRAME_HEIGHT,frame_id)
-        prevFrame = self.__driftData.getNextFrame(-FramesStitcher.FRAME_HEIGHT,frame_id)
-
-        #print("in markCrabsOnImage", frame_id,nextFrame, prevFrame)
-
-        markedCrabs = self.__crabsData.crabsBetweenFrames(prevFrame,nextFrame)
+        markedCrabs = self.__seefloorGeometry.crabsOnFrame(frame_id)
 
         for markedCrab in markedCrabs:
             #print ('markedCrab', markedCrab)
@@ -81,7 +74,7 @@ class DecoMarkedCrabs(FrameDecorator):
 
             crabLocation = Point(markedCrab['crabLocationX'], markedCrab['crabLocationY'])
 
-            crabFeature = Feature(self.__driftData, frame_number, crabLocation, 5)
+            crabFeature = Feature(self.__seefloorGeometry.getDriftData(), frame_number, crabLocation, 5)
             #timer.lap("Step 150")
             crabLocation = crabFeature.getCoordinateInFrame(frame_id)
 

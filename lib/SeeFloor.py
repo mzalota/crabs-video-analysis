@@ -1,6 +1,7 @@
 from lib.BadFramesData import BadFramesData
+from lib.CrabsData import CrabsData
 from lib.DriftData import DriftData
-from lib.FramesStitcher import FramesStitcher
+from lib.Frame import Frame
 from lib.RedDotsData import RedDotsData
 from lib.FolderStructure import FolderStructure
 import pandas as pd
@@ -18,7 +19,7 @@ class SeeFloor:
         self.__redDotsData = redDotsData
         self.__df = df
         self.__folderStruct = folderStruct
-
+        self.__crabsData = CrabsData(self.__folderStruct)
 
     @staticmethod
     def createFromFolderStruct(folderStruct):
@@ -104,7 +105,7 @@ class SeeFloor:
             first_good_frame = self.__driftData.minFrameID()
 
         # we are in a good segment and not in its first frame.
-        pixels_to_jump = FramesStitcher.FRAME_HEIGHT * (-1)
+        pixels_to_jump = Frame.FRAME_HEIGHT * (-1)
         new_frame_id = int(self.__getNextFrame(frame_id, pixels_to_jump))
 
         if (first_good_frame >= new_frame_id):
@@ -136,7 +137,7 @@ class SeeFloor:
             last_good_frame= self.__driftData.maxFrameID()
 
         # we are in a good segment and not in its last frame.
-        pixels_to_jump = FramesStitcher.FRAME_HEIGHT
+        pixels_to_jump = Frame.FRAME_HEIGHT
         new_frame_id = int(self.__getNextFrame(frame_id, pixels_to_jump))
 
         if (last_good_frame < new_frame_id):
@@ -163,9 +164,9 @@ class SeeFloor:
     def __getNextFrameMM(self, pixels_to_jump, frame_id):
         scale = self.__redDotsData.getMMPerPixel(frame_id)
         mm_to_jump = pixels_to_jump * scale
-        return self.getNextFrame(mm_to_jump,frame_id)
+        return self.getFrame(mm_to_jump,frame_id)
 
-    def getNextFrame(self, yMMAway, fromFrameID):
+    def getFrame(self, yMMAway, fromFrameID):
         # type: (float, int) -> int
         df = self.getDF()
         if df is None:
@@ -173,14 +174,31 @@ class SeeFloor:
 
         yCoordMMOrigin = self.__getYCoordMMOrigin(fromFrameID)
         yCoordMMDestination = yCoordMMOrigin + yMMAway
-        nextFrameID = int(df.loc[(df['driftY_sum_mm'] < yCoordMMDestination)].max()["frameNumber"])
+
+        if yCoordMMDestination < self.__getYCoordMMOrigin(self.minFrameID()):
+            return self.minFrameID()
+
+        if yCoordMMDestination > self.__getYCoordMMOrigin(self.maxFrameID()):
+            return self.maxFrameID()
+
+        result = df.loc[(df['driftY_sum_mm'] < yCoordMMDestination)].max()["frameNumber"]
+        if result:
+            nextFrameID = int(result)
+        else:
+            print("Something wierd ine SeeFloor.getFrame: yCoordMMDestination", yCoordMMDestination, "fromFrameID", fromFrameID, "yMMAway", yMMAway,
+                  "yCoordMMOrigin", yCoordMMOrigin)
+            nextFrameID = fromFrameID
         return nextFrameID
 
     def __getYCoordMMOrigin(self, frame_id):
         df = self.getDF()
         if df is None:
             return None
-        return int(df.loc[(df['frameNumber'] == frame_id)]["driftY_sum_mm"])
+        result = df.loc[(df['frameNumber'] == frame_id)]["driftY_sum_mm"]
+        if result.empty:
+            print ("Unexpected Result: in __getYCoordMMOrigin: frame_id", frame_id)
+            return 0
+        return int(result)
 
     def saveToFile(self):
         filepath = self.__folderStruct.getSeefloorFilepath()
@@ -203,3 +221,19 @@ class SeeFloor:
         dfMerged["bottom_corner_mm"] = 1080 * dfMerged["mm_per_pixel"] + dfMerged["driftY_sum_mm"]
         dfMerged = dfMerged.sort_values(by=['frameNumber'])
         return dfMerged
+
+    def getPrevFrame(self, frame_id):
+        # type: (int) -> int
+        return self.jumpToSeefloorSlice(frame_id, -1)
+
+    def getNextFrame(self, frame_id):
+        # type: (int) -> int
+        return self.jumpToSeefloorSlice(frame_id, 1)
+
+    def crabsOnFrame(self, frame_id):
+        # type: (int) -> dict
+        crabsData = self.__crabsData
+        prev_frame_id = self.getPrevFrame(frame_id)
+        next_frame_id = self.getNextFrame(frame_id)
+        markedCrabs = crabsData.crabsBetweenFrames(prev_frame_id, next_frame_id)
+        return markedCrabs

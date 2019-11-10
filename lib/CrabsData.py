@@ -77,6 +77,7 @@ class CrabsData:
         return self.__crabsDF
 
     def crabsBetweenFrames(self, lower_frame_id, upper_frame_id):
+        # type: (int, int) -> dict
 
         crabsDF = self.__crabsDF
         crabsDF["frameNumber"] = pd.to_numeric(crabsDF["frameNumber"], errors='coerce')
@@ -87,9 +88,9 @@ class CrabsData:
 
         tmpDF = crabsDF[(crabsDF['frameNumber'] <= upper_frame_id) & (crabsDF['frameNumber'] >= lower_frame_id)]
         #print ("count in tmpDF", len(tmpDF.index),len(self.__crabsDF))
+
         #example of the output
         #[{'crabLocationX': 221, 'crabLocationY': 368, 'frameNumber': 10026},
         # {'crabLocationX': 865, 'crabLocationY': 304, 'frameNumber': 10243},
         # {'crabLocationX': 101, 'crabLocationY': 420, 'frameNumber': 10530}]
-
         return tmpDF[["frameNumber", "crabLocationY", "crabLocationX"]].reset_index(drop=True).to_dict("records")
