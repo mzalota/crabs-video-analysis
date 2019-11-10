@@ -103,7 +103,10 @@ class DecoRedDots(FrameDecorator):
         imgObj = self.frameDeco.getImgObj()
 
         redDot1 = self.__redDotsData.getRedDot1(self.getFrameID())
-        imgObj.drawCross(redDot1,5, color=(255, 0, 0))
+        imgObj.drawCross(redDot1,5, color=(0, 0, 255))
+
+        redDot2 = self.__redDotsData.getRedDot2(self.getFrameID())
+        imgObj.drawCross(redDot2,5, color=(0, 0, 255))
 
         return imgObj
 

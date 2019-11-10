@@ -39,7 +39,7 @@ class DriftData:
         self.__frameIDDict = self.__driftData[self.__COLNAME_frameNumber].to_dict()
 
     @staticmethod
-    def createFromFile(folderStruct):
+    def createFromFolderStruct(folderStruct):
         # type: (FolderStructure) -> DriftData
         filepath = folderStruct.getDriftsFilepath()
         dfRaw = pd.read_csv(filepath, delimiter="\t", na_values="(null)")

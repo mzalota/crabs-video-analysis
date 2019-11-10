@@ -24,7 +24,7 @@ class SeeFloor:
     def createFromFolderStruct(folderStruct):
         # type: (FolderStructure) -> SeeFloor
 
-        driftsData = DriftData.createFromFile(folderStruct)
+        driftsData = DriftData.createFromFolderStruct(folderStruct)
         badFramesData = BadFramesData.createFromFolderStruct(folderStruct)
         redDotsData = RedDotsData.createFromFolderStruct(folderStruct)
 
