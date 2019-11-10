@@ -28,7 +28,7 @@ class DecoGridLines(FrameDecorator):
 
     def getImgObj(self):
         # type: () -> Image
-        imgObj = self.frameDeco.getImgObj()
+        imgObj = self.frameDeco.getImgObj().copy()
         frame_id = self.frameDeco.getFrameID()
 
         distancePix = int(self.__redDotsData.getDistancePixels(frame_id))
