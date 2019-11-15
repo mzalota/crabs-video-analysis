@@ -31,20 +31,6 @@ class FramesStitcher:
         self.__framesToStitch = pd.DataFrame(columns=['frameNumber'])
 
 
-    def AAAinit_old(self, videoStream, rootDirectory, videoFileName):
-        # type: () -> FramesStitcher
-
-        self.FRAME_HEIGHT = 1080
-        self.__videoStream = videoStream
-
-        csvFileName = videoFileName + "_toCut.csv"
-        self.__driftsFilePath = rootDirectory + "/" + csvFileName
-        self.__imagesDir = rootDirectory #+ "/" + videoFileName + "/"
-
-        # Creating an empty Dataframe with column names only
-        self.__framesToStitch = pd.DataFrame(columns=['frameNumber'])
-
-
     def determineFrames(self):
         # type: () -> pd.DataFrame
         dfRaw = pd.read_csv(self.__driftsFilePath, delimiter="\t", na_values="(null)")
@@ -67,7 +53,7 @@ class FramesStitcher:
     def __addNextFrame(self, frameID):
         self.__framesToStitch = self.__framesToStitch.append({'frameNumber': int(frameID)}, ignore_index=True)
 
-
+    #TODO: This function (an the whole class) has a lot of duplication of ImagesCollage
     def processFrame(self, nextFrame, frame, prevFrame):
         #print 'Read a new frame: ', nextFrame.getFrameID()
         try:

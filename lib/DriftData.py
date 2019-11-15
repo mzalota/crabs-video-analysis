@@ -206,6 +206,7 @@ class DriftData:
             cumulativeXDrift += self.__getXDrift(nextIndex)
         return Vector(cumulativeXDrift,cumulativeYDrift)
 
+    #TODO: clean up all these various "interpolate2" functions
     def interpolate(self):
         self.__driftData = self.__interpolate(self.__driftData)
 
@@ -234,6 +235,8 @@ class DriftData:
             "frameNumber")
         df = df.combine_first(everyFrame).reset_index()
         df = df.interpolate(limit_direction='both')
+
+        #TODO: dividiing drift by 2 is not flexible. What if detectDrift step is not 2, but 3 or if it is mixed?
         df["driftX"] = df["driftX"] / 2
         df["driftY"] = df["driftY"] / 2
         df = df[[self.__COLNAME_frameNumber, self.__COLNAME_driftX, self.__COLNAME_driftY]]

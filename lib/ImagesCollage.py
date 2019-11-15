@@ -16,6 +16,7 @@ class ImagesCollage:
 
     def attachNeighbourFrames(self, thisFrame, neighboursHeight):
         # type: (Frame, Int) -> np
+        collageHeight = thisFrame.getImgObj().height() + neighboursHeight * 2
 
         prevFrame = self.__getPrevFrame(thisFrame)
         nextFrame = self.__getNextFrame(thisFrame)
@@ -26,18 +27,29 @@ class ImagesCollage:
         prevSubImage = self.__buildPrevImagePart(thisFrame, prevFrame, neighboursHeight)
         nextSubImage = self.__buildNextImagePart(thisFrame, nextFrame, neighboursHeight)
 
+        print ("prevSubImage hight", prevSubImage.height(), "width", prevSubImage.width())
+        print ("nextSubImage hight", nextSubImage.height(), "width", nextSubImage.width())
+
+
         mainCollage = self.__glueTogether(image, nextSubImage, prevSubImage)
+
 
         #resize leftCollage
         newWidth = mainCollage.width()
         newHeight = mainCollage.height()
         leftCollage = self.__resizeImage(mainCollage, newHeight, newWidth)
 
-        collageHeight = thisFrame.getImgObj().height() + neighboursHeight * 2
+        print ("mainCollage hight", newHeight, "width", newWidth)
 
         rightCollage = self.constructRightCollage(thisFrame, nextFrame, prevFrame, collageHeight)
-        filler = Image.empty(collageHeight, 100, 0).asNumpyArray()
+        print ("rightCollage hight", rightCollage.height(), "width", rightCollage.width())
 
+        withImageOnTheRight = self.__mergeSideBySide(leftCollage, rightCollage, collageHeight)
+
+        return withImageOnTheRight
+
+    def __mergeSideBySide(self, leftCollage, rightCollage, collageHeight):
+        filler = Image.empty(collageHeight, 100, 0).asNumpyArray()
         withImageOnTheRight = np.concatenate((leftCollage.asNumpyArray(), filler, rightCollage.asNumpyArray()), axis=1)
         return withImageOnTheRight
 
@@ -66,8 +78,6 @@ class ImagesCollage:
         thisFrameID = thisFrame.getFrameID()
         newFrame = Frame(newFrameID, self.__videoStream)
 
-        driftData = self.__seeFloorGeometry.getDriftData()
-        #frameDeco = DecoMarkedCrabs(newFrame, driftData, self.__crabsData)
         frameDeco = DecoMarkedCrabs(newFrame, self.__seeFloorGeometry)
 
         gridMidPoint = self.__seeFloorGeometry.getRedDotsData().midPoint(thisFrameID)
@@ -112,6 +122,64 @@ class ImagesCollage:
 
     def __buildPrevImagePart(self, thisFrame, prevFrame, height):
         # type: (FrameDecorator, FrameDecorator, int) -> Image
+        scalingFactor = self.__calculateImageScalingFactor(thisFrame, prevFrame)
+
+        subImage = prevFrame.getImgObj().topPart(int(height/scalingFactor))
+
+        xDrift = self.__xDriftBetweenFrames(thisFrame.getFrameID(), prevFrame.getFrameID())
+        #TODO: try first scaling image and then shifting horizontaly. This way we will avoid unnecessary black part on one side
+        shiftedImage = self.__shiftImageHorizontally(subImage, xDrift)
+
+        origHeight = shiftedImage.height()
+        newHeight = int(origHeight * scalingFactor)
+        origWidth = shiftedImage.width()
+        newWidth = int(origWidth * scalingFactor)
+        scaledImage = self.__resizeImage(shiftedImage, newHeight, newWidth)
+
+        if scalingFactor <1:
+            imageToReturn = scaledImage.padSidesToMakeWider(origWidth - newWidth)
+        else:
+            widthToCutOutLeft=int((newWidth-origWidth)/2)
+            areaToCut = Box(Point(widthToCutOutLeft,0), Point(widthToCutOutLeft+origWidth, height))
+            imageToReturn = scaledImage.subImage(areaToCut)
+
+        if imageToReturn.height()<height:
+            imageToReturn = imageToReturn.padOnBottom(height-imageToReturn.height())
+
+        imageToReturn.drawFrameID(prevFrame.getFrameID())
+        return imageToReturn
+
+
+    def __buildNextImagePart(self, thisFrame, nextFrame, height):
+        # type: (FrameDecorator, FrameDecorator, int) -> Image
+        scalingFactor = self.__calculateImageScalingFactor(thisFrame, nextFrame)
+
+        subImage = nextFrame.getImgObj().bottomPart(int(height/scalingFactor))
+
+        xDrift = self.__xDriftBetweenFrames(thisFrame.getFrameID(), nextFrame.getFrameID())
+        shiftedImage = self.__shiftImageHorizontally(subImage, xDrift)
+
+        origHeight = shiftedImage.height()
+        newHeight = int(origHeight * scalingFactor)
+        origWidth = shiftedImage.width()
+        newWidth = int(origWidth * scalingFactor)
+        scaledImage = self.__resizeImage(shiftedImage,newHeight,newWidth)
+
+        if scalingFactor <1:
+            imageToReturn = scaledImage.padSidesToMakeWider(origWidth - newWidth)
+        else:
+            widthToCutOutLeft = int((newWidth - origWidth) / 2)
+            areaToCut = Box(Point(widthToCutOutLeft, scaledImage.height()-height), Point(widthToCutOutLeft + origWidth, height))
+            imageToReturn = scaledImage.subImage(areaToCut)
+
+        if imageToReturn.height()<height:
+            imageToReturn = imageToReturn.padOnTop(height-imageToReturn.height())
+
+        imageToReturn.drawFrameID(nextFrame.getFrameID())
+        return imageToReturn
+
+    def __buildPrevImagePart_orig(self, thisFrame, prevFrame, height):
+        # type: (FrameDecorator, FrameDecorator, int) -> Image
         subImage = prevFrame.getImgObj().topPart(height)
 
         xDrift = self.__xDriftBetweenFrames(thisFrame.getFrameID(), prevFrame.getFrameID())
@@ -135,7 +203,7 @@ class ImagesCollage:
         imageToReturn.drawFrameID(prevFrame.getFrameID())
         return imageToReturn
 
-    def __buildNextImagePart(self, thisFrame, nextFrame, height):
+    def __buildNextImagePart_orig(self, thisFrame, nextFrame, height):
         subImage = nextFrame.getImgObj().bottomPart(height)
 
         xDrift = self.__xDriftBetweenFrames(thisFrame.getFrameID(), nextFrame.getFrameID())

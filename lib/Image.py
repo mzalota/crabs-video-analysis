@@ -160,6 +160,12 @@ class Image:
         resultImg = self.__concatenateNumpyArrayToTheRight(leftImageObj.asNumpyArray(), rightImageObj.asNumpyArray())
         return Image(resultImg)
 
+    def resizeImage(self, newHeight, newWidth):
+        # type: (int, int) -> Image
+        newImageNP = cv2.resize(self.asNumpyArray(), dsize=(newWidth, newHeight),
+                                   interpolation=cv2.INTER_CUBIC)
+        return Image(newImageNP)
+
     def growImage(self, newWidth, newHeight):
         fillerWidth = newWidth - self.width()
         fillerHeight = newHeight - self.height()
