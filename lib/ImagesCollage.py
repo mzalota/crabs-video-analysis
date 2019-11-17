@@ -197,29 +197,31 @@ class ImagesCollage:
             xShiftDueToDownScaling = Frame.FRAME_WIDTH*(1-scalingFactor)/2
             xShift = xShift+ xShiftDueToDownScaling
 
+        imgCopy = nextFrame.getImgObj().copy()
+        scaledImage = self.__resizeImage(imgCopy, int(imgCopy.height()*scalingFactor), int(imgCopy.width() * scalingFactor))
 
-        subImageButTooHigh = nextFrame.getImgObj().bottomPart(int(height/scalingFactor))
-        scaledImageToCorrectHeight = self.__resizeImage(subImageButTooHigh, height, int(width * scalingFactor))
-        xShiftedImage = self.__shiftImageHorizontally(scaledImageToCorrectHeight, int(xShift))
-
-        if xShiftedImage.width() > width:
-            #The image is wider than necessary. Trim equaly from both sides of image
-            #TODO: extract this logic into Image.trimSides() function
-            widthToCutOutLeft = int((xShiftedImage.width() - width)/2)
-            areaToCut = Box(Point(widthToCutOutLeft, xShiftedImage.height()-height), Point(widthToCutOutLeft + width, height))
-            imageToReturn = xShiftedImage.subImage(areaToCut)
+        if scalingFactor>1:
+            tmpImg = self.__shiftImageHorizontally(scaledImage, int(xShift))
+            xShiftedImage = tmpImg.bottomPart(int(height))
+            imageToReturn = xShiftedImage.adjustWidthWithoutRescaling(width)
         else:
-            if xShift < 0:
-                imageToReturn = xShiftedImage.padRight(width-xShiftedImage.width())
-            else:
-                imageToReturn = xShiftedImage.padLeft(width-xShiftedImage.width())
+            tmp1 = scaledImage.bottomPart(int(height))
+            tmp2 = tmp1.adjustWidthWithoutRescaling(width)
 
-        if imageToReturn.height()<height:
-            imageToReturn = imageToReturn.padOnTop(height-imageToReturn.height())
+            imageToReturn = self.__shiftImageHorizontally(tmp2, int(xShift))
+
+            if imageToReturn.height()<height:
+                imageToReturn = imageToReturn.padOnTop(height-imageToReturn.height())
 
         imageToReturn.drawFrameID(nextFrame.getFrameID())
         return imageToReturn
 
+    def trimSides_neverUsed(self, height, width, xShiftedImage):
+        widthToCutOutLeft = int((xShiftedImage.width() - width) / 2)
+        areaToCut = Box(Point(widthToCutOutLeft, xShiftedImage.height() - height),
+                        Point(widthToCutOutLeft + width, height))
+        imageToReturn = xShiftedImage.subImage(areaToCut)
+        return imageToReturn
 
     def __calculateImageScalingFactor(self, thisFrame, otherFrame):
         distanceThis = self.__seeFloorGeometry.getRedDotsData().getDistancePixels(thisFrame.getFrameID())
@@ -250,7 +252,6 @@ class ImagesCollage:
         #slide "boxAroundImage" to the left or to the right depending if xDrift is negative or positive
         boxAroundAreaThatWeNeedToKeep = boxAroundImage.translateBy(Vector(xDrift,0))
         imageToReturn = subImageWithFillerOnBothSides.subImage(boxAroundAreaThatWeNeedToKeep)
-
         return imageToReturn
 
     def __glueTogether(self, image, nextSubImage, prevSubImage):

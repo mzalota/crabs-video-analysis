@@ -114,7 +114,6 @@ class Image:
             image_with_boxes[rr, cc] = 1  # set color white
         return image_with_boxes
 
-
     def padOnBottom(self, height):
         # type: (int) -> Image
         fillerHorizontal = Image.empty(height, self.width())
@@ -138,6 +137,11 @@ class Image:
         return self.concatenateToTheRight(filler)
 
     def padSidesToMakeWider(self, widthToAdd):
+        leftPadding = int(widthToAdd / 2)
+        rightPadding = widthToAdd - leftPadding
+        return self.padLeft(leftPadding).padRight(rightPadding)
+
+    def padSidesToMakeWider_orig(self, widthToAdd):
         #newWidth = self.width()
         origHeight = self.height()
 
@@ -148,6 +152,20 @@ class Image:
         tmp2 = self.concatenateToTheRight(fillerVertical1)
         imageToReturn = fillerVertical2.concatenateToTheRight(tmp2)
         return imageToReturn
+
+    def trimSides(self, newWidth):
+        height = self.height()
+        widthToCutOutLeft = int((self.width() - newWidth) / 2)
+        areaToCut = Box(Point(widthToCutOutLeft, self.height() - height),
+                        Point(widthToCutOutLeft + newWidth, height))
+        imageToReturn = self.subImage(areaToCut)
+        return imageToReturn
+
+    def adjustWidthWithoutRescaling(self,newWidth):
+        if self.width() > newWidth:
+            return self.trimSides(newWidth)
+        else:
+            return self.padSidesToMakeWider(newWidth - self.width())
 
     def concatenateToTheBottom(self, imageObj):
 
