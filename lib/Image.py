@@ -125,6 +125,18 @@ class Image:
         fillerHorizontal = Image.empty(height, self.width())
         return fillerHorizontal.concatenateToTheBottom(self)
 
+    def padLeft(self, widthToAdd):
+        # type: (int) -> Image
+        origHeight = self.height()
+        filler = Image.empty(origHeight, widthToAdd)
+        return filler.concatenateToTheRight(self)
+
+    def padRight(self, widthToAdd):
+        # type: (int) -> Image
+        origHeight = self.height()
+        filler = Image.empty(origHeight, widthToAdd)
+        return self.concatenateToTheRight(filler)
+
     def padSidesToMakeWider(self, widthToAdd):
         #newWidth = self.width()
         origHeight = self.height()

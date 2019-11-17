@@ -10,6 +10,7 @@ from lib.common import Point, Box, Vector
 
 class ImagesCollage:
     def __init__(self, videoStream, seeFloorGeometry, crabsData):
+        # type: (VideoStream, SeeFloor, CrabsData) -> object
         self.__videoStream = videoStream
         self.__seeFloorGeometry = seeFloorGeometry
         self.__crabsData = crabsData
@@ -125,6 +126,41 @@ class ImagesCollage:
         scalingFactor = self.__calculateImageScalingFactor(thisFrame, prevFrame)
 
         subImage = prevFrame.getImgObj().topPart(int(height/scalingFactor))
+        print ("subImage height", subImage.height(),subImage.width())
+
+        xDrift = self.__xDriftBetweenFrames(thisFrame.getFrameID(), prevFrame.getFrameID())
+        #TODO: try first scaling image and then shifting horizontaly. This way we will avoid unnecessary black part on one side
+
+        origHeight = subImage.height()
+        newHeight = height
+        origWidth = subImage.width()
+        newWidth = int(origWidth * scalingFactor)
+        scaledImageTmp = self.__resizeImage(subImage, newHeight, newWidth)
+        print ("scaledImageTmp height", scaledImageTmp.height(),scaledImageTmp.width())
+
+        scaledImage = self.__shiftImageHorizontally(scaledImageTmp, xDrift)
+
+        print ("scaledImage height", scaledImage.height(),scaledImage.width())
+
+        if scalingFactor <1:
+            imageToReturn = scaledImage.padSidesToMakeWider(origWidth - newWidth)
+        else:
+            widthToCutOutLeft=int((newWidth-origWidth)/2)
+            areaToCut = Box(Point(widthToCutOutLeft,0), Point(widthToCutOutLeft+origWidth, height))
+            imageToReturn = scaledImage.subImage(areaToCut)
+            print ("imageToReturn 10 height", imageToReturn.height(),imageToReturn.width())
+
+        if imageToReturn.height()<height:
+            imageToReturn = imageToReturn.padOnBottom(height-imageToReturn.height())
+
+        imageToReturn.drawFrameID(prevFrame.getFrameID())
+        return imageToReturn
+
+    def __buildPrevImagePart_works(self, thisFrame, prevFrame, height):
+        # type: (FrameDecorator, FrameDecorator, int) -> Image
+        scalingFactor = self.__calculateImageScalingFactor(thisFrame, prevFrame)
+
+        subImage = prevFrame.getImgObj().topPart(int(height/scalingFactor))
 
         xDrift = self.__xDriftBetweenFrames(thisFrame.getFrameID(), prevFrame.getFrameID())
         #TODO: try first scaling image and then shifting horizontaly. This way we will avoid unnecessary black part on one side
@@ -151,6 +187,68 @@ class ImagesCollage:
 
 
     def __buildNextImagePart(self, thisFrame, nextFrame, height):
+        # type: (FrameDecorator, FrameDecorator, int) -> Image
+
+        scalingFactor = self.__calculateImageScalingFactor(thisFrame, nextFrame)
+        xDrift = self.__xDriftBetweenFrames(thisFrame.getFrameID(), nextFrame.getFrameID())
+
+        if scalingFactor<1:
+            xShiftDueToScaling = Frame.FRAME_WIDTH*(1-scalingFactor)/2
+        else:
+            xShiftDueToScaling = 0
+
+
+        xShift = (xShiftDueToScaling+xDrift)
+
+        print ("__buildNextImagePart: scalingFactor", scalingFactor)
+        print ("__buildNextImagePart: xDrift", xDrift)
+        print ("__buildNextImagePart: xShiftDueToScaling", xShiftDueToScaling)
+        print ("__buildNextImagePart: xShift", xShift)
+        origWidth = nextFrame.getImgObj().width()
+        newWidth = int(origWidth * scalingFactor)
+
+
+        subImage = nextFrame.getImgObj().bottomPart(int(height/scalingFactor))
+        print ("__buildNextImagePart: subImage 10 height", subImage.height(), subImage.width())
+
+        scaledImageTmp = self.__resizeImage(subImage,height,newWidth)
+        print ("__buildNextImagePart: scaledImageTmp 10 height", scaledImageTmp.height(), scaledImageTmp.width())
+
+        scaledImage = self.__shiftImageHorizontally(scaledImageTmp, int(xShift))
+        print ("__buildNextImagePart: scaledImage 10 height", scaledImage.height(), scaledImage.width())
+
+        if scalingFactor >1:
+            print "__buildNextImagePart: scaling factor is above 1"
+            widthToCutOutLeft = int((newWidth - origWidth)/2)
+            areaToCut = Box(Point(widthToCutOutLeft, scaledImage.height()-height), Point(widthToCutOutLeft + origWidth, height))
+            #areaToCut = Box(Point(0, scaledImage.height()-height), Point(origWidth, height))
+            imageToReturn = scaledImage.subImage(areaToCut)
+
+        else:
+            print "__buildNextImagePart: scaling factor is less then 1"
+            # imageToReturn = scaledImage.padSidesToMakeWider(origWidth - newWidth)
+            imageToReturn = scaledImage
+
+
+        print ("__buildNextImagePart: imageToReturn  height", imageToReturn.height(), imageToReturn.width())
+
+        if imageToReturn.width()<origWidth:
+            print ("__buildNextImagePart: padding width", origWidth-imageToReturn.width())
+            if xShift < 0:
+                print ("__buildNextImagePart: padding to the right")
+                imageToReturn = imageToReturn.padRight(origWidth-imageToReturn.width())
+            else:
+                print ("__buildNextImagePart: padding to the left")
+                imageToReturn = imageToReturn.padLeft(origWidth-imageToReturn.width())
+
+        if imageToReturn.height()<height:
+            print "__buildNextImagePart: padding height"
+            imageToReturn = imageToReturn.padOnTop(height-imageToReturn.height())
+
+        imageToReturn.drawFrameID(nextFrame.getFrameID())
+        return imageToReturn
+
+    def __buildNextImagePart_works(self, thisFrame, nextFrame, height):
         # type: (FrameDecorator, FrameDecorator, int) -> Image
         scalingFactor = self.__calculateImageScalingFactor(thisFrame, nextFrame)
 
@@ -236,8 +334,13 @@ class ImagesCollage:
 
 
     def __xDriftBetweenFrames(self, thisFrameID, nextFrameID):
-        drift = self.__seeFloorGeometry.getDriftData().driftBetweenFrames(thisFrameID, nextFrameID)
-        xDrift = int(drift.x)
+
+        xDriftMM = self.__seeFloorGeometry.getXDriftMM(thisFrameID,nextFrameID)
+        mmPerPixel = self.__seeFloorGeometry.getRedDotsData().getMMPerPixel(thisFrameID)
+        xDrift = int(xDriftMM/mmPerPixel)
+
+        driftRaw = self.__seeFloorGeometry.getDriftData().driftBetweenFrames(thisFrameID, nextFrameID)
+        print ("in __xDriftBetweenFrames: thisFrameID", thisFrameID, "nextFrameID", nextFrameID, "driftRaw", driftRaw.x, "xDrift", xDrift, "xDriftMM", xDriftMM)
         return xDrift
 
     def __shiftImageHorizontally(self, subImage, xDrift):

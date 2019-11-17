@@ -238,8 +238,8 @@ class DriftData:
 
         #TODO: dividiing drift by 2 is not flexible. What if detectDrift step is not 2, but 3 or if it is mixed?
         df["driftX"] = df["driftX"] / 2
-        df["driftY"] = df["driftY"] / 2
         df = df[[self.__COLNAME_frameNumber, self.__COLNAME_driftX, self.__COLNAME_driftY]]
+        df["driftY"] = df["driftY"] / 2
         return df
 
     def getNextFrame(self, yPixelsAway, fromFrameID):

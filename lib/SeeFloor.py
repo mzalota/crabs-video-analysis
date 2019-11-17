@@ -190,6 +190,12 @@ class SeeFloor:
             nextFrameID = fromFrameID
         return nextFrameID
 
+    def getXDriftMM(self,fromFrameID, toFrameID):
+        # type: (int, int) -> float
+        startXCoordMM = self.__getXCoordMMOrigin(fromFrameID)
+        endXCoordMM = self.__getXCoordMMOrigin(toFrameID)
+        return endXCoordMM-startXCoordMM
+
     def __getYCoordMMOrigin(self, frame_id):
         df = self.getDF()
         if df is None:
@@ -197,6 +203,16 @@ class SeeFloor:
         result = df.loc[(df['frameNumber'] == frame_id)]["driftY_sum_mm"]
         if result.empty:
             print ("Unexpected Result: in __getYCoordMMOrigin: frame_id", frame_id)
+            return 0
+        return int(result)
+
+    def __getXCoordMMOrigin(self, frame_id):
+        df = self.getDF()
+        if df is None:
+            return None
+        result = df.loc[(df['frameNumber'] == frame_id)]["driftX_sum_mm"]
+        if result.empty:
+            print ("Unexpected Result: in __getXCoordMMOrigin: frame_id", frame_id)
             return 0
         return int(result)
 
@@ -215,9 +231,9 @@ class SeeFloor:
     def __mergeDriftsAndRedDots(self, dfDrifts, dfRedDots):
         dfMerged = pd.merge(dfDrifts, dfRedDots, on='frameNumber', how='outer', suffixes=('_drift', '_reddots'))
         dfMerged["driftY_mm"] = dfMerged["driftY"] * dfMerged["mm_per_pixel"]
-        # dfMerged["driftX_mm"] = dfMerged["driftX"] * dfMerged["mm_per_pixel"]
+        dfMerged["driftX_mm"] = dfMerged["driftX"] * dfMerged["mm_per_pixel"]
         dfMerged["driftY_sum_mm"] = dfMerged["driftY_mm"].cumsum()
-        # dfMerged["driftX_sum_mm"] = dfMerged["driftX_mm"].cumsum()
+        dfMerged["driftX_sum_mm"] = dfMerged["driftX_mm"].cumsum()
         dfMerged["bottom_corner_mm"] = 1080 * dfMerged["mm_per_pixel"] + dfMerged["driftY_sum_mm"]
         dfMerged = dfMerged.sort_values(by=['frameNumber'])
         return dfMerged
