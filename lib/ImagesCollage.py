@@ -193,9 +193,9 @@ class ImagesCollage:
 
         scalingFactor = self.__calculateImageScalingFactor(thisFrame, nextFrame)
         xShift = self.__xDriftBetweenFrames(thisFrame.getFrameID(), nextFrame.getFrameID())
-        if scalingFactor<1:
-            xShiftDueToDownScaling = Frame.FRAME_WIDTH*(1-scalingFactor)/2
-            xShift = xShift+ xShiftDueToDownScaling
+        #if scalingFactor<1:
+        #    xShiftDueToDownScaling = Frame.FRAME_WIDTH*(1-scalingFactor)/2
+        #    xShift = xShift+ xShiftDueToDownScaling
 
         imgCopy = nextFrame.getImgObj().copy()
         scaledImage = self.__resizeImage(imgCopy, int(imgCopy.height()*scalingFactor), int(imgCopy.width() * scalingFactor))
