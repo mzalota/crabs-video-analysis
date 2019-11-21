@@ -123,112 +123,51 @@ class ImagesCollage:
 
     def __buildPrevImagePart(self, thisFrame, prevFrame, height):
         # type: (FrameDecorator, FrameDecorator, int) -> Image
-        scalingFactor = self.__calculateImageScalingFactor(thisFrame, prevFrame)
 
-        subImage = prevFrame.getImgObj().topPart(int(height/scalingFactor))
-        print ("subImage height", subImage.height(),subImage.width())
+        adjustedImage = self.__scaleAndSchiftOtherFrameToMatchThisFrame(thisFrame.getFrameID(), prevFrame.getFrameID(), prevFrame.getImgObj().copy())
 
-        xDrift = self.__xDriftBetweenFrames(thisFrame.getFrameID(), prevFrame.getFrameID())
-        #TODO: try first scaling image and then shifting horizontaly. This way we will avoid unnecessary black part on one side
-
-        origHeight = subImage.height()
-        newHeight = height
-        origWidth = subImage.width()
-        newWidth = int(origWidth * scalingFactor)
-        scaledImageTmp = self.__resizeImage(subImage, newHeight, newWidth)
-        print ("scaledImageTmp height", scaledImageTmp.height(),scaledImageTmp.width())
-
-        scaledImage = self.__shiftImageHorizontally(scaledImageTmp, xDrift)
-
-        print ("scaledImage height", scaledImage.height(),scaledImage.width())
-
-        if scalingFactor <1:
-            imageToReturn = scaledImage.padSidesToMakeWider(origWidth - newWidth)
-        else:
-            widthToCutOutLeft=int((newWidth-origWidth)/2)
-            areaToCut = Box(Point(widthToCutOutLeft,0), Point(widthToCutOutLeft+origWidth, height))
-            imageToReturn = scaledImage.subImage(areaToCut)
-            print ("imageToReturn 10 height", imageToReturn.height(),imageToReturn.width())
+        imageToReturn = adjustedImage.topPart(int(height))
+        imageToReturn.drawFrameID(prevFrame.getFrameID())
 
         if imageToReturn.height()<height:
             imageToReturn = imageToReturn.padOnBottom(height-imageToReturn.height())
-
-        imageToReturn.drawFrameID(prevFrame.getFrameID())
-        return imageToReturn
-
-    def __buildPrevImagePart_works(self, thisFrame, prevFrame, height):
-        # type: (FrameDecorator, FrameDecorator, int) -> Image
-        scalingFactor = self.__calculateImageScalingFactor(thisFrame, prevFrame)
-
-        subImage = prevFrame.getImgObj().topPart(int(height/scalingFactor))
-
-        xDrift = self.__xDriftBetweenFrames(thisFrame.getFrameID(), prevFrame.getFrameID())
-        #TODO: try first scaling image and then shifting horizontaly. This way we will avoid unnecessary black part on one side
-        shiftedImage = self.__shiftImageHorizontally(subImage, xDrift)
-
-        origHeight = shiftedImage.height()
-        newHeight = int(origHeight * scalingFactor)
-        origWidth = shiftedImage.width()
-        newWidth = int(origWidth * scalingFactor)
-        scaledImage = self.__resizeImage(shiftedImage, newHeight, newWidth)
-
-        if scalingFactor <1:
-            imageToReturn = scaledImage.padSidesToMakeWider(origWidth - newWidth)
-        else:
-            widthToCutOutLeft=int((newWidth-origWidth)/2)
-            areaToCut = Box(Point(widthToCutOutLeft,0), Point(widthToCutOutLeft+origWidth, height))
-            imageToReturn = scaledImage.subImage(areaToCut)
-
-        if imageToReturn.height()<height:
-            imageToReturn = imageToReturn.padOnBottom(height-imageToReturn.height())
-
-        imageToReturn.drawFrameID(prevFrame.getFrameID())
         return imageToReturn
 
 
     def __buildNextImagePart(self, thisFrame, nextFrame, height):
         # type: (FrameDecorator, FrameDecorator, int) -> Image
 
-        width = thisFrame.getImgObj().width()
+        adjustedImage = self.__scaleAndSchiftOtherFrameToMatchThisFrame(thisFrame.getFrameID(), nextFrame.getFrameID(), nextFrame.getImgObj().copy())
 
-        scalingFactor = self.__calculateImageScalingFactor(thisFrame, nextFrame)
-        xShift = self.__xDriftBetweenFrames(thisFrame.getFrameID(), nextFrame.getFrameID())
-        #if scalingFactor<1:
-        #    xShiftDueToDownScaling = Frame.FRAME_WIDTH*(1-scalingFactor)/2
-        #    xShift = xShift+ xShiftDueToDownScaling
+        imageToReturn = adjustedImage.bottomPart(int(height))
+        imageToReturn.drawFrameID(nextFrame.getFrameID())
 
-        imgCopy = nextFrame.getImgObj().copy()
-        scaledImage = self.__resizeImage(imgCopy, int(imgCopy.height()*scalingFactor), int(imgCopy.width() * scalingFactor))
+        if imageToReturn.height()<height:
+            imageToReturn = imageToReturn.padOnTop(height-imageToReturn.height())
+        return imageToReturn
 
-        if scalingFactor>1:
-            tmpImg = self.__shiftImageHorizontally(scaledImage, int(xShift))
-            xShiftedImage = tmpImg.bottomPart(int(height))
+    def __scaleAndSchiftOtherFrameToMatchThisFrame(self, thisFrameID, otherFrameID, imgCopy):
+        # type: (int, int, Image) -> Image
+        width = imgCopy.width()
+
+        scalingFactor = self.__calculateImageScalingFactor(thisFrameID, otherFrameID)
+        xShift = self.__xDriftBetweenFrames(thisFrameID, otherFrameID)
+        scaledImage = self.__resizeImage(imgCopy, int(imgCopy.height() * scalingFactor), int(imgCopy.width() * scalingFactor))
+
+        if scalingFactor > 1:
+            xShiftedImage = self.__shiftImageHorizontally(scaledImage, int(xShift))
             imageToReturn = xShiftedImage.adjustWidthWithoutRescaling(width)
         else:
-            tmp1 = scaledImage.bottomPart(int(height))
-            tmp2 = tmp1.adjustWidthWithoutRescaling(width)
-
+            tmp2 = scaledImage.adjustWidthWithoutRescaling(width)
             imageToReturn = self.__shiftImageHorizontally(tmp2, int(xShift))
-
-            if imageToReturn.height()<height:
-                imageToReturn = imageToReturn.padOnTop(height-imageToReturn.height())
-
-        imageToReturn.drawFrameID(nextFrame.getFrameID())
         return imageToReturn
 
-    def trimSides_neverUsed(self, height, width, xShiftedImage):
-        widthToCutOutLeft = int((xShiftedImage.width() - width) / 2)
-        areaToCut = Box(Point(widthToCutOutLeft, xShiftedImage.height() - height),
-                        Point(widthToCutOutLeft + width, height))
-        imageToReturn = xShiftedImage.subImage(areaToCut)
-        return imageToReturn
 
-    def __calculateImageScalingFactor(self, thisFrame, otherFrame):
-        distanceThis = self.__seeFloorGeometry.getRedDotsData().getDistancePixels(thisFrame.getFrameID())
-        distancePrev = self.__seeFloorGeometry.getRedDotsData().getDistancePixels(otherFrame.getFrameID())
+    def __calculateImageScalingFactor(self, thisFrameID, otherFrameID):
+        distanceThis = self.__seeFloorGeometry.getRedDotsData().getDistancePixels(thisFrameID)
+        distancePrev = self.__seeFloorGeometry.getRedDotsData().getDistancePixels(otherFrameID)
         scalingFactor = distanceThis / distancePrev
         return scalingFactor
-
 
     def __xDriftBetweenFrames(self, thisFrameID, nextFrameID):
 
