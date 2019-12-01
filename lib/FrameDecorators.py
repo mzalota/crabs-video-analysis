@@ -114,21 +114,34 @@ class DecoMarkedCrabs(FrameDecorator):
             #print ('markedCrab', markedCrab)
             frame_number = markedCrab['frameNumber']
 
-            crabLocation = Point(markedCrab['crabLocationX'], markedCrab['crabLocationY'])
+            crabLocationOrig = Point(markedCrab['crabLocationX'], markedCrab['crabLocationY'])
 
-            crabFeature = Feature(self.__seefloorGeometry.getDriftData(), frame_number, crabLocation, 5)
-            crabLocation = crabFeature.getCoordinateInFrame(frame_id)
+            #crabFeature = Feature(self.__seefloorGeometry.getDriftData(), frame_number, crabLocationOrig, 5)
+            #crabLocation = crabFeature.getCoordinateInFrame(frame_id)
+            #mainImage.drawCross(crabLocation)
 
-            #print ('crabLocation', str(crabLocation))
-            mainImage.drawCross(crabLocation)
+            crabLocation2 = self.__getCoordinateInFrame(frame_number,frame_id,crabLocationOrig)
+            mainImage.drawCross(crabLocation2, color=(255, 0, 0))
+
+            #print("crabLocation Old", str(crabLocation), "new", str(crabLocation2), "orig", str(crabLocationOrig))
 
         #timer.lap("Number of crabs" + str(len(markedCrabs)))
 
+    def __getCoordinateInFrame(self, frame_number, frameID, crabLocation):
+        # type: (String) -> Point
+        drift = self.__seefloorGeometry.driftBetweenFrames(frame_number,frameID)
+        newPoint = crabLocation.translateBy(drift)
+        return newPoint
+
     def __crabsOnFrame(self, frame_id):
         # type: (int) -> dict
-        prev_frame_id = self.__seefloorGeometry.getPrevFrame(frame_id)
-        next_frame_id = self.__seefloorGeometry.getNextFrame(frame_id)
+        prev_frame_id_old = self.__seefloorGeometry.getDriftData().getNextFrame(-Frame.FRAME_HEIGHT, frame_id)
+        prev_frame_id = self.__seefloorGeometry.getPrevFrameMM(frame_id)
+        next_frame_id_old = self.__seefloorGeometry.getDriftData().getNextFrame(Frame.FRAME_HEIGHT, frame_id)
+        next_frame_id = self.__seefloorGeometry.getNextFrameMM(frame_id)
+        #print("DecoMarkedCrabs.__crabsOnFrame prev_frame_id:", prev_frame_id, "old", prev_frame_id_old, "next_frame_id", next_frame_id, "old", next_frame_id_old)
         markedCrabs = self.__crabsData.crabsBetweenFrames(prev_frame_id, next_frame_id)
+        #print("markedCrabs", str(markedCrabs))
         return markedCrabs
 
 

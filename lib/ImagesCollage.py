@@ -108,7 +108,6 @@ class ImagesCollage:
         #timer.lap("frameDeco.getImgObj()")
         return newImage.copy()
 
-
     def __scaleAndSchiftOtherFrameToMatchThisFrame(self, referenceFrameID, frameID, imageToScale):
         # type: (int, int, Image) -> Image
 

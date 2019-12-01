@@ -8,6 +8,9 @@ from lib.FolderStructure import FolderStructure
 import pandas as pd
 import numpy
 
+from lib.common import Vector
+
+
 class SeeFloor(PandasWrapper):
     __COLNAME_driftX = 'driftX'
     __COLNAME_driftY = 'driftY'
@@ -41,12 +44,15 @@ class SeeFloor(PandasWrapper):
         return newObj
 
     def getDriftData(self):
+        # type: () -> DriftData
         return self.__driftData
 
     def getRedDotsData(self):
+        # type: () -> RedDotsData
         return self.__redDotsData
 
     def setBadFramesData(self, badFramesData):
+        # type: (BadFramesData) -> None
         self.__badFramesData = badFramesData
 
     def maxFrameID(self):
@@ -169,6 +175,15 @@ class SeeFloor(PandasWrapper):
         mm_to_jump = pixels_to_jump * scale
         return self.getFrame(mm_to_jump,frame_id)
 
+    def getNextFrameMM(self, thisFrameID):
+        thisFrameHeightMM = self.heightMM(int(thisFrameID))
+        return self.getFrame(thisFrameHeightMM, thisFrameID)
+
+    def getPrevFrameMM(self, thisFrameID):
+        thisFrameHeightMM = self.heightMM(int(thisFrameID))
+        return self.getFrame(-thisFrameHeightMM, thisFrameID)
+
+
     def getFrame(self, yMMAway, fromFrameID):
         # type: (float, int) -> int
         df = self.getDF()
@@ -193,6 +208,24 @@ class SeeFloor(PandasWrapper):
             nextFrameID = fromFrameID
         return nextFrameID
 
+    def driftBetweenFrames(self, fromFrameID, toFrameID):
+        # type: (int, int) -> Vector
+
+        if fromFrameID < self.__driftData.minFrameID() or toFrameID < self.__driftData.minFrameID():
+            # return Vector(0,0)
+            return None
+
+        if fromFrameID > self.__driftData.maxFrameID() or toFrameID > self.__driftData.maxFrameID():
+            # return Vector(0, 0)
+            return None
+
+        if (fromFrameID == toFrameID):
+            return Vector(0, 0)
+
+        driftX = self.getXDriftPixels(fromFrameID, toFrameID)
+        driftY = self.getYDriftPixels(fromFrameID, toFrameID)
+        return Vector(driftX, driftY)
+
     def getXDriftPixels(self, fromFrameID, toFrameID):
         # type: (int, int) -> int
         xDriftMM = self.getXDriftMM(fromFrameID, toFrameID)
@@ -200,11 +233,24 @@ class SeeFloor(PandasWrapper):
         xDrift = xDriftMM/mmPerPixel
         return int(xDrift)
 
+    def getYDriftPixels(self, fromFrameID, toFrameID):
+        # type: (int, int) -> int
+        yDriftMM = self.getYDriftMM(fromFrameID, toFrameID)
+        mmPerPixel = self.getRedDotsData().getMMPerPixel(fromFrameID)
+        yDrift = yDriftMM/mmPerPixel
+        return int(yDrift)
+
     def getXDriftMM(self,fromFrameID, toFrameID):
         # type: (int, int) -> float
         startXCoordMM = self.__getXCoordMMOrigin(fromFrameID)
         endXCoordMM = self.__getXCoordMMOrigin(toFrameID)
         return endXCoordMM-startXCoordMM
+
+    def getYDriftMM(self,fromFrameID, toFrameID):
+        # type: (int, int) -> float
+        startYCoordMM = self.__getYCoordMMOrigin(fromFrameID)
+        endYCoordMM = self.__getYCoordMMOrigin(toFrameID)
+        return endYCoordMM-startYCoordMM
 
     def heightMM(self,frame_id):
         # type: (int) -> float
