@@ -196,7 +196,22 @@ class SeeFloor:
         endXCoordMM = self.__getXCoordMMOrigin(toFrameID)
         return endXCoordMM-startXCoordMM
 
+    def heightMM(self,frame_id):
+        # type: (int) -> float
+        df = self.getDF()
+        if df is None:
+            return None
+
+        result = df.loc[(df['frameNumber'] == frame_id)]["mm_per_pixel"]
+        if result.empty:
+            print ("Unexpected Result: in __getYCoordMMOrigin: frame_id", frame_id)
+            return None
+
+        mmPerPixel = float(result)
+        return  Frame.FRAME_HEIGHT*mmPerPixel
+
     def __getYCoordMMOrigin(self, frame_id):
+        # type: (int) -> float
         df = self.getDF()
         if df is None:
             return None
@@ -204,7 +219,7 @@ class SeeFloor:
         if result.empty:
             print ("Unexpected Result: in __getYCoordMMOrigin: frame_id", frame_id)
             return 0
-        return int(result)
+        return float(result)
 
     def __getXCoordMMOrigin(self, frame_id):
         df = self.getDF()

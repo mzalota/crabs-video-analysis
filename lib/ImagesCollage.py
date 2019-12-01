@@ -28,9 +28,7 @@ class ImagesCollage:
         prevSubImage = self.__buildPrevImagePart(thisFrame, prevFrame, neighboursHeight)
         nextSubImage = self.__buildNextImagePart(thisFrame, nextFrame, neighboursHeight)
 
-        print ("prevSubImage hight", prevSubImage.height(), "width", prevSubImage.width())
-        print ("nextSubImage hight", nextSubImage.height(), "width", nextSubImage.width())
-
+        #print ("prevSubImage hight", prevSubImage.height(), "width", prevSubImage.width())
 
         mainCollage = self.__glueTogether(image, nextSubImage, prevSubImage)
 
@@ -105,13 +103,36 @@ class ImagesCollage:
         # type: (Frame, Frame) -> Image
         nextFrameID = int(nextFrame.getFrameID())
         afterMiddleFrameID = int(thisFrame.getFrameID()) + int((nextFrameID - int(thisFrame.getFrameID())) / 2)
+        afterMiddleFrame = self.__constructFrame(afterMiddleFrameID, thisFrame)
+        afterMiddleImage = self.__buildNextImagePart(thisFrame, afterMiddleFrame, thisFrame.getImgObj().height())
+        afterMiddleImage.drawFrameID(str(afterMiddleFrameID))
+        return afterMiddleImage
+
+    def __constructRightPrev(self, thisFrame, prevFrame):
+        # type: (Frame, Frame) -> Image
+        prevFrameID = int(prevFrame.getFrameID())
+        beforeMiddleFrameID_old = prevFrameID + int((int(thisFrame.getFrameID()) - prevFrameID) / 2)
+        thisFrameHeightMM = self.__seeFloorGeometry.heightMM(int(thisFrame.getFrameID()))
+        beforeMiddleFrameID = self.__seeFloorGeometry.getFrame(-thisFrameHeightMM/2, thisFrame.getFrameID())
+
+        print ("beforeMiddleFrameID old", beforeMiddleFrameID_old, "new ", beforeMiddleFrameID, "mmHeight", thisFrameHeightMM)
+
+        beforeMiddleFrame = self.__constructFrame(beforeMiddleFrameID, thisFrame)
+        beforeMiddleImage = self.__buildPrevImagePart(thisFrame, beforeMiddleFrame, thisFrame.getImgObj().height())
+        beforeMiddleImage.drawFrameID(str(beforeMiddleFrameID))
+        return beforeMiddleImage
+
+    def __constructRightNext_orig(self, thisFrame, nextFrame):
+        # type: (Frame, Frame) -> Image
+        nextFrameID = int(nextFrame.getFrameID())
+        afterMiddleFrameID = int(thisFrame.getFrameID()) + int((nextFrameID - int(thisFrame.getFrameID())) / 2)
 
         afterMiddleFrame = self.__constructFrame(afterMiddleFrameID, thisFrame)
         afterMiddleImage = afterMiddleFrame.getImgObj()
         afterMiddleImage.drawFrameID(str(afterMiddleFrameID))
         return afterMiddleImage
 
-    def __constructRightPrev(self, thisFrame, prevFrame):
+    def __constructRightPrev_orig(self, thisFrame, prevFrame):
         # type: (Frame, Frame) -> Image
         prevFrameID = int(prevFrame.getFrameID())
         beforeMiddleFrameID = prevFrameID + int((int(thisFrame.getFrameID()) - prevFrameID) / 2)
