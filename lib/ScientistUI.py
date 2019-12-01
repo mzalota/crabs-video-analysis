@@ -8,18 +8,16 @@ from lib.FramesStitcher import FramesStitcher
 from lib.Image import Image
 from lib.ImageWindow import ImageWindow
 from lib.ImagesCollage import ImagesCollage
-from lib.FrameDecorators import DecoMarkedCrabs, DecoGridLines, DecoFrameID
 from lib.RedDotsData import RedDotsData
-#from datetime import datetime
-#import pandas as pd
-#import cv2
-#import os
+
 import traceback
+from lib.FrameDecorators import DecoMarkedCrabs, DecoGridLines, FrameDecorator, DecoRedDots, DecoFrameID, FrameDecoFactory
 
 from lib.MyTimer import MyTimer
 from lib.UserInput import UserInput
 from lib.common import Point
 from lib.SeeFloor import SeeFloor
+
 
 class ScientistUI:
     __badFramesJump = 50 # how many frames to mark as bad when user presses B key
@@ -36,6 +34,7 @@ class ScientistUI:
         self.__redDotsData = RedDotsData.createFromFolderStruct(folderStruct)
         #self.__seeFloor = SeeFloor(driftData, self.__badFramesData, self.__redDotsData)
         self.__seeFloor = SeeFloor.createFromFolderStruct(folderStruct)
+        self.__crabData = CrabsData(self.__folderStruct)
 
 
     def processVideo(self):
@@ -164,17 +163,13 @@ class ScientistUI:
 
         markCrabsTimer = MyTimer("ScientistUI.showFrame()")
 
+        frameImagesFactory = FrameDecoFactory(self.__seeFloor, self.__badFramesData, self.__crabData, self.__videoStream)
+
         if self.__zoom:
-            #gridMidPoint = self.__redDotsData.midPoint(frame.getFrameID())
-            #frameDeco3 = DecoGridLines(frameDeco2, self.__redDotsData, gridMidPoint)
-
-            collage = ImagesCollage(frame.getVideoStream(), self.__seeFloor)
-
+            collage = ImagesCollage( frameImagesFactory, self.__seeFloor)
             imageToShow = collage.constructCollage(frame.getFrameID(), Frame.FRAME_HEIGHT / 2)
         else:
-            frameDeco = DecoMarkedCrabs(frame, self.__seeFloor)
-            frameDeco2 = DecoFrameID(frameDeco, self.__driftData, self.__badFramesData)
-            imageToShow = frameDeco2.getImgObj()
+            imageToShow = self.__constructFrameImage(frameImagesFactory, frame)
 
         markCrabsTimer.lap("imageToShow")
         keyPressed = self.__imageWin.showWindowAndWaitForClick(imageToShow.asNumpyArray())
@@ -182,15 +177,7 @@ class ScientistUI:
         #print ("keyPressed:", keyPressed)#, chr(keyPressed))
         return keyPressed
 
-
-    def __drawFrameID(self, frame_id, mainImage):
-        if frame_id == self.__driftData.minFrameID():
-            frame_name = str(int(frame_id)) + " (First)"
-        elif frame_id == self.__driftData.maxFrameID():
-            frame_name = str(int(frame_id)) + " (Last)"
-        elif self.__badFramesData.is_bad_frame(frame_id):
-            frame_name = str(int(frame_id)) + " (Bad)"
-        else:
-            frame_name = int(frame_id)
-        mainImage.drawFrameID(frame_name)
-
+    def __constructFrameImage(self, frameImagesFactory, frameDeco):
+        frameDeco = frameImagesFactory.getFrameDecoFrameID(frameDeco)
+        frameDeco = frameImagesFactory.getFrameDecoMarkedCrabs(frameDeco)
+        return frameDeco.getImgObj().copy()

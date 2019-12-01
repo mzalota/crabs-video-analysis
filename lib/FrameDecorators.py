@@ -1,10 +1,51 @@
+from lib.BadFramesData import BadFramesData
 from lib.CrabsData import CrabsData
 from lib.Feature import Feature
 from lib.Frame import Frame
 from lib.FramesStitcher import FramesStitcher
 from lib.MyTimer import MyTimer
 from lib.SeeFloor import SeeFloor
+from lib.VideoStream import VideoStream
 from lib.common import Point, Vector
+
+class FrameDecoFactory:
+
+    def __init__(self, seeFloorGeometry, badFramesData, crabsData, videoStream):
+        # type: (SeeFloor, BadFramesData, VideoStream) -> FrameDecoFactory
+        self.__videoStream = videoStream
+        self.__seeFloorGeometry = seeFloorGeometry
+        self.__badFramesData = badFramesData
+        self.__crabsData = crabsData
+
+    def getFrame(self, frameID):
+        # type: (int) -> FrameDecorator
+        return Frame(frameID, self.__videoStream)
+
+    def getFrameDecoGridLines(self, frameDeco, referenceFrameID):
+        # type: (FrameDecorator, int) -> DecoGridLines
+        frameID = frameDeco.getFrameID()
+
+        centerPointForGrid = self.__centerPointForGrid(frameID, referenceFrameID)
+        return DecoGridLines(frameDeco, self.__seeFloorGeometry.getRedDotsData(), centerPointForGrid)
+
+    def __centerPointForGrid(self, frameID, referenceFrameID):
+        gridMidPoint = self.__seeFloorGeometry.getRedDotsData().midPoint(referenceFrameID)
+        # TODO: change drift calculation to use Seefloor (based on MM) instead of driftData (which uses pixels)
+        drift = self.__seeFloorGeometry.getDriftData().driftBetweenFrames(referenceFrameID, frameID)
+        newPoint = gridMidPoint.translateBy(drift)
+        return newPoint
+
+    def getFrameDecoRedDots(self, frameDeco):
+        # type: (FrameDecorator) -> DecoRedDots
+        return DecoRedDots(frameDeco, self.__seeFloorGeometry.getRedDotsData())
+
+    def getFrameDecoMarkedCrabs(self, frameDeco):
+        # type: (FrameDecorator) -> DecoMarkedCrabs
+        return DecoMarkedCrabs(frameDeco, self.__seeFloorGeometry, self.__crabsData)
+
+    def getFrameDecoFrameID(self, frameDeco):
+        # type: (FrameDecorator) -> DecoFrameID
+        return DecoFrameID(frameDeco, self.__seeFloorGeometry.getDriftData(), self.__badFramesData)
 
 class FrameDecorator:
 
@@ -52,10 +93,11 @@ class DecoGridLines(FrameDecorator):
 
 class DecoMarkedCrabs(FrameDecorator):
 
-    def __init__(self, frameDeco, seefloorGeometry):
+    def __init__(self, frameDeco, seefloorGeometry, crabsData):
         # type: (FrameDecorator, SeeFloor) -> DecoMarkedCrabs
         FrameDecorator.__init__(self, frameDeco)
         self.__seefloorGeometry = seefloorGeometry
+        self.__crabsData = crabsData
 
     def getImgObj(self):
         # type: () -> Image
@@ -65,7 +107,7 @@ class DecoMarkedCrabs(FrameDecorator):
 
     def __markCrabsOnImage(self, mainImage, frame_id):
         #timer = MyTimer("crabsOnFrame")
-        markedCrabs = self.__seefloorGeometry.crabsOnFrame(frame_id)
+        markedCrabs = self.__crabsOnFrame(frame_id)
         #timer.lap("frame_number: " + str(frame_id))
         for markedCrab in markedCrabs:
 
@@ -81,6 +123,13 @@ class DecoMarkedCrabs(FrameDecorator):
             mainImage.drawCross(crabLocation)
 
         #timer.lap("Number of crabs" + str(len(markedCrabs)))
+
+    def __crabsOnFrame(self, frame_id):
+        # type: (int) -> dict
+        prev_frame_id = self.__seefloorGeometry.getPrevFrame(frame_id)
+        next_frame_id = self.__seefloorGeometry.getNextFrame(frame_id)
+        markedCrabs = self.__crabsData.crabsBetweenFrames(prev_frame_id, next_frame_id)
+        return markedCrabs
 
 
 class DecoRedDots(FrameDecorator):

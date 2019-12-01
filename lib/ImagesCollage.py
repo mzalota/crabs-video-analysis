@@ -3,16 +3,17 @@ from pandas.compat.numpy import np
 import cv2
 
 from lib.Frame import Frame
-from lib.FrameDecorators import DecoMarkedCrabs, DecoGridLines, FrameDecorator, DecoRedDots
+from lib.FrameDecorators import DecoMarkedCrabs, DecoGridLines, FrameDecorator, DecoRedDots, FrameDecoFactory
 from lib.Image import Image
 from lib.MyTimer import MyTimer
 from lib.common import Point, Box, Vector
 
 
 class ImagesCollage:
-    def __init__(self, videoStream, seeFloorGeometry):
-        # type: (VideoStream, SeeFloor, CrabsData) -> object
-        self.__videoStream = videoStream
+    def __init__(self, frameImagesFactory, seeFloorGeometry):
+        # type: (FrameDecoFactory, SeeFloor) -> object
+        #self.__videoStream = videoStream
+        self.__frameImagesFactory = frameImagesFactory
         self.__seeFloorGeometry = seeFloorGeometry
 
     def constructCollage(self, thisFrameID, neighboursHeight):
@@ -95,24 +96,18 @@ class ImagesCollage:
     def __constructImageUsingFrameDeco(self, referenceFrameID, frameID):
         # type: (int, int) -> Image
         #timer = MyTimer("in ImagesCollage.__constructFrame")
-        newFrame = Frame(frameID, self.__videoStream)
 
-        frameDeco = DecoMarkedCrabs(newFrame, self.__seeFloorGeometry)
-
-        gridMidPoint = self.__seeFloorGeometry.getRedDotsData().midPoint(referenceFrameID)
-
-        #TODO: change drift calculation to use Seefloor (based on MM) instead of driftData (which uses pixels)
-        drift = self.__seeFloorGeometry.getDriftData().driftBetweenFrames(referenceFrameID, frameID)
-        newPoint = gridMidPoint.translateBy(drift)
-
-        frameDeco = DecoGridLines(frameDeco, self.__seeFloorGeometry.getRedDotsData(), newPoint)
-        frameDeco = DecoRedDots(frameDeco,self.__seeFloorGeometry.getRedDotsData())
+        frameDeco = self.__frameImagesFactory.getFrame(frameID)
+        frameDeco = self.__frameImagesFactory.getFrameDecoMarkedCrabs(frameDeco)
+        frameDeco = self.__frameImagesFactory.getFrameDecoGridLines(frameDeco, referenceFrameID)
+        frameDeco = self.__frameImagesFactory.getFrameDecoRedDots(frameDeco)
 
         #timer.lap("chaining frameDeco")
         #TODO: Optimize! The function below takes 500ms to execute and it is called 5 times to build each Collage (2,5 seconds)
         newImage = frameDeco.getImgObj()
         #timer.lap("frameDeco.getImgObj()")
         return newImage.copy()
+
 
     def __scaleAndSchiftOtherFrameToMatchThisFrame(self, referenceFrameID, frameID, imageToScale):
         # type: (int, int, Image) -> Image
