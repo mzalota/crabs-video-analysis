@@ -6,6 +6,7 @@ from common import Point, Box, Vector
 
 #from Frame import Frame
 #from lib.Frame import Frame
+from lib.MyTimer import MyTimer
 
 
 class Image:
@@ -29,7 +30,8 @@ class Image:
 
     def copy(self):
         # type: () -> Image
-        return Image(self.__image.copy())
+        cp = Image(self.__image.copy())
+        return cp
 
     def drawLine(self, point1, point2, thickness=5, color=(0, 255, 0)):
         cv2.line(self.__image, (point1.x, point1.y), (point2.x, point2.y), color, thickness)

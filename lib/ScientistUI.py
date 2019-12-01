@@ -184,13 +184,12 @@ class ScientistUI:
 
             collage = ImagesCollage(frame.getVideoStream(), self.__seeFloor, crabsData)
 
-            image_as_numpy_array = collage.attachNeighbourFrames(frameDeco3, Frame.FRAME_HEIGHT/2)
+            imageToShow = collage.attachNeighbourFrames(frameDeco3, Frame.FRAME_HEIGHT/2)
         else:
-            image_as_numpy_array = frameDeco2.getImgObj().asNumpyArray()
-            #image_as_numpy_array = mainImage.asNumpyArray()
+            imageToShow = frameDeco2.getImgObj()
 
         markCrabsTimer.lap("processImage: step 30")
-        keyPressed = self.__imageWin.showWindowAndWaitForClick(image_as_numpy_array)
+        keyPressed = self.__imageWin.showWindowAndWaitForClick(imageToShow.asNumpyArray())
 
         #print ("keyPressed:", keyPressed)#, chr(keyPressed))
         return keyPressed

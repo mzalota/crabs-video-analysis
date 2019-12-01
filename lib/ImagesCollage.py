@@ -16,118 +16,55 @@ class ImagesCollage:
         self.__crabsData = crabsData
 
     def attachNeighbourFrames(self, thisFrame, neighboursHeight):
-        # type: (Frame, Int) -> np
+        # type: (Frame, Int) -> Image
 
-        image = thisFrame.getImgObj()
-        image.drawFrameID(thisFrame.getFrameID())
+        paddingBetweenCollages = 20
 
-        collageHeight = thisFrame.getImgObj().height() + neighboursHeight * 2
+        leftCollage = self.constructLeftCollage(thisFrame.getFrameID(), neighboursHeight)
 
-        leftCollage = self.constructLeftCollage(thisFrame, neighboursHeight, image)
+        rightCollage = self.constructRightCollage(thisFrame.getFrameID(), leftCollage.height())
 
-        rightCollage = self.constructRightCollage(thisFrame, collageHeight)
-        print ("rightCollage hight", rightCollage.height(), "width", rightCollage.width())
+        wholeCollage = leftCollage.padRight(paddingBetweenCollages).concatenateToTheRight(rightCollage)
 
-        withImageOnTheRight = self.__mergeSideBySide(leftCollage, rightCollage, collageHeight)
+        return wholeCollage
 
-        return withImageOnTheRight
+    def constructLeftCollage(self, thisFrameID, neighboursHeight):
 
+        thisFrameImage = self.__constructFrame(thisFrameID,thisFrameID).getImgObj().copy()
 
-    def __mergeSideBySide(self, leftCollage, rightCollage, collageHeight):
-        filler = Image.empty(collageHeight, 100, 0).asNumpyArray()
-        withImageOnTheRight = np.concatenate((leftCollage.asNumpyArray(), filler, rightCollage.asNumpyArray()), axis=1)
-        return withImageOnTheRight
+        prevFrameID = self.__seeFloorGeometry.getPrevFrame(thisFrameID)
+        nextFrameID = self.__seeFloorGeometry.getNextFrame(thisFrameID)
 
-    def __resizeImage(self, mainCollage, newHeight, newWidth):
-        # type: (Image, int, int) -> Image
-        mainCollageNP = cv2.resize(mainCollage.asNumpyArray(), dsize=(newWidth, newHeight),
-                                   interpolation=cv2.INTER_CUBIC)
-        return Image(mainCollageNP)
+        prevSubImage = self.__buildPrevImagePart(thisFrameID, prevFrameID, neighboursHeight)
+        nextSubImage = self.__buildNextImagePart(thisFrameID, nextFrameID, neighboursHeight)
 
-    def __getFrameIDForLeftTopImage(self, thisFrame):
-        # type: (Frame) -> int
-        nextFrameID = self.__seeFloorGeometry.getNextFrame(thisFrame.getFrameID()) #.jumpToSeefloorSlice(thisFrame.getFrameID(), +1)
-        return nextFrameID
-
-    def __getFrameIDForLeftBottomImage(self, thisFrame):
-        # type: (Frame) -> int
-        prevFrameID = self.__seeFloorGeometry.getPrevFrame(thisFrame.getFrameID()) # .jumpToSeefloorSlice(thisFrame.getFrameID(), -1)
-        return prevFrameID
-
-    def __constructFrame(self, newFrameID, thisFrameID):
-        # type: (int, Frame) -> FrameDecorator
-
-        #thisFrameID = thisFrame.getFrameID()
-        newFrame = Frame(newFrameID, self.__videoStream)
-
-        frameDeco = DecoMarkedCrabs(newFrame, self.__seeFloorGeometry)
-
-        gridMidPoint = self.__seeFloorGeometry.getRedDotsData().midPoint(thisFrameID)
-        drift = self.__seeFloorGeometry.getDriftData().driftBetweenFrames(thisFrameID, newFrameID)
-        newPoint = gridMidPoint.translateBy(drift)
-
-        frameDeco2 = DecoGridLines(frameDeco, self.__seeFloorGeometry.getRedDotsData(), newPoint)
-        frameDeco3 = DecoRedDots(frameDeco2,self.__seeFloorGeometry.getRedDotsData())
-        return frameDeco3
-
-    def constructLeftCollage(self, thisFrame, neighboursHeight, image):
-        prevFrameID = self.__getFrameIDForLeftBottomImage(thisFrame)
-        nextFrameID = self.__getFrameIDForLeftTopImage(thisFrame)
-
-        prevSubImage = self.__buildPrevImagePart(thisFrame.getFrameID(), prevFrameID, neighboursHeight)
-        nextSubImage = self.__buildNextImagePart(thisFrame.getFrameID(), nextFrameID, neighboursHeight)
-
-        mainCollage = self.__glueTogether(image, nextSubImage, prevSubImage)
-
-        # resize leftCollage
-        newWidth = mainCollage.width()
-        newHeight = mainCollage.height()
-        leftCollage = self.__resizeImage(mainCollage, newHeight, newWidth)
-
-        print ("leftCollage hight", newHeight, "width", newWidth)
+        leftCollage = nextSubImage.concatenateToTheBottom(thisFrameImage).concatenateToTheBottom(prevSubImage)
 
         return leftCollage
 
-    def constructRightCollage(self, thisFrame, mainCollageHeight):
+    def constructRightCollage(self, thisFrameID, mainCollageHeight):
         # type: (Frame, int) -> Image
-        beforeMiddleFrameID = self.getFrameIDForRightBottomImage(thisFrame)
-        afterMiddleFrameID = self.__getFrameIDForRightTopImage(thisFrame)
+        height = Frame.FRAME_HEIGHT
 
-        beforeMiddleImage = self.__buildPrevImagePart(thisFrame.getFrameID(), beforeMiddleFrameID, thisFrame.getImgObj().height())
-        #self.__constructRightPrev(thisFrame, beforeMiddleFrameID)
-        #afterMiddleImage = self.__constructRightNext(thisFrame)
-        afterMiddleImage = self.__buildNextImagePart(thisFrame.getFrameID(), afterMiddleFrameID, thisFrame.getImgObj().height())
+        afterMiddleFrameID = self.__getFrameIDForRightTopImage(thisFrameID)
+        beforeMiddleFrameID = self.__seeFloorGeometry.getPrevFrame(afterMiddleFrameID)
+
+        beforeMiddleImage = self.__buildPrevImagePart(thisFrameID, beforeMiddleFrameID, height)
+        afterMiddleImage = self.__buildNextImagePart(thisFrameID, afterMiddleFrameID, height)
 
         rightCollageHeight = beforeMiddleImage.height() + afterMiddleImage.height()
-        fillerHeight = (mainCollageHeight - rightCollageHeight) / 2
-        fillerImage = Image.empty(fillerHeight, thisFrame.getImgObj().width(), 0).asNumpyArray()
+        fillerHeight = int((mainCollageHeight - rightCollageHeight) / 2)
 
-        collageNP = np.concatenate((fillerImage, afterMiddleImage.asNumpyArray(), beforeMiddleImage.asNumpyArray(), fillerImage))
-        return Image(collageNP)
+        rightCollageWithoutBottomFiller = afterMiddleImage.concatenateToTheBottom(beforeMiddleImage).padOnTop(fillerHeight)
+        rightCollage = rightCollageWithoutBottomFiller.padOnBottom(mainCollageHeight-rightCollageWithoutBottomFiller.height())
 
-    def __constructRightNext_old(self, thisFrame):
-        # type: (Frame) -> Image
+        return rightCollage
 
-        afterMiddleFrameID = self.__getFrameIDForRightTopImage(thisFrame)
 
-        afterMiddleImage = self.__buildNextImagePart(thisFrame.getFrameID(), afterMiddleFrameID, thisFrame.getImgObj().height())
-        return afterMiddleImage
-
-    def __getFrameIDForRightTopImage(self, thisFrame):
-        thisFrameHeightMM = self.__seeFloorGeometry.heightMM(int(thisFrame.getFrameID()))
-        afterMiddleFrameID = self.__seeFloorGeometry.getFrame(thisFrameHeightMM / 2, thisFrame.getFrameID())
+    def __getFrameIDForRightTopImage(self, thisFrameID):
+        thisFrameHeightMM = self.__seeFloorGeometry.heightMM(int(thisFrameID))
+        afterMiddleFrameID = self.__seeFloorGeometry.getFrame(thisFrameHeightMM / 2, thisFrameID)
         return afterMiddleFrameID
-
-    def __constructRightPrev_old(self, thisFrame, beforeMiddleFrameID):
-        # type: (Frame) -> Image
-
-        beforeMiddleImage = self.__buildPrevImagePart(thisFrame.getFrameID(), beforeMiddleFrameID, thisFrame.getImgObj().height())
-        return beforeMiddleImage
-
-    def getFrameIDForRightBottomImage(self, thisFrame):
-        thisFrameHeightMM = self.__seeFloorGeometry.heightMM(int(thisFrame.getFrameID()))
-        beforeMiddleFrameID = self.__seeFloorGeometry.getFrame(-thisFrameHeightMM / 2, thisFrame.getFrameID())
-        return beforeMiddleFrameID
 
     def __buildPrevImagePart(self, thisFrameID, prevFrameID, height):
         # type: (int, int, int) -> Image
@@ -163,22 +100,41 @@ class ImagesCollage:
         imageToReturn.drawFrameID(nextFrameID)
         return imageToReturn
 
-    def __scaleAndSchiftOtherFrameToMatchThisFrame(self, thisFrameID, otherFrameID, imgCopy):
+    def __constructFrame(self, newFrameID, thisFrameID):
+        # type: (int, int) -> FrameDecorator
+
+        newFrame = Frame(newFrameID, self.__videoStream)
+
+        frameDeco = DecoMarkedCrabs(newFrame, self.__seeFloorGeometry)
+
+        gridMidPoint = self.__seeFloorGeometry.getRedDotsData().midPoint(thisFrameID)
+        drift = self.__seeFloorGeometry.getDriftData().driftBetweenFrames(thisFrameID, newFrameID)
+        newPoint = gridMidPoint.translateBy(drift)
+
+        frameDeco2 = DecoGridLines(frameDeco, self.__seeFloorGeometry.getRedDotsData(), newPoint)
+        frameDeco3 = DecoRedDots(frameDeco2,self.__seeFloorGeometry.getRedDotsData())
+        return frameDeco3
+
+    def __scaleAndSchiftOtherFrameToMatchThisFrame(self, thisFrameID, otherFrameID, image):
         # type: (int, int, Image) -> Image
-        width = imgCopy.width()
+        width = image.width()
 
         scalingFactor = self.__calculateImageScalingFactor(thisFrameID, otherFrameID)
         xShift = self.__xDriftBetweenFrames(thisFrameID, otherFrameID)
-        scaledImage = self.__resizeImage(imgCopy, int(imgCopy.height() * scalingFactor), int(imgCopy.width() * scalingFactor))
+
+        newHeight = int(image.height() * scalingFactor)
+        newWidth = int(image.width() * scalingFactor)
+        #scaledImage = self.__resizeImage(imgCopy, newHeight, newWidth)
+        scaledImage = image.resizeImage(newHeight, newWidth)
 
         if scalingFactor > 1:
-            xShiftedImage = self.__shiftImageHorizontally(scaledImage, int(xShift))
+            xShiftedImage = self.__shiftImageHorizontally(scaledImage, xShift)
             imageToReturn = xShiftedImage.adjustWidthWithoutRescaling(width)
         else:
             tmp2 = scaledImage.adjustWidthWithoutRescaling(width)
-            imageToReturn = self.__shiftImageHorizontally(tmp2, int(xShift))
-        return imageToReturn
+            imageToReturn = self.__shiftImageHorizontally(tmp2, xShift)
 
+        return imageToReturn
 
     def __calculateImageScalingFactor(self, thisFrameID, otherFrameID):
         distanceThis = self.__seeFloorGeometry.getRedDotsData().getDistancePixels(thisFrameID)
@@ -187,14 +143,11 @@ class ImagesCollage:
         return scalingFactor
 
     def __xDriftBetweenFrames(self, thisFrameID, nextFrameID):
-
+        # type: (int, int) -> int
         xDriftMM = self.__seeFloorGeometry.getXDriftMM(thisFrameID,nextFrameID)
         mmPerPixel = self.__seeFloorGeometry.getRedDotsData().getMMPerPixel(thisFrameID)
-        xDrift = int(xDriftMM/mmPerPixel)
-
-        driftRaw = self.__seeFloorGeometry.getDriftData().driftBetweenFrames(thisFrameID, nextFrameID)
-        print ("in __xDriftBetweenFrames: thisFrameID", thisFrameID, "nextFrameID", nextFrameID, "driftRaw", driftRaw.x, "xDrift", xDrift, "xDriftMM", xDriftMM)
-        return xDrift
+        xDrift = xDriftMM/mmPerPixel
+        return int(xDrift)
 
     def __shiftImageHorizontally(self, subImage, xDrift):
 
@@ -210,9 +163,5 @@ class ImagesCollage:
         imageToReturn = subImageWithFillerOnBothSides.subImage(boxAroundAreaThatWeNeedToKeep)
         return imageToReturn
 
-    def __glueTogether(self, image, nextSubImage, prevSubImage):
-        # type: (Image, Image, Image) -> Image
-        res = np.concatenate((nextSubImage.asNumpyArray(), image.asNumpyArray()))
-        res2 = np.concatenate((res, prevSubImage.asNumpyArray()))
-        return Image(res2)
+
 
