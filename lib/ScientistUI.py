@@ -164,15 +164,13 @@ class ScientistUI:
 
         markCrabsTimer = MyTimer("ScientistUI.showFrame()")
 
-        crabsData = CrabsData(self.__folderStruct)
-
         if self.__zoom:
             #gridMidPoint = self.__redDotsData.midPoint(frame.getFrameID())
             #frameDeco3 = DecoGridLines(frameDeco2, self.__redDotsData, gridMidPoint)
 
-            collage = ImagesCollage(frame.getVideoStream(), self.__seeFloor, crabsData)
+            collage = ImagesCollage(frame.getVideoStream(), self.__seeFloor)
 
-            imageToShow = collage.attachNeighbourFrames(frame.getFrameID(), Frame.FRAME_HEIGHT/2)
+            imageToShow = collage.constructCollage(frame.getFrameID(), Frame.FRAME_HEIGHT / 2)
         else:
             frameDeco = DecoMarkedCrabs(frame, self.__seeFloor)
             frameDeco2 = DecoFrameID(frameDeco, self.__driftData, self.__badFramesData)

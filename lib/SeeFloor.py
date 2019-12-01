@@ -193,6 +193,13 @@ class SeeFloor(PandasWrapper):
             nextFrameID = fromFrameID
         return nextFrameID
 
+    def getXDriftPixels(self, fromFrameID, toFrameID):
+        # type: (int, int) -> int
+        xDriftMM = self.getXDriftMM(fromFrameID, toFrameID)
+        mmPerPixel = self.getRedDotsData().getMMPerPixel(fromFrameID)
+        xDrift = xDriftMM/mmPerPixel
+        return int(xDrift)
+
     def getXDriftMM(self,fromFrameID, toFrameID):
         # type: (int, int) -> float
         startXCoordMM = self.__getXCoordMMOrigin(fromFrameID)

@@ -10,13 +10,12 @@ from lib.common import Point, Box, Vector
 
 
 class ImagesCollage:
-    def __init__(self, videoStream, seeFloorGeometry, crabsData):
+    def __init__(self, videoStream, seeFloorGeometry):
         # type: (VideoStream, SeeFloor, CrabsData) -> object
         self.__videoStream = videoStream
         self.__seeFloorGeometry = seeFloorGeometry
-        self.__crabsData = crabsData
 
-    def attachNeighbourFrames(self, thisFrameID, neighboursHeight):
+    def constructCollage(self, thisFrameID, neighboursHeight):
         # type: (Frame, Int) -> Image
 
         paddingBetweenCollages = 20
@@ -32,6 +31,7 @@ class ImagesCollage:
     def constructLeftCollage(self, thisFrameID, neighboursHeight):
 
         thisFrameImage = self.__constructImageUsingFrameDeco(thisFrameID, thisFrameID)
+        thisFrameImage.drawFrameID(thisFrameID)
 
         prevFrameID = self.__seeFloorGeometry.getPrevFrame(thisFrameID)
         nextFrameID = self.__seeFloorGeometry.getNextFrame(thisFrameID)
@@ -61,12 +61,10 @@ class ImagesCollage:
 
         return rightCollage
 
-
     def __getFrameIDForRightTopImage(self, thisFrameID):
         thisFrameHeightMM = self.__seeFloorGeometry.heightMM(int(thisFrameID))
         afterMiddleFrameID = self.__seeFloorGeometry.getFrame(thisFrameHeightMM / 2, thisFrameID)
         return afterMiddleFrameID
-
 
     def __buildImageUsingTopPart(self, referenceFrameID, frameID, height):
         # type: (int, int, int) -> Image
@@ -80,7 +78,6 @@ class ImagesCollage:
 
         imageToReturn.drawFrameID(frameID)
         return imageToReturn
-
 
     def __buildImageUsingBottomPart(self, referenceFrameID, frameID, height):
         # type: (int, int, int) -> Image
@@ -103,6 +100,8 @@ class ImagesCollage:
         frameDeco = DecoMarkedCrabs(newFrame, self.__seeFloorGeometry)
 
         gridMidPoint = self.__seeFloorGeometry.getRedDotsData().midPoint(referenceFrameID)
+
+        #TODO: change drift calculation to use Seefloor (based on MM) instead of driftData (which uses pixels)
         drift = self.__seeFloorGeometry.getDriftData().driftBetweenFrames(referenceFrameID, frameID)
         newPoint = gridMidPoint.translateBy(drift)
 
@@ -119,8 +118,9 @@ class ImagesCollage:
         # type: (int, int, Image) -> Image
 
         width = imageToScale.width()
-        scalingFactor = self.__calculateImageScalingFactor(referenceFrameID, frameID)
-        xShift = self.__xDriftBetweenFrames(referenceFrameID, frameID)
+        #scalingFactor = self.__calculateImageScalingFactor(referenceFrameID, frameID)
+        scalingFactor = self.__seeFloorGeometry.getRedDotsData().scalingFactor(referenceFrameID, frameID)
+        xShift = self.__seeFloorGeometry.getXDriftPixels(referenceFrameID, frameID)
 
         newHeight = int(imageToScale.height() * scalingFactor)
         newWidth = int(imageToScale.width() * scalingFactor)
@@ -136,33 +136,3 @@ class ImagesCollage:
             imageToReturn = imageShiftedAlongXAxis
 
         return imageToReturn
-
-    def __calculateImageScalingFactor(self, thisFrameID, otherFrameID):
-        distanceThis = self.__seeFloorGeometry.getRedDotsData().getDistancePixels(thisFrameID)
-        distancePrev = self.__seeFloorGeometry.getRedDotsData().getDistancePixels(otherFrameID)
-        scalingFactor = distanceThis / distancePrev
-        return scalingFactor
-
-    def __xDriftBetweenFrames(self, thisFrameID, nextFrameID):
-        # type: (int, int) -> int
-        xDriftMM = self.__seeFloorGeometry.getXDriftMM(thisFrameID,nextFrameID)
-        mmPerPixel = self.__seeFloorGeometry.getRedDotsData().getMMPerPixel(thisFrameID)
-        xDrift = xDriftMM/mmPerPixel
-        return int(xDrift)
-
-    def __shiftImageHorizontally_orig(self, subImage, xDrift):
-
-        #add filler to both sides of subImage.
-        fillerWidth = abs(xDrift)
-        fillerImage = Image.empty(subImage.height(), fillerWidth, 0)
-        result = np.concatenate((fillerImage.asNumpyArray(), subImage.asNumpyArray(), fillerImage.asNumpyArray()), axis=1)
-        subImageWithFillerOnBothSides = Image(result)
-        boxAroundImage = Box(Point(fillerWidth, 0), Point(fillerWidth + subImage.width(), subImage.height()))
-
-        #slide "boxAroundImage" to the left or to the right depending if xDrift is negative or positive
-        boxAroundAreaThatWeNeedToKeep = boxAroundImage.translateBy(Vector(xDrift,0))
-        imageToReturn = subImageWithFillerOnBothSides.subImage(boxAroundAreaThatWeNeedToKeep)
-        return imageToReturn
-
-
-
