@@ -33,7 +33,9 @@ class FramesStitcher:
 
     def determineFrames(self):
         # type: () -> pd.DataFrame
-        dfRaw = pd.read_csv(self.__driftsFilePath, delimiter="\t", na_values="(null)")
+        #dfRaw = pd.read_csv(self.__driftsFilePath, delimiter="\t", na_values="(null)")
+        dfRaw = self.readDataFrameFromCSV(self.__driftsFilePath)
+
         #dfRaw = dfRaw.rename(columns={dfRaw.columns[0]: "rowNum"}) # rename first column to be rowNum
 
         driftData = DriftData(dfRaw)

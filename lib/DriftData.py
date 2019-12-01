@@ -3,12 +3,11 @@ import math
 import numpy
 import pandas as pd
 
-from lib.MyTimer import MyTimer
+from lib.PandasWrapper import PandasWrapper
 from lib.common import Vector
 from lib.FolderStructure import FolderStructure
 
-
-class DriftData:
+class DriftData(PandasWrapper):
     #__driftData = None
     __COLNAME_driftX = 'driftX'
     __COLNAME_driftY = 'driftY'
@@ -18,10 +17,8 @@ class DriftData:
         # type: (pd.DataFrame) -> DriftData
 
         self.__driftData = self.__sort_by_frameNumber(driftData)
-
         self.__initializePerfOptimizingVariables()
 
-        #print(driftData.count())
 
     def __sort_by_frameNumber(self, driftData):
         df_tmp = driftData.copy().sort_values(by=[self.__COLNAME_frameNumber])
@@ -42,7 +39,7 @@ class DriftData:
     def createFromFolderStruct(folderStruct):
         # type: (FolderStructure) -> DriftData
         filepath = folderStruct.getDriftsFilepath()
-        dfRaw = pd.read_csv(filepath, delimiter="\t", na_values="(null)")
+        dfRaw = PandasWrapper.readDataFrameFromCSV(filepath)
         #dfRaw = dfRaw.rename(columns={dfRaw.columns[0]: "rowNum"}) # rename first column to be rowNum
 
         return DriftData(dfRaw)

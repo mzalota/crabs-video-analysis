@@ -2,12 +2,13 @@ from lib.BadFramesData import BadFramesData
 from lib.CrabsData import CrabsData
 from lib.DriftData import DriftData
 from lib.Frame import Frame
+from lib.PandasWrapper import PandasWrapper
 from lib.RedDotsData import RedDotsData
 from lib.FolderStructure import FolderStructure
 import pandas as pd
 import numpy
 
-class SeeFloor:
+class SeeFloor(PandasWrapper):
     __COLNAME_driftX = 'driftX'
     __COLNAME_driftY = 'driftY'
     __COLNAME_frameNumber = 'frameNumber'
@@ -31,7 +32,9 @@ class SeeFloor:
 
         filepath = folderStruct.getSeefloorFilepath()
         if folderStruct.fileExists(filepath):
-            df = pd.read_csv(filepath, delimiter="\t", na_values="(null)")
+            #df = pd.read_csv(filepath, delimiter="\t", na_values="(null)")
+            df = PandasWrapper.readDataFrameFromCSV(filepath)
+
         else:
             df = None
         newObj = SeeFloor(driftsData, badFramesData, redDotsData, folderStruct,df)

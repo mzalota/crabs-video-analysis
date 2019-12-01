@@ -39,6 +39,10 @@ driftData = DriftData.createFromFolderStruct(folderStruct)
 imageWin = ImageWindow("mainWindow", Point(700, 200))
 
 scientistUI = ScientistUI(imageWin, folderStruct, videoStream, driftData)
+
+#import cProfile
+#cProfile.run('scientistUI.processVideo()')
+
 scientistUI.processVideo()
 
 # close all open windows

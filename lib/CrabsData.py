@@ -2,9 +2,10 @@ import pandas as pd
 import numpy
 from datetime import datetime
 from lib.FolderStructure import FolderStructure
+from lib.PandasWrapper import PandasWrapper
 
 
-class CrabsData:
+class CrabsData(PandasWrapper):
 
     __COLNAME_dir = "dir"
     __COLNAME_filename = "filename"
@@ -37,7 +38,11 @@ class CrabsData:
         filepath = self.__folderStruct.getCrabsFilepath()
 
         if self.__folderStruct.fileExists(filepath):
+
+            #TODO: find good test cases and then refactor this line into PandasWrapper without breaking anything
             self.__crabsDF = pd.read_csv(filepath, delimiter="\t", na_values="(null)", header=None, names=column_names)
+            #self.__crabsDF = self.readDataFrameFromCSV(filepath, column_names)
+
             self.__drop_header_row()
         else:
             self.__crabsDF = pd.DataFrame(columns=column_names)

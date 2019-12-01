@@ -1,9 +1,10 @@
 import pandas as pd
 from datetime import datetime
 from lib.FolderStructure import FolderStructure
+from lib.PandasWrapper import PandasWrapper
 
 
-class BadFramesData:
+class BadFramesData(PandasWrapper):
     COLNAME_startfFrameNumber = "startfFrameNumber"
     COLNAME_endFrameNumber = 'endFrameNumber'
     COLNAME_createdOn = "createdOn"
@@ -29,7 +30,7 @@ class BadFramesData:
 
         filepath_badframes = folderStruct.getBadFramesFilepath()
         if folderStruct.fileExists(filepath_badframes):
-            df = pd.read_csv(filepath_badframes, delimiter="\t", na_values="(null)")
+            df = PandasWrapper.readDataFrameFromCSV(filepath_badframes)
         else:
             df = BadFramesData.create_empty_df()
 

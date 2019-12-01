@@ -162,30 +162,22 @@ class ScientistUI:
     def showFrame(self, frame):
         # type: (Frame) -> String
 
-        #mainImage = frame.getImgObj()
-        #frame_id = frame.getFrameID()
-        markCrabsTimer = MyTimer()
+        markCrabsTimer = MyTimer("ScientistUI.showFrame()")
 
         crabsData = CrabsData(self.__folderStruct)
-        frameDeco = DecoMarkedCrabs(frame, self.__seeFloor)
-        frameDeco2 = DecoFrameID(frameDeco, self.__driftData, self.__badFramesData)
-
-        #mainImage = mainImage.getImgObj()
-
-        #self.__drawFrameID(frame_id, mainImage)
-
-        #markCrabsTimer.lap("processImage: step 20")
 
         markCrabsTimer.lap("markCrabsTimer")
 
         if self.__zoom:
-            gridMidPoint = self.__redDotsData.midPoint(frame.getFrameID())
-            frameDeco3 = DecoGridLines(frameDeco2, self.__redDotsData, gridMidPoint)
+            #gridMidPoint = self.__redDotsData.midPoint(frame.getFrameID())
+            #frameDeco3 = DecoGridLines(frameDeco2, self.__redDotsData, gridMidPoint)
 
             collage = ImagesCollage(frame.getVideoStream(), self.__seeFloor, crabsData)
 
-            imageToShow = collage.attachNeighbourFrames(frameDeco3, Frame.FRAME_HEIGHT/2)
+            imageToShow = collage.attachNeighbourFrames(frame.getFrameID(), Frame.FRAME_HEIGHT/2)
         else:
+            frameDeco = DecoMarkedCrabs(frame, self.__seeFloor)
+            frameDeco2 = DecoFrameID(frameDeco, self.__driftData, self.__badFramesData)
             imageToShow = frameDeco2.getImgObj()
 
         markCrabsTimer.lap("processImage: step 30")

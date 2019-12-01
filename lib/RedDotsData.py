@@ -2,12 +2,14 @@ import pandas as pd
 import numpy
 
 from lib.FolderStructure import FolderStructure
+from lib.PandasWrapper import PandasWrapper
 from lib.common import Point
 
 
-class RedDotsData:
+class RedDotsData(PandasWrapper):
     #__rawDF = None
     #__manualDF = None
+    #__interpolatedDF = None
 
     __COLNAME_frameNumber = 'frameNumber'
     __COLNAME_dotName = "dotName"
@@ -30,7 +32,9 @@ class RedDotsData:
         self.__folderStruct = folderStruct
 
         filepath = folderStruct.getRedDotsRawFilepath()
-        dfRaw = pd.read_csv(filepath, delimiter="\t", na_values="(null)")
+        #dfRaw = pd.read_csv(filepath, delimiter="\t", na_values="(null)")
+        dfRaw = self.readDataFrameFromCSV(filepath)
+
 
         self.initializeManualDF(folderStruct)
 
@@ -43,7 +47,8 @@ class RedDotsData:
 
         manual_filepath = folderStruct.getRedDotsManualFilepath()
         if folderStruct.fileExists(manual_filepath):
-            self.__manualDF = pd.read_csv(manual_filepath, delimiter="\t", na_values="(null)")
+            self.__manualDF = self.readDataFrameFromCSV(manual_filepath)
+            #self.__manualDF = pd.read_csv(manual_filepath, delimiter="\t", na_values="(null)")
         else:
             self.__manualDF = pd.DataFrame(columns=column_names)
 
@@ -63,8 +68,26 @@ class RedDotsData:
     def interpolatedDF(self):
         # type: () -> pd
         filepath = self.__folderStruct.getRedDotsInterpolatedFilepath()
-        interpolatedDF = pd.read_csv(filepath, delimiter="\t", na_values="(null)")
-        return interpolatedDF
+
+        try:
+            return self.__interpolatedDF
+        except AttributeError:
+            # attribute self.__interpolatedDF have not been initialized yet
+            self.__interpolatedDF = self.readDataFrameFromCSV(filepath)
+            return self.__interpolatedDF
+
+
+    def __propertyInitialized(self, propertyStr):
+        print ("__propertyInitialized")
+        try:
+            getattr(self, propertyStr)
+            print ("__propertyInitialized in try")
+        except AttributeError:
+            print ("__propertyInitialized in AttributeError")
+            return False
+        else:
+            print ("__propertyInitialized in else")
+            return True
 
     def replaceOutlierBetweenTwo(self):
         dataRedDot2 = self.onlyRedDot2()
@@ -118,11 +141,7 @@ class RedDotsData:
         dataRedDot1 = self.__combinedDF().loc[self.__combinedDF()['dotName'] == self.__VALUE_redDot1]
         return dataRedDot1
 
-    def __interpolatedDF(self):
-        # type: () -> pd
-        filepath = self.__folderStruct.getRedDotsInterpolatedFilepath()
-        dfInterpolated = pd.read_csv(filepath, delimiter="\t", na_values="(null)")
-        return dfInterpolated
+
 
     def midPoint(self, frameId):
         redDot1 = self.getRedDot1(frameId)
@@ -154,7 +173,7 @@ class RedDotsData:
         return dfResult["mm_per_pixel"].iloc[0]
 
     def __rowForFrame(self, frameId):
-        df = self.__interpolatedDF()
+        df = self.interpolatedDF()
         dfResult = df.loc[df[RedDotsData.__COLNAME_frameNumber] == frameId]
         return dfResult
 
