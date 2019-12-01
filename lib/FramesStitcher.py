@@ -7,6 +7,8 @@ import math
 from DriftData import DriftData
 from Frame import Frame
 from Image import Image
+from lib.CrabsData import CrabsData
+from lib.PandasWrapper import PandasWrapper
 from lib.SeeFloor import SeeFloor
 
 
@@ -27,14 +29,14 @@ class FramesStitcher:
         self.__driftsFilePath = folderStructure.getDriftsFilepath() # rootDirectory + "/" + csvFileName
         self.__folderStructure = folderStructure
         self.__seefloorGeometry = SeeFloor.createFromFolderStruct(folderStructure)
+        self.__crabsData = CrabsData(folderStructure)
         # Creating an empty Dataframe with column names only
         self.__framesToStitch = pd.DataFrame(columns=['frameNumber'])
 
 
     def determineFrames(self):
         # type: () -> pd.DataFrame
-        #dfRaw = pd.read_csv(self.__driftsFilePath, delimiter="\t", na_values="(null)")
-        dfRaw = self.readDataFrameFromCSV(self.__driftsFilePath)
+        dfRaw = PandasWrapper.readDataFrameFromCSV(self.__driftsFilePath)
 
         #dfRaw = dfRaw.rename(columns={dfRaw.columns[0]: "rowNum"}) # rename first column to be rowNum
 
@@ -88,12 +90,19 @@ class FramesStitcher:
         imgObj.writeToFile(imageFilePath)
 
     def __writeCrabImage(self, imageFileName, imgObj, frame_id):
-        crabs = self.__seefloorGeometry.crabsOnFrame(frame_id)
+        crabs = self.__crabsOnFrame(frame_id)
         if crabs is not None:
             if len(crabs) > 0:
                 crabImageFilePath = self.__folderStructure.getCrabFramesDirpath() + "/" + imageFileName
                 print ("Crabs on frame ", frame_id, crabs)
                 imgObj.writeToFile(crabImageFilePath)
+
+    def __crabsOnFrame(self, frame_id):
+        # type: (int) -> dict
+        prev_frame_id = self.__seefloorGeometry.getPrevFrameMM(frame_id)
+        next_frame_id = self.__seefloorGeometry.getNextFrameMM(frame_id)
+        markedCrabs = self.__crabsData.crabsBetweenFrames(prev_frame_id, next_frame_id)
+        return markedCrabs
 
     def saveFramesToFile(self):
 

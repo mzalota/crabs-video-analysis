@@ -1,3 +1,4 @@
+import errno
 import os.path
 
 class FolderStructure:
@@ -59,7 +60,7 @@ class FolderStructure:
         return os.path.isfile(filepath)
 
     @staticmethod
-    def createDirectoriesIfDontExist(self, filepath):
+    def createDirectoriesIfDontExist(filepath):
         if not os.path.exists(os.path.dirname(filepath)):
             try:
                 os.makedirs(os.path.dirname(filepath))

@@ -40,6 +40,7 @@ imageWin = ImageWindow("mainWindow", Point(700, 200))
 
 scientistUI = ScientistUI(imageWin, folderStruct, videoStream, driftData)
 
+#Uncomment two lines below to get a nice summary which function uses the most time during excecution
 #import cProfile
 #cProfile.run('scientistUI.processVideo()')
 

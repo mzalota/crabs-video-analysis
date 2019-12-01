@@ -23,7 +23,7 @@ class SeeFloor(PandasWrapper):
         self.__redDotsData = redDotsData
         self.__df = df
         self.__folderStruct = folderStruct
-        self.__crabsData = CrabsData(self.__folderStruct)
+        #self.__crabsData = CrabsData(self.__folderStruct)
 
     @staticmethod
     def createFromFolderStruct(folderStruct):
@@ -115,7 +115,7 @@ class SeeFloor(PandasWrapper):
 
         # we are in a good segment and not in its first frame.
         pixels_to_jump = Frame.FRAME_HEIGHT * (-1)
-        new_frame_id = int(self.__getNextFrame(frame_id, pixels_to_jump))
+        new_frame_id = int(self.__getNextFrame(pixels_to_jump, frame_id))
 
         if (first_good_frame >= new_frame_id):
             #the current good segment does not enough runway from frame_id to jump FramesStitcher.FRAME_HEIGHT pixels back.
@@ -147,7 +147,7 @@ class SeeFloor(PandasWrapper):
 
         # we are in a good segment and not in its last frame.
         pixels_to_jump = Frame.FRAME_HEIGHT
-        new_frame_id = int(self.__getNextFrame(frame_id, pixels_to_jump))
+        new_frame_id = int(self.__getNextFrame(pixels_to_jump, frame_id))
 
         if (last_good_frame < new_frame_id):
             #the current good segment does not enough runway from frame_id to jump FramesStitcher.FRAME_HEIGHT pixels.
@@ -163,7 +163,7 @@ class SeeFloor(PandasWrapper):
         except AttributeError:
             return None
 
-    def __getNextFrame(self, frame_id, pixels_to_jump):
+    def __getNextFrame(self, pixels_to_jump, frame_id):
         nextFrameID = self.__getNextFrameMM(pixels_to_jump, frame_id)
         if nextFrameID is None:
             return self.__driftData.getNextFrame(pixels_to_jump, frame_id)
@@ -171,6 +171,8 @@ class SeeFloor(PandasWrapper):
             return nextFrameID
 
     def __getNextFrameMM(self, pixels_to_jump, frame_id):
+        if self.__redDotsData is None:
+            return None
         scale = self.__redDotsData.getMMPerPixel(frame_id)
         mm_to_jump = pixels_to_jump * scale
         return self.getFrame(mm_to_jump,frame_id)
@@ -316,11 +318,3 @@ class SeeFloor(PandasWrapper):
     def getNextFrame(self, frame_id):
         # type: (int) -> int
         return self.jumpToSeefloorSlice(frame_id, 1)
-
-    def crabsOnFrame(self, frame_id):
-        # type: (int) -> dict
-        crabsData = self.__crabsData
-        prev_frame_id = self.getPrevFrame(frame_id)
-        next_frame_id = self.getNextFrame(frame_id)
-        markedCrabs = crabsData.crabsBetweenFrames(prev_frame_id, next_frame_id)
-        return markedCrabs

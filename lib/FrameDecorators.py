@@ -135,13 +135,9 @@ class DecoMarkedCrabs(FrameDecorator):
 
     def __crabsOnFrame(self, frame_id):
         # type: (int) -> dict
-        prev_frame_id_old = self.__seefloorGeometry.getDriftData().getNextFrame(-Frame.FRAME_HEIGHT, frame_id)
         prev_frame_id = self.__seefloorGeometry.getPrevFrameMM(frame_id)
-        next_frame_id_old = self.__seefloorGeometry.getDriftData().getNextFrame(Frame.FRAME_HEIGHT, frame_id)
         next_frame_id = self.__seefloorGeometry.getNextFrameMM(frame_id)
-        #print("DecoMarkedCrabs.__crabsOnFrame prev_frame_id:", prev_frame_id, "old", prev_frame_id_old, "next_frame_id", next_frame_id, "old", next_frame_id_old)
         markedCrabs = self.__crabsData.crabsBetweenFrames(prev_frame_id, next_frame_id)
-        #print("markedCrabs", str(markedCrabs))
         return markedCrabs
 
 
