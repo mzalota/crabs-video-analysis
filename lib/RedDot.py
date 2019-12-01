@@ -123,3 +123,37 @@ class RedDot:
 
         return row
 
+
+    def __findBoundingBox(self):
+        #https://docs.opencv.org/trunk/dd/d49/tutorial_py_contour_features.html#gsc.tab=0
+
+        image_with_boxes = np.copy(self.__getImage())
+
+        bounding_boxes = []
+        #bounding_boxes = [self.redDot1.boxAroundDot, self.redDot2.boxAroundDot]
+        if self.redDot1.dotWasDetected():
+            bounding_boxes.append(self.redDot1.boxAroundDot)
+        if self.redDot2.dotWasDetected():
+            bounding_boxes.append(self.redDot2.boxAroundDot)
+
+        for box in bounding_boxes:
+            c = [box.topLeft.x, box.bottomRight.x, box.bottomRight.x, box.topLeft.x, box.topLeft.x]
+            r = [box.bottomRight.y, box.bottomRight.y, box.topLeft.y, box.topLeft.y, box.bottomRight.y]
+            rr, cc = polygon_perimeter(r, c, image_with_boxes.shape)
+            image_with_boxes[rr, cc] = 1  # set color white
+        return image_with_boxes
+
+
+    def __findBrightestSpot(self, image):
+        # https://www.pyimagesearch.com/2014/09/29/finding-brightest-spot-image-using-python-opencv/
+        orig = image.copy()
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        radius_ = 37
+        gray = cv2.GaussianBlur(gray, (radius_, radius_), 0)
+        (minVal, maxVal, minLoc, maxLoc) = cv2.minMaxLoc(gray)
+        image = orig.copy()
+        cv2.circle(image, maxLoc, radius_, (255, 0, 0), 2)
+        #print "brigtest spot maxLoc"
+        #print maxLoc
+        #print maxVal
+        imageWin.showWindowAndWaitForClick(image)

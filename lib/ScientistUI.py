@@ -166,8 +166,6 @@ class ScientistUI:
 
         crabsData = CrabsData(self.__folderStruct)
 
-        markCrabsTimer.lap("markCrabsTimer")
-
         if self.__zoom:
             #gridMidPoint = self.__redDotsData.midPoint(frame.getFrameID())
             #frameDeco3 = DecoGridLines(frameDeco2, self.__redDotsData, gridMidPoint)
@@ -180,7 +178,7 @@ class ScientistUI:
             frameDeco2 = DecoFrameID(frameDeco, self.__driftData, self.__badFramesData)
             imageToShow = frameDeco2.getImgObj()
 
-        markCrabsTimer.lap("processImage: step 30")
+        markCrabsTimer.lap("imageToShow")
         keyPressed = self.__imageWin.showWindowAndWaitForClick(imageToShow.asNumpyArray())
 
         #print ("keyPressed:", keyPressed)#, chr(keyPressed))

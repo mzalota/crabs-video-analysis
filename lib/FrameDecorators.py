@@ -64,25 +64,23 @@ class DecoMarkedCrabs(FrameDecorator):
         return imgObj
 
     def __markCrabsOnImage(self, mainImage, frame_id):
+        #timer = MyTimer("crabsOnFrame")
         markedCrabs = self.__seefloorGeometry.crabsOnFrame(frame_id)
-
+        #timer.lap("frame_number: " + str(frame_id))
         for markedCrab in markedCrabs:
-            #print ('markedCrab', markedCrab)
-            #timer = MyTimer("crabsOnFrame")
 
+            #print ('markedCrab', markedCrab)
             frame_number = markedCrab['frameNumber']
 
             crabLocation = Point(markedCrab['crabLocationX'], markedCrab['crabLocationY'])
 
             crabFeature = Feature(self.__seefloorGeometry.getDriftData(), frame_number, crabLocation, 5)
-            #timer.lap("Step 150")
             crabLocation = crabFeature.getCoordinateInFrame(frame_id)
 
             #print ('crabLocation', str(crabLocation))
-
             mainImage.drawCross(crabLocation)
 
-            #timer.lap("crab: "+str(frame_number))
+        #timer.lap("Number of crabs" + str(len(markedCrabs)))
 
 
 class DecoRedDots(FrameDecorator):
@@ -102,8 +100,6 @@ class DecoRedDots(FrameDecorator):
         imgObj.drawCross(redDot2,5, color=(0, 0, 255))
 
         return imgObj
-
-            #timer.lap("crab: "+str(frame_number))
 
 
 class DecoFrameID(FrameDecorator):

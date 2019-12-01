@@ -6,6 +6,7 @@ from common import Point, Box, Vector
 
 #from Frame import Frame
 #from lib.Frame import Frame
+from lib.FolderStructure import FolderStructure
 from lib.MyTimer import MyTimer
 
 
@@ -82,85 +83,18 @@ class Image:
         return self.subImage(box)
 
 
-    def findBrightestSpot(self, image):
-        # https://www.pyimagesearch.com/2014/09/29/finding-brightest-spot-image-using-python-opencv/
-        orig = image.copy()
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        radius_ = 37
-        gray = cv2.GaussianBlur(gray, (radius_, radius_), 0)
-        (minVal, maxVal, minLoc, maxLoc) = cv2.minMaxLoc(gray)
-        image = orig.copy()
-        cv2.circle(image, maxLoc, radius_, (255, 0, 0), 2)
-        #print "brigtest spot maxLoc"
-        #print maxLoc
-        #print maxVal
-        imageWin.showWindowAndWaitForClick(image)
-
-    def drawBoxOnImage2(self):
-        #https://docs.opencv.org/trunk/dd/d49/tutorial_py_contour_features.html#gsc.tab=0
-
-        image_with_boxes = np.copy(self.__getImage())
-
-        bounding_boxes = []
-        #bounding_boxes = [self.redDot1.boxAroundDot, self.redDot2.boxAroundDot]
-        if self.redDot1.dotWasDetected():
-            bounding_boxes.append(self.redDot1.boxAroundDot)
-        if self.redDot2.dotWasDetected():
-            bounding_boxes.append(self.redDot2.boxAroundDot)
-
-        for box in bounding_boxes:
-            c = [box.topLeft.x, box.bottomRight.x, box.bottomRight.x, box.topLeft.x, box.topLeft.x]
-            r = [box.bottomRight.y, box.bottomRight.y, box.topLeft.y, box.topLeft.y, box.bottomRight.y]
-            rr, cc = polygon_perimeter(r, c, image_with_boxes.shape)
-            image_with_boxes[rr, cc] = 1  # set color white
-        return image_with_boxes
-
-    def padOnBottom(self, height):
+    def shiftImageHorizontally(self, pixelsToShift):
         # type: (int) -> Image
-        fillerHorizontal = Image.empty(height, self.width())
-        return self.concatenateToTheBottom(fillerHorizontal)
 
-    def padOnTop(self, height):
-        # type: (int) -> Image
-        fillerHorizontal = Image.empty(height, self.width())
-        return fillerHorizontal.concatenateToTheBottom(self)
+        boxSizeOfImage = Box.createUsingDimesions(self.width(), self.height())
 
-    def padLeft(self, widthToAdd):
-        # type: (int) -> Image
-        origHeight = self.height()
-        filler = Image.empty(origHeight, widthToAdd)
-        return filler.concatenateToTheRight(self)
+        fillerWidth = abs(pixelsToShift)
+        imageWithFillerOnBothSides = self.padSidesToMakeWider(fillerWidth*2)
+        boxEncompasingImage = boxSizeOfImage.translateBy(Vector(fillerWidth, 0))
 
-    def padRight(self, widthToAdd):
-        # type: (int) -> Image
-        origHeight = self.height()
-        filler = Image.empty(origHeight, widthToAdd)
-        return self.concatenateToTheRight(filler)
-
-    def padSidesToMakeWider(self, widthToAdd):
-        leftPadding = int(widthToAdd / 2)
-        rightPadding = widthToAdd - leftPadding
-        return self.padLeft(leftPadding).padRight(rightPadding)
-
-    def padSidesToMakeWider_orig(self, widthToAdd):
-        #newWidth = self.width()
-        origHeight = self.height()
-
-        #widthToAdd = (origWidth - newWidth)
-
-        fillerVertical1 = Image.empty(origHeight, int(widthToAdd / 2))
-        fillerVertical2 = Image.empty(origHeight, widthToAdd - int(widthToAdd / 2))
-        tmp2 = self.concatenateToTheRight(fillerVertical1)
-        imageToReturn = fillerVertical2.concatenateToTheRight(tmp2)
-        return imageToReturn
-
-    def trimSides(self, newWidth):
-        height = self.height()
-        widthToCutOutLeft = int((self.width() - newWidth) / 2)
-        areaToCut = Box(Point(widthToCutOutLeft, self.height() - height),
-                        Point(widthToCutOutLeft + newWidth, height))
-        imageToReturn = self.subImage(areaToCut)
-        return imageToReturn
+        #slide "boxEncompasingImage" to the left or to the right depending if xDrift is negative or positive
+        boxAroundAreaThatWeNeedToCrop = boxEncompasingImage.translateBy(Vector(pixelsToShift, 0))
+        return imageWithFillerOnBothSides.subImage(boxAroundAreaThatWeNeedToCrop)
 
     def adjustWidthWithoutRescaling(self,newWidth):
         if self.width() > newWidth:
@@ -168,65 +102,82 @@ class Image:
         else:
             return self.padSidesToMakeWider(newWidth - self.width())
 
-    def concatenateToTheBottom(self, imageObj):
+    def trimSides(self, newWidth):
+        # type: (int) -> Image
+        widthToCutOutLeft = int((self.width() - newWidth) / 2)
 
+        areaToCut = Box(Point(widthToCutOutLeft, 0), Point(widthToCutOutLeft + newWidth, self.height()))
+        return  self.subImage(areaToCut)
+
+    def padSidesToMakeWider(self, widthToAdd):
+        # type: (int) -> Image
+        leftPadding = int(widthToAdd / 2)
+        rightPadding = widthToAdd - leftPadding
+        return self.padLeft(leftPadding).padRight(rightPadding)
+
+    def padOnBottom(self, height):
+        # type: (int) -> Image
+        filler = Image.empty(height, self.width())
+        return Image(self.__concatenateNumpyArrayToTheBottom(self.asNumpyArray(),filler.asNumpyArray()))
+
+    def padOnTop(self, height):
+        # type: (int) -> Image
+        filler = Image.empty(height, self.width())
+        return Image(self.__concatenateNumpyArrayToTheBottom(filler.asNumpyArray(),self.asNumpyArray()))
+
+    def padLeft(self, widthToAdd):
+        # type: (int) -> Image
+        filler = Image.empty(self.height(), widthToAdd)
+        return Image(self.__concatenateNumpyArrayToTheRight(filler.asNumpyArray(),self.asNumpyArray()))
+
+    def padRight(self, widthToAdd):
+        # type: (int) -> Image
+        filler = Image.empty(self.height(), widthToAdd)
+        return Image(self.__concatenateNumpyArrayToTheRight(self.asNumpyArray(),filler.asNumpyArray()))
+
+    def concatenateToTheBottom(self, imageObj):
+        # type: (Image) -> Image
         maxWidth = max(self.width(), imageObj.width())
 
         # get objects to the same width. Leave their heights unchanged
-        topImageObj = self.growImage(maxWidth, self.height())
-        bottomImageObj = imageObj.growImage(maxWidth, imageObj.height())
+        topImageObj = self.growByPaddingBottomAndRight(maxWidth, self.height())
+        bottomImageObj = imageObj.growByPaddingBottomAndRight(maxWidth, imageObj.height())
 
         resultImg = self.__concatenateNumpyArrayToTheBottom(topImageObj.asNumpyArray(), bottomImageObj.asNumpyArray())
         return Image(resultImg)
 
-
     def concatenateToTheRight(self, imageObj):
-
+        # type: (Image) -> Image
         maxHeight = max(self.height(), imageObj.height())
 
         #get objects to the same height. Leave their widths unchanged
-        leftImageObj = self.growImage(self.width(), maxHeight)
-        rightImageObj = imageObj.growImage(imageObj.width(), maxHeight)
+        leftImageObj = self.growByPaddingBottomAndRight(self.width(), maxHeight)
+        rightImageObj = imageObj.growByPaddingBottomAndRight(imageObj.width(), maxHeight)
 
         resultImg = self.__concatenateNumpyArrayToTheRight(leftImageObj.asNumpyArray(), rightImageObj.asNumpyArray())
         return Image(resultImg)
 
-    def resizeImage(self, newHeight, newWidth):
+
+    def scaleImage(self, newHeight, newWidth):
         # type: (int, int) -> Image
         newImageNP = cv2.resize(self.asNumpyArray(), dsize=(newWidth, newHeight),
-                                   interpolation=cv2.INTER_CUBIC)
+                                interpolation=cv2.INTER_CUBIC)
         return Image(newImageNP)
 
-    def growImage(self, newWidth, newHeight):
+    def growByPaddingBottomAndRight(self, newWidth, newHeight):
+        # type: (int, int) -> Image
         fillerWidth = newWidth - self.width()
         fillerHeight = newHeight - self.height()
-
-        return Image(self.__padFillers(self, fillerWidth, fillerHeight))
-
-    def __padFillers(self, imgObj, fillerWidth, fillerHeight):
-
-        fillerBottom = Image.empty(fillerHeight, imgObj.width(), 0)
-        tmpImg = self.__concatenateNumpyArrayToTheBottom(imgObj.asNumpyArray(), fillerBottom.asNumpyArray())
-
-        newHeight = imgObj.height() + fillerHeight
-        fillerRight = Image.empty(newHeight, fillerWidth, 0)
-        return self.__concatenateNumpyArrayToTheRight(tmpImg, fillerRight.asNumpyArray())
+        return self.padOnBottom(fillerHeight).padRight(fillerWidth)
 
     def __concatenateNumpyArrayToTheBottom(self, topImg, bottomImg):
+        # type: (np, np) -> np
         return np.concatenate((topImg, bottomImg))
 
     def __concatenateNumpyArrayToTheRight(self, leftImg, rightImg):
+        # type: (np, np) -> np
         return np.concatenate((leftImg, rightImg), axis=1)
 
     def writeToFile(self, filepath):
-        self.__createDirectoriesIfNecessary(filepath)
+        FolderStructure.createDirectoriesIfDontExist(filepath)
         cv2.imwrite(filepath, self.asNumpyArray())  # save frame as JPEG file
-
-    def __createDirectoriesIfNecessary(self, filepath):
-
-        if not os.path.exists(os.path.dirname(filepath)):
-            try:
-                os.makedirs(os.path.dirname(filepath))
-            except OSError as exc:  # Guard against race condition
-                if exc.errno != errno.EEXIST:
-                    raise

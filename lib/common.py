@@ -116,6 +116,11 @@ class Box:
         self.bottomRight = bottomRight
         self.topLeft = topLeft
 
+    @staticmethod
+    def createUsingDimesions(x_width, y_height):
+        # type: (int, int) -> Box
+        return Box(Point(0, 0), Point(x_width, y_height))
+
     def __str__(self):
         return "["+str(self.topLeft)+":"+str(self.bottomRight)+"]"
 

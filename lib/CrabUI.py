@@ -56,7 +56,7 @@ class CrabUI:
 
         box_around_crab_on_that_frame = self.__crabFeature.getCoordinateInFrame(frameID).boxAroundPoint(self.__boxSize)
         crabImage = frameImage.subImage(box_around_crab_on_that_frame)
-        crabImage = crabImage.growImage(self.__boxSize, self.__boxSize)
+        crabImage = crabImage.growByPaddingBottomAndRight(self.__boxSize, self.__boxSize)
 
         crabImage.drawFrameID(frameID)
         return crabImage
