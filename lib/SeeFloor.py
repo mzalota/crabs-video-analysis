@@ -198,38 +198,38 @@ class SeeFloor:
 
     def heightMM(self,frame_id):
         # type: (int) -> float
-        df = self.getDF()
-        if df is None:
-            return None
+        mmPerPixel = self.__getValueFromDF("mm_per_pixel", frame_id)
+        return Frame.FRAME_HEIGHT*float(mmPerPixel)
 
-        result = df.loc[(df['frameNumber'] == frame_id)]["mm_per_pixel"]
-        if result.empty:
-            print ("Unexpected Result: in __getYCoordMMOrigin: frame_id", frame_id)
-            return None
-
-        mmPerPixel = float(result)
-        return  Frame.FRAME_HEIGHT*mmPerPixel
 
     def __getYCoordMMOrigin(self, frame_id):
         # type: (int) -> float
-        df = self.getDF()
-        if df is None:
-            return None
-        result = df.loc[(df['frameNumber'] == frame_id)]["driftY_sum_mm"]
-        if result.empty:
-            print ("Unexpected Result: in __getYCoordMMOrigin: frame_id", frame_id)
-            return 0
-        return float(result)
+        retValue = self.__getValueFromDF("driftY_sum_mm", frame_id)
+        return float(retValue)
 
     def __getXCoordMMOrigin(self, frame_id):
+        # type: (int) -> float
+        retValue = self.__getValueFromDF("driftX_sum_mm", frame_id)
+        return float(retValue)
+
+    def __getValueFromDF(self, columnName, frame_id):
         df = self.getDF()
         if df is None:
-            return None
-        result = df.loc[(df['frameNumber'] == frame_id)]["driftX_sum_mm"]
-        if result.empty:
-            print ("Unexpected Result: in __getXCoordMMOrigin: frame_id", frame_id)
             return 0
-        return int(result)
+
+        result = df.loc[(df['frameNumber'] == frame_id)][columnName]
+        if result.empty:
+            print ("Unexpected Result: in __getValueFromDF: frame_id", frame_id, "columnName", columnName)
+            return 0
+
+        # convert to array
+        vals = result.values
+        if len(vals) != 1:
+            # TODO: figure out why three are duplicate frame_id in reddots_interpolated: 4131, 4571. They crash
+            print ("Unexpected Result: in __getYCoordMMOrigin: frame_id", frame_id, "vals", vals, "result", result)
+            return 0
+
+        return vals[0]
 
     def saveToFile(self):
         filepath = self.__folderStruct.getSeefloorFilepath()
