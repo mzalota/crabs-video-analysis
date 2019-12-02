@@ -246,16 +246,9 @@ class DriftData(PandasWrapper):
         df = df[[self.__COLNAME_frameNumber, self.__COLNAME_driftX, self.__COLNAME_driftY]]
         df["driftY"] = df["driftY"] / 2
 
-        #TODO: set drift of the first row to zero.
-        minFrameID = df[self.__COLNAME_frameNumber].min()
-        #df.loc[(df['frameNumber'] == minFrameID)][self.__COLNAME_driftX]=0
-        #df.loc[(df['frameNumber'] == minFrameID)][self.__COLNAME_driftY]=0
-        #print ("minFrameID", minFrameID, df.loc[minFrameID, self.__COLNAME_driftX])
-        #print ("row 2", df.loc[2, self.__COLNAME_frameNumber])
-        #df.loc[minFrameID, self.__COLNAME_driftY] = 0
+        #set drifts in the first row to zero.
         df.loc[0, self.__COLNAME_driftX] = 0
         df.loc[0, self.__COLNAME_driftY] = 0
-
         return df
 
     def __interpolateToHaveEveryFrame(self, df):

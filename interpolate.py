@@ -31,8 +31,6 @@ df = drifts.interpolateRawDrifts(folderStruct)
 drifts.setDF(df)
 drifts.saveToFile(folderStruct.getDriftsFilepath())
 
-# data = drifts.getDF()
-# drifts.getCount()
 print ("interpolating RedDots")
 rdd = RedDotsData.createFromFolderStruct(folderStruct)
 rdd.saveInterpolatedDFToFile(drifts.minFrameID(), drifts.maxFrameID()+1)
