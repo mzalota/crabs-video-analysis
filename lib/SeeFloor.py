@@ -295,7 +295,7 @@ class SeeFloor(PandasWrapper):
         self.__df.to_csv(filepath, sep='\t', index=False)
 
     def __interpolate(self):
-        dfDrifts = self.getDriftData().interpolate2()
+        dfDrifts = self.getDriftData().getDF()
         dfRedDots = self.getRedDotsData().interpolatedDF()
         dfRedDots = dfRedDots[["frameNumber","distance", "mm_per_pixel"]]
 

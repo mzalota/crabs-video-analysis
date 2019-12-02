@@ -40,13 +40,9 @@ from lib.Logger import Logger
 rootDirectory ="C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
 videoFilename = "V2"
 
-#videoFilepath = rootDirectory+"/"+videoFilename+".avi"
-#videoStream = VideoStream(videoFilepath)
-#print "videoFilepath is "+videoFilepath
-
-#driftsFilepath = rootDirectory + "/" + videoFilename + "/"+videoFilename + '_drifts.csv'
-
 folderStruct = FolderStructure(rootDirectory, videoFilename)
+folderStruct.createDirectoriesIfDontExist(folderStruct.getDriftsFilepath())
+
 videoStream = VideoStream(folderStruct.getVideoFilepath())
 logger = Logger.openInOverwriteMode(folderStruct.getRawDriftsFilepath())
 
@@ -117,7 +113,6 @@ while success:
 
     if frameID > 99100:
         break
-
 
 logger.closeFile()
 cv2.destroyAllWindows()

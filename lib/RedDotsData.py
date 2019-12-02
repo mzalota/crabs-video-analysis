@@ -295,6 +295,9 @@ class RedDotsData(PandasWrapper):
         df['distance'] = pow(pow(df["centerPoint_x_dot2"] - df["centerPoint_x_dot1"], 2) + pow(df["centerPoint_y_dot2"] - df["centerPoint_y_dot1"], 2), 0.5) #.astype(int)
 
         df[self.__COLNAME_mm_per_pixel] = self.__distance_between_reddots_mm/df['distance']
+
+        #TODO: get rid of rows with duplicate frameNumber
+
         return df
 
     def __saveManualDFToFile(self):

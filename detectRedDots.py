@@ -9,6 +9,10 @@ from lib.VideoStream import VideoStream
 from lib.common import Point
 from lib.Logger import Logger
 
+
+#https://www.pyimagesearch.com/2016/10/31/detecting-multiple-bright-spots-in-an-image-with-python-and-opencv/
+
+
 rootDir ="C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
 videoFileName = "V2"
 
@@ -24,8 +28,7 @@ videoFileName = "V2"
 #videoFileName = "V3_R_20180911_170159"
 
 folderStruct = FolderStructure(rootDir, videoFileName)
-
-#StreamToLogger(folderStruct.getLogFilepath())
+folderStruct.createDirectoriesIfDontExist(folderStruct.getRedDotsRawFilepath())
 
 videoStream = VideoStream(folderStruct.getVideoFilepath())
 

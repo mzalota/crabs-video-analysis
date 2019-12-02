@@ -16,9 +16,12 @@ class DriftData(PandasWrapper):
     def __init__(self, driftData):
         # type: (pd.DataFrame) -> DriftData
 
+        self.setDF(driftData)
+
+    def setDF(self, driftData):
+        # type: (pd.DataFrame) -> None
         self.__driftData = self.__sort_by_frameNumber(driftData)
         self.__initializePerfOptimizingVariables()
-
 
     def __sort_by_frameNumber(self, driftData):
         df_tmp = driftData.copy().sort_values(by=[self.__COLNAME_frameNumber])
@@ -39,10 +42,21 @@ class DriftData(PandasWrapper):
     def createFromFolderStruct(folderStruct):
         # type: (FolderStructure) -> DriftData
         filepath = folderStruct.getDriftsFilepath()
-        dfRaw = PandasWrapper.readDataFrameFromCSV(filepath)
-        #dfRaw = dfRaw.rename(columns={dfRaw.columns[0]: "rowNum"}) # rename first column to be rowNum
+        if folderStruct.fileExists(filepath):
+            df = PandasWrapper.readDataFrameFromCSV(filepath)
+            # dfRaw = dfRaw.rename(columns={dfRaw.columns[0]: "rowNum"}) # rename first column to be rowNum
+        else:
+            df = DriftData.__createEmptyDF()
 
-        return DriftData(dfRaw)
+        return DriftData(df)
+
+    @staticmethod
+    def __createEmptyDF():
+        column_names = [DriftData.__COLNAME_frameNumber,
+                        DriftData.__COLNAME_driftX,
+                        DriftData.__COLNAME_driftY]
+        df = pd.DataFrame(columns=column_names)
+        return df
 
     @staticmethod
     def createFromDataFrame(driftData):
@@ -51,16 +65,15 @@ class DriftData(PandasWrapper):
 
     def saveToFile(self,filepath):
         # type: (String) -> None
-        #self.getDF().to_csv(filepath, sep='\t', index=False)
         self.getDF().to_csv(filepath, sep='\t', index=False)
 
     def getDF(self):
         # type: () -> pd.DataFrame
         return self.__driftData
 
-    def getInterpolatedDF(self):
-        # type: () -> pd.DataFrame
-        return self.__interpolate(self.__driftData)
+    #def getInterpolatedDF(self):
+    #    # type: () -> pd.DataFrame
+    #    return self.__interpolate(self.__driftData)
 
     def getCount(self):
         return len(self.__driftData.index)
@@ -203,40 +216,56 @@ class DriftData(PandasWrapper):
             cumulativeXDrift += self.__getXDrift(nextIndex)
         return Vector(cumulativeXDrift,cumulativeYDrift)
 
-    #TODO: clean up all these various "interpolate2" functions
-    def interpolate(self):
-        self.__driftData = self.__interpolate(self.__driftData)
+    #def interpolate(self):
+    #    self.__driftData = self.__interpolate(self.__driftData)
 
-    def __interpolate(self, data):
+    def _replaceInvalidValuesWithNaN(self, df):
         # type: (pd) -> pd
-        data.loc[data['driftY'] == -999, ['driftY', 'driftX']] = numpy.nan
-        data.loc[data['driftX'] == -888, ['driftX', 'driftY']] = numpy.nan
+        df.loc[df['driftY'] == -999, ['driftY', 'driftX']] = numpy.nan
+        df.loc[df['driftX'] == -888, ['driftX', 'driftY']] = numpy.nan
 
-        data.loc[data['driftX'] < -20, ['driftX', 'driftY']] = numpy.nan
-        data.loc[data['driftX'] > 30, ['driftX', 'driftY']] = numpy.nan
+        df.loc[df['driftX'] < -20, ['driftX', 'driftY']] = numpy.nan
+        df.loc[df['driftX'] > 30, ['driftX', 'driftY']] = numpy.nan
 
-        data.loc[data['driftY'] < -20, ['driftX', 'driftY']] = numpy.nan
-        data.loc[data['driftY'] > 80, ['driftX', 'driftY']] = numpy.nan
+        df.loc[df['driftY'] < -20, ['driftX', 'driftY']] = numpy.nan
+        df.loc[df['driftY'] > 130, ['driftX', 'driftY']] = numpy.nan  #80
+        return df
+        #return data.interpolate(limit_direction='both')
 
-        return data.interpolate(limit_direction='both')
+    def interpolateRawDrifts(self, folderStruct):
+        # type: (FolderStructure) -> pd.DataFrame
 
-    def interpolate2(self):
-        # type: () -> pd
-        minVal = self.minFrameID()
-        maxVal = self.maxFrameID()
+        filepath = folderStruct.getRawDriftsFilepath()
+        df = PandasWrapper.readDataFrameFromCSV(filepath)
 
-        df = self.getInterpolatedDF().copy()
-
-        df = df.set_index("frameNumber")
-        everyFrame = pd.DataFrame(numpy.arange(start=minVal, stop=maxVal, step=1), columns=["frameNumber"]).set_index(
-            "frameNumber")
-        df = df.combine_first(everyFrame).reset_index()
-        df = df.interpolate(limit_direction='both')
+        df = self._replaceInvalidValuesWithNaN(df)
+        df = self.__interpolateToHaveEveryFrame(df)
 
         #TODO: dividiing drift by 2 is not flexible. What if detectDrift step is not 2, but 3 or if it is mixed?
         df["driftX"] = df["driftX"] / 2
         df = df[[self.__COLNAME_frameNumber, self.__COLNAME_driftX, self.__COLNAME_driftY]]
         df["driftY"] = df["driftY"] / 2
+
+        #TODO: set drift of the first row to zero.
+        minFrameID = df[self.__COLNAME_frameNumber].min()
+        #df.loc[(df['frameNumber'] == minFrameID)][self.__COLNAME_driftX]=0
+        #df.loc[(df['frameNumber'] == minFrameID)][self.__COLNAME_driftY]=0
+        #print ("minFrameID", minFrameID, df.loc[minFrameID, self.__COLNAME_driftX])
+        #print ("row 2", df.loc[2, self.__COLNAME_frameNumber])
+        #df.loc[minFrameID, self.__COLNAME_driftY] = 0
+        df.loc[0, self.__COLNAME_driftX] = 0
+        df.loc[0, self.__COLNAME_driftY] = 0
+
+        return df
+
+    def __interpolateToHaveEveryFrame(self, df):
+        minFrameID = df[self.__COLNAME_frameNumber].min()
+        maxFrameID = df[self.__COLNAME_frameNumber].max()
+        df = df.set_index("frameNumber")
+        everyFrame = pd.DataFrame(numpy.arange(start=minFrameID, stop=maxFrameID, step=1), columns=["frameNumber"]).set_index(
+            "frameNumber")
+        df = df.combine_first(everyFrame).reset_index()
+        df = df.interpolate(limit_direction='both')
         return df
 
     def getNextFrame(self, yPixelsAway, fromFrameID):
