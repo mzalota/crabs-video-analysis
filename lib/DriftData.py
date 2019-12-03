@@ -232,11 +232,8 @@ class DriftData(PandasWrapper):
         return df
         #return data.interpolate(limit_direction='both')
 
-    def interpolateRawDrifts(self, folderStruct):
-        # type: (FolderStructure) -> pd.DataFrame
-
-        filepath = folderStruct.getRawDriftsFilepath()
-        df = PandasWrapper.readDataFrameFromCSV(filepath)
+    def interpolateRawDrifts(self, df):
+        # type: (pd.DataFrame) -> pd.DataFrame
 
         df = self._replaceInvalidValuesWithNaN(df)
         df = self.__interpolateToHaveEveryFrame(df)
@@ -249,6 +246,11 @@ class DriftData(PandasWrapper):
         #set drifts in the first row to zero.
         df.loc[0, self.__COLNAME_driftX] = 0
         df.loc[0, self.__COLNAME_driftY] = 0
+        return df
+
+    def getRawDriftsDF(self, folderStruct):
+        filepath = folderStruct.getRawDriftsFilepath()
+        df = PandasWrapper.readDataFrameFromCSV(filepath)
         return df
 
     def __interpolateToHaveEveryFrame(self, df):

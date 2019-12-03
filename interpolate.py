@@ -27,7 +27,8 @@ folderStruct = FolderStructure(rootDir, videoFileName)
 
 print ("interpolating DriftData")
 drifts = DriftData.createFromFolderStruct(folderStruct)
-df = drifts.interpolateRawDrifts(folderStruct)
+df = drifts.getRawDriftsDF(folderStruct)
+df = drifts.interpolateRawDrifts(df)
 drifts.setDF(df)
 drifts.saveToFile(folderStruct.getDriftsFilepath())
 
@@ -39,3 +40,5 @@ print ("interpolating SeeFloor")
 
 sf = SeeFloor.createFromFolderStruct(folderStruct)
 sf.saveToFile()
+
+print ("Done inerpolating")
