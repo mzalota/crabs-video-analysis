@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import os
 import sys
 
+from lib.DriftDataRaw import DriftDataRaw
 from lib.FolderStructure import FolderStructure
 from lib.DriftData import DriftData
 from lib.SeeFloor import SeeFloor
@@ -26,9 +27,10 @@ videoFileName = "V2"
 folderStruct = FolderStructure(rootDir, videoFileName)
 
 print ("interpolating DriftData")
+rawDrifts = DriftDataRaw(folderStruct)
+df = rawDrifts.interpolate()
+
 drifts = DriftData.createFromFolderStruct(folderStruct)
-df = drifts.getRawDriftsDF(folderStruct)
-df = drifts.interpolateRawDrifts(df)
 drifts.setDF(df)
 drifts.saveToFile(folderStruct.getDriftsFilepath())
 

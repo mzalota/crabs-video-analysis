@@ -15,7 +15,6 @@ class DriftData(PandasWrapper):
 
     def __init__(self, driftData):
         # type: (pd.DataFrame) -> DriftData
-
         self.setDF(driftData)
 
     def setDF(self, driftData):
@@ -70,10 +69,6 @@ class DriftData(PandasWrapper):
     def getDF(self):
         # type: () -> pd.DataFrame
         return self.__driftData
-
-    #def getInterpolatedDF(self):
-    #    # type: () -> pd.DataFrame
-    #    return self.__interpolate(self.__driftData)
 
     def getCount(self):
         return len(self.__driftData.index)
@@ -216,52 +211,6 @@ class DriftData(PandasWrapper):
             cumulativeXDrift += self.__getXDrift(nextIndex)
         return Vector(cumulativeXDrift,cumulativeYDrift)
 
-    #def interpolate(self):
-    #    self.__driftData = self.__interpolate(self.__driftData)
-
-    def _replaceInvalidValuesWithNaN(self, df):
-        # type: (pd) -> pd
-        df.loc[df['driftY'] == -999, ['driftY', 'driftX']] = numpy.nan
-        df.loc[df['driftX'] == -888, ['driftX', 'driftY']] = numpy.nan
-
-        df.loc[df['driftX'] < -20, ['driftX', 'driftY']] = numpy.nan
-        df.loc[df['driftX'] > 30, ['driftX', 'driftY']] = numpy.nan
-
-        df.loc[df['driftY'] < -20, ['driftX', 'driftY']] = numpy.nan
-        df.loc[df['driftY'] > 130, ['driftX', 'driftY']] = numpy.nan  #80
-        return df
-        #return data.interpolate(limit_direction='both')
-
-    def interpolateRawDrifts(self, df):
-        # type: (pd.DataFrame) -> pd.DataFrame
-
-        df = self._replaceInvalidValuesWithNaN(df)
-        df = self.__interpolateToHaveEveryFrame(df)
-
-        #TODO: dividiing drift by 2 is not flexible. What if detectDrift step is not 2, but 3 or if it is mixed?
-        df["driftX"] = df["driftX"] / 2
-        df = df[[self.__COLNAME_frameNumber, self.__COLNAME_driftX, self.__COLNAME_driftY]]
-        df["driftY"] = df["driftY"] / 2
-
-        #set drifts in the first row to zero.
-        df.loc[0, self.__COLNAME_driftX] = 0
-        df.loc[0, self.__COLNAME_driftY] = 0
-        return df
-
-    def getRawDriftsDF(self, folderStruct):
-        filepath = folderStruct.getRawDriftsFilepath()
-        df = PandasWrapper.readDataFrameFromCSV(filepath)
-        return df
-
-    def __interpolateToHaveEveryFrame(self, df):
-        minFrameID = df[self.__COLNAME_frameNumber].min()
-        maxFrameID = df[self.__COLNAME_frameNumber].max()
-        df = df.set_index("frameNumber")
-        everyFrame = pd.DataFrame(numpy.arange(start=minFrameID, stop=maxFrameID, step=1), columns=["frameNumber"]).set_index(
-            "frameNumber")
-        df = df.combine_first(everyFrame).reset_index()
-        df = df.interpolate(limit_direction='both')
-        return df
 
     def getNextFrame(self, yPixelsAway, fromFrameID):
         # type: (int, int) -> int
