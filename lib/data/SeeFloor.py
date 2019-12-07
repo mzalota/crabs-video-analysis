@@ -294,7 +294,7 @@ class SeeFloor(PandasWrapper):
 
     def __interpolate(self):
         dfDrifts = self.getDriftData().getDF()
-        dfRedDots = self.getRedDotsData().interpolatedDF()
+        dfRedDots = self.getRedDotsData().getPandasDF()
         dfRedDots = dfRedDots[["frameNumber","distance", "mm_per_pixel"]]
 
         return self.__mergeDriftsAndRedDots(dfDrifts, dfRedDots)

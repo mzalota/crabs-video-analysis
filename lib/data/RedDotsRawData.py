@@ -1,12 +1,26 @@
+import pandas as pd
+
 from lib.data.PandasWrapper import PandasWrapper
 
 
 class RedDotsRawData(PandasWrapper):
     # __df = None
     __COLNAME_frameNumber = 'frameNumber'
+    __COLNAME_dotName = "dotName"
+    __COLNAME_centerPoint_x = "centerPoint_x"
+    __COLNAME_centerPoint_y = "centerPoint_y"
+    __COLNAME_topLeft_y = "topLeft_y"
+    __COLNAME_topLeft_x = "topLeft_x"
+    __COLNAME_bottomRight_x = "bottomRight_x"
+    __COLNAME_bottomRight_y = "bottomRight_x"
+    __COLNAME_diagonal = "diagonal"
+
+    __VALUE_redDot1 = "redDot1"
+    __VALUE_redDot2 = "redDot2"
 
     def __init__(self, folderStruct):
         # type: (FolderStructure) -> RedDotsRawData
+        self.__folderStruct = folderStruct
         filepath = folderStruct.getRedDotsRawFilepath()
         self.__df = PandasWrapper.readDataFrameFromCSV(filepath)
         # dfRaw = dfRaw.rename(columns={dfRaw.columns[0]: "rowNum"}) # rename first column to be rowNum
