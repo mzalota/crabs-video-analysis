@@ -1,10 +1,6 @@
-from lib.BadFramesData import BadFramesData
-from lib.CrabsData import CrabsData
-from lib.Feature import Feature
+from lib.data.BadFramesData import BadFramesData
 from lib.Frame import Frame
-from lib.FramesStitcher import FramesStitcher
-from lib.MyTimer import MyTimer
-from lib.SeeFloor import SeeFloor
+from lib.data.SeeFloor import SeeFloor
 from lib.VideoStream import VideoStream
 from lib.common import Point, Vector
 

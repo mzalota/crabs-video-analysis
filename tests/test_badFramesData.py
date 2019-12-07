@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 import pandas as pd
-from lib.BadFramesData import BadFramesData
+from lib.data.BadFramesData import BadFramesData
 
 
 class TestBadFramesData(TestCase):

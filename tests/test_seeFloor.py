@@ -1,10 +1,10 @@
 from unittest import TestCase
 import pandas as pd
 
-from lib.BadFramesData import BadFramesData
-from lib.DriftData import DriftData
+from lib.data.BadFramesData import BadFramesData
+from lib.data.DriftData import DriftData
 from lib.FramesStitcher import FramesStitcher
-from lib.SeeFloor import SeeFloor
+from lib.data.SeeFloor import SeeFloor
 
 
 class TestSeeFloor(TestCase):

@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from lib.DriftData import DriftData
+from lib.data.DriftData import DriftData
 from lib.Feature import Feature
 from lib.common import Point
 import pandas as pd

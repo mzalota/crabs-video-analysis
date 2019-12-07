@@ -1,7 +1,7 @@
 import cv2
 
 from lib.ImageWindow import ImageWindow
-from lib.RedDotsData import RedDotsData
+from lib.data.RedDotsData import RedDotsData
 from lib.UserInput import UserInput
 from lib.common import Box, Point
 

@@ -1,15 +1,12 @@
-import csv
 import traceback
 
 import pandas as pd
-import math
 
-from DriftData import DriftData
+from lib.data.DriftData import DriftData
 from Frame import Frame
-from Image import Image
-from lib.CrabsData import CrabsData
-from lib.PandasWrapper import PandasWrapper
-from lib.SeeFloor import SeeFloor
+from lib.data.CrabsData import CrabsData
+from lib.data.PandasWrapper import PandasWrapper
+from lib.data.SeeFloor import SeeFloor
 
 
 class FramesStitcher:

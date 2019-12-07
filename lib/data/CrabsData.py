@@ -1,8 +1,7 @@
 import pandas as pd
-import numpy
 from datetime import datetime
 from lib.FolderStructure import FolderStructure
-from lib.PandasWrapper import PandasWrapper
+from lib.data.PandasWrapper import PandasWrapper
 
 
 class CrabsData(PandasWrapper):

@@ -1,15 +1,8 @@
-import pandas as pd
-import numpy
-import matplotlib.pyplot as plt
-import os
-import sys
-
-from lib.DriftDataRaw import DriftDataRaw
+from lib.data.DriftDataRaw import DriftDataRaw
 from lib.FolderStructure import FolderStructure
-from lib.DriftData import DriftData
-from lib.SeeFloor import SeeFloor
-from lib.RedDotsData import RedDotsData
-from lib.BadFramesData import BadFramesData
+from lib.data.DriftData import DriftData
+from lib.data.SeeFloor import SeeFloor
+from lib.data.RedDotsData import RedDotsData
 
 # rootDir ="C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"
 # videoFileName = "V3__R_20180915_205551"

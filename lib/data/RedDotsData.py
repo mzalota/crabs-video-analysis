@@ -2,7 +2,7 @@ import pandas as pd
 import numpy
 
 from lib.FolderStructure import FolderStructure
-from lib.PandasWrapper import PandasWrapper
+from lib.data.PandasWrapper import PandasWrapper
 from lib.common import Point
 
 

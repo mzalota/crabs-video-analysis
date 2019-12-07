@@ -1,12 +1,6 @@
-from math import ceil, floor
-
-from lib.CrabsData import CrabsData
+from lib.data.CrabsData import CrabsData
 from lib.Feature import Feature
-from lib.Frame import Frame
-from lib.Image import Image
 from lib.ImageWindow import ImageWindow
-from lib.MyTimer import MyTimer
-from lib.SeeFloorSection import SeeFloorSection
 from lib.common import Box, Point, Vector
 
 

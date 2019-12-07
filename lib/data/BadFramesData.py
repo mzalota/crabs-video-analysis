@@ -1,7 +1,7 @@
 import pandas as pd
 from datetime import datetime
 from lib.FolderStructure import FolderStructure
-from lib.PandasWrapper import PandasWrapper
+from lib.data.PandasWrapper import PandasWrapper
 
 
 class BadFramesData(PandasWrapper):

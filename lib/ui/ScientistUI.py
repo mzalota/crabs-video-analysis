@@ -1,22 +1,18 @@
-from lib.BadFramesData import BadFramesData
-from lib.CrabUI import CrabUI
-from lib.CrabsData import CrabsData
-from lib.DriftData import DriftData
-from lib.Feature import Feature
+from lib.data.BadFramesData import BadFramesData
+from lib.ui.CrabUI import CrabUI
+from lib.data.CrabsData import CrabsData
+from lib.data.DriftData import DriftData
 from lib.Frame import Frame
-from lib.FramesStitcher import FramesStitcher
-from lib.Image import Image
 from lib.ImageWindow import ImageWindow
 from lib.ImagesCollage import ImagesCollage
-from lib.RedDotsData import RedDotsData
+from lib.data.RedDotsData import RedDotsData
 
 import traceback
-from lib.FrameDecorators import DecoMarkedCrabs, DecoGridLines, FrameDecorator, DecoRedDots, DecoFrameID, FrameDecoFactory
+from lib.FrameDecorators import FrameDecoFactory
 
 from lib.MyTimer import MyTimer
 from lib.UserInput import UserInput
-from lib.common import Point
-from lib.SeeFloor import SeeFloor
+from lib.data.SeeFloor import SeeFloor
 
 
 class ScientistUI:

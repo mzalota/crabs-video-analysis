@@ -1,12 +1,10 @@
-from lib.BadFramesData import BadFramesData
-from lib.CrabsData import CrabsData
-from lib.DriftData import DriftData
+from lib.data.BadFramesData import BadFramesData
+from lib.data.DriftData import DriftData
 from lib.Frame import Frame
-from lib.PandasWrapper import PandasWrapper
-from lib.RedDotsData import RedDotsData
+from lib.data.PandasWrapper import PandasWrapper
+from lib.data.RedDotsData import RedDotsData
 from lib.FolderStructure import FolderStructure
 import pandas as pd
-import numpy
 
 from lib.common import Vector
 

@@ -1,15 +1,6 @@
-import pandas as pd
-import cv2
-
-from lib.RedDotsData import RedDotsData
-from lib.RedDotsUI import RedDotsUI
+from lib.ui.RedDotsUI import RedDotsUI
 from lib.FolderStructure import FolderStructure
-from lib.ImageWindow import ImageWindow
-from lib.StreamToLogger import StreamToLogger
 from lib.VideoStream import VideoStream
-from lib.common import Point, Box
-from datetime import datetime
-
 
 #rootDir ="C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"
 #videoFileName = "V3__R_20180915_205551"

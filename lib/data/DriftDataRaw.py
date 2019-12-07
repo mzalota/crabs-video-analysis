@@ -1,10 +1,9 @@
 import numpy
 import pandas as pd
 
-from lib.PandasWrapper import PandasWrapper
 from lib.FolderStructure import FolderStructure
 
-from lib.PandasWrapper import PandasWrapper
+from lib.data.PandasWrapper import PandasWrapper
 
 
 class DriftDataRaw(PandasWrapper):

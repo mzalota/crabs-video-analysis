@@ -1,8 +1,6 @@
 from unittest import TestCase
 
-from lib.DriftData import DriftData
-from lib.VelocityDetector import VelocityDetector
-from lib.common import Vector
+from lib.data.DriftData import DriftData
 import pandas as pd
 
 class TestDriftData(TestCase):

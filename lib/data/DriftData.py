@@ -1,9 +1,8 @@
 import math
 
-import numpy
 import pandas as pd
 
-from lib.PandasWrapper import PandasWrapper
+from lib.data.PandasWrapper import PandasWrapper
 from lib.common import Vector
 from lib.FolderStructure import FolderStructure
 
