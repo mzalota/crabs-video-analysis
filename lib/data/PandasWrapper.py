@@ -9,3 +9,15 @@ class PandasWrapper:
         else:
             dfRaw = pd.read_csv(filepath, delimiter="\t", na_values="(null)")
         return dfRaw
+
+    def __propertyInitialized(self, propertyStr):
+        print ("__propertyInitialized")
+        try:
+            getattr(self, propertyStr)
+            print ("__propertyInitialized in try")
+        except AttributeError:
+            print ("__propertyInitialized in AttributeError")
+            return False
+        else:
+            print ("__propertyInitialized in else")
+            return True

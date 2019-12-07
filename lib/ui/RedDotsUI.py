@@ -4,6 +4,7 @@ from lib.ImageWindow import ImageWindow
 from lib.data.RedDotsData import RedDotsData
 from lib.UserInput import UserInput
 from lib.common import Box, Point
+from lib.data.RedDotsManualData import RedDotsManualData
 
 
 class RedDotsUI:
@@ -17,7 +18,7 @@ class RedDotsUI:
         self.__videoStream = videoStream
 
     def showUI(self):
-
+        redDotsManualData = RedDotsManualData(self.__folderStruct)
         rawRedDotsData = RedDotsData(self.__folderStruct)
 
         imageZoomWin = ImageWindow("zoomImg", Point(100, 100))
@@ -61,14 +62,14 @@ class RedDotsUI:
                 break
             else:
                 # user clicked with a mouse, presumably
-                self.__processRedDots(frameID, imageZoomWin.featureBox, rawRedDotsData)
+                self.__processRedDots(frameID, imageZoomWin.featureBox, redDotsManualData)
 
                 frameID = rawRedDotsData.getMiddleOfBiggestGap()
 
         cv2.destroyAllWindows()
 
-    def __processRedDots(self, frameID, redDotsInCoordinatesOfZoomWin, rawRedDotsData):
+    def __processRedDots(self, frameID, redDotsInCoordinatesOfZoomWin, redDotsManualData):
 
         redDots = redDotsInCoordinatesOfZoomWin.translateCoordinateToOuter(self.__zoomBox.topLeft)
 
-        rawRedDotsData.addManualDots(frameID, redDots)
+        redDotsManualData.addManualDots(frameID, redDots)
