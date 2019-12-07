@@ -154,17 +154,17 @@ class RedDotsData(PandasWrapper):
         rawData = RedDotsRawData(self.__folderStruct)
         rawDF = rawData.getPandasDF().copy()
 
-        if manualDF.count()[0] >0:
+        if manualDF.count()[0] > 0:
             #remove rows from rawDF that appear in manualDF, so that JOIN (concat) does not create duplicate rows
-            framesAppearInRawAndManual = rawDF["frameNumber"].isin(manualDF)
-            rawDFWithoutRowsInManualDF = rawDF[framesAppearInRawAndManual == True]
-
+            framesAppearInRawAndManual = rawDF["frameNumber"].isin(manualDF["frameNumber"])
+            rawDFWithoutRowsInManualDF = rawDF[framesAppearInRawAndManual == False]
             combinedDF = pd.concat([rawDFWithoutRowsInManualDF, manualDF])
         else:
             combinedDF = rawDF
 
-        combinedDF.sort_values(by=[self.__COLNAME_frameNumber, self.__COLNAME_dotName], inplace=True)
         combinedDF.reset_index(drop=True)
+        combinedDF.sort_values(by=[self.__COLNAME_frameNumber, self.__COLNAME_dotName], inplace=True)
+
         return combinedDF
 
     def __minFrameID(self):
