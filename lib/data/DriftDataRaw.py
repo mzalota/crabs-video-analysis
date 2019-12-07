@@ -13,7 +13,7 @@ class DriftDataRaw(PandasWrapper):
     __COLNAME_driftY = 'driftY'
 
     def __init__(self, folderStruct):
-        # type: (FolderStructure) -> pd.DataFrame
+        # type: (FolderStructure) -> DriftDataRaw
         filepath = folderStruct.getRawDriftsFilepath()
         self.__df = PandasWrapper.readDataFrameFromCSV(filepath)
 

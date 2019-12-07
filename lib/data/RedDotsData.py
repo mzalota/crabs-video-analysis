@@ -4,6 +4,7 @@ import numpy
 from lib.FolderStructure import FolderStructure
 from lib.data.PandasWrapper import PandasWrapper
 from lib.common import Point
+from lib.data.RedDotsRawData import RedDotsRawData
 
 
 class RedDotsData(PandasWrapper):
@@ -31,16 +32,10 @@ class RedDotsData(PandasWrapper):
     def __init__(self, folderStruct):
         self.__folderStruct = folderStruct
 
-        filepath = folderStruct.getRedDotsRawFilepath()
-        #dfRaw = pd.read_csv(filepath, delimiter="\t", na_values="(null)")
-        dfRaw = self.readDataFrameFromCSV(filepath)
-
+        rawData = RedDotsRawData(folderStruct)
+        self.__rawDF = rawData.getPandasDF()
 
         self.initializeManualDF(folderStruct)
-
-        # dfRaw = dfRaw.rename(columns={dfRaw.columns[0]: "rowNum"}) # rename first column to be rowNum
-
-        self.setRawDataFrame(dfRaw)
 
     def initializeManualDF(self, folderStruct):
         column_names = [self.__COLNAME_frameNumber, self.__COLNAME_dotName, self.__COLNAME_centerPoint_x, self.__COLNAME_centerPoint_y]
@@ -52,18 +47,18 @@ class RedDotsData(PandasWrapper):
         else:
             self.__manualDF = pd.DataFrame(columns=column_names)
 
-    @staticmethod
-    def createFromFolderStruct(folderStruct):
-        # type: (FolderStructure) -> RedDotsData
-        newObj = RedDotsData(folderStruct)
-        return newObj
+    def __combinedDF(self):
+        # type: (object) -> pd.DataFrame
 
-    def setRawDataFrame(self, df):
-        # type: (pd) -> NaN
-        self.__rawDF = df
+        if self.__manualDF.count()[0] >0:
+            combinedDF = pd.concat([self.__rawDF, self.__manualDF]).reset_index(drop=True)
+        else:
+            #print("manualDF is empty")
+            combinedDF = self.__rawDF.copy().reset_index(drop=True)
+            combinedDF.reset_index(drop=True)
 
-    def manualDF(self):
-        return self.__manualDF
+        combinedDF.sort_values(by=[self.__COLNAME_frameNumber, self.__COLNAME_dotName], inplace=True)
+        return combinedDF
 
     def interpolatedDF(self):
         # type: () -> pd
@@ -75,6 +70,12 @@ class RedDotsData(PandasWrapper):
             # attribute self.__interpolatedDF have not been initialized yet
             self.__interpolatedDF = self.readDataFrameFromCSV(filepath)
             return self.__interpolatedDF
+
+    @staticmethod
+    def createFromFolderStruct(folderStruct):
+        # type: (FolderStructure) -> RedDotsData
+        newObj = RedDotsData(folderStruct)
+        return newObj
 
 
     def __propertyInitialized(self, propertyStr):
@@ -89,59 +90,16 @@ class RedDotsData(PandasWrapper):
             print ("__propertyInitialized in else")
             return True
 
-    def replaceOutlierBetweenTwo(self):
-        dataRedDot2 = self.onlyRedDot2()
-        self.__replaceOutlierBetweenTwo(dataRedDot2, "centerPoint_x")
-        self.__replaceOutlierBetweenTwo(dataRedDot2, "centerPoint_y")
 
-        newRedDots2 = self.__dropRowsThatAppearInManualDF(dataRedDot2)
-        newRedDots2.sort_values(by=[self.__COLNAME_frameNumber, self.__COLNAME_dotName], inplace=True)
-
-        dataRedDot1 = self.onlyRedDot1()
-        self.__replaceOutlierBetweenTwo(dataRedDot1, "centerPoint_x")
-        self.__replaceOutlierBetweenTwo(dataRedDot1, "centerPoint_y")
-
-        newRedDots1 = self.__dropRowsThatAppearInManualDF(dataRedDot1)
-        newRedDots1.sort_values(by=[self.__COLNAME_frameNumber, self.__COLNAME_dotName], inplace=True)
-
-        withoutOutliers = pd.concat([newRedDots1, newRedDots2], ignore_index=True)
-        #withoutOutliers = withoutOutliers.reset_index()
-
-        self.__saveRawDFToFile(withoutOutliers)
-
-    def __dropRowsThatAppearInManualDF(self, df):
-
-        # remove rows from
-        tmp2 = pd.merge(df[['frameNumber', "dotName"]], self.__manualDF[['frameNumber', "dotName"]],
-                        on='frameNumber',
-                        how='left', suffixes=('_all', '_man'))
-        toDrop2 = tmp2[tmp2['dotName_man'].notnull()]
-
-        #ingnore errors, because there are rows in manualDF that are not in DF and they generate unnecessary error/warning
-        return df.drop(toDrop2.index, errors="ignore")
-
-    def __combinedDF(self):
-        if self.__manualDF.count()[0] >0:
-            combinedDF = pd.concat([self.__rawDF, self.__manualDF]).reset_index(drop=True)
-        else:
-            #print("manualDF is empty")
-            combinedDF = self.__rawDF.copy().reset_index(drop=True)
-            combinedDF.reset_index(drop=True)
-
-        combinedDF.sort_values(by=[self.__COLNAME_frameNumber, self.__COLNAME_dotName], inplace=True)
-        return combinedDF
-
-    def onlyRedDot2(self):
+    def __onlyRedDot2(self):
         # type: () -> pd
         dataRedDot2 = self.__combinedDF().loc[self.__combinedDF()['dotName'] == self.__VALUE_redDot2]
         return dataRedDot2
 
-    def onlyRedDot1(self):
+    def __onlyRedDot1(self):
         # type: () -> pd
         dataRedDot1 = self.__combinedDF().loc[self.__combinedDF()['dotName'] == self.__VALUE_redDot1]
         return dataRedDot1
-
-
 
     def midPoint(self, frameId):
         redDot1 = self.getRedDot1(frameId)
@@ -184,6 +142,37 @@ class RedDotsData(PandasWrapper):
         dfResult = df.loc[df[RedDotsData.__COLNAME_frameNumber] == frameId]
         return dfResult
 
+    def replaceOutlierBetweenTwo_old(self):
+        dataRedDot2 = self.__onlyRedDot2()
+        self.__replaceOutlierBetweenTwo(dataRedDot2, "centerPoint_x")
+        self.__replaceOutlierBetweenTwo(dataRedDot2, "centerPoint_y")
+
+        newRedDots2 = self.__dropRowsThatAppearInManualDF(dataRedDot2)
+        newRedDots2.sort_values(by=[self.__COLNAME_frameNumber, self.__COLNAME_dotName], inplace=True)
+
+        dataRedDot1 = self.__onlyRedDot1()
+        self.__replaceOutlierBetweenTwo(dataRedDot1, "centerPoint_x")
+        self.__replaceOutlierBetweenTwo(dataRedDot1, "centerPoint_y")
+
+        newRedDots1 = self.__dropRowsThatAppearInManualDF(dataRedDot1)
+        newRedDots1.sort_values(by=[self.__COLNAME_frameNumber, self.__COLNAME_dotName], inplace=True)
+
+        withoutOutliers = pd.concat([newRedDots1, newRedDots2], ignore_index=True)
+        # withoutOutliers = withoutOutliers.reset_index()
+
+        # self.__saveRawDFToFile(withoutOutliers)
+
+    def __dropRowsThatAppearInManualDF(self, df):
+
+        # remove rows from
+        tmp2 = pd.merge(df[['frameNumber', "dotName"]], self.__manualDF[['frameNumber', "dotName"]],
+                        on='frameNumber',
+                        how='left', suffixes=('_all', '_man'))
+        toDrop2 = tmp2[tmp2['dotName_man'].notnull()]
+
+        # ingnore errors, because there are rows in manualDF that are not in DF and they generate unnecessary error/warning
+        return df.drop(toDrop2.index, errors="ignore")
+
     def __replaceOutlierBetweenTwo(self, df, columnName):
         outlier_threshold = 100
         prevValue = df[columnName].shift(periods=1)
@@ -196,13 +185,13 @@ class RedDotsData(PandasWrapper):
 
     def getMiddleOfBiggestGap(self):
 
-        redDots1 = self.onlyRedDot1().reset_index()
+        redDots1 = self.__onlyRedDot1().reset_index()
         idxOfMaxGap1 = self.__indexOfBiggestGap(redDots1)
         gapStartFrameID1 = redDots1.loc[idxOfMaxGap1, :][self.__COLNAME_frameNumber]
         gapEndFrameID1 = redDots1.loc[idxOfMaxGap1 + 1, :][self.__COLNAME_frameNumber]
         gapSize1 = gapEndFrameID1 - gapStartFrameID1
 
-        redDots2 = self.onlyRedDot2().reset_index()
+        redDots2 = self.__onlyRedDot2().reset_index()
         idxOfMaxGap2 = self.__indexOfBiggestGap(redDots2)
         gapStartFrameID2 = redDots2.loc[idxOfMaxGap2, :][self.__COLNAME_frameNumber]
         gapEndFrameID2 = redDots2.loc[idxOfMaxGap2 + 1, :][self.__COLNAME_frameNumber]
@@ -217,6 +206,7 @@ class RedDotsData(PandasWrapper):
         return gapMiddleFrameID
 
     def __indexOfBiggestGap(self, newDF):
+        # type: (pd.DataFrame) -> int
         #nextFrameID = newDF[self.__COLNAME_frameNumber].shift(periods=-1)
         #gaps = abs(newDF[self.__COLNAME_frameNumber] - nextFrameID)
         #value = max(gaps)
@@ -244,14 +234,18 @@ class RedDotsData(PandasWrapper):
         return idxOfMaxGap
 
     def getCount(self):
+        # type: () -> int
         return len(self.__combinedDF().index)
 
-    def __minFrameIDInRawFile(self):
+    def __minFrameID(self):
+        # type: () -> int
         return self.__combinedDF()[self.__COLNAME_frameNumber][0]
 
-    def __maxFrameIDInRawFile(self):
-        #return self.__combinedDF[self.__COLNAME_frameNumber].max()
-        return self.__rawDF[self.__COLNAME_frameNumber].max()
+    def __maxFrameID(self):
+        # type: () -> int
+        return self.__combinedDF[self.__COLNAME_frameNumber].max()
+        #TODO: Why is this commented out?
+        #return self.__rawDF[self.__COLNAME_frameNumber].max()
 
     def addManualDots(self, frameID, box):
         #self.__driftData[self.__COLNAME_frameNumber][0]
@@ -274,17 +268,17 @@ class RedDotsData(PandasWrapper):
         self.__saveManualDFToFile()
 
     def forPlotting(self):
-        dataRedDot1 = self.onlyRedDot1()[[self.__COLNAME_frameNumber,self.__COLNAME_centerPoint_x, self.__COLNAME_centerPoint_y]]
-        dataRedDot2 = self.onlyRedDot2()[[self.__COLNAME_frameNumber,self.__COLNAME_centerPoint_x, self.__COLNAME_centerPoint_y]]
+        dataRedDot1 = self.__onlyRedDot1()[[self.__COLNAME_frameNumber, self.__COLNAME_centerPoint_x, self.__COLNAME_centerPoint_y]]
+        dataRedDot2 = self.__onlyRedDot2()[[self.__COLNAME_frameNumber, self.__COLNAME_centerPoint_x, self.__COLNAME_centerPoint_y]]
 
         dfToPlot = pd.merge(dataRedDot1, dataRedDot2, on='frameNumber', how='outer', suffixes=('_dot1', '_dot2'))
         return dfToPlot.sort_values(by=['frameNumber'])
 
-    def interpolated(self, minVal=None, maxVal=None):
+    def __generateIntepolatedDF(self, minVal=None, maxVal=None):
         if not minVal:
-            minVal = self.__minFrameIDInRawFile()
+            minVal = self.__minFrameID()
         if not maxVal:
-            maxVal = self.__maxFrameIDInRawFile()
+            maxVal = self.__maxFrameID()
 
         df = self.forPlotting().copy()
         df = df.set_index("frameNumber")
@@ -309,6 +303,6 @@ class RedDotsData(PandasWrapper):
         withoutOutliersDF.to_csv(filepath, sep='\t', index=False)
 
     def saveInterpolatedDFToFile(self, minFrameID=None, maxFrameID=None):
-        interpolatedDF = self.interpolated(minFrameID, maxFrameID)
+        interpolatedDF = self.__generateIntepolatedDF(minFrameID, maxFrameID)
         filepath = self.__folderStruct.getRedDotsInterpolatedFilepath()
         interpolatedDF.to_csv(filepath, sep='\t', index=False)

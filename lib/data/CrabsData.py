@@ -78,6 +78,7 @@ class CrabsData(PandasWrapper):
         return len(self.__crabsDF.index)
 
     def getPandasDF(self):
+        # type: () -> pd.DataFrame
         return self.__crabsDF
 
     def crabsBetweenFrames(self, lower_frame_id, upper_frame_id):
