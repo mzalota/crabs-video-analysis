@@ -13,6 +13,8 @@ class UserInput():
     KEY_ARROW_LEFT = 2424832
     KEY_SPACE = 32
     KEY_BACKSPACE = 8
+    KEY_MINUS = 45
+    KEY_PLUS = 43
 
     #KEY_UNDERSCORE = 95
     #KEY_MOUSE_CLICK_EVENT = 95 #97
@@ -105,5 +107,15 @@ class UserInput():
 
     def is_small_step_backward(self):
         if self.__key == self.KEY_BACKSPACE:
+            return True
+        return False
+
+    def is_large_step_forward(self):
+        if self.__key == self.KEY_PLUS:
+            return True
+        return False
+
+    def is_large_step_backward(self):
+        if self.__key == self.KEY_MINUS:
             return True
         return False

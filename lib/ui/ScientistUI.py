@@ -1,4 +1,5 @@
 from lib.data.BadFramesData import BadFramesData
+from lib.data.RedDotsManualData import RedDotsManualData
 from lib.data.SeeFloorNoBadBlocks import SeeFloorNoBadBlocks
 from lib.ui.CrabUI import CrabUI
 from lib.data.CrabsData import CrabsData
@@ -14,6 +15,7 @@ from lib.FrameDecorators import FrameDecoFactory
 from lib.MyTimer import MyTimer
 from lib.UserInput import UserInput
 from lib.data.SeeFloor import SeeFloor
+from lib.ui.RedDotsUI import RedDotsUI
 
 
 class ScientistUI:
@@ -28,8 +30,9 @@ class ScientistUI:
         self.__driftData = driftData
 
         self.__badFramesData = BadFramesData.createFromFolderStruct(folderStruct)
-        self.__redDotsData = RedDotsData.createFromFolderStruct(folderStruct)
+        #self.__redDotsData = RedDotsData.createFromFolderStruct(folderStruct)
         #self.__seeFloor = SeeFloor(driftData, self.__badFramesData, self.__redDotsData)
+        self.__redDotsManualData = RedDotsManualData(folderStruct)
         self.__seeFloor = SeeFloor.createFromFolderStruct(folderStruct)
         self.__seeFloorNoBadBlocks = SeeFloorNoBadBlocks.createFromFolderStruct(folderStruct)
         self.__crabData = CrabsData(self.__folderStruct)
@@ -38,6 +41,7 @@ class ScientistUI:
     def processVideo(self):
 
         frame_id = self.__driftData.minFrameID()
+        redDotsUI = RedDotsUI(self.__videoStream)
         while True:
             print ("processing frame ID", int(frame_id))
 
@@ -62,7 +66,15 @@ class ScientistUI:
 
             if keyPressed == ord("r"):
                 #show RedDotsUI
-                pass
+                frame_id_redDots = redDotsUI.showUI(frame_id)
+                print "catching frame_id_redDots"
+                if frame_id_redDots is not None:
+                    redDots = redDotsUI.selectedRedDots()
+                    self.__redDotsManualData.addManualDots(frame_id_redDots, redDots)
+                    #TODO: rerun interpolate, and make sure all xyzData objects are refreshed.
+
+                redDotsUI.closeWindow()
+                continue
 
             if user_input.is_quit_command():
                 # print "Pressed Q button"
@@ -112,6 +124,16 @@ class ScientistUI:
         return new_frame_id
 
     def __process_jump_key(self, frame_id, user_input):
+
+        if user_input.is_large_step_forward():
+            # scroll 7 frames forward
+            new_frame_id = frame_id+500
+            return new_frame_id
+
+        if user_input.is_large_step_backward():
+            # scroll 7 frames forward
+            new_frame_id = frame_id-500
+            return new_frame_id
 
         if user_input.is_small_step_forward():
             # scroll 7 frames forward

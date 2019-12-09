@@ -24,6 +24,9 @@ class RedDotsUI:
         print("redDotsInCoordinatesOfZoomWin", str(redDotsInCoordinatesOfZoomWin),"redDots", str(redDots))
         return redDots
 
+    def closeWindow(self):
+        self.__imageZoomWin.closeWindow()
+
     def showUI(self, frameID):
 
         while True:
