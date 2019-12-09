@@ -1,4 +1,5 @@
 from lib.data.BadFramesData import BadFramesData
+from lib.data.SeeFloorNoBadBlocks import SeeFloorNoBadBlocks
 from lib.ui.CrabUI import CrabUI
 from lib.data.CrabsData import CrabsData
 from lib.data.DriftData import DriftData
@@ -30,6 +31,7 @@ class ScientistUI:
         self.__redDotsData = RedDotsData.createFromFolderStruct(folderStruct)
         #self.__seeFloor = SeeFloor(driftData, self.__badFramesData, self.__redDotsData)
         self.__seeFloor = SeeFloor.createFromFolderStruct(folderStruct)
+        self.__seeFloorNoBadBlocks = SeeFloorNoBadBlocks.createFromFolderStruct(folderStruct)
         self.__crabData = CrabsData(self.__folderStruct)
 
 
@@ -162,7 +164,7 @@ class ScientistUI:
         frameImagesFactory = FrameDecoFactory(self.__seeFloor, self.__badFramesData, self.__crabData, self.__videoStream)
 
         if self.__zoom:
-            collage = ImagesCollage( frameImagesFactory, self.__seeFloor)
+            collage = ImagesCollage( frameImagesFactory, self.__seeFloorNoBadBlocks)
             imageToShow = collage.constructCollage(frame.getFrameID(), Frame.FRAME_HEIGHT / 2)
         else:
             imageToShow = self.__constructFrameImage(frameImagesFactory, frame)

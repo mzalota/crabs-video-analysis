@@ -6,14 +6,14 @@ from lib.FolderStructure import FolderStructure
 from lib.data.PandasWrapper import PandasWrapper
 
 
-class DriftDataRaw(PandasWrapper):
+class DriftRawData(PandasWrapper):
     #__df = None
     __COLNAME_frameNumber = 'frameNumber'
     __COLNAME_driftX = 'driftX'
     __COLNAME_driftY = 'driftY'
 
     def __init__(self, folderStruct):
-        # type: (FolderStructure) -> DriftDataRaw
+        # type: (FolderStructure) -> DriftRawData
         filepath = folderStruct.getRawDriftsFilepath()
         self.__df = PandasWrapper.readDataFrameFromCSV(filepath)
 

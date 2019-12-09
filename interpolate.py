@@ -1,4 +1,4 @@
-from lib.data.DriftDataRaw import DriftDataRaw
+from lib.data.DriftRawData import DriftRawData
 from lib.FolderStructure import FolderStructure
 from lib.data.DriftData import DriftData
 from lib.data.SeeFloor import SeeFloor
@@ -9,18 +9,18 @@ from lib.data.RedDotsData import RedDotsData
 # videoFileName = "V4__R_20180915_210447"
 # videoFileName = "V6__R_20180915_212238"
 
-# rootDir = "C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/"
+rootDir = "C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/"
 # videoFileName = "V3_R_20180911_170159"
 # videoFileName = "V2_R_20180911_165730"
-# videoFileName = "V1_R_20180911_165259"
+videoFileName = "V1_R_20180911_165259"
 
-rootDir = "C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
-videoFileName = "V2"
+#rootDir = "C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
+#videoFileName = "V2"
 
 folderStruct = FolderStructure(rootDir, videoFileName)
 
 print ("interpolating DriftData")
-rawDrifts = DriftDataRaw(folderStruct)
+rawDrifts = DriftRawData(folderStruct)
 df = rawDrifts.interpolate()
 
 drifts = DriftData.createFromFolderStruct(folderStruct)

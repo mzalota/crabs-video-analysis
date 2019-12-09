@@ -42,6 +42,18 @@ class CrabsData(PandasWrapper):
             self.__crabsDF = pd.read_csv(filepath, delimiter="\t", na_values="(null)", header=None, names=column_names)
             #self.__crabsDF = self.readDataFrameFromCSV(filepath, column_names)
 
+
+            #if (self.__crabsDF.iloc[0][1] == 'dir'):
+            #    print("first column in CrabsFile is index, not DIR. drop it")
+            #    print ("dd", self.__crabsDF.iloc[0])
+                #column_names.insert(0,"idx")
+                #print ("new column_names", column_names)
+
+            #    self.__crabsDF = pd.read_csv(filepath, delimiter="\t", na_values="(null)")
+            #    print ("now reloaded", self.__crabsDF.iloc[0])
+            #    self.__crabsDF = self.__crabsDF.drop(self.__crabsDF.columns[0], axis=1)
+            #    print ("second step", self.__crabsDF.iloc[0])
+
             self.__drop_header_row()
         else:
             self.__crabsDF = pd.DataFrame(columns=column_names)
