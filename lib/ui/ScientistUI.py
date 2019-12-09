@@ -60,6 +60,10 @@ class ScientistUI:
                 else:
                     self.__zoom = True
 
+            if keyPressed == ord("r"):
+                #show RedDotsUI
+                pass
+
             if user_input.is_quit_command():
                 # print "Pressed Q button"
                 print("User requested to quit on frame: ", str(frame_id))

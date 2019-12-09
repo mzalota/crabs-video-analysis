@@ -17,29 +17,48 @@ class RedDotsUI:
         # type: (FolderStructure, VideoStream) -> RedDotsUI
         self.__folderStruct = folderStruct
         self.__videoStream = videoStream
+        self.__imageZoomWin = ImageWindow("zoomImg", Point(100, 100))
 
     def showUI(self):
         redDotsManualData = RedDotsManualData(self.__folderStruct)
-        #redDotsRawData = RedDotsRawData(self.__folderStruct)
-        #rawRedDotsData = RedDotsData(self.__folderStruct)
-
-        imageZoomWin = ImageWindow("zoomImg", Point(100, 100))
 
         frameID = redDotsManualData.getMiddleOfBiggestGap()
         while True:
             print ("frame", frameID)
 
-            image = self.__videoStream.readImageObj(frameID)
-            # image.drawFrameID(frameID)
-            # frame = Frame(frameID, videoStream)
+            frameID = self.__displayWin(frameID)
 
-            # imageWin.showWindow(image.asNumpyArray())
+            if frameID is None:
+                # print "Pressed Q button" quit
+                cv2.destroyAllWindows()
+                break
+
+            # user clicked with a mouse, presumably
+            selectedRedDots = self.__imageZoomWin.featureBox
+
+            self.__processRedDots(frameID, selectedRedDots, redDotsManualData)
+            frameID = redDotsManualData.getMiddleOfBiggestGap()
+
+
+
+    def __displayWin(self, frameID):
+
+        while True:
+            image = self.__videoStream.readImageObj(frameID)
 
             zoomImage = image.subImage(self.__zoomBox)
             zoomImage.drawFrameID(frameID)
 
-            keyPressed = imageZoomWin.showWindowAndWaitForTwoClicks(zoomImage.asNumpyArray())
+            keyPressed = self.__imageZoomWin.showWindowAndWaitForTwoClicks(zoomImage.asNumpyArray())
             user_input = UserInput(keyPressed)
+
+            if user_input.is_quit_command():
+                message = "User pressed Q button"
+                print message
+                return None
+
+            if user_input.is_mouse_click():
+                return frameID
 
             if user_input.is_key_arrow_down():
                 # show frame +2 away
@@ -56,19 +75,9 @@ class RedDotsUI:
             elif user_input.is_key_arrow_left():
                 # show frame -20 away
                 frameID = frameID - 20
-
-            elif user_input.is_quit_command():
-                # print "Pressed Q button" quit
-                message = "User pressed Q button"
-                print message
-                break
             else:
-                # user clicked with a mouse, presumably
-                self.__processRedDots(frameID, imageZoomWin.featureBox, redDotsManualData)
+                print ("invalid Key pressed:", keyPressed)
 
-                frameID = redDotsManualData.getMiddleOfBiggestGap()
-
-        cv2.destroyAllWindows()
 
     def __processRedDots(self, frameID, redDotsInCoordinatesOfZoomWin, redDotsManualData):
 

@@ -119,3 +119,5 @@ class ImageWindow:
         else:
             #second Click was to the left of the first. Reverse the two points
             self.featureBox = Box(point2, point1)
+
+        return keyPress
