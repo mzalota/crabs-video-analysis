@@ -13,35 +13,18 @@ class RedDotsUI:
     #__zoomBox = Box(Point(800, 400), Point(1300, 700))
     __zoomBox = Box(Point(400, 200), Point(1500, 900))
 
-    def __init__(self, folderStruct, videoStream):
-        # type: (FolderStructure, VideoStream) -> RedDotsUI
-        self.__folderStruct = folderStruct
+    def __init__(self, videoStream):
+        # type: (VideoStream) -> RedDotsUI
         self.__videoStream = videoStream
         self.__imageZoomWin = ImageWindow("zoomImg", Point(100, 100))
 
-    def showUI(self):
-        redDotsManualData = RedDotsManualData(self.__folderStruct)
+    def selectedRedDots(self):
+        redDotsInCoordinatesOfZoomWin = self.__imageZoomWin.featureBox
+        redDots = redDotsInCoordinatesOfZoomWin.translateCoordinateToOuter(self.__zoomBox.topLeft)
+        print("redDotsInCoordinatesOfZoomWin", str(redDotsInCoordinatesOfZoomWin),"redDots", str(redDots))
+        return redDots
 
-        frameID = redDotsManualData.getMiddleOfBiggestGap()
-        while True:
-            print ("frame", frameID)
-
-            frameID = self.__displayWin(frameID)
-
-            if frameID is None:
-                # print "Pressed Q button" quit
-                cv2.destroyAllWindows()
-                break
-
-            # user clicked with a mouse, presumably
-            selectedRedDots = self.__imageZoomWin.featureBox
-
-            self.__processRedDots(frameID, selectedRedDots, redDotsManualData)
-            frameID = redDotsManualData.getMiddleOfBiggestGap()
-
-
-
-    def __displayWin(self, frameID):
+    def showUI(self, frameID):
 
         while True:
             image = self.__videoStream.readImageObj(frameID)
@@ -77,10 +60,3 @@ class RedDotsUI:
                 frameID = frameID - 20
             else:
                 print ("invalid Key pressed:", keyPressed)
-
-
-    def __processRedDots(self, frameID, redDotsInCoordinatesOfZoomWin, redDotsManualData):
-
-        redDots = redDotsInCoordinatesOfZoomWin.translateCoordinateToOuter(self.__zoomBox.topLeft)
-
-        redDotsManualData.addManualDots(frameID, redDots)

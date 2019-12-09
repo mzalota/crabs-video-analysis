@@ -1,6 +1,9 @@
-from lib.ui.RedDotsUI import RedDotsUI
+from lib.data.RedDotsManualData import RedDotsManualData
+from lib.ui.FillRedDotsGapsUI import FillRedDotsGapsUI
 from lib.FolderStructure import FolderStructure
 from lib.VideoStream import VideoStream
+import cv2
+from lib.ui.RedDotsUI import RedDotsUI
 
 #rootDir ="C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"
 #videoFileName = "V3__R_20180915_205551"
@@ -16,16 +19,18 @@ from lib.VideoStream import VideoStream
 rootDir ="C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
 videoFileName = "V2"
 
+
 folderStruct = FolderStructure(rootDir, videoFileName)
 #StreamToLogger(folderStruct.getLogFilepath())
 videoStream = VideoStream(folderStruct.getVideoFilepath())
 
-#imageWin = ImageWindow("mainWithRedDots", Point(700, 200))
+redDotsManualData = RedDotsManualData(folderStruct)
+redDotsUI = RedDotsUI(videoStream)
 
-
-ui = RedDotsUI(folderStruct,videoStream)
+ui = FillRedDotsGapsUI(redDotsManualData,redDotsUI)
 ui.showUI()
 
+cv2.destroyAllWindows()
 exit()
 
 
