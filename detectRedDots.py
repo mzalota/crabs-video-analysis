@@ -15,7 +15,7 @@ from lib.Logger import Logger
 
 
 rootDir ="C:/workspaces/AnjutkaVideo/2019-Kara/St6236_19"
-videoFileName = "V4"
+videoFileName = "V1"
 
 #rootDir ="C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
 #videoFileName = "V2"
