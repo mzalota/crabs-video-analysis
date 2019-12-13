@@ -1,6 +1,28 @@
 # crabs-video-analysis
 
-#command to install opencv library so that "import cv2" command does not fail
+To process a new video of seefloor execute commands if following order:
+1) detectRedDots.py
+2) detectDrifts.py
+3) manuallyImproveRedDots.py
+4) interpolate.py
+5) markCrabs.py
+7) cutVideoIntoFrames.py
+
+You don't really need to use Jupyter Notebooks, other then to double-check data and to visualize it.
+
+Relevant CSV Files that scientist may want to analyze:
+1) crabs.csv - one crab per line: frame number, size in pixels and location on the frame
+2) seefloor.csv - geometric data for each frame: mm-per-pixel, X and Y drifts in pixels and millimeters
+3) seqframes.csv - for each frame image that is saved in seqFrames folder: width and length in millimeters
+4) badframes.csv - ranges of frames that have bad quality and which should be excluded when generating images of seefloor in seqFrames
+
+Other files that are used by application
+5) reddots_manual.csv - manual mapping of red dots in frames are written here. Then this file is joined with reddots_raw.csv to generate reddots_interpolated.csv
+6) drifts.csv - a more correct name should have been drifts_interpolated.csv. There are many erroneous entries in drifts_raw.csv. The program removes outliers and "fills in the blanks"/interpolates missing drift data. 
+
+
+Below are commands to install necessary dependancies 
+
 #python -m pip install opencv-python
 #python -m pip install numpy
 
