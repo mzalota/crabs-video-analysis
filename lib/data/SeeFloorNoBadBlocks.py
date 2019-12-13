@@ -68,8 +68,14 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         new_frame_id = frame_id
         while frames_to_jump != 0:
             if frames_to_jump > 0:
-                new_frame_id = int(self._jump_to_next_seefloor_slice(new_frame_id))
-                frames_to_jump = frames_to_jump-1
+
+                if frames_to_jump>0 and frames_to_jump<1:
+                    #its a fractional jump
+                    new_frame_id = int(self._jump_to_next_seefloor_slice(new_frame_id, frames_to_jump))
+                    frames_to_jump = 0
+                else:
+                    new_frame_id = int(self._jump_to_next_seefloor_slice(new_frame_id))
+                    frames_to_jump = frames_to_jump-1
             if frames_to_jump < 0:
                 new_frame_id = int(self._jump_to_previous_seefloor_slice(new_frame_id))
                 frames_to_jump = frames_to_jump+1
@@ -100,7 +106,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         new_frame_id = int(self._getNextFrame(pixels_to_jump, frame_id))
         return new_frame_id
 
-    def _jump_to_next_seefloor_slice(self, frame_id):
+    def _jump_to_next_seefloor_slice(self, frame_id, fraction=1):
         # type: (int) -> int
         if frame_id < self.getDriftData().minFrameID():
             return self.getDriftData().minFrameID()
@@ -109,7 +115,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
             return self.getDriftData().maxFrameID()
 
         # we are in a good segment and not in its last frame.
-        pixels_to_jump = Frame.FRAME_HEIGHT
+        pixels_to_jump = Frame.FRAME_HEIGHT * fraction
         new_frame_id = int(self._getNextFrame(pixels_to_jump, frame_id))
         return new_frame_id
 
@@ -215,6 +221,11 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         # type: (int) -> float
         mmPerPixel = self.__getValueFromDF("mm_per_pixel", frame_id)
         return Frame.FRAME_HEIGHT*float(mmPerPixel)
+
+    def widthMM(self,frame_id):
+        # type: (int) -> float
+        mmPerPixel = self.__getValueFromDF("mm_per_pixel", frame_id)
+        return Frame.FRAME_WIDTH*float(mmPerPixel)
 
 
     def __getYCoordMMOrigin(self, frame_id):

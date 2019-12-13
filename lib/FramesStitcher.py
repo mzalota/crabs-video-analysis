@@ -2,6 +2,7 @@ import traceback
 
 import pandas as pd
 
+from lib.Logger import Logger
 from lib.data.DriftData import DriftData
 from Frame import Frame
 from lib.data.CrabsData import CrabsData
@@ -30,6 +31,8 @@ class FramesStitcher:
         # Creating an empty Dataframe with column names only
         self.__framesToStitch = pd.DataFrame(columns=['frameNumber'])
 
+        self.__logger = Logger.openInOverwriteMode(folderStructure.getFramesFilepath())
+
 
     def determineFrames(self):
         # type: () -> pd.DataFrame
@@ -43,6 +46,7 @@ class FramesStitcher:
         return self.__framesToStitch
 
     def __constructFramesToStitch(self, driftData):
+        # type: (DriftData) -> None
 
         nextFrameID = driftData.minFrameID()
         while nextFrameID < driftData.maxFrameID():
@@ -52,7 +56,16 @@ class FramesStitcher:
         self.__addNextFrame(driftData.maxFrameID())
 
     def __addNextFrame(self, frameID):
+        # type: (int) -> None
         self.__framesToStitch = self.__framesToStitch.append({'frameNumber': int(frameID)}, ignore_index=True)
+        heightMM = self.__seefloorGeometry.heightMM(frameID)
+        widthMM = self.__seefloorGeometry.widthMM(frameID)
+
+        row = []
+        row.append(frameID)
+        row.append(heightMM)
+        row.append(widthMM)
+        self.__logger.writeToFile(row)
 
     #TODO: This function (an the whole class) has a lot of duplication of ImagesCollage
     def processFrame(self, nextFrame, frame, prevFrame):

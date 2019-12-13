@@ -9,6 +9,37 @@ from lib.data.SeeFloor import SeeFloor
 
 class TestSeeFloor(TestCase):
 
+    def test_jumpToSeefloorSlice_fractionalFrameWithoutBadBlocks(self):
+        # Setup
+        pixels_in_frame = FramesStitcher.FRAME_HEIGHT
+        pixels_in_half_frame = int(pixels_in_frame/2)
+
+        drifts_df = pd.DataFrame()
+        drifts_df = self.__append_to_drifts_df(drifts_df, 100, 0, 0)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 200, 0, pixels_in_half_frame)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 300, 0, pixels_in_half_frame)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 400, 0, pixels_in_half_frame)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 500, 0, pixels_in_half_frame)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 600, 0, pixels_in_half_frame)
+        drifts_df = self.__append_to_drifts_df(drifts_df, 700, 0, pixels_in_half_frame)
+        driftData = DriftData(drifts_df)
+
+
+        badframesData = BadFramesData(None,None)
+        seeFloor = SeeFloor(driftData, badframesData, None, None)
+
+        # Exercise
+
+        # Assert
+        self.assertEqual(300, seeFloor.jumpToSeefloorSlice(200,0.5))
+        self.assertEqual(267, seeFloor.jumpToSeefloorSlice(200,0.33333))
+        self.assertEqual(350, seeFloor.jumpToSeefloorSlice(200,0.75))
+        self.assertEqual(450, seeFloor.jumpToSeefloorSlice(200,1.25))
+        self.assertEqual(500, seeFloor.jumpToSeefloorSlice(200,1.5))
+
+        self.assertEqual(500, seeFloor.jumpToSeefloorSlice(600,-0.5))
+        self.assertEqual(290, seeFloor.jumpToSeefloorSlice(600,-1.55))
+
     def test_maxFrameID_noBadFrames(self):
         # Setup
         drifts_df = pd.DataFrame()
@@ -153,6 +184,28 @@ class TestSeeFloor(TestCase):
 
         # Exercise
         # Assert
+
+        self.assertEqual(510, seeFloor.jumpToSeefloorSlice(500,0.05))
+        self.assertEqual(560, seeFloor.jumpToSeefloorSlice(500,0.30))
+        self.assertEqual(561, seeFloor.jumpToSeefloorSlice(500,0.305))
+        self.assertEqual(563, seeFloor.jumpToSeefloorSlice(500,0.31))
+        self.assertEqual(565, seeFloor.jumpToSeefloorSlice(500,0.32))
+        self.assertEqual(567, seeFloor.jumpToSeefloorSlice(500,0.33))
+        self.assertEqual(569, seeFloor.jumpToSeefloorSlice(500,0.34))
+        self.assertEqual(571, seeFloor.jumpToSeefloorSlice(500,0.35))
+        self.assertEqual(573, seeFloor.jumpToSeefloorSlice(500,0.36))
+        self.assertEqual(574, seeFloor.jumpToSeefloorSlice(500,0.37))
+        self.assertEqual(574, seeFloor.jumpToSeefloorSlice(500,0.38)) #??
+        self.assertEqual(574, seeFloor.jumpToSeefloorSlice(500,0.39)) #??
+        self.assertEqual(574, seeFloor.jumpToSeefloorSlice(500,1))
+        self.assertEqual(625, seeFloor.jumpToSeefloorSlice(500,1.1))
+        self.assertEqual(625, seeFloor.jumpToSeefloorSlice(500,1.36)) #??
+        self.assertEqual(625, seeFloor.jumpToSeefloorSlice(500,1.39)) #??
+        self.assertEqual(625, seeFloor.jumpToSeefloorSlice(500,1.34)) #??
+        self.assertEqual(625, seeFloor.jumpToSeefloorSlice(500,2)) #??
+        self.assertEqual(646, seeFloor.jumpToSeefloorSlice(500,2.1)) #??
+
+
         self.assertEqual(100, seeFloor.jumpToSeefloorSlice(10,1)) # if parameter is out of bounds show first/last frame
         self.assertEqual(100, seeFloor.jumpToSeefloorSlice(99,1))
         self.assertEqual(150, seeFloor.jumpToSeefloorSlice(100,1))
@@ -247,7 +300,6 @@ class TestSeeFloor(TestCase):
 
         # Exercise
         # Assert
-
         self.assertEqual(100, seeFloor.jumpToSeefloorSlice(10,-1)) # if parameter is out of bounds show first/last frame
         self.assertEqual(100, seeFloor.jumpToSeefloorSlice(99,-1))
         self.assertEqual(100, seeFloor.jumpToSeefloorSlice(100,-1))

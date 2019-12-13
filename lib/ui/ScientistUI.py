@@ -83,7 +83,7 @@ class ScientistUI:
 
             if user_input.is_mouse_click(): # keyPressed == ImageWindow.KEY_MOUSE_CLICK_EVENT:
                 crabPoint = self.__imageWin.featureCoordiate
-                crabUI = CrabUI(self.__folderStruct, self.__videoStream, self.__driftData, frame_id, crabPoint)
+                crabUI = CrabUI(self.__crabData, self.__videoStream, self.__driftData, frame_id, crabPoint)
                 crabUI.showCrabWindow()
                 continue
 
@@ -96,9 +96,9 @@ class ScientistUI:
 
             new_frame_id = self.__determine_next_frame_id(frame_id, keyPressed)
 
-            #elif keyPressed == ImageWindow.KEY_RIGHT_MOUSE_CLICK_EVENT:
-            #    markedPoint = self.__imageWin.featureCoordiate
-            #    print ("now need to mark coordinate ",str(markedPoint))
+            if keyPressed == ImageWindow.KEY_RIGHT_MOUSE_CLICK_EVENT:
+                markedPoint = self.__imageWin.featureCoordiate
+                print ("now need to mark coordinate ",str(markedPoint))
             #    new_frame_id = frame_id + 50
 
             frame_id = new_frame_id
@@ -165,11 +165,13 @@ class ScientistUI:
 
         if user_input.is_next_seefloor_slice_command():
             # show next seefloor slices
-            return self.__seeFloor.jumpToSeefloorSlice(frame_id, 1)
+            #return self.__seeFloor.getNextFrame(frame_id)
+            return self.__seeFloor.jumpToSeefloorSlice(frame_id, 0.8)
 
         if user_input.is_key_arrow_left():
             # show previous seefloor slices
-            return self.__seeFloor.jumpToSeefloorSlice(frame_id, -1)
+            #return self.__seeFloor.getPrevFrame(frame_id)
+            return self.__seeFloor.jumpToSeefloorSlice(frame_id, -0.8)
 
         if user_input.is_key_page_down():
             #Jump 10 steps forward
@@ -203,5 +205,6 @@ class ScientistUI:
 
     def __constructFrameImage(self, frameImagesFactory, frameDeco):
         frameDeco = frameImagesFactory.getFrameDecoFrameID(frameDeco)
+        frameDeco = frameImagesFactory.getFrameDecoRedDots(frameDeco)
         frameDeco = frameImagesFactory.getFrameDecoMarkedCrabs(frameDeco)
         return frameDeco.getImgObj().copy()

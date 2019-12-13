@@ -5,10 +5,10 @@ from lib.common import Box, Point, Vector
 
 
 class CrabUI:
-    def __init__(self, folderStruct, videoStream, driftData, frameID, crabPoint):
-        self.__folderStruct = folderStruct
+    def __init__(self, crabsData, videoStream, driftData, frameID, crabPoint):
         self.__videoStream = videoStream
         self.__driftData = driftData
+        self.__crabsData = crabsData
         self.__boxSize = 200
         self.__crabFeature = Feature(self.__driftData, frameID, crabPoint, self.__boxSize)
 
@@ -40,8 +40,8 @@ class CrabUI:
     def __save_to_file(self):
         crabOnFrameID = self.getFrameIDOfCrab()
         crabBox = self.getCrabLocation()
-        crabsData = CrabsData(self.__folderStruct)
-        appended_row = crabsData.add_crab_data(crabOnFrameID, crabBox)
+
+        appended_row = self.__crabsData.add_crab_data(crabOnFrameID, crabBox)
         print ("writing crab to file", appended_row)
 
     def __crabImageOnFrame(self, frameID):
@@ -145,9 +145,9 @@ class CrabUI:
         return  lineCoordinatesOnItsFrame
 
 
-    def saveCrabToFile(self, crabOnSeeFloor, frameID):
-        crabImage1 = crabOnSeeFloor.getImageOnFrame(frameID)
-        frameNumberString = str(frameID).zfill(6)
-        imageFileName = "crab" + frameNumberString + ".jpg"
-        imageFilePath = self.__folderStruct.getFramesDirpath() + "/" + imageFileName
-        crabImage1.writeToFile(imageFilePath)
+    #def saveCrabToFile(self, crabOnSeeFloor, frameID):
+    #    crabImage1 = crabOnSeeFloor.getImageOnFrame(frameID)
+    #    frameNumberString = str(frameID).zfill(6)
+    #    imageFileName = "crab" + frameNumberString + ".jpg"
+    #    imageFilePath = self.__folderStruct.getFramesDirpath() + "/" + imageFileName
+    #    crabImage1.writeToFile(imageFilePath)
