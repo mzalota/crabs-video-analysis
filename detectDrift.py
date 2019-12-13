@@ -36,9 +36,11 @@ from lib.Logger import Logger
 
 #videoFilename = "V20180825_191129_001"
 
+rootDirectory ="C:/workspaces/AnjutkaVideo/2019-Kara/St6236_19"
+videoFilename = "V4"
 
-rootDirectory ="C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
-videoFilename = "V2"
+#rootDirectory ="C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
+#videoFilename = "V2"
 
 folderStruct = FolderStructure(rootDirectory, videoFilename)
 folderStruct.createDirectoriesIfDontExist(folderStruct.getDriftsFilepath())

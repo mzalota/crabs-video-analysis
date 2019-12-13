@@ -1,9 +1,10 @@
 from unittest import TestCase
 import pandas as pd
 
+from lib.Frame import Frame
 from lib.data.BadFramesData import BadFramesData
 from lib.data.DriftData import DriftData
-from lib.FramesStitcher import FramesStitcher
+from lib.VideoToImages import VideoToImages
 from lib.data.SeeFloor import SeeFloor
 
 
@@ -11,7 +12,7 @@ class TestSeeFloor(TestCase):
 
     def test_jumpToSeefloorSlice_fractionalFrameWithoutBadBlocks(self):
         # Setup
-        pixels_in_frame = FramesStitcher.FRAME_HEIGHT
+        pixels_in_frame = Frame.FRAME_HEIGHT
         pixels_in_half_frame = int(pixels_in_frame/2)
 
         drifts_df = pd.DataFrame()
@@ -159,7 +160,7 @@ class TestSeeFloor(TestCase):
 
     def test_jumpToSeefloorSlice_multiSlice_goingUpward(self):
         # Setup
-        pixels_in_frame = FramesStitcher.FRAME_HEIGHT
+        pixels_in_frame = Frame.FRAME_HEIGHT
         pixels_in_half_frame = int(pixels_in_frame/2)
 
         drifts_df = pd.DataFrame()
@@ -275,7 +276,7 @@ class TestSeeFloor(TestCase):
 
     def test_jumpToSeefloorSlice_multiSlice_goingDownward(self):
         # Setup
-        pixels_in_frame = FramesStitcher.FRAME_HEIGHT
+        pixels_in_frame = Frame.FRAME_HEIGHT
         pixels_in_half_frame = int(pixels_in_frame/2)
 
         drifts_df = pd.DataFrame()
@@ -396,7 +397,7 @@ class TestSeeFloor(TestCase):
 
     def test_jumpToSeefloorSlice_badFramesEmpty(self):
         # Setup
-        pixels_in_frame = FramesStitcher.FRAME_HEIGHT
+        pixels_in_frame = Frame.FRAME_HEIGHT
         pixels_in_half_frame = int(pixels_in_frame / 2)
 
         drifts_df = pd.DataFrame()

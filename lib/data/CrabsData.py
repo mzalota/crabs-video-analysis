@@ -81,6 +81,13 @@ class CrabsData(PandasWrapper):
         # type: () -> pd.DataFrame
         return self.__crabsDF
 
+    def allFramesWithCrabs(self):
+        # type: () -> list(int)
+        crabsDF = self.getPandasDF()
+        frames = crabsDF[self.__COLNAME_frameNumber].astype(int)
+        cleanFrames = frames.drop_duplicates().sort_values()
+        return cleanFrames.values.tolist()
+
     def crabsBetweenFrames(self, lower_frame_id, upper_frame_id):
         # type: (int, int) -> dict
 

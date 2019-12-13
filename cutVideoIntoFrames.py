@@ -1,10 +1,13 @@
 import cv2
 
 from lib.FolderStructure import FolderStructure
-from lib.FramesStitcher import FramesStitcher
+from lib.VideoToImages import VideoToImages
 from lib.ImageWindow import ImageWindow
+from lib.Logger import Logger
 from lib.VideoStream import VideoStream
 from lib.common import Point, Box
+from lib.data.CrabsData import CrabsData
+from lib.data.SeeFloor import SeeFloor
 
 print(cv2.__version__)
 
@@ -20,15 +23,27 @@ print(cv2.__version__)
 #videoFileName = "V3_R_20180911_170159"
 
 rootDir ="C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
-videoFileName = "V2"
+videoFileName = "V1"
 
 folderStruct = FolderStructure(rootDir, videoFileName)
+
+seefloorGeometry = SeeFloor.createFromFolderStruct(folderStruct)
 videoStream = VideoStream(folderStruct.getVideoFilepath())
 
-framesStitcher = FramesStitcher(folderStruct, videoStream)
+framesStitcher = VideoToImages(seefloorGeometry, videoStream)
 
 #framesToSaveToFile = framesStitcher.determineFrames()
 #print("Dataframe Contains:", framesToSaveToFile)
 
-framesStitcher.saveFramesToFile()
 
+frameIDs = framesStitcher.getListOfFrameIDs()
+framesStitcher.saveFramesToFile(frameIDs, folderStruct.getFramesDirpath())
+
+loggerFramesCSV = Logger.openInOverwriteMode(folderStruct.getFramesFilepath())
+framesStitcher.saveFramesToCSVFile(frameIDs, loggerFramesCSV)
+
+crabsData = CrabsData(folderStruct)
+lst = crabsData.allFramesWithCrabs()
+framesStitcher.saveFramesToFile(lst, folderStruct.getCrabFramesDirpath())
+
+print ("Done")

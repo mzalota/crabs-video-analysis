@@ -79,7 +79,6 @@ class DriftData(PandasWrapper):
         return self.__driftYDict[index]
 
     def __getFrameID(self, index):
-        #print("driftData.____getFrameID index", index,self.__frameIDDict)
         return self.__frameIDDict[index]
 
     def __getIndexOfFrame(self, frameID):

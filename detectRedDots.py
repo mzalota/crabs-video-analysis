@@ -13,8 +13,12 @@ from lib.Logger import Logger
 #https://www.pyimagesearch.com/2016/10/31/detecting-multiple-bright-spots-in-an-image-with-python-and-opencv/
 
 
-rootDir ="C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
-videoFileName = "V2"
+
+rootDir ="C:/workspaces/AnjutkaVideo/2019-Kara/St6236_19"
+videoFileName = "V4"
+
+#rootDir ="C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
+#videoFileName = "V2"
 
 #rootDir ="C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/"
 #videoFileName = "V3__R_20180915_205551"

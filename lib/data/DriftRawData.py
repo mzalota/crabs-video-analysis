@@ -17,6 +17,10 @@ class DriftRawData(PandasWrapper):
         filepath = folderStruct.getRawDriftsFilepath()
         self.__df = PandasWrapper.readDataFrameFromCSV(filepath)
 
+    def getPandasDF(self):
+        # type: () -> pd
+        return self.__df
+
     def getCount(self):
         # type: () -> int
         return len(self.__df.index)
