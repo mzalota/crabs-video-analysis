@@ -178,6 +178,15 @@ class Image:
         # type: (np, np) -> np
         return np.concatenate((leftImg, rightImg), axis=1)
 
+    # based on this article:
+    # https://stackoverflow.com/questions/39308030/how-do-i-increase-the-contrast-of-an-image-in-python-opencv
+    # Contrast control (1.0-3.0)
+    # Brightness control (0-100)
+    def changeBrightness(self, contrast, brightness):
+        # type: (float, float) -> Image
+        adjusted = cv2.convertScaleAbs(self.asNumpyArray(), alpha=contrast, beta=brightness)
+        return Image(adjusted)
+
     def writeToFile(self, filepath):
         FolderStructure.createDirectoriesIfDontExist(filepath)
         cv2.imwrite(filepath, self.asNumpyArray())  # save frame as JPEG file

@@ -1,6 +1,7 @@
-crabs-video-analysis
+# crabs-video-analysis project
 
-To process a new video of seefloor execute commands if following order:
+## Processing Steps
+To process a new video of seefloor execute commands if the following order:
 1) detectRedDots.py
 2) detectDrifts.py
 3) manuallyImproveRedDots.py
@@ -8,8 +9,9 @@ To process a new video of seefloor execute commands if following order:
 5) markCrabs.py
 7) cutVideoIntoFrames.py
 
-You don't really need to use Jupyter Notebooks, other then to double-check data and to visualize it.
+You don't really need to use Jupyter Notebooks, other then to double-check data and to visualize contents of the files.
 
+## Files
 Relevant CSV Files that scientist may want to analyze:
 1) crabs.csv - one crab per line: frame number, size in pixels and location on the frame
 2) seefloor.csv - geometric data for each frame: mm-per-pixel, X and Y drifts in pixels and millimeters
@@ -17,55 +19,90 @@ Relevant CSV Files that scientist may want to analyze:
 4) badframes.csv - ranges of frames that have bad quality and which should be excluded when generating images of seefloor in seqFrames
 
 Other files that are used by application
-5) reddots_manual.csv - manual mapping of red dots in frames are written here. Then this file is joined with reddots_raw.csv to generate reddots_interpolated.csv
-6) drifts.csv - a more correct name should have been drifts_interpolated.csv. There are many erroneous entries in drifts_raw.csv. The program removes outliers and "fills in the blanks"/interpolates missing drift data. 
++ reddots_manual.csv - manual mapping of red dots in frames are written here from RedDotsUI. Then this file is joined with reddots_raw.csv to generate reddots_interpolated.csv
++ drifts_interpolated.csv - There are many erroneous entries in drifts_raw.csv. The program removes outliers and "fills in the blanks"/interpolates missing drift data. 
+
+## Key Commands
+
+### Commands in main "Scientist UI" screen
+- **mouse click** - "open CrabUI": opens new window with 4 views of the crab.  
+- **z** - "Zoom": toggle between viewing just one frame (zoom-in) or viewing neighboring frames (zoom-out)   
+- **c** - "Contrast": toggle between make image *brighter*, *darker* and return to *normal* 
+- **b** - "Bad": mark this and next 50 frames as *bad* and just to 51st frame 
+- **r** - "open RedDotsUI": opens new window zoomed to area around red dots. Click on each red dot once. Data will be saved to reddots_manual.csv and all files interpolated again.
+- **q** - "Quit": quite application 
+
+#### Navigation commands in main "Scientist UI" screen
+- **arrow right** - jump to next seefloor slice, but still show 20% of current seefloor to convince scientist that no seefloor area is missing 
+- **arrow left** - jump to previous seefloor slice, but still show 20% of current seefloor. 
+- **page down** - jump 10 seefloor slice backwoard. 
+- **page up** - jump 10 seefloor slice forward.
+- **home** - jump to the very first frame of the video
+- **end** - jump to the very last frame of the video
+- **arrow down** - scroll exactly 50 frames forward
+- **arrow up** - scroll exactly 50 frames backward
+- **plus (+)** - scroll 500 frames forward
+- **minus (-)** - scroll 500 frames backward
+- **space** - scroll 7 frames forward
+- **backspace** - scroll 7 frames backward
+
+#### Commands in "RedDots UI" screen
+- **mouse click** - "Mark RedDots": click exactly two times, once on each red dot.  
+- **q** - "quit": quite this RedDots UI screen. 
+- **arrow down** - scroll exactly 2 frames forward
+- **arrow up** - scroll exactly 2 frames backward
+- **arrow right** - scroll exactly 20 frames forward 
+- **arrow left** - scroll exactly 20 frames backward 
 
 
+## Glossary
+
+#### Frame 
+A single image from video stream. A typical 4,5 minutes video file is encoded consists of about 14000 frames (50 frames-per-second). 
+#### SeeFloor Section
+A rectangular subimage in a frame
+#### Feature
+An object on the see floor that appears in multiple frames. Feature could just be a part of see floor without any distinct object, just a distinct combination of holes and kills.
+#### SeeFloor Slice
+A frame such that next slice would show seefloor area consequent to this frame without overlaping area or missing any area
+
+
+## Project Dependencies
 Below are commands to install necessary dependancies 
 
-#python -m pip install opencv-python
-#python -m pip install numpy
-
-#python -m pip install --upgrade imutils
-#python -m pip install scikit-image
-#python -m pip install scipy
-#python -m pip install matplotlib
-#python -m pip install pyautogui ##ERROR#Command "python setup.py egg_info" failed with error code 1 in c:\users\user\appdata\local\temp\pip-install-fiv6z_\pygetwindow\
-#pip install pyautogui==0.9.35
-
-#python -m pip install psutil
-#python -m pip install pylru
-
-#python -m pip install pandas-compat
-
-#https://www.pyimagesearch.com/2015/03/09/capturing-mouse-click-events-with-python-and-opencv/
-
-#from skimage.measure import structural_similarity as ssim
-
-Relevant links
-https://docs.opencv.org/trunk/dd/d49/tutorial_py_contour_features.html#gsc.tab=0
-https://www.geeksforgeeks.org/template-matching-using-opencv-in-python/
-https://stackoverflow.com/questions/13564851/how-to-generate-keyboard-events-in-python
-https://stackoverflow.com/questions/33311153/python-extracting-and-saving-video-frames
++ `python -m pip install opencv-python`
++ `python -m pip install numpy`
++ `python -m pip install --upgrade imutils`
++ `python -m pip install scikit-image`
++ `python -m pip install scipy`
++ `python -m pip install matplotlib`
++ `python -m pip install pyautogui`
++ `pip install pyautogui==0.9.35`
++ `python -m pip install psutil`
++ `python -m pip install pylru`
++ `python -m pip install pandas-compat`
 
 
-Some ffmpeg commands that eventually worked to convert avi to mp4 file
-ffmpeg -i "C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/V1_R_20180911_165259.avi" -strict -2 output.mp4
-ffmpeg -i "D:\Video_Biology\Kara\2018\AMK72\2018_09_15_St_5993\V4__R_20180915_210447.avi" -strict -2 output.mp4
-ffmpeg -i "C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi" -strict -2 ../output_st_v3.mp4
-ffmpeg -i "C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/V1_R_20180911_165259.avi" -f image2 -vcodec copy -bsf h264_mp4toannexb "%d.h264"
-ffmpeg -i "C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/V1_R_20180911_165259.avi" -f image2 "output/%d.h264"
-ffmpeg -i i"C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/V1_R_20180911_165259.avi" -strict -2 output.mp4
+#### Relevant links
+- https://docs.opencv.org/trunk/dd/d49/tutorial_py_contour_features.html#gsc.tab=0
+- https://www.geeksforgeeks.org/template-matching-using-opencv-in-python/
+- https://stackoverflow.com/questions/13564851/how-to-generate-keyboard-events-in-python
+- https://stackoverflow.com/questions/33311153/python-extracting-and-saving-video-frames
+- https://www.pyimagesearch.com/2015/03/09/capturing-mouse-click-events-with-python-and-opencv/
 
-Command to copy directories from S3 to Maxim's laptop.
-aws --no-verify-ssl s3 cp s3://crab-videos/2019-Kara/St6267_19/ . --recursive
+`from skimage.measure import structural_similarity as ssim`
 
 
-Glossary:
+#### Some ffmpeg commands that eventually worked to convert avi to mp4 file
++ `ffmpeg -i "C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/V1_R_20180911_165259.avi" -strict -2 output.mp4`
++ `ffmpeg -i "D:\Video_Biology\Kara\2018\AMK72\2018_09_15_St_5993\V4__R_20180915_210447.avi" -strict -2 output.mp4`
++ `ffmpeg -i "C:/workspaces/AnjutkaVideo/Kara_Sea_Crab_Video_st_5993_2018/V3__R_20180915_205551.avi" -strict -2 ../output_st_v3.mp4`
++ `ffmpeg -i "C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/V1_R_20180911_165259.avi" -f image2 -vcodec copy -bsf h264_mp4toannexb "%d.h264"`
++ `ffmpeg -i "C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/V1_R_20180911_165259.avi" -f image2 "output/%d.h264"`
++ `ffmpeg -i i"C:/workspaces/AnjutkaVideo/KaraSeaCrabVideoBlagopoluchiyaBay2018/V1_R_20180911_165259.avi" -strict -2 output.mp4`
 
-Frame - a single image from video stream. A typical 4,5 minutes video file is encoded consists of about 14000 frames (50 frames-per-second). 
+####Command to copy directories from S3 to Maxim's laptop.
+`aws --no-verify-ssl s3 cp s3://crab-videos/2019-Kara/St6267_19/ . --recursive`
 
-SeeFloorSection - a rectangular subimage in a frame
 
-Feature - an object on the see floor that appears in multiple frames. Feature could just be a part of see floor without any distinct object, just a distinct combination of holes and kills.
  

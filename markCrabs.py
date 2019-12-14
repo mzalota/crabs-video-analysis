@@ -18,9 +18,11 @@ from lib.common import Point
 #qvideoFileName = "V2_R_20180911_165730"
 #videoFileName = "V3_R_20180911_170159"
 
-
-rootDir ="C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
+rootDir ="C:/workspaces/AnjutkaVideo/2019-Kara/St6236_19"
 videoFileName = "V1"
+
+#rootDir ="C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
+#videoFileName = "V1"
 
 folderStruct = FolderStructure(rootDir, videoFileName)
 #StreamToLogger(folderStruct.getLogFilepath())

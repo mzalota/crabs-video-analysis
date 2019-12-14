@@ -1,3 +1,4 @@
+from lib.Image import Image
 from lib.data.BadFramesData import BadFramesData
 from lib.data.RedDotsManualData import RedDotsManualData
 from lib.data.SeeFloorNoBadBlocks import SeeFloorNoBadBlocks
@@ -8,6 +9,7 @@ from lib.Frame import Frame
 from lib.ImageWindow import ImageWindow
 from lib.ImagesCollage import ImagesCollage
 from lib.data.RedDotsData import RedDotsData
+from cv2 import cv2
 
 import traceback
 from lib.FrameDecorators import FrameDecoFactory
@@ -20,10 +22,15 @@ from lib.ui.RedDotsUI import RedDotsUI
 
 class ScientistUI:
     __badFramesJump = 50 # how many frames to mark as bad when user presses B key
+    CONTRAST_UP = (2, 10)
+    CONTRAST_DOWN = (0.7, -10)
+    CONTRAST_NORMAL = (1, 0)
 
     def __init__(self, imageWin, folderStruct, videoStream, driftData):
         # type: (ImageWindow, FolderStructure, VideoStream, DriftData) -> ScientistUI
+
         self.__zoom = False
+        self.__contrastLevel = self.CONTRAST_NORMAL
         self.__imageWin = imageWin
         self.__folderStruct = folderStruct
         self.__videoStream = videoStream
@@ -95,6 +102,20 @@ class ScientistUI:
                 self.__seeFloor.setBadFramesData(self.__badFramesData)
 
             new_frame_id = self.__determine_next_frame_id(frame_id, keyPressed)
+
+            #Contrast button cycles contrast from Up to Down to Normal again
+            if keyPressed == ord("c"):
+                print ("detected press C")
+                if self.__contrastLevel == self.CONTRAST_NORMAL:
+                    print ("here 10")
+                    self.__contrastLevel = self.CONTRAST_UP
+                elif self.__contrastLevel == self.CONTRAST_UP:
+                    print ("here 20")
+                    self.__contrastLevel = self.CONTRAST_DOWN
+                elif self.__contrastLevel == self.CONTRAST_DOWN:
+                    print ("here 30")
+                    self.__contrastLevel = self.CONTRAST_NORMAL
+
 
             if keyPressed == ImageWindow.KEY_RIGHT_MOUSE_CLICK_EVENT:
                 markedPoint = self.__imageWin.featureCoordiate
@@ -195,13 +216,24 @@ class ScientistUI:
             collage = ImagesCollage( frameImagesFactory, self.__seeFloorNoBadBlocks)
             imageToShow = collage.constructCollage(frame.getFrameID(), Frame.FRAME_HEIGHT / 2)
         else:
+
             imageToShow = self.__constructFrameImage(frameImagesFactory, frame)
+
+        imageToShow = self.__adjustImageBrightness(imageToShow)
 
         markCrabsTimer.lap("imageToShow")
         keyPressed = self.__imageWin.showWindowAndWaitForClick(imageToShow.asNumpyArray())
 
         #print ("keyPressed:", keyPressed)#, chr(keyPressed))
         return keyPressed
+
+    def __adjustImageBrightness(self, imageToShow):
+        # type: (Image) -> Image
+        if self.__contrastLevel == self.CONTRAST_DOWN:
+            imageToShow = imageToShow.changeBrightness(self.CONTRAST_DOWN[0], self.CONTRAST_DOWN[1])
+        if self.__contrastLevel == self.CONTRAST_UP:
+            imageToShow = imageToShow.changeBrightness(self.CONTRAST_UP[0], self.CONTRAST_UP[1])
+        return imageToShow
 
     def __constructFrameImage(self, frameImagesFactory, frameDeco):
         frameDeco = frameImagesFactory.getFrameDecoFrameID(frameDeco)
