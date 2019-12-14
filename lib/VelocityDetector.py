@@ -1,10 +1,12 @@
 import math
 
 import numpy
+from pebble import concurrent
 
 from lib.FeatureMatcher import FeatureMatcher
 from Image import Image
 from common import Box, Point, Vector
+from lib.MyTimer import MyTimer
 
 
 class VelocityDetector():
@@ -133,11 +135,21 @@ class VelocityDetector():
         return Vector(medianXDrift, medianYDrift)
 
     def detectVelocity(self,frame):
+        timerOuter = MyTimer("detectVelocity Outer")
+        # TODO: If the next line is moved one down we get exception for video files that don't have first frame
+        imgObj = frame.getImgObj()
         self.__drifts = list()
+        futures = list()
         for fm in self.__fm:
-            #TODO: If the next line is moved one down we get exception for video files that don't have first frame
-            imgObj = frame.getImgObj()
-            section = fm.detectSeeFloorSections(frame)
+            #timerInner = MyTimer("timerInner")
+            future = self.parallelize(fm, frame)
+            futures.append(future)
+            #timerInner.lap("futures.append")
+
+        for future in futures:
+            #timerInner = MyTimer("futures")
+            section = future.result()
+            #timerInner.lap("join")
             section.drawFeatureOnFrame(imgObj)
             if fm.detectionWasReset():
                 continue
@@ -150,8 +162,14 @@ class VelocityDetector():
 
             #section.showSubImage()
 
+        timerOuter.lap("end it")
         self.__prevFrame = frame
 
+    @concurrent.thread
+    def parallelize(self, fm, frame):
+        #https://pythonhosted.org/Pebble/#concurrent-decorators
+        section = fm.detectSeeFloorSections(frame)
+        return section
 
     def getDriftsAsString(self):
         return Vector.vectorArrayAsString(self.__drifts)
