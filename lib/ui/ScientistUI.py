@@ -50,6 +50,7 @@ class ScientistUI:
         frame_id = self.__driftData.minFrameID()
         redDotsUI = RedDotsUI(self.__videoStream)
         while True:
+            print ("processing frame IDdd", frame_id)
             print ("processing frame ID", int(frame_id))
 
             try:

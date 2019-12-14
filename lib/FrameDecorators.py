@@ -112,22 +112,12 @@ class DecoMarkedCrabs(FrameDecorator):
 
             crabLocationOrig = Point(markedCrab['crabLocationX'], markedCrab['crabLocationY'])
 
-            #crabFeature = Feature(self.__seefloorGeometry.getDriftData(), frame_number, crabLocationOrig, 5)
-            #crabLocation = crabFeature.getCoordinateInFrame(frame_id)
-            #mainImage.drawCross(crabLocation)
-
-            crabLocation2 = self.__getCoordinateInFrame(frame_number,frame_id,crabLocationOrig)
+            crabLocation2 = self.__seefloorGeometry.translatePointCoordinate(crabLocationOrig, frame_number,frame_id)
             mainImage.drawCross(crabLocation2, color=(255, 0, 0))
 
             #print("crabLocation Old", str(crabLocation), "new", str(crabLocation2), "orig", str(crabLocationOrig))
 
         #timer.lap("Number of crabs" + str(len(markedCrabs)))
-
-    def __getCoordinateInFrame(self, frame_number, frameID, crabLocation):
-        # type: (String) -> Point
-        drift = self.__seefloorGeometry.driftBetweenFrames(frame_number,frameID)
-        newPoint = crabLocation.translateBy(drift)
-        return newPoint
 
     def __crabsOnFrame(self, frame_id):
         # type: (int) -> dict

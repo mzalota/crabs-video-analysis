@@ -6,7 +6,7 @@ from lib.data.RedDotsData import RedDotsData
 from lib.FolderStructure import FolderStructure
 import pandas as pd
 
-from lib.common import Vector
+from lib.common import Vector, Point
 
 
 class SeeFloorNoBadBlocks(PandasWrapper):
@@ -189,12 +189,14 @@ class SeeFloorNoBadBlocks(PandasWrapper):
 
         driftX = self.getXDriftPixels(fromFrameID, toFrameID)
         driftY = self.getYDriftPixels(fromFrameID, toFrameID)
+
         return Vector(driftX, driftY)
 
     def getXDriftPixels(self, fromFrameID, toFrameID):
         # type: (int, int) -> int
         xDriftMM = self.getXDriftMM(fromFrameID, toFrameID)
-        mmPerPixel = self.getRedDotsData().getMMPerPixel(fromFrameID)
+        #mmPerPixel = self.getRedDotsData().getMMPerPixel(fromFrameID)
+        mmPerPixel = self.getRedDotsData().getMMPerPixel(toFrameID)
         xDrift = xDriftMM/mmPerPixel
         return int(xDrift)
 
@@ -285,3 +287,35 @@ class SeeFloorNoBadBlocks(PandasWrapper):
     def getNextFrame(self, frame_id):
         # type: (int) -> int
         return self.jumpToSeefloorSlice(frame_id, 1)
+
+
+    def translatePointCoordinate(self, pointLocation, origFrameID, targetFrameID):
+        # type: (Point, int,int) -> Point
+        drift = self.driftBetweenFrames(origFrameID, targetFrameID)
+        scalingFactor = self.getRedDotsData().scalingFactor(origFrameID, targetFrameID)
+
+        newPoint = pointLocation.translateBy(drift)
+        X = newPoint.x
+        if X < Frame.FRAME_WIDTH / 2:
+            xOffsetFromMiddle = (Frame.FRAME_WIDTH / 2 - X) / scalingFactor
+            newX = int(Frame.FRAME_WIDTH / 2 - xOffsetFromMiddle)
+            # print ("X smaller old ", X, "newX",newX,"xOffsetFromMiddle",xOffsetFromMiddle,Frame.FRAME_WIDTH)
+            newPoint = Point(newX, newPoint.y)
+        if X > Frame.FRAME_WIDTH / 2:
+            xOffsetFromMiddle = (X - Frame.FRAME_WIDTH / 2) / scalingFactor
+            newX = int(Frame.FRAME_WIDTH / 2 + xOffsetFromMiddle)
+            # print ("X bigger old ", X, "newX",newX,"xOffsetFromMiddle",xOffsetFromMiddle,Frame.FRAME_WIDTH)
+            newPoint = Point(newX, newPoint.y)
+
+        Y = newPoint.y
+        if Y < Frame.FRAME_HEIGHT / 2:
+            yOffsetFromMiddle = (Frame.FRAME_HEIGHT / 2 - Y) / scalingFactor
+            newY = int(Frame.FRAME_HEIGHT / 2 - yOffsetFromMiddle)
+            newPoint = Point(newPoint.x, newY)
+
+        if Y > Frame.FRAME_HEIGHT / 2:
+            yOffsetFromMiddle = (Y - Frame.FRAME_HEIGHT / 2) / scalingFactor
+            newY = int(Frame.FRAME_HEIGHT / 2 + yOffsetFromMiddle)
+            newPoint = Point(newPoint.x, newY)
+
+        return newPoint

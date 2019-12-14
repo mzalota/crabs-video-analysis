@@ -28,14 +28,16 @@ class DriftRawData(PandasWrapper):
     def interpolate(self):
         # type: () -> pd.DataFrame
 
+        driftsDetectionStep = 4
+
         df = self._replaceInvalidValuesWithNaN(self.__df.copy())
 
         df = self.__interpolateToHaveEveryFrame(df)
 
         #TODO: dividiing drift by 2 is not flexible. What if detectDrift step is not 2, but 3 or if it is mixed?
-        df["driftX"] = df["driftX"] / 2
+        df["driftX"] = df["driftX"] / driftsDetectionStep
         df = df[[self.__COLNAME_frameNumber, self.__COLNAME_driftX, self.__COLNAME_driftY]]
-        df["driftY"] = df["driftY"] / 2
+        df["driftY"] = df["driftY"] / driftsDetectionStep
 
         #set drifts in the first row to zero.
         self.setValuesInFirstRowToZeros(df)
@@ -50,11 +52,11 @@ class DriftRawData(PandasWrapper):
         df.loc[df['driftY'] == -999, ['driftY', 'driftX']] = numpy.nan
         df.loc[df['driftX'] == -888, ['driftX', 'driftY']] = numpy.nan
 
-        df.loc[df['driftX'] < -20, ['driftX', 'driftY']] = numpy.nan
-        df.loc[df['driftX'] > 30, ['driftX', 'driftY']] = numpy.nan
+        df.loc[df['driftX'] < -45, ['driftX', 'driftY']] = numpy.nan #-20
+        df.loc[df['driftX'] > 45, ['driftX', 'driftY']] = numpy.nan  #30
 
-        df.loc[df['driftY'] < -20, ['driftX', 'driftY']] = numpy.nan
-        df.loc[df['driftY'] > 130, ['driftX', 'driftY']] = numpy.nan  #80
+        df.loc[df['driftY'] < -35, ['driftX', 'driftY']] = numpy.nan #-20
+        df.loc[df['driftY'] > 150, ['driftX', 'driftY']] = numpy.nan  #130
         return df
 
     def __interpolateToHaveEveryFrame(self, df):

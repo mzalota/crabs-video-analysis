@@ -36,11 +36,11 @@ from lib.Logger import Logger
 
 #videoFilename = "V20180825_191129_001"
 
-rootDirectory ="C:/workspaces/AnjutkaVideo/2019-Kara/St6236_19"
-videoFilename = "V4"
+#rootDirectory ="C:/workspaces/AnjutkaVideo/2019-Kara/St6236_19"
+#videoFilename = "V1"
 
-#rootDirectory ="C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
-#videoFilename = "V2"
+rootDirectory ="C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
+videoFilename = "V2"
 
 folderStruct = FolderStructure(rootDirectory, videoFilename)
 folderStruct.createDirectoriesIfDontExist(folderStruct.getDriftsFilepath())
@@ -56,7 +56,7 @@ logger.writeToFile(driftsFileHeaderRow)
 # print "image shape"
 # print image.shape
 # (1080L, 1920L, 3L)
-#print(cv2.__version__)
+print(cv2.__version__)
 
 cv2.startWindowThread()
 
@@ -64,7 +64,7 @@ velocityDetector = VelocityDetector()
 vf = None
 imageWin = ImageWindow("mainWithRedDots", Point(700, 200))
 
-stepSize = 2
+stepSize = 4
 frameID = 5
 
 success = True

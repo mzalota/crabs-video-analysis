@@ -14,14 +14,15 @@ class VelocityDetector():
 
     def __createFeatureMatchers(self):
         self.__fm = list()
-        self.__fm.append(FeatureMatcher(Box(Point(1250, 75), Point(1250 + 100, 75 + 200))))
-        self.__fm.append(FeatureMatcher(Box(Point(1250, 75), Point(1350 + 100, 75 + 100))))
-        self.__fm.append(FeatureMatcher(Box(Point(1250, 75), Point(1450 + 200, 75 + 100))))
-        self.__fm.append(FeatureMatcher(Box(Point(1300, 100), Point(1300 + 500, 100 + 300))))
+        self.__fm.append(FeatureMatcher(Box(Point(1250, 650), Point(1250 + 300, 650 + 200)))) # middle right
+        self.__fm.append(FeatureMatcher(Box(Point(700, 600), Point(700 + 400, 600 + 300))))  # center
+        self.__fm.append(FeatureMatcher(Box(Point(1250, 125), Point(1450 + 200, 125 + 400)))) #top right
+        self.__fm.append(FeatureMatcher(Box(Point(1200, 300), Point(1200 + 500, 300 + 300)))) #top right
         self.__fm.append(FeatureMatcher(Box(Point(200, 50), Point(200 + 600, 50 + 400))))
         self.__fm.append(FeatureMatcher(Box(Point(800, 50), Point(800 + 300, 50 + 200))))
-        self.__fm.append(FeatureMatcher(Box(Point(200, 450), Point(200 + 200, 450 + 200))))
+        self.__fm.append(FeatureMatcher(Box(Point(300, 400), Point(300 + 250, 400 + 350)))) # middle left
         self.__fm.append(FeatureMatcher(Box(Point(800, 300), Point(800 + 300, 300 + 200))))
+        self.__fm.append(FeatureMatcher(Box(Point(200, 650), Point(200 + 300, 650 + 200))))
 
     def getMedianDriftDistance(self):
         if len(self.__drifts)<=0:
