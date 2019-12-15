@@ -1,7 +1,6 @@
 import math
 
 import numpy
-from pebble import concurrent
 
 from lib.FeatureMatcher import FeatureMatcher
 from Image import Image
@@ -11,36 +10,37 @@ from lib.MyTimer import MyTimer
 
 class VelocityDetector():
     def __init__(self):
-        self.__prevFrame = None
+        self._prevFrame = None
+        self._timer = MyTimer("VelocityDetector")
         self.__createFeatureMatchers()
 
     def __createFeatureMatchers(self):
-        self.__fm = list()
-        self.__fm.append(FeatureMatcher(Box(Point(1250, 650), Point(1250 + 300, 650 + 200)))) # middle right
-        self.__fm.append(FeatureMatcher(Box(Point(700, 600), Point(700 + 400, 600 + 300))))  # center
-        self.__fm.append(FeatureMatcher(Box(Point(1250, 125), Point(1450 + 200, 125 + 400)))) #top right
-        self.__fm.append(FeatureMatcher(Box(Point(1200, 300), Point(1200 + 500, 300 + 300)))) #top right
-        self.__fm.append(FeatureMatcher(Box(Point(200, 50), Point(200 + 600, 50 + 400))))
-        self.__fm.append(FeatureMatcher(Box(Point(800, 50), Point(800 + 300, 50 + 200))))
-        self.__fm.append(FeatureMatcher(Box(Point(300, 400), Point(300 + 250, 400 + 350)))) # middle left
-        self.__fm.append(FeatureMatcher(Box(Point(800, 300), Point(800 + 300, 300 + 200))))
-        self.__fm.append(FeatureMatcher(Box(Point(200, 650), Point(200 + 300, 650 + 200))))
+        self._fm = list()
+        self._fm.append(FeatureMatcher(Box(Point(1250, 650), Point(1250 + 300, 650 + 200)))) # middle right
+        self._fm.append(FeatureMatcher(Box(Point(700, 600), Point(700 + 400, 600 + 300))))  # center
+        self._fm.append(FeatureMatcher(Box(Point(1250, 125), Point(1450 + 200, 125 + 400)))) #top right
+        self._fm.append(FeatureMatcher(Box(Point(1200, 300), Point(1200 + 500, 300 + 300)))) #top right
+        self._fm.append(FeatureMatcher(Box(Point(200, 50), Point(200 + 600, 50 + 400))))
+        self._fm.append(FeatureMatcher(Box(Point(800, 50), Point(800 + 300, 50 + 200))))
+        self._fm.append(FeatureMatcher(Box(Point(300, 400), Point(300 + 250, 400 + 350)))) # middle left
+        self._fm.append(FeatureMatcher(Box(Point(800, 300), Point(800 + 300, 300 + 200))))
+        self._fm.append(FeatureMatcher(Box(Point(200, 650), Point(200 + 300, 650 + 200))))
 
     def getMedianDriftDistance(self):
-        if len(self.__drifts)<=0:
+        if len(self._drifts)<=0:
             return None
 
         driftPixels = list()
-        for drift in self.__drifts:
+        for drift in self._drifts:
             driftPixels.append(drift.length())
         return numpy.median(driftPixels)
 
     def getMedianDriftAngle(self):
-        if len(self.__drifts)<=0:
+        if len(self._drifts)<=0:
             return None
 
         driftAngles = list()
-        for drift in self.__drifts:
+        for drift in self._drifts:
             driftAngles.append(drift.angle())
         return numpy.median(driftAngles)
 
@@ -115,7 +115,7 @@ class VelocityDetector():
 
     def getMedianDriftVector(self):
 
-        withoutOutliers = self.excludeOutliers(self.__drifts)
+        withoutOutliers = self.excludeOutliers(self._drifts)
         if not withoutOutliers:
             return None
 
@@ -134,22 +134,13 @@ class VelocityDetector():
         medianYDrift = numpy.median(driftY)
         return Vector(medianXDrift, medianYDrift)
 
-    def detectVelocity(self,frame):
-        timerOuter = MyTimer("detectVelocity Outer")
-        # TODO: If the next line is moved one down we get exception for video files that don't have first frame
-        imgObj = frame.getImgObj()
-        self.__drifts = list()
-        futures = list()
-        for fm in self.__fm:
-            #timerInner = MyTimer("timerInner")
-            future = self.parallelize(fm, frame)
-            futures.append(future)
-            #timerInner.lap("futures.append")
-
-        for future in futures:
-            #timerInner = MyTimer("futures")
-            section = future.result()
-            #timerInner.lap("join")
+    def detectVelocity(self, frame):
+        self._timer.lap("in detectVelocity() sequential start")
+        self._drifts = list()
+        for fm in self._fm:
+            # TODO: If the next line is moved one down we get exception for video files that don't have first frame
+            imgObj = frame.getImgObj()
+            section = fm.detectSeeFloorSections(frame)
             section.drawFeatureOnFrame(imgObj)
             if fm.detectionWasReset():
                 continue
@@ -158,24 +149,18 @@ class VelocityDetector():
             if not drift:
                 continue
 
-            self.__drifts.append(drift)
+            self._drifts.append(drift)
 
-            #section.showSubImage()
+            # section.showSubImage()
 
-        timerOuter.lap("end it")
-        self.__prevFrame = frame
-
-    @concurrent.thread
-    def parallelize(self, fm, frame):
-        #https://pythonhosted.org/Pebble/#concurrent-decorators
-        section = fm.detectSeeFloorSections(frame)
-        return section
+        self._prevFrame = frame
+        self._timer.lap("in detectVelocity() sequential end")
 
     def getDriftsAsString(self):
-        return Vector.vectorArrayAsString(self.__drifts)
+        return Vector.vectorArrayAsString(self._drifts)
 
     def getDriftsCount(self):
-        return len(self.__drifts)
+        return len(self._drifts)
 
     def infoAboutDrift(self):
         driftVector = self.getMedianDriftVector()
@@ -183,7 +168,7 @@ class VelocityDetector():
         driftAngle = self.getMedianDriftAngle()
         driftsCount = self.getDriftsCount()
         driftsStr = self.getDriftsAsString()
-        driftsWithoutOutliers = self.excludeOutliers(self.__drifts)
+        driftsWithoutOutliers = self.excludeOutliers(self._drifts)
         driftsNoOutliersStr = Vector.vectorArrayAsString(driftsWithoutOutliers)
 
         driftsRow = []

@@ -6,6 +6,10 @@ from pebble import concurrent, ProcessPool
 
 #python -m pip install pebble
 
+#getting this error message
+#Assertion fctx->async_lock failed at libavcodec/pthread_frame.c:155
+
+
 class TmpProc:
 
     @concurrent.thread

@@ -81,6 +81,7 @@ Below are commands to install necessary dependancies
 + `python -m pip install psutil`
 + `python -m pip install pylru`
 + `python -m pip install pandas-compat`
++ `python -m pip install pebble`
 
 
 #### Relevant links
