@@ -7,6 +7,7 @@ from lib.Frame import Frame
 from lib.Image import Image
 from lib.ImageWindow import ImageWindow
 from lib.VelocityDetector import VelocityDetector
+from lib.VelocityDetectorMultiThreaded import VelocityDetectorMultiThreaded
 from lib.VideoStream import VideoStream, VideoStreamException
 from lib.common import Point
 from lib.Logger import Logger
@@ -60,6 +61,7 @@ print(cv2.__version__)
 
 cv2.startWindowThread()
 
+#velocityDetector = VelocityDetectorMultiThreaded()
 velocityDetector = VelocityDetector()
 vf = None
 imageWin = ImageWindow("mainWithRedDots", Point(700, 200))
