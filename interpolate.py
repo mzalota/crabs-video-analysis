@@ -24,7 +24,7 @@ folderStruct = FolderStructure(rootDir, videoFileName)
 
 print ("interpolating DriftData")
 rawDrifts = DriftRawData(folderStruct)
-df = rawDrifts.interpolate()
+df = rawDrifts.interpolate(8)
 
 drifts = DriftData.createFromFolderStruct(folderStruct)
 drifts.setDF(df)

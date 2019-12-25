@@ -5,10 +5,13 @@ import cv2
 from lib.FolderStructure import FolderStructure
 from lib.Frame import Frame
 from lib.Image import Image
-from lib.ImageWindow import ImageWindow
+#from lib.ImageWindow import ImageWindow
 from lib.VelocityDetector import VelocityDetector
-from lib.VelocityDetectorMultiThreaded import VelocityDetectorMultiThreaded
 from lib.VideoStream import VideoStream, VideoStreamException
+
+from lib.VelocityDetectorMultiThreaded import VelocityDetectorMultiThreaded
+from lib.VideoStreamMultiThreaded import VideoStreamMultiThreaded
+
 from lib.common import Point
 from lib.Logger import Logger
 
@@ -46,7 +49,13 @@ videoFilename = "V2"
 folderStruct = FolderStructure(rootDirectory, videoFilename)
 folderStruct.createDirectoriesIfDontExist(folderStruct.getDriftsFilepath())
 
-videoStream = VideoStream(folderStruct.getVideoFilepath())
+
+velocityDetector = VelocityDetectorMultiThreaded()
+#velocityDetector = VelocityDetector()
+
+videoStream = VideoStreamMultiThreaded(folderStruct.getVideoFilepath())
+#videoStream = VideoStream(folderStruct.getVideoFilepath())
+
 logger = Logger.openInOverwriteMode(folderStruct.getRawDriftsFilepath())
 
 driftsFileHeaderRow = VelocityDetector.infoHeaders()
@@ -61,62 +70,69 @@ print(cv2.__version__)
 
 cv2.startWindowThread()
 
-#velocityDetector = VelocityDetectorMultiThreaded()
-velocityDetector = VelocityDetector()
 vf = None
-imageWin = ImageWindow("mainWithRedDots", Point(700, 200))
+#imageWin = ImageWindow("mainWithRedDots", Point(700, 200))
 
 stepSize = 4
-frameID = 5
+frameID = 10189
 
-success = True
-while success:
 
-    windowName = 'Detected_' + str(frameID)
+def runLoop(frameID, stepSize):
+    success = True
+    while success:
 
-    try:
-        frame = Frame(frameID, videoStream)
-        velocityDetector.detectVelocity(frame)
-    except VideoStreamException as error:
-        if frameID >300:
-            print ("no more frames to read from video ")
-            print(repr(error))
-            # traceback.print_exc()
+        windowName = 'Detected_' + str(frameID)
+
+        try:
+            frame = Frame(frameID, videoStream)
+            velocityDetector.detectVelocity(frame)
+        except VideoStreamException as error:
+            if frameID > 300:
+                print ("no more frames to read from video ")
+                print(repr(error))
+                # traceback.print_exc()
+                break
+            else:
+                print "cannot read frame " + str(frameID) + ", skipping to next"
+                frameID += stepSize
+                continue
+
+        except Exception as error:
+            print('Caught this error: ' + repr(error))
+            traceback.print_exc()
             break
+        except AssertionError as assertion:
+            print('Caught this assertion: ' + repr(assertion))
+            traceback.print_exc()
+            break
+
+        # findBrightestSpot()
+
+        driftVector = velocityDetector.getMedianDriftVector()
+        if driftVector is None:
+            driftsRow = velocityDetector.emptyRow()
+            driftsRow.insert(0, frameID)
         else:
-            print "cannot read frame " + str(frameID) + ", skipping to next"
-            frameID += stepSize
-            continue
+            driftLength = driftVector.length()
+            driftsRow = velocityDetector.infoAboutDrift()
+            driftsRow.insert(0, frameID)
 
-    except Exception as error:
-        print('Caught this error: ' + repr(error))
-        traceback.print_exc()
-        break
+        print driftsRow
+        logger.writeToFile(driftsRow)
 
-    # findBrightestSpot()
+        img = frame.getImgObj()
+        img.drawDriftVectorOnImage(driftVector)
 
-    driftVector = velocityDetector.getMedianDriftVector()
-    if driftVector is None:
-        driftsRow = velocityDetector.emptyRow()
-        driftsRow.insert(0, frameID)
-    else:
-        driftLength = driftVector.length()
-        driftsRow = velocityDetector.infoAboutDrift()
-        driftsRow.insert(0, frameID)
+        # imageWin.showWindowAndWait(img.asNumpyArray(), 1000)
+        # imageWin.showWindowAndWaitForClick(img.asNumpyArray())
 
-    print driftsRow
-    logger.writeToFile(driftsRow)
+        frameID += stepSize
 
-    img = frame.getImgObj()
-    img.drawDriftVectorOnImage(driftVector)
+        if frameID > 99100:
+            break
 
-    #imageWin.showWindowAndWait(img.asNumpyArray(), 1000)
-    #imageWin.showWindowAndWaitForClick(img.asNumpyArray())
 
-    frameID += stepSize
-
-    if frameID > 99100:
-        break
+runLoop(frameID, stepSize)
 
 logger.closeFile()
 cv2.destroyAllWindows()

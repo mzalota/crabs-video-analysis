@@ -14,6 +14,10 @@ class VelocityDetector():
         self._timer = MyTimer("VelocityDetector")
         self.__createFeatureMatchers()
 
+
+
+
+
     def __createFeatureMatchers(self):
         self._fm = list()
         self._fm.append(FeatureMatcher(Box(Point(1250, 650), Point(1250 + 300, 650 + 200)))) # middle right

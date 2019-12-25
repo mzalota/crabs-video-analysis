@@ -25,12 +25,10 @@ class DriftRawData(PandasWrapper):
         # type: () -> int
         return len(self.__df.index)
 
-    def interpolate(self):
+    def interpolate(self, driftsDetectionStep = 2):
         # type: () -> pd.DataFrame
 
-        driftsDetectionStep = 4
-
-        df = self._replaceInvalidValuesWithNaN(self.__df.copy())
+        df = self._replaceInvalidValuesWithNaN(self.__df.copy(), driftsDetectionStep)
 
         df = self.__interpolateToHaveEveryFrame(df)
 
@@ -47,16 +45,16 @@ class DriftRawData(PandasWrapper):
         df.loc[0, self.__COLNAME_driftX] = 0
         df.loc[0, self.__COLNAME_driftY] = 0
 
-    def _replaceInvalidValuesWithNaN(self, df):
+    def _replaceInvalidValuesWithNaN(self, df, step_size = 2):
         # type: (pd.DataFrame) -> pd.DataFrame
         df.loc[df['driftY'] == -999, ['driftY', 'driftX']] = numpy.nan
         df.loc[df['driftX'] == -888, ['driftX', 'driftY']] = numpy.nan
 
-        df.loc[df['driftX'] < -45, ['driftX', 'driftY']] = numpy.nan #-20
-        df.loc[df['driftX'] > 45, ['driftX', 'driftY']] = numpy.nan  #30
+        df.loc[df['driftX'] < -10*step_size, ['driftX', 'driftY']] = numpy.nan #-20
+        df.loc[df['driftX'] > 10*step_size, ['driftX', 'driftY']] = numpy.nan  #30
 
-        df.loc[df['driftY'] < -35, ['driftX', 'driftY']] = numpy.nan #-20
-        df.loc[df['driftY'] > 150, ['driftX', 'driftY']] = numpy.nan  #130
+        df.loc[df['driftY'] < -10*step_size, ['driftX', 'driftY']] = numpy.nan #-20
+        df.loc[df['driftY'] > 100+step_size*2, ['driftX', 'driftY']] = numpy.nan  #130
         return df
 
     def __interpolateToHaveEveryFrame(self, df):
