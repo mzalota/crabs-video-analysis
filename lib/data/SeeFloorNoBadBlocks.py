@@ -1,3 +1,5 @@
+import numpy
+
 from lib.data.BadFramesData import BadFramesData
 from lib.data.DriftData import DriftData
 from lib.Frame import Frame
@@ -7,7 +9,6 @@ from lib.FolderStructure import FolderStructure
 import pandas as pd
 
 from lib.common import Vector, Point
-
 
 class SeeFloorNoBadBlocks(PandasWrapper):
     __COLNAME_driftX = 'driftX'
@@ -165,7 +166,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
             return self.maxFrameID()
 
         result = df.loc[(df['driftY_sum_mm'] < yCoordMMDestination)].max()["frameNumber"]
-        if result:
+        if result and not numpy.isnan(result):
             nextFrameID = int(result)
         else:
             print("Something wierd ine SeeFloor.getFrame: yCoordMMDestination", yCoordMMDestination, "fromFrameID", fromFrameID, "yMMAway", yMMAway,
