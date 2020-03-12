@@ -42,6 +42,7 @@ from lib.Logger import Logger
 
 #rootDirectory ="C:/workspaces/AnjutkaVideo/2019-Kara/St6236_19"
 #videoFilename = "V1"
+from lib.data.DriftRawData import DriftRawData
 
 rootDirectory ="C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
 videoFilename = "V2"
@@ -50,89 +51,41 @@ folderStruct = FolderStructure(rootDirectory, videoFilename)
 folderStruct.createDirectoriesIfDontExist(folderStruct.getDriftsFilepath())
 
 
-velocityDetector = VelocityDetectorMultiThreaded()
-#velocityDetector = VelocityDetector()
-
+velocityDetector = VelocityDetectorMultiThreaded(folderStruct)
 videoStream = VideoStreamMultiThreaded(folderStruct.getVideoFilepath())
+
+velocityDetector = VelocityDetector(folderStruct)
 #videoStream = VideoStream(folderStruct.getVideoFilepath())
 
-logger = Logger.openInOverwriteMode(folderStruct.getRawDriftsFilepath())
+def newRawFile(folderStruct):
+    logger = Logger.openInOverwriteMode(folderStruct.getRawDriftsFilepath())
+    driftsFileHeaderRow = VelocityDetector.infoHeaders()
+    driftsFileHeaderRow.insert(0, "frameNumber")
+    logger.writeToFile(driftsFileHeaderRow)
+    return logger
 
-driftsFileHeaderRow = VelocityDetector.infoHeaders()
-driftsFileHeaderRow.insert(0, "frameNumber")
 
-logger.writeToFile(driftsFileHeaderRow)
-
-# print "image shape"
-# print image.shape
-# (1080L, 1920L, 3L)
-print(cv2.__version__)
-
-cv2.startWindowThread()
-
-vf = None
-#imageWin = ImageWindow("mainWithRedDots", Point(700, 200))
+logger = newRawFile(folderStruct)
 
 stepSize = 4
-frameID = 10189
+
+logger = Logger.openInAppendMode(folderStruct.getRawDriftsFilepath())
+rawDriftData = DriftRawData(folderStruct)
+maxFrameID = rawDriftData.maxFrameID()
+if maxFrameID > 1:
+    startFrameID = maxFrameID + stepSize
+else:
+    startFrameID = 5
+
+#cv2.startWindowThread()
+#imageWin = ImageWindow("mainWithRedDots", Point(700, 200))
 
 
-def runLoop(frameID, stepSize):
-    success = True
-    while success:
-
-        windowName = 'Detected_' + str(frameID)
-
-        try:
-            frame = Frame(frameID, videoStream)
-            velocityDetector.detectVelocity(frame)
-        except VideoStreamException as error:
-            if frameID > 300:
-                print ("no more frames to read from video ")
-                print(repr(error))
-                # traceback.print_exc()
-                break
-            else:
-                print "cannot read frame " + str(frameID) + ", skipping to next"
-                frameID += stepSize
-                continue
-
-        except Exception as error:
-            print('Caught this error: ' + repr(error))
-            traceback.print_exc()
-            break
-        except AssertionError as assertion:
-            print('Caught this assertion: ' + repr(assertion))
-            traceback.print_exc()
-            break
-
-        # findBrightestSpot()
-
-        driftVector = velocityDetector.getMedianDriftVector()
-        if driftVector is None:
-            driftsRow = velocityDetector.emptyRow()
-            driftsRow.insert(0, frameID)
-        else:
-            driftLength = driftVector.length()
-            driftsRow = velocityDetector.infoAboutDrift()
-            driftsRow.insert(0, frameID)
-
-        print driftsRow
-        logger.writeToFile(driftsRow)
-
-        img = frame.getImgObj()
-        img.drawDriftVectorOnImage(driftVector)
-
-        # imageWin.showWindowAndWait(img.asNumpyArray(), 1000)
-        # imageWin.showWindowAndWaitForClick(img.asNumpyArray())
-
-        frameID += stepSize
-
-        if frameID > 99100:
-            break
 
 
-runLoop(frameID, stepSize)
+print ("starting processing from frame", startFrameID)
+
+velocityDetector.runLoop(startFrameID, stepSize, logger)
 
 logger.closeFile()
-cv2.destroyAllWindows()
+#cv2.destroyAllWindows()

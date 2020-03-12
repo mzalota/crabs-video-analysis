@@ -31,6 +31,8 @@ videoStream = VideoStream(folderStruct.getVideoFilepath())
 
 driftData = DriftData.createFromFolderStruct(folderStruct)
 
+print("cv2 version", cv2.__version__)
+
 imageWin = ImageWindow("mainWindow", Point(700, 200))
 
 scientistUI = ScientistUI(imageWin, folderStruct, videoStream, driftData)

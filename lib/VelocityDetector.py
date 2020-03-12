@@ -1,21 +1,77 @@
 import math
+import traceback
 
 import numpy
 
 from lib.FeatureMatcher import FeatureMatcher
 from Image import Image
 from common import Box, Point, Vector
+from lib.Frame import Frame
 from lib.MyTimer import MyTimer
+from lib.VideoStream import VideoStreamException, VideoStream
 
 
 class VelocityDetector():
-    def __init__(self):
+    def __init__(self, folderStruct):
+        # type: (FolderStructure) -> VelocityDetector
         self._prevFrame = None
         self._timer = MyTimer("VelocityDetector")
         self.__createFeatureMatchers()
+        self.__videoStream = VideoStream(folderStruct.getVideoFilepath())
 
+    def runLoop(self, frameID, stepSize, logger):
+        success = True
+        while success:
 
+            #windowName = 'Detected_' + str(frameID)
 
+            try:
+                frame = Frame(frameID, self.__videoStream)
+                self.detectVelocity(frame)
+            except VideoStreamException as error:
+                if frameID > 300:
+                    print ("no more frames to read from video ")
+                    print(repr(error))
+                    # traceback.print_exc()
+                    break
+                else:
+                    print "cannot read frame " + str(frameID) + ", skipping to next"
+                    frameID += stepSize
+                    continue
+
+            except Exception as error:
+                print('Caught this error: ' + repr(error))
+                traceback.print_exc()
+                break
+            except AssertionError as assertion:
+                print('Caught this assertion: ' + repr(assertion))
+                traceback.print_exc()
+                break
+
+            # findBrightestSpot()
+
+            driftVector = self.getMedianDriftVector()
+            if driftVector is None:
+                driftsRow = self.emptyRow()
+                driftsRow.insert(0, frameID)
+            else:
+                driftLength = driftVector.length()
+                driftsRow = self.infoAboutDrift()
+                driftsRow.insert(0, frameID)
+
+            print driftsRow
+            logger.writeToFile(driftsRow)
+
+            img = frame.getImgObj()
+            img.drawDriftVectorOnImage(driftVector)
+
+            # imageWin.showWindowAndWait(img.asNumpyArray(), 1000)
+            # imageWin.showWindowAndWaitForClick(img.asNumpyArray())
+
+            frameID += stepSize
+
+            if frameID > 99100:
+                break
 
 
     def __createFeatureMatchers(self):
