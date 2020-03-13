@@ -38,7 +38,7 @@ class RedDotsUI:
             keyPressed = self.__imageZoomWin.showWindowAndWaitForTwoClicks(zoomImage.asNumpyArray())
             user_input = UserInput(keyPressed)
 
-            if user_input.is_quit_command():
+            if user_input.is_command_quit():
                 message = "User pressed Q button"
                 print message
                 return None

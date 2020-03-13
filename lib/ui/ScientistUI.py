@@ -37,8 +37,6 @@ class ScientistUI:
         self.__driftData = driftData
 
         self.__badFramesData = BadFramesData.createFromFolderStruct(folderStruct)
-        #self.__redDotsData = RedDotsData.createFromFolderStruct(folderStruct)
-        #self.__seeFloor = SeeFloor(driftData, self.__badFramesData, self.__redDotsData)
         self.__redDotsManualData = RedDotsManualData(folderStruct)
         self.__seeFloor = SeeFloor.createFromFolderStruct(folderStruct)
         self.__seeFloorNoBadBlocks = SeeFloorNoBadBlocks.createFromFolderStruct(folderStruct)
@@ -50,7 +48,6 @@ class ScientistUI:
         frame_id = self.__driftData.minFrameID()
         redDotsUI = RedDotsUI(self.__videoStream)
         while True:
-            print ("processing frame IDdd", frame_id)
             print ("processing frame ID", int(frame_id))
 
             try:
@@ -61,18 +58,23 @@ class ScientistUI:
                 traceback.print_exc()
                 break
 
-            #keyPressed = self._showFrame(frame.getImgObj(), frame_id)
             keyPressed = self.showFrame(frame)
             user_input = UserInput(keyPressed)
 
-            if keyPressed == ord("z"):
+            if user_input.is_command_quit():
+                # print "Pressed Q button"
+                print("User requested to quit on frame: ", str(frame_id))
+                break
+
+            if user_input.is_command_zoom():
                 #toggle Zoom flag
                 if self.__zoom == True:
                     self.__zoom = False
                 else:
                     self.__zoom = True
 
-            if keyPressed == ord("r"):
+
+            if user_input.is_command_fix_red_dot():
                 #show RedDotsUI
                 frame_id_redDots = redDotsUI.showUI(frame_id)
                 print "catching frame_id_redDots"
@@ -84,10 +86,6 @@ class ScientistUI:
                 redDotsUI.closeWindow()
                 continue
 
-            if user_input.is_quit_command():
-                # print "Pressed Q button"
-                print("User requested to quit on frame: ", str(frame_id))
-                break
 
             if user_input.is_mouse_click(): # keyPressed == ImageWindow.KEY_MOUSE_CLICK_EVENT:
                 crabPoint = self.__imageWin.featureCoordiate
@@ -95,7 +93,7 @@ class ScientistUI:
                 crabUI.showCrabWindow()
                 continue
 
-            if user_input.is_bad_frame_command():
+            if user_input.is_command_bad_frame():
                 print "Pressed B (bad frame) button"
                 end_frame_id = frame_id + self.__badFramesJump
                 self.__badFramesData.add_badframes(frame_id, end_frame_id)
@@ -105,7 +103,7 @@ class ScientistUI:
             new_frame_id = self.__determine_next_frame_id(frame_id, keyPressed)
 
             #Contrast button cycles contrast from Up to Down to Normal again
-            if keyPressed == ord("c"):
+            if user_input.is_command_contrast():
                 print ("detected press C")
                 if self.__contrastLevel == self.CONTRAST_NORMAL:
                     print ("here 10")
@@ -121,7 +119,6 @@ class ScientistUI:
             if keyPressed == ImageWindow.KEY_RIGHT_MOUSE_CLICK_EVENT:
                 markedPoint = self.__imageWin.featureCoordiate
                 print ("now need to mark coordinate ",str(markedPoint))
-            #    new_frame_id = frame_id + 50
 
             frame_id = new_frame_id
 
@@ -129,10 +126,10 @@ class ScientistUI:
     #TODO: Figure out why pressing Right button and then left button does not return you to the same frame ID
     def __determine_next_frame_id(self, frame_id, keyPressed):
         user_input = UserInput(keyPressed)
-        if user_input.is_bad_frame_command():
+        if user_input.is_command_bad_frame():
             new_frame_id = frame_id + self.__badFramesJump + 1
         else:
-            new_frame_id = self.__process_jump_key(frame_id, user_input)
+            new_frame_id = self.__process_navigation_key_press(frame_id, user_input)
             if new_frame_id is None:
                 print ("Ignoring the fact that user pressed button:", keyPressed)  # , chr(keyPressed))
                 new_frame_id = frame_id
@@ -145,7 +142,7 @@ class ScientistUI:
 
         return new_frame_id
 
-    def __process_jump_key(self, frame_id, user_input):
+    def __process_navigation_key_press(self, frame_id, user_input):
 
         if user_input.is_large_step_forward():
             # scroll 7 frames forward

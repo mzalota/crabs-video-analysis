@@ -30,7 +30,7 @@ class UserInput():
             return True
         return False
 
-    def is_quit_command(self):
+    def is_command_quit(self):
         if self.__key == ord("q"):
             return True
 
@@ -39,11 +39,38 @@ class UserInput():
 
         return False
 
-    def is_bad_frame_command(self):
+    def is_command_bad_frame(self):
         if self.__key == ord("b"):
             return True
 
         if self.__key == ord("B"):
+            return True
+
+        return False
+
+    def is_command_zoom(self):
+        if self.__key == ord("z"):
+            return True
+
+        if self.__key == ord("Z"):
+            return True
+
+        return False
+
+    def is_command_fix_red_dot(self):
+        if self.__key == ord("r"):
+            return True
+
+        if self.__key == ord("R"):
+            return True
+
+        return False
+
+    def is_command_contrast(self):
+        if self.__key == ord("c"):
+            return True
+
+        if self.__key == ord("C"):
             return True
 
         return False
