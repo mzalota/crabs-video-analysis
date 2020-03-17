@@ -1,17 +1,20 @@
 from lib.data.BadFramesData import BadFramesData
 from lib.Frame import Frame
+from lib.data.CrabsData import CrabsData
+from lib.data.MarkersData import MarkersData
 from lib.data.SeeFloor import SeeFloor
 from lib.VideoStream import VideoStream
 from lib.common import Point, Vector
 
 class FrameDecoFactory:
 
-    def __init__(self, seeFloorGeometry, badFramesData, crabsData, videoStream):
+    def __init__(self, seeFloorGeometry, badFramesData, crabsData, markersData, videoStream):
         # type: (SeeFloor, BadFramesData, VideoStream) -> FrameDecoFactory
         self.__videoStream = videoStream
         self.__seeFloorGeometry = seeFloorGeometry
         self.__badFramesData = badFramesData
         self.__crabsData = crabsData
+        self.__markersData = markersData
 
     def getFrame(self, frameID):
         # type: (int) -> FrameDecorator
@@ -38,6 +41,10 @@ class FrameDecoFactory:
     def getFrameDecoMarkedCrabs(self, frameDeco):
         # type: (FrameDecorator) -> DecoMarkedCrabs
         return DecoMarkedCrabs(frameDeco, self.__seeFloorGeometry, self.__crabsData)
+
+    def getFrameDecoMarkers(self, frameDeco):
+        # type: (FrameDecorator) -> DecoMarkedCrabs
+        return DecoMarkers(frameDeco, self.__seeFloorGeometry, self.__markersData)
 
     def getFrameDecoFrameID(self, frameDeco):
         # type: (FrameDecorator) -> DecoFrameID
@@ -86,11 +93,52 @@ class DecoGridLines(FrameDecorator):
         imgObj.drawLine(verticalTop, verticalBottom, thickness=3, color=(255, 255, 0))
         imgObj.drawLine(horisontalLeft, horisontalRight, thickness=3, color=(255, 255, 0))
 
+class DecoMarkers(FrameDecorator):
+
+    def __init__(self, frameDeco, seefloorGeometry, markersData):
+        # type: (FrameDecorator, SeeFloor, MarkersData) -> DecoMarkers
+        FrameDecorator.__init__(self, frameDeco)
+        self.__seefloorGeometry = seefloorGeometry
+        self.__crabsData = markersData
+
+    def getImgObj(self):
+        # type: () -> Image
+        imgObj = self.frameDeco.getImgObj()
+        self.__markCrabsOnImage(imgObj, self.getFrameID())
+        return imgObj
+
+    def __markCrabsOnImage(self, mainImage, frame_id):
+        #timer = MyTimer("crabsOnFrame")
+        markedCrabs = self.__crabsOnFrame(frame_id)
+        if markedCrabs is None:
+            return
+        #timer.lap("frame_number: " + str(frame_id))
+        for markedCrab in markedCrabs:
+
+            #print ('markedCrab', markedCrab)
+            frame_number = markedCrab['frameNumber']
+
+            crabLocationOrig = Point(markedCrab['locationX'], markedCrab['locationY'])
+
+            crabLocation2 = self.__seefloorGeometry.translatePointCoordinate(crabLocationOrig, frame_number,frame_id)
+            mainImage.drawCross(crabLocation2, color=(255, 0, 0))
+
+            #print("crabLocation Old", str(crabLocation), "new", str(crabLocation2), "orig", str(crabLocationOrig))
+        #timer.lap("Number of crabs" + str(len(markedCrabs)))
+
+    def __crabsOnFrame(self, frame_id):
+        # type: (int) -> dict
+        prev_frame_id = self.__seefloorGeometry.getPrevFrameMM(frame_id)
+        next_frame_id = self.__seefloorGeometry.getNextFrameMM(frame_id)
+        markedCrabs = self.__crabsData.marksBetweenFrames(prev_frame_id, next_frame_id)
+        return markedCrabs
+
+
 
 class DecoMarkedCrabs(FrameDecorator):
 
     def __init__(self, frameDeco, seefloorGeometry, crabsData):
-        # type: (FrameDecorator, SeeFloor) -> DecoMarkedCrabs
+        # type: (FrameDecorator, SeeFloor, CrabsData) -> DecoMarkedCrabs
         FrameDecorator.__init__(self, frameDeco)
         self.__seefloorGeometry = seefloorGeometry
         self.__crabsData = crabsData
@@ -116,7 +164,6 @@ class DecoMarkedCrabs(FrameDecorator):
             mainImage.drawCross(crabLocation2, color=(255, 0, 0))
 
             #print("crabLocation Old", str(crabLocation), "new", str(crabLocation2), "orig", str(crabLocationOrig))
-
         #timer.lap("Number of crabs" + str(len(markedCrabs)))
 
     def __crabsOnFrame(self, frame_id):
@@ -125,6 +172,7 @@ class DecoMarkedCrabs(FrameDecorator):
         next_frame_id = self.__seefloorGeometry.getNextFrameMM(frame_id)
         markedCrabs = self.__crabsData.crabsBetweenFrames(prev_frame_id, next_frame_id)
         return markedCrabs
+
 
 
 class DecoRedDots(FrameDecorator):
