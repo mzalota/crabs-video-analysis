@@ -70,7 +70,6 @@ class MarkersData(PandasWrapper):
 
         crabsDF = self.__crabsDF
         crabsDF["frameNumber"] = pd.to_numeric(crabsDF["frameNumber"], errors='coerce')
-        #crabsDF["frameNumber"] = crabsDF["frameNumber"].astype('int64')
         crabsDF["markerId"] = crabsDF["markerId"].astype('int64')
         crabsDF["locationX"] = crabsDF["locationX"].astype('int64')
         crabsDF["locationY"] = crabsDF["locationY"].astype('int64')
@@ -82,7 +81,7 @@ class MarkersData(PandasWrapper):
         #[{'crabLocationX': 221, 'crabLocationY': 368, 'frameNumber': 10026},
         # {'crabLocationX': 865, 'crabLocationY': 304, 'frameNumber': 10243},
         # {'crabLocationX': 101, 'crabLocationY': 420, 'frameNumber': 10530}]
-        return tmpDF[["frameNumber", "locationY", "locationX"]].reset_index(drop=True).to_dict("records")
+        return tmpDF[["frameNumber", "markerId", "locationY", "locationX"]].reset_index(drop=True).to_dict("records")
 
     def save_to_file(self):
         filepath = self.__folderStruct.getMarkersFilepath()

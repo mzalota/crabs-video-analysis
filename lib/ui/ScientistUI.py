@@ -166,13 +166,6 @@ class ScientistUI:
         else:
             imageToShow = self.__constructFrameImage(frameImagesFactory, frame)
 
-        if self.__marker_id == 1:
-            imageToShow.drawCross(Point(400,400),8,(200,200,200))
-
-        if self.__marker_id == 2:
-            imageToShow.drawCross(Point(800,800),8,(255,0,0))
-
-
         imageToShow = self.__adjustImageBrightness(imageToShow)
 
         markCrabsTimer.lap("imageToShow")

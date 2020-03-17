@@ -99,39 +99,45 @@ class DecoMarkers(FrameDecorator):
         # type: (FrameDecorator, SeeFloor, MarkersData) -> DecoMarkers
         FrameDecorator.__init__(self, frameDeco)
         self.__seefloorGeometry = seefloorGeometry
-        self.__crabsData = markersData
+        self.__markersData = markersData
 
     def getImgObj(self):
         # type: () -> Image
         imgObj = self.frameDeco.getImgObj()
-        self.__markCrabsOnImage(imgObj, self.getFrameID())
+        self.__paintMarkersOnImage(imgObj, self.getFrameID())
         return imgObj
 
-    def __markCrabsOnImage(self, mainImage, frame_id):
+    def __paintMarkersOnImage(self, mainImage, frame_id):
         #timer = MyTimer("crabsOnFrame")
-        markedCrabs = self.__crabsOnFrame(frame_id)
-        if markedCrabs is None:
+        markers = self.__markersOnFrame(frame_id)
+        if markers is None:
             return
         #timer.lap("frame_number: " + str(frame_id))
-        for markedCrab in markedCrabs:
+        for marker in markers:
 
-            #print ('markedCrab', markedCrab)
-            frame_number = markedCrab['frameNumber']
+            #print ('marker', marker)
+            frame_number = marker['frameNumber']
+            marker_id = marker['markerId']
 
-            crabLocationOrig = Point(markedCrab['locationX'], markedCrab['locationY'])
+            orig_location = Point(marker['locationX'], marker['locationY'])
 
-            crabLocation2 = self.__seefloorGeometry.translatePointCoordinate(crabLocationOrig, frame_number,frame_id)
-            mainImage.drawCross(crabLocation2, color=(255, 0, 0))
+            location = self.__seefloorGeometry.translatePointCoordinate(orig_location, frame_number,frame_id)
 
-            #print("crabLocation Old", str(crabLocation), "new", str(crabLocation2), "orig", str(crabLocationOrig))
-        #timer.lap("Number of crabs" + str(len(markedCrabs)))
+            if marker_id == 1:
+                mainImage.drawCross(location, color=(200,200,200))
 
-    def __crabsOnFrame(self, frame_id):
+            if marker_id == 2:
+                mainImage.drawCross(location, color=(200,200,0))
+
+
+            #print("crabLocation Old", str(crabLocation), "new", str(location), "orig", str(orig_location))
+        #timer.lap("Number of crabs" + str(len(markers)))
+
+    def __markersOnFrame(self, frame_id):
         # type: (int) -> dict
         prev_frame_id = self.__seefloorGeometry.getPrevFrameMM(frame_id)
         next_frame_id = self.__seefloorGeometry.getNextFrameMM(frame_id)
-        markedCrabs = self.__crabsData.marksBetweenFrames(prev_frame_id, next_frame_id)
-        return markedCrabs
+        return self.__markersData.marksBetweenFrames(prev_frame_id, next_frame_id)
 
 
 
