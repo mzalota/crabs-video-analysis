@@ -4,6 +4,7 @@ import cv2
 
 from lib.CommandLineLauncher import CommandLineLauncher
 from lib.FolderStructure import FolderStructure
+from lib.StreamToLogger import StreamToLogger
 from lib.VideoToImages import VideoToImages
 from lib.ImageWindow import ImageWindow
 from lib.Logger import Logger
@@ -13,6 +14,8 @@ from lib.data.CrabsData import CrabsData
 from lib.data.SeeFloor import SeeFloor
 
 print(cv2.__version__)
+
+print ("Starting to cut video into frames")
 
 folderStruct = CommandLineLauncher.initializeFolderStruct(sys.argv)
 if folderStruct is None:
@@ -31,6 +34,7 @@ if folderStruct is None:
     videoFileName = "V2"
     folderStruct = FolderStructure(rootDir, videoFileName)
 
+StreamToLogger(folderStruct.getLogFilepath())
 
 seefloorGeometry = SeeFloor.createFromFolderStruct(folderStruct)
 videoStream = VideoStream(folderStruct.getVideoFilepath())
@@ -51,4 +55,4 @@ crabsData = CrabsData(folderStruct)
 lst = crabsData.allFramesWithCrabs()
 framesStitcher.saveFramesToFile(lst, folderStruct.getCrabFramesDirpath())
 
-print ("Done")
+print ("Done cutting video into frames")

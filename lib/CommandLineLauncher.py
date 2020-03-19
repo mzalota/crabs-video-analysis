@@ -14,6 +14,5 @@ class CommandLineLauncher:
         rootDir = (argv[1])
         videoFileName = (argv[2])
         folderStruct = FolderStructure(rootDir, videoFileName)
-        StreamToLogger(folderStruct.getLogFilepath())
         return folderStruct
 
