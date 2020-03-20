@@ -73,10 +73,11 @@ class RedDotsManualData(PandasWrapper):
 
 
     def forPlotting(self):
-        dataRedDot1 = self.combinedOnlyRedDot1()[[self.__COLNAME_frameNumber, self.__COLNAME_centerPoint_x, self.__COLNAME_centerPoint_y]]
-        dataRedDot2 = self.combinedOnlyRedDot2()[[self.__COLNAME_frameNumber, self.__COLNAME_centerPoint_x, self.__COLNAME_centerPoint_y]]
+        dataRedDot1 = self.combinedOnlyRedDot1()[[self.__COLNAME_frameNumber, self.__COLNAME_centerPoint_x, self.__COLNAME_centerPoint_y, "origin"]]
+        dataRedDot2 = self.combinedOnlyRedDot2()[[self.__COLNAME_frameNumber, self.__COLNAME_centerPoint_x, self.__COLNAME_centerPoint_y, "origin"]]
 
         dfToPlot = pd.merge(dataRedDot1, dataRedDot2, on='frameNumber', how='outer', suffixes=('_dot1', '_dot2'))
+
         return dfToPlot.sort_values(by=['frameNumber'])
 
 
@@ -92,6 +93,8 @@ class RedDotsManualData(PandasWrapper):
             combinedDF = self.__joinWithoutDuplicates(rawDF, manualDF)
         else:
             combinedDF = rawDF
+            combinedDF['origin'] = "raw"
+
 
         combinedDF.reset_index(drop=True)
         combinedDF.sort_values(by=[self.__COLNAME_frameNumber, self.__COLNAME_dotName], inplace=True)
@@ -124,22 +127,6 @@ class RedDotsManualData(PandasWrapper):
 
     def __indexOfBiggestGap(self, newDF):
         # type: (pd.DataFrame) -> int
-        #nextFrameID = newDF[self.__COLNAME_frameNumber].shift(periods=-1)
-        #gaps = abs(newDF[self.__COLNAME_frameNumber] - nextFrameID)
-        #value = max(gaps)
-        #print ("largest gap size", value)
-
-        #idx = pd.Index(gaps)
-        #idxOfMaxGap = idx.get_loc(value)
-
-
-        #idxOfMaxGap = gaps.idxmax()
-
-
-        #df = newDF.copy()
-        #df["nextFrameID"] = newDF[self.__COLNAME_frameNumber].shift(periods=-1)
-        #df["gap"] = nextFrameID - newDF[self.__COLNAME_frameNumber]
-
         df = newDF.copy()
 
         df["nextFrameID"] = df["frameNumber"].shift(periods=-1)
@@ -153,6 +140,8 @@ class RedDotsManualData(PandasWrapper):
         # remove rows from rawDF that appear in manualDF, so that JOIN (concat) does not create duplicate rows
         framesAppearInRawAndManual = rawDF["frameNumber"].isin(manualDF["frameNumber"])
         rawDFWithoutRowsInManualDF = rawDF[framesAppearInRawAndManual == False]
+        rawDFWithoutRowsInManualDF['origin'] = "raw"
+        manualDF['origin'] = "manual"
         combinedDF = pd.concat([rawDFWithoutRowsInManualDF, manualDF])
         return combinedDF
 

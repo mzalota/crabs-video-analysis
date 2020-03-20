@@ -98,7 +98,8 @@ class RedDotsData(PandasWrapper):
 
         everyFrame = pd.DataFrame(numpy.arange(start=minVal, stop=maxVal, step=1), columns=["frameNumber"]).set_index("frameNumber")
         df = df.combine_first(everyFrame).reset_index()
-        df = df.interpolate(limit_direction = 'both')
+        df = self.__interpolate_df(df)
+
         df['distance'] = pow(pow(df["centerPoint_x_dot2"] - df["centerPoint_x_dot1"], 2) + pow(df["centerPoint_y_dot2"] - df["centerPoint_y_dot1"], 2), 0.5) #.astype(int)
         df[self.__COLNAME_mm_per_pixel] = self.__distance_between_reddots_mm / df['distance']
 
@@ -106,16 +107,29 @@ class RedDotsData(PandasWrapper):
         xLength_df = (df["centerPoint_x_dot1"] - df["centerPoint_x_dot2"])
         df[self.__COLNAME_angle] = numpy.arctan(yLength_df / xLength_df) / math.pi * 90
 
-        self.__removeOutliersBasedOnAngle(df)
+        df = self.__removeOutliersBasedOnAngle(df)
+        return df
+
+    def __interpolate_df(self, df):
+        df = df.interpolate(limit_direction='both')
+        df.loc[pd.isna(df["origin_dot1"]), ["origin_dot1"]] = "interpolate"
+        df.loc[pd.isna(df["origin_dot2"]), ["origin_dot2"]] = "interpolate"
         return df
 
     def __removeOutliersBasedOnAngle(self, df_intr):
+        upper_bound = numpy.percentile(df_intr[self.__COLNAME_angle], 99)
+        lower_bound = numpy.percentile(df_intr[self.__COLNAME_angle], 1)
 
-        upper_bound = numpy.percentile(df_intr['angle_deg'], 99)
-        lower_bound = numpy.percentile(df_intr['angle_deg'], 1)
-        df_intr.loc[df_intr['angle_deg'] < lower_bound] = numpy.nan
-        df_intr.loc[df_intr[self.__COLNAME_angle] < upper_bound]
-        #df_intr.loc[df['driftX'] > 10*step_size, ['driftX', 'driftY']] = numpy.nan  #30
+        # remove rows where value of the angle is off bounds
+        df_intr.loc[(df_intr[self.__COLNAME_angle] < lower_bound) & (df_intr["origin_dot1"] != "manual") & (df_intr["origin_dot2"] != "manual"), ["centerPoint_x_dot1", "centerPoint_x_dot2", "centerPoint_y_dot1", "centerPoint_y_dot2"] ] = 999999 #numpy.nan
+        #df_intr.loc[(df_intr[self.__COLNAME_angle] < lower_bound) & (df_intr["origin_dot1"] != "manual") & (df_intr["origin_dot2"] != "manual"), ["centerPoint_x_dot1", "centerPoint_x_dot2", "centerPoint_y_dot1", "centerPoint_y_dot2", self.__COLNAME_angle] ] = 999999 #numpy.nan
+        df_intr.loc[(df_intr[self.__COLNAME_angle] > upper_bound) & (df_intr["origin_dot1"] != "manual") & (df_intr["origin_dot2"] != "manual"), ["centerPoint_x_dot1", "centerPoint_x_dot2", "centerPoint_y_dot1", "centerPoint_y_dot2"] ] = 999999 #numpy.nan
+        #df_intr.loc[(df_intr[self.__COLNAME_angle] > upper_bound) & (df_intr["origin_dot1"] != "manual") & (df_intr["origin_dot2"] != "manual"), ["centerPoint_x_dot1", "centerPoint_x_dot2", "centerPoint_y_dot1", "centerPoint_y_dot2", self.__COLNAME_angle] ] = 999999 #numpy.nan
+
+        #df_intr.drop(df_intr.loc[df_intr[self.__COLNAME_angle] < lower_bound].index, inplace=True)
+
+        df_intr = self.__interpolate_df(df_intr)
+        return df_intr
 
     def __replaceOutlierBetweenTwo_orig(self, df, columnName):
         outlier_threshold = 100
