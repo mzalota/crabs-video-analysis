@@ -103,12 +103,20 @@ class RedDotsData(PandasWrapper):
         df['distance'] = pow(pow(df["centerPoint_x_dot2"] - df["centerPoint_x_dot1"], 2) + pow(df["centerPoint_y_dot2"] - df["centerPoint_y_dot1"], 2), 0.5) #.astype(int)
         df[self.__COLNAME_mm_per_pixel] = self.__distance_between_reddots_mm / df['distance']
 
+        self.__calculateAngle(df)
+
+        df = self.__clearOutlierRowsBasedOnAngle(df)
+
+        #interpolate values in the cleared rows from neighbours.
+        df = self.__interpolate_df(df)
+        self.__calculateAngle(df)
+
+        return df
+
+    def __calculateAngle(self, df):
         yLength_df = (df["centerPoint_y_dot1"] - df["centerPoint_y_dot2"])
         xLength_df = (df["centerPoint_x_dot1"] - df["centerPoint_x_dot2"])
         df[self.__COLNAME_angle] = numpy.arctan(yLength_df / xLength_df) / math.pi * 90
-
-        df = self.__removeOutliersBasedOnAngle(df)
-        return df
 
     def __interpolate_df(self, df):
         df = df.interpolate(limit_direction='both')
@@ -116,19 +124,18 @@ class RedDotsData(PandasWrapper):
         df.loc[pd.isna(df["origin_dot2"]), ["origin_dot2"]] = "interpolate"
         return df
 
-    def __removeOutliersBasedOnAngle(self, df_intr):
+    def __clearOutlierRowsBasedOnAngle(self, df_intr):
         upper_bound = numpy.percentile(df_intr[self.__COLNAME_angle], 99)
         lower_bound = numpy.percentile(df_intr[self.__COLNAME_angle], 1)
 
-        # remove rows where value of the angle is off bounds
-        df_intr.loc[(df_intr[self.__COLNAME_angle] < lower_bound) & (df_intr["origin_dot1"] != "manual") & (df_intr["origin_dot2"] != "manual"), ["centerPoint_x_dot1", "centerPoint_x_dot2", "centerPoint_y_dot1", "centerPoint_y_dot2"] ] = 999999 #numpy.nan
-        #df_intr.loc[(df_intr[self.__COLNAME_angle] < lower_bound) & (df_intr["origin_dot1"] != "manual") & (df_intr["origin_dot2"] != "manual"), ["centerPoint_x_dot1", "centerPoint_x_dot2", "centerPoint_y_dot1", "centerPoint_y_dot2", self.__COLNAME_angle] ] = 999999 #numpy.nan
-        df_intr.loc[(df_intr[self.__COLNAME_angle] > upper_bound) & (df_intr["origin_dot1"] != "manual") & (df_intr["origin_dot2"] != "manual"), ["centerPoint_x_dot1", "centerPoint_x_dot2", "centerPoint_y_dot1", "centerPoint_y_dot2"] ] = 999999 #numpy.nan
-        #df_intr.loc[(df_intr[self.__COLNAME_angle] > upper_bound) & (df_intr["origin_dot1"] != "manual") & (df_intr["origin_dot2"] != "manual"), ["centerPoint_x_dot1", "centerPoint_x_dot2", "centerPoint_y_dot1", "centerPoint_y_dot2", self.__COLNAME_angle] ] = 999999 #numpy.nan
+        print("angle upper bound", upper_bound, "angle lower bound", lower_bound)
 
-        #df_intr.drop(df_intr.loc[df_intr[self.__COLNAME_angle] < lower_bound].index, inplace=True)
+        # clear the values in rows where value of the angle is off bounds
+        columns_with_wrong_values = ["centerPoint_x_dot1", "centerPoint_x_dot2", "centerPoint_y_dot1", "centerPoint_y_dot2", "angle"]
 
-        df_intr = self.__interpolate_df(df_intr)
+        not_manual = (df_intr["origin_dot1"] != "manual") & (df_intr["origin_dot2"] != "manual")
+        outlier_rows = ((df_intr[self.__COLNAME_angle] < lower_bound) | (df_intr[self.__COLNAME_angle] > upper_bound)) & not_manual
+        df_intr.loc[outlier_rows, columns_with_wrong_values] = numpy.nan
         return df_intr
 
     def __replaceOutlierBetweenTwo_orig(self, df, columnName):

@@ -89,12 +89,13 @@ class RedDotsManualData(PandasWrapper):
         redDotsRawData = RedDotsRawData(self.__folderStruct)
         rawDF = redDotsRawData.getPandasDF().copy()
 
+        rawDF['origin'] = "raw"
+        manualDF['origin'] = "manual"
+
         if manualDF.count()[0] > 0:
             combinedDF = self.__joinWithoutDuplicates(rawDF, manualDF)
         else:
             combinedDF = rawDF
-            combinedDF['origin'] = "raw"
-
 
         combinedDF.reset_index(drop=True)
         combinedDF.sort_values(by=[self.__COLNAME_frameNumber, self.__COLNAME_dotName], inplace=True)
@@ -140,8 +141,6 @@ class RedDotsManualData(PandasWrapper):
         # remove rows from rawDF that appear in manualDF, so that JOIN (concat) does not create duplicate rows
         framesAppearInRawAndManual = rawDF["frameNumber"].isin(manualDF["frameNumber"])
         rawDFWithoutRowsInManualDF = rawDF[framesAppearInRawAndManual == False]
-        rawDFWithoutRowsInManualDF['origin'] = "raw"
-        manualDF['origin'] = "manual"
         combinedDF = pd.concat([rawDFWithoutRowsInManualDF, manualDF])
         return combinedDF
 
