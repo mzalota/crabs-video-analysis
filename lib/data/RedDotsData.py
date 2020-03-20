@@ -1,3 +1,5 @@
+import math
+
 import pandas as pd
 import numpy
 
@@ -12,9 +14,8 @@ class RedDotsData(PandasWrapper):
     #__interpolatedDF = None
 
     __COLNAME_frameNumber = 'frameNumber'
-
-
     __COLNAME_mm_per_pixel = "mm_per_pixel"
+    __COLNAME_angle = "angle"
 
     __distance_between_reddots_mm = 300
 
@@ -99,12 +100,22 @@ class RedDotsData(PandasWrapper):
         df = df.combine_first(everyFrame).reset_index()
         df = df.interpolate(limit_direction = 'both')
         df['distance'] = pow(pow(df["centerPoint_x_dot2"] - df["centerPoint_x_dot1"], 2) + pow(df["centerPoint_y_dot2"] - df["centerPoint_y_dot1"], 2), 0.5) #.astype(int)
+        df[self.__COLNAME_mm_per_pixel] = self.__distance_between_reddots_mm / df['distance']
 
-        df[self.__COLNAME_mm_per_pixel] = self.__distance_between_reddots_mm/df['distance']
+        yLength_df = (df["centerPoint_y_dot1"] - df["centerPoint_y_dot2"])
+        xLength_df = (df["centerPoint_x_dot1"] - df["centerPoint_x_dot2"])
+        df[self.__COLNAME_angle] = numpy.arctan(yLength_df / xLength_df) / math.pi * 90
+
+        self.__removeOutliersBasedOnAngle(df)
         return df
 
+    def __removeOutliersBasedOnAngle(self, df_intr):
 
-
+        upper_bound = numpy.percentile(df_intr['angle_deg'], 99)
+        lower_bound = numpy.percentile(df_intr['angle_deg'], 1)
+        df_intr.loc[df_intr['angle_deg'] < lower_bound] = numpy.nan
+        df_intr.loc[df_intr[self.__COLNAME_angle] < upper_bound]
+        #df_intr.loc[df['driftX'] > 10*step_size, ['driftX', 'driftY']] = numpy.nan  #30
 
     def __replaceOutlierBetweenTwo_orig(self, df, columnName):
         outlier_threshold = 100
