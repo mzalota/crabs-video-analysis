@@ -36,12 +36,14 @@ class ScientistUI:
         self.__imageWin = imageWin
         self.__folderStruct = folderStruct
         self.__videoStream = videoStream
-        self.__driftData = driftData
 
+        self.__driftData = driftData
         self.__badFramesData = BadFramesData.createFromFolderStruct(folderStruct)
         self.__redDotsManualData = RedDotsManualData(folderStruct)
+
         self.__seeFloor = SeeFloor.createFromFolderStruct(folderStruct)
         self.__seeFloorNoBadBlocks = SeeFloorNoBadBlocks.createFromFolderStruct(folderStruct)
+
         self.__crabData = CrabsData(self.__folderStruct)
         self.__redDotsUI = RedDotsUI(self.__videoStream)
         self.__markersData = MarkersData(folderStruct)
@@ -134,6 +136,7 @@ class ScientistUI:
             redDots = self.__redDotsUI.selectedRedDots()
             self.__redDotsManualData.addManualDots(frame_id_redDots, redDots)
             # TODO: rerun interpolate, and make sure all xyzData objects are refreshed.
+
         self.__redDotsUI.closeWindow()
 
     def __change_contrast(self):
