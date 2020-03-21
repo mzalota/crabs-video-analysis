@@ -47,7 +47,6 @@ class ScientistUI:
         self.__markersData = MarkersData(folderStruct)
         self.__marker_id = 0
 
-
     def processVideo(self):
 
         frame_id = self.__driftData.minFrameID()
@@ -65,17 +64,12 @@ class ScientistUI:
             keyPressed = self.showFrame(frame)
             user_input = UserInput(keyPressed)
 
-            if keyPressed == ord("1"): # value is 49
-                print ("pressed key 1")
-                self.__marker_id = 1
+            print ("keyPressed", keyPressed)
 
-            if keyPressed == ord("2"): # value is 50
-                print ("pressed key 2")
-                self.__marker_id = 2
-
-            if keyPressed == ord("0"):
-                print ("pressed key 0")
-                self.__marker_id = 0
+            if keyPressed >= ord("0") and keyPressed <= ord("9"):
+                print ("Using Marker #", chr(keyPressed))
+                self.__marker_id = int(chr(keyPressed))
+                print ("self.__marker_id", self.__marker_id)
 
             if user_input.is_command_quit():
                 print("User requested to quit on frame: ", str(frame_id))
@@ -101,8 +95,6 @@ class ScientistUI:
                     print("recording a marker at point", str(markerPoint))
                     self.__markersData.add_mark(frame_id,markerPoint, self.__marker_id)
                     self.__markersData.save_to_file()
-                    #self.__badFramesData.add_badframes(frame_id, self.__marker_id)
-                    #self.__badFramesData.save_to_file()
                 continue
 
             if user_input.is_command_bad_frame():

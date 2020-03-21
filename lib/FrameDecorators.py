@@ -1,10 +1,12 @@
+from lib.Configuration import Configuration
 from lib.data.BadFramesData import BadFramesData
 from lib.Frame import Frame
 from lib.data.CrabsData import CrabsData
 from lib.data.MarkersData import MarkersData
 from lib.data.SeeFloor import SeeFloor
 from lib.VideoStream import VideoStream
-from lib.common import Point, Vector
+from lib.common import Point, Vector, Box
+
 
 class FrameDecoFactory:
 
@@ -108,38 +110,37 @@ class DecoMarkers(FrameDecorator):
         return imgObj
 
     def __paintMarkersOnImage(self, mainImage, frame_id):
-        #timer = MyTimer("crabsOnFrame")
+        #timer = MyTimer("MarkersOnFrame")
         markers = self.__markersOnFrame(frame_id)
         if markers is None:
             return
-        #timer.lap("frame_number: " + str(frame_id))
-        for marker in markers:
 
+        #timer.lap("drawing markers on frame: " + str(frame_id))
+        for marker in markers:
             #print ('marker', marker)
             frame_number = marker['frameNumber']
             marker_id = marker['markerId']
 
             orig_location = Point(marker['locationX'], marker['locationY'])
+            location = self.__seefloorGeometry.translatePointCoordinate(orig_location, frame_number, frame_id)
 
-            location = self.__seefloorGeometry.translatePointCoordinate(orig_location, frame_number,frame_id)
+            config = Configuration()
+            color = config.color_for_marker(marker_id)
+            if marker_id%2==0:
+                #even markers are crosses
+                mainImage.drawCross(location, color=color)
+            else:
+                #odd markers are squares
+                box = Box(location.translateBy(Vector(-9,-9)),location.translateBy(Vector(9,9)))
+                mainImage.drawBoxOnImage(box, color=color, thickness=4)
 
-            if marker_id == 1:
-                mainImage.drawCross(location, color=(200,200,200))
-
-            if marker_id == 2:
-                mainImage.drawCross(location, color=(200,200,0))
-
-
-            #print("crabLocation Old", str(crabLocation), "new", str(location), "orig", str(orig_location))
-        #timer.lap("Number of crabs" + str(len(markers)))
+        # timer.lap("Number of markers" + str(len(markers)))
 
     def __markersOnFrame(self, frame_id):
         # type: (int) -> dict
         prev_frame_id = self.__seefloorGeometry.getPrevFrameMM(frame_id)
         next_frame_id = self.__seefloorGeometry.getNextFrameMM(frame_id)
         return self.__markersData.marksBetweenFrames(prev_frame_id, next_frame_id)
-
-
 
 class DecoMarkedCrabs(FrameDecorator):
 

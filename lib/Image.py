@@ -41,9 +41,12 @@ class Image:
         self.drawLine(point.translateBy(Vector(-size, -size)), point.translateBy(Vector(size, size)), color=color)
         self.drawLine(point.translateBy(Vector(size, -size)), point.translateBy(Vector(-size, size)), color=color)
 
-    def drawBoxOnImage(self, box):
-        if box:
-            cv2.rectangle(self.__image, (box.topLeft.x, box.topLeft.y), (box.bottomRight.x, box.bottomRight.y), (0, 255, 0), 2)
+    def drawBoxOnImage(self, box, color=(0, 255, 0), thickness = 2):
+        if not box:
+            return
+
+
+        cv2.rectangle(self.__image, (box.topLeft.x, box.topLeft.y), (box.bottomRight.x, box.bottomRight.y), color, thickness)
 
     def drawFrameID(self, frameID):
         self.drawTextInBox(Box(Point(0, 0), Point(80, 50)), frameID)

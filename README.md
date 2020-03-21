@@ -54,6 +54,36 @@ Other files that are used by application
 - **arrow right** - scroll exactly 20 frames forward 
 - **arrow left** - scroll exactly 20 frames backward 
 
+#### Markers color and shape
+- **1** - green square
+- **2** - yellow cross
+- **3** - light blue square
+- **4** - pink cross
+- **5** - dark blue square
+- **6** - green cross
+- **7** - yellow square
+- **8** - light blue cross
+- **9** - pink square
+- **0** - dark blue cross - **reserved for crabs**
+
+Organized by shape and color:
+
+Square color | marker num
+--- | ---
+green | 1 
+light blue | 3
+dark blue | 5 
+yellow | 7 
+pink | 9 
+
+Cross color | marker num
+--- | ---
+green | 6 
+light blue | 8
+dark blue | 0 
+yellow | 2 
+pink | 9 
+
 
 ## Glossary
 
