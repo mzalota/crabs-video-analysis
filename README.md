@@ -68,8 +68,10 @@ A frame such that next slice would show seefloor area consequent to this frame w
 
 
 ## Project Dependencies
-Below are commands to install necessary dependancies 
+To install all dependencies:
+`python -m pip install -r requirements.txt`
 
+To install dependancies manually execute following commands 
 + `python -m pip install opencv-python`
 + `python -m pip install numpy`
 + `python -m pip install --upgrade imutils`
