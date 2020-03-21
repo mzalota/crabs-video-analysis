@@ -1,6 +1,7 @@
+import numpy as np
 from cv2 import cv2, os
 
-from pandas.compat.numpy import np
+#from pandas.compat.numpy import np
 from common import Point, Box, Vector
 
 

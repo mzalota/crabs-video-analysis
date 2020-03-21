@@ -4,7 +4,7 @@ import cv2
 from lib.CommandLineLauncher import CommandLineLauncher
 from lib.FolderStructure import FolderStructure
 from lib.Frame import Frame
-from lib.ImageWindow import ImageWindow
+#from lib.ImageWindow import ImageWindow
 from lib.StreamToLogger import StreamToLogger
 from lib.VelocityDetector import VelocityDetector
 from lib.RedDotsDetector import RedDotsDetector
@@ -69,7 +69,7 @@ cv2.startWindowThread()
 
 velocityDetector = VelocityDetector()
 vf = None
-imageWin = ImageWindow("mainWithRedDots", Point(700, 200))
+#imageWin = ImageWindow("mainWithRedDots", Point(700, 200))
 
 stepSize = 5
 startingFrameID = 1

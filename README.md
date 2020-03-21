@@ -71,6 +71,8 @@ A frame such that next slice would show seefloor area consequent to this frame w
 To install all dependencies:
 `python -m pip install -r requirements.txt`
 
+When installing PyAutoGUI package the process will invoke C compiler. If GCC is not installed on your computer the installation will fail with some cryptic message, which would have words "gcc" and "C compiler" in it.
+
 To install dependancies manually execute following commands 
 + `python -m pip install opencv-python`
 + `python -m pip install numpy`
@@ -106,6 +108,9 @@ To install dependancies manually execute following commands
 
 ####Command to copy directories from S3 to Maxim's laptop.
 `aws --no-verify-ssl s3 cp s3://crab-videos/2019-Kara/St6267_19/ . --recursive`
+
+####Command to install GCC (C compiler) on ec2 instance is
+`sudo yum groupinstall "Development Tools"`
 
 
  
