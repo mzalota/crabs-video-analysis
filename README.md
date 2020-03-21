@@ -112,5 +112,7 @@ To install dependancies manually execute following commands
 ####Command to install GCC (C compiler) on ec2 instance is
 `sudo yum groupinstall "Development Tools"`
 
-
+####Command to download package from github to ec2
+ `curl https://github.com/mzalota/crabs-video-analysis/archive/v0.8.1.zip`
+ `curl https://codeload.github.com/mzalota/crabs-video-analysis/zip/v0.8.1 -o code.zip`
  

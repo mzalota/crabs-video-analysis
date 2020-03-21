@@ -4,9 +4,7 @@ import cv2
 
 from lib.Frame import Frame
 from lib.Image import Image
-from lib.ImageWindow import ImageWindow
 from common import Box, Point, Vector
-
 
 class SeeFloorSection:
     #__threshold_for_matching = 0.6
@@ -17,7 +15,6 @@ class SeeFloorSection:
     #__frameIDs
     #__frames
     #__startingBox
-    #__subImageWin
 
     def __init__(self,frame, box):
         self.setThreshold(0.6)
@@ -31,14 +28,9 @@ class SeeFloorSection:
         self.__frames = dict()
         self.__topLeftPoints = dict()
         self.__startingBox = None
-        self.__subImageWin = None
 
     def setThreshold(self,newThresholdForMatching):
         self.__threshold_for_matching = newThresholdForMatching
-
-    def closeWindow(self):
-        self.showSubImage()
-        self.__subImageWin.closeWindow()
 
     def __getWindowName(self):
         return self.__id
@@ -67,19 +59,6 @@ class SeeFloorSection:
             return None
 
         return self.__topLeftPoints[frameID]
-
-    def showSubImage(self):
-        frameID = self.getMaxFrameID()
-        return self.showSubImageForFrame(frameID)
-
-    def showSubImageForFrame(self, frameID):
-        if self.__subImageWin is None:
-            self.__subImageWin = ImageWindow.createWindow(self.__getWindowName(), self.__defaultBoxAroundFeature())
-
-        img = self.getImageOnFrame(frameID)
-        if img is not None:
-            img.drawFrameID(frameID)
-            self.__subImageWin.showWindow(img.asNumpyArray())
 
     def __recordFeatureLocationOnFrame(self, frame, topLeftPoint):
         # type: (Frame, Point) -> None
