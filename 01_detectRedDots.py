@@ -67,7 +67,7 @@ logger.writeToFile(headerRow)
 print(cv2.__version__)
 cv2.startWindowThread()
 
-velocityDetector = VelocityDetector()
+velocityDetector = VelocityDetector(folderStruct)
 vf = None
 #imageWin = ImageWindow("mainWithRedDots", Point(700, 200))
 
