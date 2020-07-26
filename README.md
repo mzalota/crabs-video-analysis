@@ -99,7 +99,7 @@ A frame such that next slice would show seefloor area consequent to this frame w
 
 ## Project Dependencies
 To install all dependencies:
-`python -m pip install -r requirements.txt`
+`python -m pip install --trusted-host pypi.python.org -r requirements.txt`
 
 When installing PyAutoGUI package the process will invoke C compiler. If GCC is not installed on your computer the installation will fail with some cryptic message, which would have words "gcc" and "C compiler" in it.
 
