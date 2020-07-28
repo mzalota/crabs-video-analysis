@@ -3,7 +3,7 @@ FROM hulkinbrain/docker-opencv2
 WORKDIR /usr/src/app
 
 COPY requirements_aws.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements_aws.txt
 
 COPY . .
 
