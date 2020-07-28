@@ -21,8 +21,11 @@ print ("Starting to detect RedDots")
 folderStruct = CommandLineLauncher.initializeFolderStruct(sys.argv)
 if folderStruct is None:
 
-    rootDir ="C:/workspaces/AnjutkaVideo/2019-Kara/St6236_19"
-    videoFileName = "V1"
+    rootDir = "C:/workspaces/AnjutkaVideo/2019-Kara/St6267_19"
+    videoFileName = "V3"
+
+    # rootDir ="C:/workspaces/AnjutkaVideo/2019-Kara/St6236_19"
+    # videoFileName = "V1"
 
     #rootDir ="C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
     #videoFileName = "V2"

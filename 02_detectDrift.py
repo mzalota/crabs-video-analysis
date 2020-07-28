@@ -52,10 +52,15 @@ if folderStruct is None:
     #videoFilename = "V1"
 
 
-    rootDirectory ="C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
-    videoFilename = "V2"
+    #rootDirectory ="C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
+    #videoFilename = "V2"
 
-    folderStruct = FolderStructure(rootDirectory, videoFilename)
+
+    rootDir = "C:/workspaces/AnjutkaVideo/2019-Kara/St6267_19"
+    videoFileName = "V3"
+
+
+    folderStruct = FolderStructure(rootDir, videoFileName)
     folderStruct.createDirectoriesIfDontExist(folderStruct.getDriftsFilepath())
 
 StreamToLogger(folderStruct.getLogFilepath())

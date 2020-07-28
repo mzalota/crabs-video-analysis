@@ -29,8 +29,12 @@ if folderStruct is None:
     #rootDir = "C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
     #videoFileName = "V2"
 
-    rootDir = "C:/workspaces/AnjutkaVideo/2019-Kara/St6236_19"
-    videoFileName = "V1"
+    # rootDir = "C:/workspaces/AnjutkaVideo/2019-Kara/St6236_19"
+    # videoFileName = "V1"
+
+    rootDir = "C:/workspaces/AnjutkaVideo/2019-Kara/St6267_19"
+    videoFileName = "V3"
+
 
     folderStruct = FolderStructure(rootDir, videoFileName)
 
@@ -38,7 +42,7 @@ StreamToLogger(folderStruct.getLogFilepath())
 
 print ("interpolating DriftData")
 rawDrifts = DriftRawData(folderStruct)
-df = rawDrifts.interpolate(2)
+df = rawDrifts.interpolate(4)
 
 drifts = DriftData.createFromFolderStruct(folderStruct)
 drifts.setDF(df)
