@@ -1,4 +1,4 @@
-print ("Starting processing in AWS")
+print ("Starting processing in AWS 02")
 
 import boto3
 
@@ -31,5 +31,27 @@ sqs.delete_message(
 )
 print('Received and deleted message: %s' % message)
 
+print ("here 100")
+message_body = message['Body']
+
+print ("here 110")
+
+import json
+
+video_file_info = json.loads(message_body)
+print ("here 120")
+
+
+rootDir = video_file_info['rootDir']
+print ("here 130")
+videoFileName = video_file_info['videoFileName']
+print ("here 140")
+
+
+print("rootDir",rootDir)
+
+print("videoFileName",videoFileName)
+
+#{"rootDir":"s3://crab-videos/Antarctic 2020 AMK79/st6647", "videoFileName":"V10"}
 
 print ("done processing in AWS")
