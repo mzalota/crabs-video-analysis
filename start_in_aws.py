@@ -2,8 +2,9 @@ from lib.FolderStructure import FolderStructure
 from lib.Logger import Logger
 from lib.VelocityDetector import VelocityDetector
 from lib.data.DriftRawData import DriftRawData
+import os
 
-print ("Starting processing in AWS 03")
+print ("Starting processing in AWS 04")
 
 import boto3
 
@@ -65,8 +66,10 @@ s3_key = s3_rootDir+"/"+videoFileName+".avi"
 print("s3_key",s3_key)
 
 local_root_dir = "/tmp"
+local_filepath = local_root_dir+"/"+videoFileName+".avi"
+print("local_filepath", local_filepath)
 
-s3.download_file(s3_bucket, s3_key, videoFileName)
+s3.download_file(s3_bucket, s3_key, local_filepath)
 print ("here 170")
 
 #s3 = boto3.resource('s3')
@@ -76,8 +79,12 @@ print ("here 170")
 
 #{"rootDir":"s3://crab-videos/Antarctic 2020 AMK79/st6647", "videoFileName":"V10"}
 
-rootDir = "/tmp/"
+rootDir = local_root_dir
 
+
+print ("here 173")
+os.listdir(rootDir)
+print ("here 176")
 folderStruct = FolderStructure(rootDir, videoFileName)
 print ("here 180")
 
@@ -119,5 +126,9 @@ velocityDetector.runLoop(startFrameID, stepSize, logger)
 print ("here 300")
 
 logger.closeFile()
+print ("here 310")
+
+os.listdir(rootDir)
+
 
 print ("done processing in AWS")

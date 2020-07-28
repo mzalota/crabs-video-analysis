@@ -56,14 +56,17 @@ if folderStruct is None:
     #videoFilename = "V2"
 
 
-    rootDir = "C:/workspaces/AnjutkaVideo/2019-Kara/St6267_19"
-    videoFileName = "V3"
+    #rootDir = "C:/workspaces/AnjutkaVideo/2019-Kara/St6267_19"
+    #videoFileName = "V3"
 
+
+    rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6647"
+    videoFileName = "V12"
 
     folderStruct = FolderStructure(rootDir, videoFileName)
     folderStruct.createDirectoriesIfDontExist(folderStruct.getDriftsFilepath())
 
-StreamToLogger(folderStruct.getLogFilepath())
+#StreamToLogger(folderStruct.getLogFilepath())
 
 #velocityDetector = VelocityDetectorMultiThreaded(folderStruct)
 #videoStream = VideoStreamMultiThreaded(folderStruct.getVideoFilepath())
