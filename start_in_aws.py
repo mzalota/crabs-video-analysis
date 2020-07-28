@@ -62,14 +62,21 @@ print ("here 150")
 
 s3 = boto3.client('s3')
 print ("here 160")
-s3_key = s3_rootDir+"/"+videoFileName+".avi"
-print("s3_key",s3_key)
+s3_key_video_file = s3_rootDir + "/" + videoFileName + ".avi"
+print("s3_key", s3_key_video_file)
 
-local_root_dir = "/tmp"
+
+local_root_dir = "/tmp/crabs"
+print ("here 163")
+
+if not os.path.exists(local_root_dir):
+    os.makedirs(local_root_dir)
+print ("here 166")
+
 local_filepath = local_root_dir+"/"+videoFileName+".avi"
 print("local_filepath", local_filepath)
 
-s3.download_file(s3_bucket, s3_key, local_filepath)
+s3.download_file(s3_bucket, s3_key_video_file, local_filepath)
 print ("here 170")
 
 #s3 = boto3.resource('s3')
@@ -130,5 +137,11 @@ print ("here 310")
 
 os.listdir(rootDir)
 
+print("raw drifts filepath", folderStruct.getRawDriftsFilepath())
+
+s3_key_raw_drifts = s3_rootDir+"/"+videoFileName+"/"+folderStruct.getRawDriftsFilepath()
+
+print("s3_key_raw_drifts", s3_key_raw_drifts)
+s3.meta.client.upload_file(folderStruct.getRawDriftsFilepath(), s3_bucket, s3_key_raw_drifts)
 
 print ("done processing in AWS")
