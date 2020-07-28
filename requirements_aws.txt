@@ -1,5 +1,5 @@
 opencv-python==4.0.0.21
-numpy
+numpy==1.14.2
 imutils==0.5.2
 scikit-image==0.14.2
 scipy==1.0.1
@@ -9,3 +9,4 @@ pandas==0.22.0
 Pebble==4.4.0
 PyAutoGUI==0.9.41
 matplotlib==2.2.2
+boto3

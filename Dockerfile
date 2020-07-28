@@ -2,8 +2,8 @@ FROM hulkinbrain/docker-opencv2
 USER root
 WORKDIR /usr/src/app
 
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements_aws.txt ./
+RUN pip install --no-cache-dir -r requirements_aws.txt
 
 COPY . .
 
