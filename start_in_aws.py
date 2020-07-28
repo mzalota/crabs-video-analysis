@@ -1,4 +1,9 @@
-print ("Starting processing in AWS 02")
+from lib.FolderStructure import FolderStructure
+from lib.Logger import Logger
+from lib.VelocityDetector import VelocityDetector
+from lib.data.DriftRawData import DriftRawData
+
+print ("Starting processing in AWS 03")
 
 import boto3
 
@@ -41,17 +46,78 @@ import json
 video_file_info = json.loads(message_body)
 print ("here 120")
 
-
-rootDir = video_file_info['rootDir']
+s3_bucket = video_file_info['s3bucket']
+s3_rootDir = video_file_info['rootDir']
 print ("here 130")
 videoFileName = video_file_info['videoFileName']
 print ("here 140")
 
 
-print("rootDir",rootDir)
-
+print("s3_bucket",s3_bucket)
+print("rootDir",s3_rootDir)
 print("videoFileName",videoFileName)
 
+print ("here 150")
+
+s3 = boto3.client('s3')
+print ("here 160")
+s3_key = s3_rootDir+"/"+videoFileName+".avi"
+print("s3_key",s3_key)
+
+local_root_dir = "/tmp"
+
+s3.download_file(s3_bucket, s3_key, videoFileName)
+print ("here 170")
+
+#s3 = boto3.resource('s3')
+#s3.meta.client.download_file('mybucket', 'hello.txt', '/tmp/hello.txt')
+
+#s3.Bucket('mybucket').download_file('hello.txt', '/tmp/hello.txt')
+
 #{"rootDir":"s3://crab-videos/Antarctic 2020 AMK79/st6647", "videoFileName":"V10"}
+
+rootDir = "/tmp/"
+
+folderStruct = FolderStructure(rootDir, videoFileName)
+print ("here 180")
+
+folderStruct.createDirectoriesIfDontExist(folderStruct.getDriftsFilepath())
+print ("here 190")
+
+#StreamToLogger(folderStruct.getLogFilepath())
+
+velocityDetector = VelocityDetector(folderStruct)
+print ("here 200")
+
+def newRawFile(folderStruct):
+    logger = Logger.openInOverwriteMode(folderStruct.getRawDriftsFilepath())
+    driftsFileHeaderRow = VelocityDetector.infoHeaders()
+    driftsFileHeaderRow.insert(0, "frameNumber")
+    logger.writeToFile(driftsFileHeaderRow)
+    return logger
+
+logger = newRawFile(folderStruct)
+print ("here 210")
+
+stepSize = 2
+
+logger = Logger.openInAppendMode(folderStruct.getRawDriftsFilepath())
+print ("here 220")
+
+rawDriftData = DriftRawData(folderStruct)
+print ("here 230")
+
+maxFrameID = rawDriftData.maxFrameID()
+if maxFrameID > 1:
+    startFrameID = maxFrameID + stepSize
+else:
+    startFrameID = 5
+
+print ("starting processing from frame", startFrameID)
+
+velocityDetector.runLoop(startFrameID, stepSize, logger)
+print ("here 300")
+
+logger.closeFile()
 
 print ("done processing in AWS")

@@ -65,8 +65,8 @@ if folderStruct is None:
 
 StreamToLogger(folderStruct.getLogFilepath())
 
-velocityDetector = VelocityDetectorMultiThreaded(folderStruct)
-videoStream = VideoStreamMultiThreaded(folderStruct.getVideoFilepath())
+#velocityDetector = VelocityDetectorMultiThreaded(folderStruct)
+#videoStream = VideoStreamMultiThreaded(folderStruct.getVideoFilepath())
 
 velocityDetector = VelocityDetector(folderStruct)
 #videoStream = VideoStream(folderStruct.getVideoFilepath())
@@ -78,12 +78,12 @@ def newRawFile(folderStruct):
     logger.writeToFile(driftsFileHeaderRow)
     return logger
 
-
 logger = newRawFile(folderStruct)
 
-stepSize = 4
+stepSize = 2
 
 logger = Logger.openInAppendMode(folderStruct.getRawDriftsFilepath())
+
 rawDriftData = DriftRawData(folderStruct)
 maxFrameID = rawDriftData.maxFrameID()
 if maxFrameID > 1:
@@ -93,7 +93,6 @@ else:
 
 #cv2.startWindowThread()
 #imageWin = ImageWindow("mainWithRedDots", Point(700, 200))
-
 
 print ("starting processing from frame", startFrameID)
 
