@@ -1,5 +1,5 @@
 FROM hulkinbrain/docker-opencv2
-
+USER root
 WORKDIR /usr/src/app
 
 COPY requirements_aws.txt ./
