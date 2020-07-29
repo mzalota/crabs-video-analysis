@@ -1,7 +1,6 @@
-from RedDotsController import RedDotsController
+from lib.RedDotsController import RedDotsController
 from lib.DriftsController import DriftsController
 from lib.FolderStructure import FolderStructure
-from lib.Logger import Logger
 import os
 import json
 import boto3

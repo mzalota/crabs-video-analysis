@@ -1,7 +1,6 @@
 import sys
-import cv2
 
-from RedDotsController import RedDotsController
+from lib.RedDotsController import RedDotsController
 from lib.CommandLineLauncher import CommandLineLauncher
 from lib.FolderStructure import FolderStructure
 
