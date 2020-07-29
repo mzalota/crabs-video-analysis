@@ -12,21 +12,18 @@ from lib.VideoStream import VideoStreamException, VideoStream
 
 
 class VelocityDetector():
-    def __init__(self, folderStruct):
-        # type: (FolderStructure) -> VelocityDetector
+    def __init__(self):
+        # type: () -> VelocityDetector
         self._prevFrame = None
         self._timer = MyTimer("VelocityDetector")
         self.__createFeatureMatchers()
-        self.__videoStream = VideoStream(folderStruct.getVideoFilepath())
+        #self.__videoStream = VideoStream(folderStruct.getVideoFilepath())
 
-    def runLoop(self, frameID, stepSize, logger):
+    def runLoop(self, frameID, stepSize, logger, videoStream):
         success = True
         while success:
-
-            #windowName = 'Detected_' + str(frameID)
-
             try:
-                frame = Frame(frameID, self.__videoStream)
+                frame = Frame(frameID, videoStream)
                 self.detectVelocity(frame)
             except VideoStreamException as error:
                 if frameID > 300:
@@ -48,16 +45,11 @@ class VelocityDetector():
                 traceback.print_exc()
                 break
 
-            # findBrightestSpot()
-
             driftVector = self.getMedianDriftVector()
             if driftVector is None:
-                driftsRow = self.emptyRow()
-                driftsRow.insert(0, frameID)
+                driftsRow = self.emptyRow(frameID)
             else:
-                driftLength = driftVector.length()
-                driftsRow = self.infoAboutDrift()
-                driftsRow.insert(0, frameID)
+                driftsRow = self.infoAboutDrift(frameID)
 
             print driftsRow
             logger.writeToFile(driftsRow)
@@ -211,7 +203,6 @@ class VelocityDetector():
 
             self._drifts.append(drift)
 
-            # section.showSubImage()
 
         self._prevFrame = frame
         self._timer.lap("in detectVelocity() sequential end")
@@ -222,7 +213,7 @@ class VelocityDetector():
     def getDriftsCount(self):
         return len(self._drifts)
 
-    def infoAboutDrift(self):
+    def infoAboutDrift(self, frame_id):
         driftVector = self.getMedianDriftVector()
         driftDistance = self.getMedianDriftDistance()
         driftAngle = self.getMedianDriftAngle()
@@ -233,6 +224,7 @@ class VelocityDetector():
 
         driftsRow = []
         if driftsStr:
+            driftsRow.append(frame_id)
             driftsRow.append(driftVector.x)
             driftsRow.append(driftVector.y)
             driftsRow.append(driftDistance)
@@ -244,8 +236,9 @@ class VelocityDetector():
 
         return driftsRow
 
-    def emptyRow(self):
+    def emptyRow(self, frame_id):
         row = []
+        row.append(frame_id)
         row.append(-888)
         row.append(-999)
         row.append(-777)
@@ -260,6 +253,7 @@ class VelocityDetector():
     @staticmethod
     def infoHeaders():
         row = []
+        row.append("frameNumber")
         row.append("driftX")
         row.append("driftY")
         row.append("driftDistance")

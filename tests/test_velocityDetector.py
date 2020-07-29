@@ -69,7 +69,7 @@ class TestVelocityDetector(TestCase):
         actual = vd.excludeOutliers([Vector(47, -408),Vector(-6, 41)])
 
         # Assert
-        expected = [Vector(47, -408),Vector(-6, 41)]
+        expected = [Vector(47, -408), Vector(-6, 41)]
         self.assertEqual(2, len(expected))
         self.assertEqual(2, len(actual))
         self.assertEqual( Vector.vectorArrayAsString(actual), Vector.vectorArrayAsString(expected))
