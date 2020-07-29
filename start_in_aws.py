@@ -65,7 +65,6 @@ print ("here 160")
 s3_key_video_file = s3_rootDir + "/" + videoFileName + ".avi"
 print("s3_key", s3_key_video_file)
 
-
 local_root_dir = "/tmp/crabs"
 print ("here 163")
 
@@ -139,9 +138,10 @@ os.listdir(rootDir)
 
 print("raw drifts filepath", folderStruct.getRawDriftsFilepath())
 
-s3_key_raw_drifts = s3_rootDir+"/"+videoFileName+"/"+folderStruct.getRawDriftsFilepath()
+s3_key_raw_drifts = s3_rootDir+"/"+videoFileName+"/"+folderStruct.getRawDriftsFilename()
 
 print("s3_key_raw_drifts", s3_key_raw_drifts)
-s3.meta.client.upload_file(folderStruct.getRawDriftsFilepath(), s3_bucket, s3_key_raw_drifts)
+
+s3.upload_file(folderStruct.getRawDriftsFilepath(), s3_bucket, s3_key_raw_drifts)
 
 print ("done processing in AWS")

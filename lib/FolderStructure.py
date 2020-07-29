@@ -22,7 +22,10 @@ class FolderStructure:
         return self.__getSubDirpath() + self.__videoFilename + '_reddots_manual.csv'
 
     def getRawDriftsFilepath(self):
-        return self.__getSubDirpath() + self.__videoFilename + '_raw_drifts.csv'
+        return self.__getSubDirpath() + self.getRawDriftsFilename()
+
+    def getRawDriftsFilename(self):
+        return self.__videoFilename + '_raw_drifts.csv'
 
     def getDriftsFilepath(self):
         return self.__getSubDirpath() + self.__videoFilename + '_drifts_interpolated.csv'
