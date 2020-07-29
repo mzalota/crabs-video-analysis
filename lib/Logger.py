@@ -18,6 +18,7 @@ class Logger:
         return logger
 
     def writeToFile(self, row):
+        # type: (object) -> object
         self.__writeToCSVFile(self.__logFile, row)
 
     def __writeToCSVFile(self, file, row):

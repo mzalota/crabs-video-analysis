@@ -1,3 +1,4 @@
+from RedDotsController import RedDotsController
 from lib.FolderStructure import FolderStructure
 from lib.Logger import Logger
 from lib.VelocityDetector import VelocityDetector
@@ -97,6 +98,11 @@ print ("here 180")
 folderStruct.createDirectoriesIfDontExist(folderStruct.getDriftsFilepath())
 print ("here 190")
 
+
+controller = RedDotsController()
+print ("here 193")
+controller.run(folderStruct)
+print ("here 196")
 #StreamToLogger(folderStruct.getLogFilepath())
 
 velocityDetector = VelocityDetector(folderStruct)

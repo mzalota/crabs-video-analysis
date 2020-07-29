@@ -40,3 +40,17 @@ class RedDotsRawData(PandasWrapper):
     def __maxFrameID(self):
         # type: () -> int
         return self.__df[self.__COLNAME_frameNumber].max()
+
+    @staticmethod
+    def headerRow():
+        headerRow = []
+        headerRow.append("frameNumber")
+        headerRow.append("dotName")
+        headerRow.append("centerPoint_x")
+        headerRow.append("centerPoint_y")
+        headerRow.append("topLeft_x")
+        headerRow.append("topLeft_y")
+        headerRow.append("bottomRight_x")
+        headerRow.append("bottomRight_y")
+        headerRow.append("diagonal")
+        return headerRow
