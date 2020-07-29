@@ -103,6 +103,11 @@ controller = RedDotsController()
 print ("here 193")
 controller.run(folderStruct)
 print ("here 196")
+s3_key_raw_redDots = s3_rootDir+"/"+videoFileName+"/"+folderStruct.getRedDotsRawFilename()
+print("s3_key_raw_redDots", s3_key_raw_redDots)
+s3.upload_file(folderStruct.getRedDotsRawFilepath(), s3_bucket, s3_key_raw_redDots)
+print ("here 199")
+
 #StreamToLogger(folderStruct.getLogFilepath())
 
 velocityDetector = VelocityDetector(folderStruct)
@@ -145,9 +150,7 @@ os.listdir(rootDir)
 print("raw drifts filepath", folderStruct.getRawDriftsFilepath())
 
 s3_key_raw_drifts = s3_rootDir+"/"+videoFileName+"/"+folderStruct.getRawDriftsFilename()
-
 print("s3_key_raw_drifts", s3_key_raw_drifts)
-
 s3.upload_file(folderStruct.getRawDriftsFilepath(), s3_bucket, s3_key_raw_drifts)
 
 print ("done processing in AWS")

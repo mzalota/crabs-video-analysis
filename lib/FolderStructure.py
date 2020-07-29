@@ -13,7 +13,10 @@ class FolderStructure:
         return self.__rootDirectory + "/" + self.__videoFilename + ".avi"
 
     def getRedDotsRawFilepath(self):
-        return self.__getSubDirpath() + self.__videoFilename + '_reddots_raw.csv'
+        return self.__getSubDirpath() + self.getRedDotsRawFilename()
+
+    def getRedDotsRawFilename(self):
+        return self.__videoFilename + '_reddots_raw.csv'
 
     def getRedDotsInterpolatedFilepath(self):
         return self.__getSubDirpath() + self.__videoFilename + '_reddots_interpolated.csv'
