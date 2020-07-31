@@ -2,7 +2,7 @@ from lib.data.RedDotsManualData import RedDotsManualData
 from lib.ui.RedDotsUI import RedDotsUI
 
 
-class FillRedDotsGapsUI:
+class FillRedDotsGapsController:
     def __init__(self, redDotsManualData, redDotsUI):
         # type: (RedDotsManualData, RedDotsUI) -> RedDotsUI
         self.__redDotsManualData = redDotsManualData

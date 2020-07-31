@@ -1,9 +1,9 @@
 import sys
 
 from lib.CommandLineLauncher import CommandLineLauncher
-from lib.StreamToLogger import StreamToLogger
+from lib.data.RedDotsData import RedDotsData
 from lib.data.RedDotsManualData import RedDotsManualData
-from lib.ui.FillRedDotsGapsUI import FillRedDotsGapsUI
+from lib.FillRedDotsGapsController import FillRedDotsGapsController
 from lib.FolderStructure import FolderStructure
 from lib.VideoStream import VideoStream
 import cv2
@@ -31,8 +31,9 @@ videoStream = VideoStream(folderStruct.getVideoFilepath())
 
 redDotsManualData = RedDotsManualData(folderStruct)
 redDotsUI = RedDotsUI(videoStream)
+redDotsData = RedDotsData(folderStruct)
 
-ui = FillRedDotsGapsUI(redDotsManualData,redDotsUI)
+ui = FillRedDotsGapsController(redDotsData, redDotsUI)
 ui.showUI()
 
 cv2.destroyAllWindows()

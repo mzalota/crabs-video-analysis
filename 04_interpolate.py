@@ -13,16 +13,16 @@ print ("Starting to interpolate Data")
 folderStruct = CommandLineLauncher.initializeFolderStruct(sys.argv)
 if folderStruct is None:
 
-    rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6647"
+    #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6647"
     #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6692"
-    #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6651"
+    rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6651"
     #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6658"
 
-    videoFileName = "V4"
+    videoFileName = "V3"
 
     folderStruct = FolderStructure(rootDir, videoFileName)
 
-StreamToLogger(folderStruct.getLogFilepath())
+#StreamToLogger(folderStruct.getLogFilepath())
 
 print ("interpolating DriftData")
 rawDrifts = DriftRawData(folderStruct)
