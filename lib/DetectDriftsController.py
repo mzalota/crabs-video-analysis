@@ -9,7 +9,7 @@ from lib.Logger import Logger
 from lib.data.DriftRawData import DriftRawData
 
 
-class DriftsController:
+class DetectDriftsController:
 
     def createNewRawFileWithHeaderRow(self, folderStruct):
         driftsFileHeaderRow = VelocityDetector.infoHeaders()
@@ -23,8 +23,6 @@ class DriftsController:
 
         # velocityDetector = VelocityDetectorMultiThreaded(folderStruct)
         # videoStream = VideoStreamMultiThreaded(folderStruct.getVideoFilepath())
-
-
 
         if not folderStruct.fileExists(folderStruct.getRawDriftsFilepath()):
             self.createNewRawFileWithHeaderRow(folderStruct)

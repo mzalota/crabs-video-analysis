@@ -9,25 +9,23 @@ from lib.Logger import Logger
 from lib.data.RedDotsRawData import RedDotsRawData
 
 
-class RedDotsController:
+class DetectRedDotsController:
 
-    def run(self, folderStruct):
-        # type: (FolderStructure) -> void
+    def __init__(self, folderStruct):
+        # type: (FolderStructure) -> None
 
-        videoStream = VideoStream(folderStruct.getVideoFilepath())
-        logger = Logger(folderStruct.getRedDotsRawFilepath())
-        #headerRow = RedDotsDetector.infoHeaders()
+        self.__rdRaw = RedDotsRawData.createNewAndReplaceExistingCSVFile(folderStruct)
+        self.__videoStream = VideoStream(folderStruct.getVideoFilepath())
 
-        headerRow = RedDotsRawData.headerRow()
-        logger.writeToFile(headerRow)
-
+    def run(self):
+        # type: (FolderStructure) -> None
         vf = None
         stepSize = 5
         frame_id = 5
-        success = True
-        while success:
+
+        while True:
             print ("frame_id", frame_id)
-            frame = Frame(frame_id, videoStream)
+            frame = Frame(frame_id, self.__videoStream)
 
             vf_prev = vf
             vf = RedDotsDetector(frame, vf_prev)
@@ -44,26 +42,23 @@ class RedDotsController:
                     frame_id += stepSize
                     continue
 
-            if vf.getRedDot1().dotWasDetected():
-                row = vf.getRedDot1().infoAboutDot()
-                row.insert(0, frame_id)
-                row.insert(1, "redDot1")
-                logger.writeToFile(row)
-                print row
-
-            if vf.getRedDot2().dotWasDetected():
-                row = vf.getRedDot2().infoAboutDot()
-                row.insert(0, frame_id)
-                row.insert(1, "redDot2")
-                logger.writeToFile(row)
-                print row
+            self.__save_dots_info_to_file(frame_id, vf)
 
             frame_id += stepSize
-
-            # videoStream.printMemoryUsage()
-
             if frame_id > 99100:
                 break
+            # videoStream.printMemoryUsage()
 
-        logger.closeFile()
+        self.__rdRaw.closeOpenFiles()
+
+    def __save_dots_info_to_file(self, frame_id, vf):
+        # type: (int, RedDotsDetector) -> object
+        redDot1 = vf.getRedDot1()
+        if redDot1.dotWasDetected():
+            self.__rdRaw.addRedDot1(frame_id, redDot1)
+
+        redDot2 = vf.getRedDot2()
+        if redDot2.dotWasDetected():
+            self.__rdRaw.addRedDot2(frame_id, redDot2)
+
 

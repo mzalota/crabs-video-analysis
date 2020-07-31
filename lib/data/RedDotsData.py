@@ -4,6 +4,7 @@ import pandas as pd
 import numpy
 
 from lib.FolderStructure import FolderStructure
+from lib.data.GraphPlotter import GraphPlotter
 from lib.data.PandasWrapper import PandasWrapper
 from lib.common import Point
 from lib.data.RedDotsManualData import RedDotsManualData
@@ -16,10 +17,12 @@ class RedDotsData(PandasWrapper):
     __COLNAME_frameNumber = 'frameNumber'
     __COLNAME_mm_per_pixel = "mm_per_pixel"
     __COLNAME_angle = "angle"
+    __COLNAME_distance = "distance"
 
     __distance_between_reddots_mm = 300
 
     def __init__(self, folderStruct):
+        # type: (FolderStructure) -> RedDotsData
         self.__folderStruct = folderStruct
 
     @staticmethod
@@ -30,7 +33,6 @@ class RedDotsData(PandasWrapper):
 
     def getPandasDF(self):
         # type: () -> pd
-
         try:
             return self.__interpolatedDF
         except AttributeError:
@@ -39,10 +41,27 @@ class RedDotsData(PandasWrapper):
             self.__interpolatedDF = self.readDataFrameFromCSV(filepath)
             return self.__interpolatedDF
 
+    def saveGraphOfAngle(self):
+        filePath = self.__folderStruct.getRedDotsGraphAngle()
+        graphTitle = self.__folderStruct.getVideoFilename()+ " Angle (degrees)"
+        xColumn = self.__COLNAME_frameNumber
+        yColumns = [self.__COLNAME_angle]
+
+        graphPlotter = GraphPlotter(self.getPandasDF())
+        graphPlotter.saveGraphToFile(xColumn, yColumns, graphTitle, filePath)
+
+    def saveGraphOfDistance(self):
+        filePath = self.__folderStruct.getRedDotsGraphDistance()
+        graphTitle = self.__folderStruct.getVideoFilename()+ " Distance (pixels)"
+        xColumn = self.__COLNAME_frameNumber
+        yColumns = [self.__COLNAME_distance]
+
+        graphPlotter = GraphPlotter(self.getPandasDF())
+        graphPlotter.saveGraphToFile(xColumn, yColumns, graphTitle, filePath)
+
     def getCount(self):
         # type: () -> int
         return len(self.getPandasDF().index)
-
 
     def midPoint(self, frameId):
         redDot1 = self.getRedDot1(frameId)

@@ -14,7 +14,11 @@ folderStruct = CommandLineLauncher.initializeFolderStruct(sys.argv)
 if folderStruct is None:
 
     rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6647"
-    videoFileName = "V12"
+    #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6692"
+    #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6651"
+    #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6658"
+
+    videoFileName = "V4"
 
     folderStruct = FolderStructure(rootDir, videoFileName)
 
@@ -32,10 +36,13 @@ drifts.saveToFile(folderStruct.getDriftsFilepath())
 print ("interpolating RedDots")
 rdd = RedDotsData.createFromFolderStruct(folderStruct)
 rdd.saveInterpolatedDFToFile(drifts.minFrameID(), drifts.maxFrameID()+1)
+rdd.saveGraphOfAngle()
+rdd.saveGraphOfDistance()
 
 print ("interpolating SeeFloor")
 
 sf = SeeFloor.createFromFolderStruct(folderStruct)
 sf.saveToFile()
+
 
 print ("Done inerpolating")

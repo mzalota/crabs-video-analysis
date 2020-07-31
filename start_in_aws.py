@@ -1,5 +1,5 @@
-from lib.RedDotsController import RedDotsController
-from lib.DriftsController import DriftsController
+from lib.DetectRedDotsController import DetectRedDotsController
+from lib.DetectDriftsController import DetectDriftsController
 from lib.FolderStructure import FolderStructure
 import os
 import json
@@ -52,8 +52,8 @@ class RunInAWS():
 
 
     def detect_red_dots(self, folderStruct, s3_bucket, s3_rootDir, videoFileName):
-        controller = RedDotsController()
-        controller.run(folderStruct)
+        controller = DetectRedDotsController(folderStruct)
+        controller.run()
 
         s3_key_raw_redDots = s3_rootDir + "/" + videoFileName + "/" + folderStruct.getRedDotsRawFilename()
         print("s3_key_raw_redDots", s3_key_raw_redDots)
@@ -62,7 +62,7 @@ class RunInAWS():
         self.__s3client.upload_file(folderStruct.getRedDotsRawFilepath(), s3_bucket, s3_key_raw_redDots)
 
     def detect_drifts(self, folderStruct, s3_bucket, s3_rootDir, videoFileName):
-        controller = DriftsController()
+        controller = DetectDriftsController()
         controller.run(folderStruct)
 
         s3_key_raw_drifts = s3_rootDir + "/" + videoFileName + "/" + folderStruct.getRawDriftsFilename()

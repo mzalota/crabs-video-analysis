@@ -1,7 +1,8 @@
 import pandas as pd
 
+from lib.FolderStructure import FolderStructure
+from lib.Logger import Logger
 from lib.data.PandasWrapper import PandasWrapper
-
 
 class RedDotsRawData(PandasWrapper):
     # __df = None
@@ -21,9 +22,33 @@ class RedDotsRawData(PandasWrapper):
     def __init__(self, folderStruct):
         # type: (FolderStructure) -> RedDotsRawData
         self.__folderStruct = folderStruct
+        self.__logger = None
+
+    @staticmethod
+    def createFromCSVFile(folderStruct):
+        # type: (FolderStructure) -> RedDotsRawData
+
         filepath = folderStruct.getRedDotsRawFilepath()
-        self.__df = PandasWrapper.readDataFrameFromCSV(filepath)
+        if not folderStruct.fileExists(filepath):
+            return RedDotsRawData.createNewAndReplaceExistingCSVFile()
+
+        newObj = RedDotsRawData(folderStruct)
         # dfRaw = dfRaw.rename(columns={dfRaw.columns[0]: "rowNum"}) # rename first column to be rowNum
+        newObj.__df = PandasWrapper.readDataFrameFromCSV(filepath)
+        return newObj
+
+    @staticmethod
+    def createNewAndReplaceExistingCSVFile(folderStruct):
+        # type: (FolderStructure) -> RedDotsRawData
+        column_names = RedDotsRawData.headerRow()
+        newObj = RedDotsRawData(folderStruct)
+        newObj.__df = pd.DataFrame(columns=column_names)
+        newObj.__saveDFToFile()
+        return newObj
+
+    def __saveDFToFile(self):
+        filepath = self.__folderStruct.getRedDotsRawFilepath()
+        self.__df.to_csv(filepath, sep='\t', index=False)
 
     def getCount(self):
         # type: () -> int
@@ -33,13 +58,40 @@ class RedDotsRawData(PandasWrapper):
         # type: () -> pd.DataFrame
         return self.__df
 
-    def __minFrameID(self):
-        # type: () -> int
-        return self.__df[self.__COLNAME_frameNumber].max() #[0]
+    # def minFrameID(self):
+    #     # type: () -> int
+    #     return self.__df[self.__COLNAME_frameNumber].max() #[0]
+    #
+    # def maxFrameID(self):
+    #     # type: () -> int
+    #     return self.__df[self.__COLNAME_frameNumber].max()
 
-    def __maxFrameID(self):
-        # type: () -> int
-        return self.__df[self.__COLNAME_frameNumber].max()
+    def __getLogger(self):
+        if not self.__logger:
+            self.__logger = Logger.openInAppendMode(self.__folderStruct.getRedDotsRawFilepath())
+
+        return self.__logger
+
+
+    def addRedDot1(self, frame_id, redDot1):
+        # type: (int, RedDot) -> None
+        self.__addRedDotEntryToLogger(frame_id, "redDot1", redDot1)
+
+    def addRedDot2(self, frame_id, redDot2):
+        # type: (int, RedDot) -> None
+        self.__addRedDotEntryToLogger(frame_id, "redDot2", redDot2)
+
+    def __addRedDotEntryToLogger(self, frame_id, dotName, redDot):
+        # type: (int, RedDot, Logger) -> None
+        row = redDot.infoAboutDot()
+        row.insert(0, frame_id)
+        row.insert(1, dotName)
+        self.__getLogger().writeToFile(row)
+        print row
+
+    def closeOpenFiles(self):
+        if self.__logger:
+            self.__logger.closeFile()
 
     @staticmethod
     def headerRow():

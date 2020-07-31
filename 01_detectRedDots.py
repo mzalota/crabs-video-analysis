@@ -1,6 +1,6 @@
 import sys
 
-from lib.RedDotsController import RedDotsController
+from lib.DetectRedDotsController import DetectRedDotsController
 from lib.CommandLineLauncher import CommandLineLauncher
 from lib.FolderStructure import FolderStructure
 
@@ -42,8 +42,8 @@ if folderStruct is None:
 
 StreamToLogger(folderStruct.getLogFilepath())
 
-controller = RedDotsController()
-controller.run(folderStruct)
+controller = DetectRedDotsController(folderStruct)
+controller.run()
 
 print ("Done detecting RedDots")
 

@@ -2,7 +2,7 @@ import sys
 import traceback
 
 from lib.CommandLineLauncher import CommandLineLauncher
-from lib.DriftsController import DriftsController
+from lib.DetectDriftsController import DetectDriftsController
 from lib.FolderStructure import FolderStructure
 
 # StreamToLogger(folderStruct.getLogFilepath())
@@ -19,7 +19,7 @@ if folderStruct is None:
     folderStruct = FolderStructure(rootDir, videoFileName)
     folderStruct.createDirectoriesIfDontExist(folderStruct.getDriftsFilepath())
 
-controller = DriftsController()
+controller = DetectDriftsController()
 controller.run(folderStruct)
 
 print ("Done DetectDrift")

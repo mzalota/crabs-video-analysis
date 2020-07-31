@@ -80,13 +80,12 @@ class RedDotsManualData(PandasWrapper):
 
         return dfToPlot.sort_values(by=['frameNumber'])
 
-
     def combinedDF(self):
         # type: () -> pd.DataFrame
 
         manualDF = self.getPandasDF().copy()
 
-        redDotsRawData = RedDotsRawData(self.__folderStruct)
+        redDotsRawData = RedDotsRawData.createFromCSVFile(self.__folderStruct)
         rawDF = redDotsRawData.getPandasDF().copy()
 
         rawDF['origin'] = "raw"
@@ -106,12 +105,21 @@ class RedDotsManualData(PandasWrapper):
         # type: () -> int
 
         redDots1 = self.combinedOnlyRedDot1().reset_index()
+        redDots2 = self.combinedOnlyRedDot2().reset_index()
+
+        num_of_red_dots1 = len(redDots1.index)
+        num_of_red_dots2 = len(redDots2.index)
+        if num_of_red_dots1 <1 or num_of_red_dots2 <1:
+            return self.combinedDF()[self.__COLNAME_frameNumber].min()
+
+        if num_of_red_dots1 <2 or num_of_red_dots2 <2:
+            return self.combinedDF()[self.__COLNAME_frameNumber].max()
+
         idxOfMaxGap1 = self.__indexOfBiggestGap(redDots1)
         gapStartFrameID1 = redDots1.loc[idxOfMaxGap1, :][self.__COLNAME_frameNumber]
         gapEndFrameID1 = redDots1.loc[idxOfMaxGap1 + 1, :][self.__COLNAME_frameNumber]
         gapSize1 = gapEndFrameID1 - gapStartFrameID1
 
-        redDots2 = self.combinedOnlyRedDot2().reset_index()
         idxOfMaxGap2 = self.__indexOfBiggestGap(redDots2)
         gapStartFrameID2 = redDots2.loc[idxOfMaxGap2, :][self.__COLNAME_frameNumber]
         gapEndFrameID2 = redDots2.loc[idxOfMaxGap2 + 1, :][self.__COLNAME_frameNumber]
