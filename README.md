@@ -23,7 +23,7 @@ Other files that are used by application
 + drifts_interpolated.csv - There are many erroneous entries in drifts_raw.csv. The program removes outliers and "fills in the blanks"/interpolates missing drift data. 
 
 Additionally image files with graphs summarizing geometry:
-+ reddots_angle - shows per frame at what inclanation of the line going through red dots. Theoretically red dots stay at the same angle to bottom of the frame no matter how camera moves
++ reddots_angle - shows per frame the inclination of the line going through red dots. Red dots move closer or apart along the same line, which should, theoretically, always stay at the same angle to bottom of the frame no matter how camera moves. So far the angle was around 10 degrees.
 + reddots_distance - shows per frame the distance between red dots in pixels
 
 ## Key Commands
