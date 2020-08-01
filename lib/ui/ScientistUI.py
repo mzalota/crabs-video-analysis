@@ -39,7 +39,7 @@ class ScientistUI:
 
         self.__driftData = driftData
         self.__badFramesData = BadFramesData.createFromFolderStruct(folderStruct)
-        self.__redDotsManualData = RedDotsManualData(folderStruct)
+        self.__redDotsData = RedDotsData(folderStruct)
 
         self.__seeFloor = SeeFloor.createFromFolderStruct(folderStruct)
         self.__seeFloorNoBadBlocks = SeeFloorNoBadBlocks.createFromFolderStruct(folderStruct)
@@ -134,7 +134,8 @@ class ScientistUI:
         print "catching frame_id_redDots"
         if frame_id_redDots is not None:
             redDots = self.__redDotsUI.selectedRedDots()
-            self.__redDotsManualData.addManualDots(frame_id_redDots, redDots)
+            self.__redDotsData.addManualDots(frame_id_redDots, redDots)
+
             # TODO: rerun interpolate, and make sure all xyzData objects are refreshed.
 
         self.__redDotsUI.closeWindow()

@@ -29,7 +29,6 @@ if folderStruct is None:
 
 videoStream = VideoStream(folderStruct.getVideoFilepath())
 
-redDotsManualData = RedDotsManualData(folderStruct)
 redDotsUI = RedDotsUI(videoStream)
 redDotsData = RedDotsData(folderStruct)
 

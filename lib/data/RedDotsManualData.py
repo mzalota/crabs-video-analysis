@@ -74,67 +74,63 @@ class RedDotsManualData(PandasWrapper):
         filepath = self.__folderStruct.getRedDotsManualFilepath()
         self.__df.to_csv(filepath, sep='\t', index=False)
 
-
-    def combinedDF(self, redDotsRawData):
-        # type: () -> pd.DataFrame
+    def combine_with_raw_data(self, redDotsRawData):
+        # type: (RedDotsRawData) -> pd.DataFrame
 
         manualDF = self.getPandasDF().copy()
-
-        #redDotsRawData = RedDotsRawData.createFromCSVFile(self.__folderStruct)
         rawDF = redDotsRawData.getPandasDF().copy()
 
         rawDF['origin'] = "raw"
         manualDF['origin'] = "manual"
 
-        if manualDF.count()[0] > 0:
-            combinedDF = self.__joinWithoutDuplicates(rawDF, manualDF)
-        else:
-            combinedDF = rawDF
+        combinedDF = self.__joinWithoutDuplicates(rawDF, manualDF)
 
         combinedDF.reset_index(drop=True)
         combinedDF.sort_values(by=[self.__COLNAME_frameNumber, self.__COLNAME_dotName], inplace=True)
 
         return combinedDF
 
-
     def __joinWithoutDuplicates(self, rawDF, manualDF):
+        if manualDF.count()[0] <= 0:
+            return rawDF
+
+        if rawDF.count()[0] <= 0:
+            return manualDF
+
         # remove rows from rawDF that appear in manualDF, so that JOIN (concat) does not create duplicate rows
         framesAppearInRawAndManual = rawDF["frameNumber"].isin(manualDF["frameNumber"])
         rawDFWithoutRowsInManualDF = rawDF[framesAppearInRawAndManual == False]
         combinedDF = pd.concat([rawDFWithoutRowsInManualDF, manualDF])
         return combinedDF
 
-
-    def __dotsJoinedOnOneLine(self):
-        dataRedDot1 = self.__onlyRedDot1()[[self.__COLNAME_frameNumber, self.__COLNAME_centerPoint_x, self.__COLNAME_centerPoint_y]]
-        dataRedDot2 = self.__onlyRedDot2()[[self.__COLNAME_frameNumber, self.__COLNAME_centerPoint_x, self.__COLNAME_centerPoint_y]]
-
-        dfToPlot = pd.merge(dataRedDot1, dataRedDot2, on='frameNumber', how='outer', suffixes=('_dot1', '_dot2'))
-
-        return dfToPlot.sort_values(by=['frameNumber'])
-
-    def __onlyRedDot2(self):
-        # type: () -> pd
-        dataRedDot2 = self.getPandasDF().loc[self.getPandasDF()['dotName'] == self.__VALUE_redDot2]
-        return dataRedDot2
-
-    def __onlyRedDot1(self):
-        # type: () -> pd
-        dataRedDot1 = self.getPandasDF().loc[self.getPandasDF()['dotName'] == self.__VALUE_redDot1]
-        return dataRedDot1
-
-    def __recalculate_column_angle(self):
-        df = self.__dotsJoinedOnOneLine()
-
-        yLength_df = (df["centerPoint_y_dot1"] - df["centerPoint_y_dot2"])
-        xLength_df = (df["centerPoint_x_dot1"] - df["centerPoint_x_dot2"])
-        df["angle"] = numpy.arctan(yLength_df / xLength_df) / math.pi * 90
-
-        return df
-
     def median_angle(self):
-        df = self.__recalculate_column_angle()
-        median = df["angle"].median()
+        angle_series = self.__recalculate_column_angle()
+        median = angle_series.median()
         if pd.isna(median):
             return None
         return median
+
+    def __recalculate_column_angle(self):
+        # type: () -> pd.Series
+        df = self.__dotsJoinedOnOneLine()
+        yLength_df = (df["centerPoint_y_dot1"] - df["centerPoint_y_dot2"])
+        xLength_df = (df["centerPoint_x_dot1"] - df["centerPoint_x_dot2"])
+        return numpy.arctan(yLength_df / xLength_df) / math.pi * 90
+
+
+    def __dotsJoinedOnOneLine(self):
+        # type: () -> pd.DataFrame
+        dataRedDot1 = self.__onlyRedDot1()[[self.__COLNAME_frameNumber, self.__COLNAME_centerPoint_x, self.__COLNAME_centerPoint_y]]
+        dataRedDot2 = self.__onlyRedDot2()[[self.__COLNAME_frameNumber, self.__COLNAME_centerPoint_x, self.__COLNAME_centerPoint_y]]
+
+        dfToPlot = pd.merge(dataRedDot1, dataRedDot2, on=self.__COLNAME_frameNumber, how='outer', suffixes=('_dot1', '_dot2'))
+
+        return dfToPlot.sort_values(by=[self.__COLNAME_frameNumber])
+
+    def __onlyRedDot1(self):
+        # type: () -> pd.DataFrame
+        return self.getPandasDF().loc[self.getPandasDF()[self.__COLNAME_dotName] == self.__VALUE_redDot1]
+
+    def __onlyRedDot2(self):
+        # type: () -> pd.DataFrame
+        return self.getPandasDF().loc[self.getPandasDF()[self.__COLNAME_dotName] == self.__VALUE_redDot2]
