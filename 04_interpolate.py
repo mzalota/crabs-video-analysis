@@ -22,12 +22,12 @@ if folderStruct is None:
 
     folderStruct = FolderStructure(rootDir, videoFileName)
 
-#StreamToLogger(folderStruct.getLogFilepath())
+StreamToLogger(folderStruct.getLogFilepath())
 
 print ("interpolating DriftData")
 rawDrifts = DriftRawData(folderStruct)
-druftsStepSize = 2
-df = rawDrifts.interpolate(druftsStepSize)
+driftsStepSize = 2
+df = rawDrifts.interpolate(driftsStepSize)
 
 drifts = DriftData.createFromFolderStruct(folderStruct)
 drifts.setDF(df)

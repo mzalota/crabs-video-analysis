@@ -1,6 +1,7 @@
 import sys
 
 from lib.CommandLineLauncher import CommandLineLauncher
+from lib.StreamToLogger import StreamToLogger
 from lib.data.RedDotsData import RedDotsData
 from lib.data.RedDotsManualData import RedDotsManualData
 from lib.FillRedDotsGapsController import FillRedDotsGapsController
@@ -25,7 +26,7 @@ if folderStruct is None:
 
     folderStruct = FolderStructure(rootDir, videoFileName)
 
-#StreamToLogger(folderStruct.getLogFilepath())
+StreamToLogger(folderStruct.getLogFilepath())
 
 videoStream = VideoStream(folderStruct.getVideoFilepath())
 

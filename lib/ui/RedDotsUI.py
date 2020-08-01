@@ -1,5 +1,6 @@
 import cv2
 
+from lib.Frame import Frame
 from lib.ImageWindow import ImageWindow
 from lib.data.RedDotsData import RedDotsData
 from lib.UserInput import UserInput
@@ -27,13 +28,18 @@ class RedDotsUI:
     def closeWindow(self):
         self.__imageZoomWin.closeWindow()
 
-    def showUI(self, frameID):
+    def showUI(self, frameID, gapSize = None):
 
         while True:
             image = self.__videoStream.readImageObj(frameID)
 
             zoomImage = image.subImage(self.__zoomBox)
             zoomImage.drawFrameID(frameID)
+
+            if gapSize is not None:
+                gapText = "Gap: " + str(int(gapSize))
+                box = Box(Point(zoomImage.width()-180,zoomImage.height()-50),Point(zoomImage.width(), zoomImage.height()))
+                zoomImage.drawTextInBox(box, gapText)
 
             keyPressed = self.__imageZoomWin.showWindowAndWaitForTwoClicks(zoomImage.asNumpyArray())
             user_input = UserInput(keyPressed)

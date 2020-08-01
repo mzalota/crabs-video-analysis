@@ -5,7 +5,7 @@ from lib.CommandLineLauncher import CommandLineLauncher
 from lib.DetectDriftsController import DetectDriftsController
 from lib.FolderStructure import FolderStructure
 
-# StreamToLogger(folderStruct.getLogFilepath())
+StreamToLogger(folderStruct.getLogFilepath())
 print ("Starting DetectDrift")
 
 folderStruct = CommandLineLauncher.initializeFolderStruct(sys.argv)

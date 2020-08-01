@@ -54,6 +54,7 @@ class RedDotsData(PandasWrapper):
 
     def addManualDots(self, frameID, box):
         self.__redDotsManual.addManualDots(frameID,box)
+        self.saveInterpolatedDFToFile()
 
     def getPandasDF(self):
         # type: () -> pd
@@ -132,6 +133,7 @@ class RedDotsData(PandasWrapper):
         interpolatedDF = self.__generateIntepolatedDF(minFrameID, maxFrameID)
         filepath = self.__folderStruct.getRedDotsInterpolatedFilepath()
         interpolatedDF.to_csv(filepath, sep='\t', index=False)
+        self.__interpolatedDF = interpolatedDF
 
     def __generateIntepolatedDF(self, minVal, maxVal):
         df = self.__add_rows_for_every_frame(minVal, maxVal)
@@ -149,6 +151,11 @@ class RedDotsData(PandasWrapper):
 
     def __add_rows_for_every_frame(self, minVal, maxVal):
         df = self.forPlotting()
+        if minVal is None:
+            minVal = df["frameNumber"].min()
+        if maxVal is None:
+            maxVal = df["frameNumber"].max()
+
         df = df.set_index("frameNumber")
         everyFrame = pd.DataFrame(numpy.arange(start=minVal, stop=maxVal, step=1), columns=["frameNumber"]).set_index(
             "frameNumber")
@@ -167,7 +174,8 @@ class RedDotsData(PandasWrapper):
     def __recalculate_column_angle(self, df):
         yLength_df = (df["centerPoint_y_dot1"] - df["centerPoint_y_dot2"])
         xLength_df = (df["centerPoint_x_dot1"] - df["centerPoint_x_dot2"])
-        df[self.__COLNAME_angle] = numpy.arctan(yLength_df / xLength_df) / math.pi * 90
+        angle_in_radians = numpy.arctan(yLength_df / xLength_df)*(-1)
+        df[self.__COLNAME_angle] = angle_in_radians / math.pi * 90
 
     def __interpolate_values(self, df):
         df = df.interpolate(limit_direction='both')
@@ -267,9 +275,9 @@ class RedDotsData(PandasWrapper):
         frameId2, gap2 = self.__find_largest_gap('origin_dot2')
         print ("frameId1", frameId1, "gap1", gap1,"frameId2", frameId2, "gap2", gap2)
         if gap1 > gap2:
-            return frameId1
+            return frameId1, gap1
         else:
-            return frameId2
+            return frameId2, gap2
 
     def __find_largest_gap(self, whichDot):
         # type: (str) -> int, float
