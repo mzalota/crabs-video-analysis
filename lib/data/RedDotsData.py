@@ -15,12 +15,16 @@ class RedDotsData(PandasWrapper):
     #__rawDF = None
     #__manualDF = None
     #__interpolatedDF = None
+    # columns = ["frameNumber","centerPoint_x_dot1","centerPoint_y_dot1", "origin_dot1", "centerPoint_x_dot2", "centerPoint_y_dot2", "origin_dot2", "distance", "mm_per_pixel", "angle"]
 
     __VALUE_redDot1 = "redDot1"
     __VALUE_redDot2 = "redDot2"
 
+    VALUE_ORIGIN_interpolate = "interpolate"
+    VALUE_ORIGIN_manual = "manual"
+    VALUE_ORIGIN_raw = "raw"
 
-    __COLNAME_frameNumber = 'frameNumber'
+    COLNAME_frameNumber = 'frameNumber'
     __COLNAME_centerPoint_x = "centerPoint_x"
     __COLNAME_centerPoint_y = "centerPoint_y"
     __COLNAME_mm_per_pixel = "mm_per_pixel"
@@ -29,15 +33,23 @@ class RedDotsData(PandasWrapper):
 
     __distance_between_reddots_mm = 300
 
-    def __init__(self, folderStruct):
-        # type: (FolderStructure) -> RedDotsData
+    def __init__(self, folderStruct, redDotsManual):
+        # type: (FolderStructure, RedDotsManualData) -> RedDotsData
         self.__folderStruct = folderStruct
-        self.__redDotsManual = RedDotsManualData(folderStruct)
+        self.__redDotsManual = redDotsManual
 
     @staticmethod
     def createFromFolderStruct(folderStruct):
         # type: (FolderStructure) -> RedDotsData
-        newObj = RedDotsData(folderStruct)
+        redDotsManual = RedDotsManualData(folderStruct)
+        newObj = RedDotsData(folderStruct, redDotsManual)
+        return newObj
+
+    @staticmethod
+    def createWithRedDotsManualData(folderStruct, redDotsManual):
+        # type: (FolderStructure, RedDotsManualData) -> RedDotsData
+
+        newObj = RedDotsData(folderStruct, redDotsManual)
         return newObj
 
     def addManualDots(self, frameID, box):
@@ -56,7 +68,7 @@ class RedDotsData(PandasWrapper):
     def saveGraphOfAngle(self):
         filePath = self.__folderStruct.getRedDotsGraphAngle()
         graphTitle = self.__folderStruct.getVideoFilename()+ " Angle (degrees)"
-        xColumn = self.__COLNAME_frameNumber
+        xColumn = self.COLNAME_frameNumber
         yColumns = [self.__COLNAME_angle]
 
         graphPlotter = GraphPlotter(self.getPandasDF())
@@ -65,7 +77,7 @@ class RedDotsData(PandasWrapper):
     def saveGraphOfDistance(self):
         filePath = self.__folderStruct.getRedDotsGraphDistance()
         graphTitle = self.__folderStruct.getVideoFilename()+ " Distance (pixels)"
-        xColumn = self.__COLNAME_frameNumber
+        xColumn = self.COLNAME_frameNumber
         yColumns = [self.__COLNAME_distance]
 
         graphPlotter = GraphPlotter(self.getPandasDF())
@@ -113,7 +125,7 @@ class RedDotsData(PandasWrapper):
 
     def __rowForFrame(self, frameId):
         df = self.getPandasDF()
-        dfResult = df.loc[df[RedDotsData.__COLNAME_frameNumber] == frameId]
+        dfResult = df.loc[df[RedDotsData.COLNAME_frameNumber] == frameId]
         return dfResult
 
     def saveInterpolatedDFToFile(self, minFrameID=None, maxFrameID=None):
@@ -159,8 +171,9 @@ class RedDotsData(PandasWrapper):
 
     def __interpolate_values(self, df):
         df = df.interpolate(limit_direction='both')
-        df.loc[pd.isna(df["origin_dot1"]), ["origin_dot1"]] = "interpolate"
-        df.loc[pd.isna(df["origin_dot2"]), ["origin_dot2"]] = "interpolate"
+
+        df.loc[pd.isna(df["origin_dot1"]), ["origin_dot1"]] = self.VALUE_ORIGIN_interpolate
+        df.loc[pd.isna(df["origin_dot2"]), ["origin_dot2"]] = self.VALUE_ORIGIN_interpolate
         return df
 
     def __clearOutliersBasedOnDistance(self, df):
@@ -205,7 +218,8 @@ class RedDotsData(PandasWrapper):
         # clear the values in rows where value of the angle is off bounds
         columns_with_wrong_values = ["centerPoint_x_dot1", "centerPoint_x_dot2", "centerPoint_y_dot1",
                                      "centerPoint_y_dot2", "angle", "distance", "mm_per_pixel"]
-        not_manual = (df["origin_dot1"] != "manual") & (df["origin_dot2"] != "manual")
+
+        not_manual = (df["origin_dot1"] != self.VALUE_ORIGIN_manual) & (df["origin_dot2"] != self.VALUE_ORIGIN_manual)
         outlier_rows = ((df[column_with_outliers] < lower_bound) | (
                     df[column_with_outliers] > upper_bound)) & not_manual
         df.loc[outlier_rows, columns_with_wrong_values] = numpy.nan
@@ -221,8 +235,8 @@ class RedDotsData(PandasWrapper):
         df.drop(df[single_outlier].index, inplace=True)
 
     def forPlotting(self):
-        dataRedDot1 = self.__combinedOnlyRedDot1()[[self.__COLNAME_frameNumber, self.__COLNAME_centerPoint_x, self.__COLNAME_centerPoint_y, "origin"]]
-        dataRedDot2 = self.__combinedOnlyRedDot2()[[self.__COLNAME_frameNumber, self.__COLNAME_centerPoint_x, self.__COLNAME_centerPoint_y, "origin"]]
+        dataRedDot1 = self.__combinedOnlyRedDot1()[[self.COLNAME_frameNumber, self.__COLNAME_centerPoint_x, self.__COLNAME_centerPoint_y, "origin"]]
+        dataRedDot2 = self.__combinedOnlyRedDot2()[[self.COLNAME_frameNumber, self.__COLNAME_centerPoint_x, self.__COLNAME_centerPoint_y, "origin"]]
 
         dfToPlot = pd.merge(dataRedDot1, dataRedDot2, on='frameNumber', how='outer', suffixes=('_dot1', '_dot2'))
 
@@ -244,6 +258,44 @@ class RedDotsData(PandasWrapper):
         dataRedDot1 = self.__combinedDF().loc[self.__combinedDF()['dotName'] == self.__VALUE_redDot1]
         return dataRedDot1
 
+    def getMiddleFrameIDOfBiggestGap(self):
+        # type: () -> int
+        if self.getCount() <=0:
+            return None
+
+        frameId1, gap1 = self.__find_largest_gap('origin_dot1')
+        frameId2, gap2 = self.__find_largest_gap('origin_dot2')
+        print ("frameId1", frameId1, "gap1", gap1,"frameId2", frameId2, "gap2", gap2)
+        if gap1 > gap2:
+            return frameId1
+        else:
+            return frameId2
+
+    def __find_largest_gap(self, whichDot):
+        # type: (str) -> int, float
+
+        firstFrame = self.__minFrameID()
+        lastFrame = self.__maxFrameID()
+        df = self.getPandasDF()
+
+        #masks
+        first_or_last_row_mask = (df[self.COLNAME_frameNumber] == firstFrame) | (df[self.COLNAME_frameNumber] == lastFrame)
+        non_interpolate_rows_mask = (df[whichDot] != self.VALUE_ORIGIN_interpolate)
+
+        wipDF = df.loc[(non_interpolate_rows_mask | first_or_last_row_mask)].copy()
+
+        wipDF["prevFrameID"] = wipDF[self.COLNAME_frameNumber].shift(periods=-1)
+        wipDF["gap"] = wipDF["prevFrameID"] - wipDF[self.COLNAME_frameNumber]
+        wipDF["midFrameID"] = wipDF[self.COLNAME_frameNumber] + wipDF["gap"] / 2
+
+        maxGap = wipDF['gap'].max()
+        firstLargestGap = wipDF.loc[(wipDF['gap'] == maxGap)]
+        asDict = firstLargestGap.to_dict('records')
+
+        frameInTheMiddleOfLargestGap = asDict[0]["midFrameID"]
+        gapSize = asDict[0]["gap"]
+        return int(frameInTheMiddleOfLargestGap), gapSize
+
     def getMiddleOfBiggestGap(self):
         # type: () -> int
 
@@ -253,19 +305,32 @@ class RedDotsData(PandasWrapper):
         num_of_red_dots1 = len(redDots1.index)
         num_of_red_dots2 = len(redDots2.index)
         if num_of_red_dots1 <1 or num_of_red_dots2 <1:
-            return self.__combinedDF()[self.__COLNAME_frameNumber].min()
+            #return self.__combinedDF()[self.__COLNAME_frameNumber].min()
+            return self.getPandasDF()[self.COLNAME_frameNumber].min()
 
         if num_of_red_dots1 <2 or num_of_red_dots2 <2:
-            return self.__combinedDF()[self.__COLNAME_frameNumber].max()
+            #return self.__combinedDF()[self.__COLNAME_frameNumber].max()
+            return self.getPandasDF()[self.COLNAME_frameNumber].max()
+
+        firstFrameInVideo = self.__minFrameID()
+        firstFrameRedDot1 = redDots1.loc[0, :][self.COLNAME_frameNumber]
+        gapBeginingRedDot1 = firstFrameRedDot1 - firstFrameInVideo
+        print ("firstFrameInVideo", firstFrameInVideo, "firstFrameRedDot1", firstFrameRedDot1, "gapBeginingRedDot1", gapBeginingRedDot1 )
 
         idxOfMaxGap1 = self.__indexOfBiggestGap(redDots1)
-        gapStartFrameID1 = redDots1.loc[idxOfMaxGap1, :][self.__COLNAME_frameNumber]
-        gapEndFrameID1 = redDots1.loc[idxOfMaxGap1 + 1, :][self.__COLNAME_frameNumber]
+        gapStartFrameID1 = redDots1.loc[idxOfMaxGap1, :][self.COLNAME_frameNumber]
+        gapEndFrameID1 = redDots1.loc[idxOfMaxGap1 + 1, :][self.COLNAME_frameNumber]
         gapSize1 = gapEndFrameID1 - gapStartFrameID1
+        print ("gap1", gapSize1, "gapStartFrameID1", gapStartFrameID1,  idxOfMaxGap1)
+
+        if (gapBeginingRedDot1 > gapSize1):
+            gapEndFrameID1 = gapBeginingRedDot1
+            gapSize1 = gapBeginingRedDot1
+
 
         idxOfMaxGap2 = self.__indexOfBiggestGap(redDots2)
-        gapStartFrameID2 = redDots2.loc[idxOfMaxGap2, :][self.__COLNAME_frameNumber]
-        gapEndFrameID2 = redDots2.loc[idxOfMaxGap2 + 1, :][self.__COLNAME_frameNumber]
+        gapStartFrameID2 = redDots2.loc[idxOfMaxGap2, :][self.COLNAME_frameNumber]
+        gapEndFrameID2 = redDots2.loc[idxOfMaxGap2 + 1, :][self.COLNAME_frameNumber]
         gapSize2 = gapEndFrameID2 - gapStartFrameID2
 
         if gapSize2 > gapSize1:
@@ -276,6 +341,46 @@ class RedDotsData(PandasWrapper):
         print ("next gapMiddleFrameID", gapMiddleFrameID, "gap1", gapSize1, "gap2", gapSize2, "gapStartFrameID1", gapStartFrameID1, "gapStartFrameID2", gapStartFrameID2, idxOfMaxGap1, idxOfMaxGap2)
 
         return gapMiddleFrameID
+
+    def __indexOfBiggestGap_notgood(self, newDF):
+        # type: (pd.DataFrame) -> int
+        df = newDF.copy()
+        firstFrame = {}
+        firstFrame["frameNumber"] = self.__minFrameID()
+        lastFrame = {}
+        lastFrame["frameNumber"] = self.__maxFrameID()
+
+        #thisFrame = newDF["frameNumber"].copy()
+
+        df = df.append(firstFrame, ignore_index=True)
+        df = df.append(lastFrame, ignore_index=True)
+        df.sort_values(by=["frameNumber"], inplace=True)
+        df = df.reset_index(drop=True)
+
+        print ("Here 10")
+        #print(df.to_string())
+        print ("Here 20")
+
+        thisFrame = df["frameNumber"].copy()
+
+        print ("Here 30")
+        print(thisFrame.to_string())
+        print ("Here 40")
+
+        prevFrame = thisFrame.shift(periods=-1)
+        gap = prevFrame - thisFrame
+        maxGap = gap.max()
+        idxOfMaxGap = thisFrame.loc[gap == maxGap][:1].index[0]
+        print ("idxOfMaxGap is"+idxOfMaxGap)
+        return idxOfMaxGap
+
+    def __minFrameID(self):
+        # type: () -> int
+        return self.getPandasDF()[self.COLNAME_frameNumber].min() #[0]
+
+    def __maxFrameID(self):
+        # type: () -> int
+        return self.getPandasDF()[self.COLNAME_frameNumber].max()
 
     def __indexOfBiggestGap(self, newDF):
         # type: (pd.DataFrame) -> int

@@ -30,7 +30,7 @@ if folderStruct is None:
 videoStream = VideoStream(folderStruct.getVideoFilepath())
 
 redDotsUI = RedDotsUI(videoStream)
-redDotsData = RedDotsData(folderStruct)
+redDotsData = RedDotsData.createFromFolderStruct(folderStruct)
 
 ui = FillRedDotsGapsController(redDotsData, redDotsUI)
 ui.showUI()

@@ -39,7 +39,7 @@ class ScientistUI:
 
         self.__driftData = driftData
         self.__badFramesData = BadFramesData.createFromFolderStruct(folderStruct)
-        self.__redDotsData = RedDotsData(folderStruct)
+        self.__redDotsData = RedDotsData.createFromFolderStruct(folderStruct)
 
         self.__seeFloor = SeeFloor.createFromFolderStruct(folderStruct)
         self.__seeFloorNoBadBlocks = SeeFloorNoBadBlocks.createFromFolderStruct(folderStruct)

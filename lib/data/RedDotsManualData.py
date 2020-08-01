@@ -29,10 +29,9 @@ class RedDotsManualData(PandasWrapper):
         manual_filepath = folderStruct.getRedDotsManualFilepath()
         if folderStruct.fileExists(manual_filepath):
             self.__df = self.readDataFrameFromCSV(manual_filepath)
-            #self.__df = pd.read_csv(manual_filepath, delimiter="\t", na_values="(null)")
         else:
             self.__df = pd.DataFrame(columns=column_names)
-            self.__saveManualDFToFile()
+            self.__saveManualDFToFile(manual_filepath)
 
     def getCount(self):
         # type: () -> int
@@ -68,10 +67,12 @@ class RedDotsManualData(PandasWrapper):
         # Pass the rowRedDot1 elements as key value pairs to append() function
         self.__df = self.__df.append(rowRedDot1, ignore_index=True)
         self.__df = self.__df.append(rowRedDot2, ignore_index=True)
-        self.__saveManualDFToFile()
 
-    def __saveManualDFToFile(self):
-        filepath = self.__folderStruct.getRedDotsManualFilepath()
+        manual_filepath = self.__folderStruct.getRedDotsManualFilepath()
+        self.__saveManualDFToFile(manual_filepath)
+
+    def __saveManualDFToFile(self, filepath):
+        # type: (str) -> None
         self.__df.to_csv(filepath, sep='\t', index=False)
 
     def combine_with_raw_data(self, redDotsRawData):
