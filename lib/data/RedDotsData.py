@@ -304,84 +304,6 @@ class RedDotsData(PandasWrapper):
         gapSize = asDict[0]["gap"]
         return int(frameInTheMiddleOfLargestGap), gapSize
 
-    def getMiddleOfBiggestGap(self):
-        # type: () -> int
-
-        redDots1 = self.__combinedOnlyRedDot1().reset_index()
-        redDots2 = self.__combinedOnlyRedDot2().reset_index()
-
-        num_of_red_dots1 = len(redDots1.index)
-        num_of_red_dots2 = len(redDots2.index)
-        if num_of_red_dots1 <1 or num_of_red_dots2 <1:
-            #return self.__combinedDF()[self.__COLNAME_frameNumber].min()
-            return self.getPandasDF()[self.COLNAME_frameNumber].min()
-
-        if num_of_red_dots1 <2 or num_of_red_dots2 <2:
-            #return self.__combinedDF()[self.__COLNAME_frameNumber].max()
-            return self.getPandasDF()[self.COLNAME_frameNumber].max()
-
-        firstFrameInVideo = self.__minFrameID()
-        firstFrameRedDot1 = redDots1.loc[0, :][self.COLNAME_frameNumber]
-        gapBeginingRedDot1 = firstFrameRedDot1 - firstFrameInVideo
-        print ("firstFrameInVideo", firstFrameInVideo, "firstFrameRedDot1", firstFrameRedDot1, "gapBeginingRedDot1", gapBeginingRedDot1 )
-
-        idxOfMaxGap1 = self.__indexOfBiggestGap(redDots1)
-        gapStartFrameID1 = redDots1.loc[idxOfMaxGap1, :][self.COLNAME_frameNumber]
-        gapEndFrameID1 = redDots1.loc[idxOfMaxGap1 + 1, :][self.COLNAME_frameNumber]
-        gapSize1 = gapEndFrameID1 - gapStartFrameID1
-        print ("gap1", gapSize1, "gapStartFrameID1", gapStartFrameID1,  idxOfMaxGap1)
-
-        if (gapBeginingRedDot1 > gapSize1):
-            gapEndFrameID1 = gapBeginingRedDot1
-            gapSize1 = gapBeginingRedDot1
-
-
-        idxOfMaxGap2 = self.__indexOfBiggestGap(redDots2)
-        gapStartFrameID2 = redDots2.loc[idxOfMaxGap2, :][self.COLNAME_frameNumber]
-        gapEndFrameID2 = redDots2.loc[idxOfMaxGap2 + 1, :][self.COLNAME_frameNumber]
-        gapSize2 = gapEndFrameID2 - gapStartFrameID2
-
-        if gapSize2 > gapSize1:
-            gapMiddleFrameID = gapEndFrameID2 - int(gapSize2/ 2)
-        else:
-            gapMiddleFrameID = gapEndFrameID1 - int(gapSize1/ 2)
-
-        print ("next gapMiddleFrameID", gapMiddleFrameID, "gap1", gapSize1, "gap2", gapSize2, "gapStartFrameID1", gapStartFrameID1, "gapStartFrameID2", gapStartFrameID2, idxOfMaxGap1, idxOfMaxGap2)
-
-        return gapMiddleFrameID
-
-    def __indexOfBiggestGap_notgood(self, newDF):
-        # type: (pd.DataFrame) -> int
-        df = newDF.copy()
-        firstFrame = {}
-        firstFrame["frameNumber"] = self.__minFrameID()
-        lastFrame = {}
-        lastFrame["frameNumber"] = self.__maxFrameID()
-
-        #thisFrame = newDF["frameNumber"].copy()
-
-        df = df.append(firstFrame, ignore_index=True)
-        df = df.append(lastFrame, ignore_index=True)
-        df.sort_values(by=["frameNumber"], inplace=True)
-        df = df.reset_index(drop=True)
-
-        print ("Here 10")
-        #print(df.to_string())
-        print ("Here 20")
-
-        thisFrame = df["frameNumber"].copy()
-
-        print ("Here 30")
-        print(thisFrame.to_string())
-        print ("Here 40")
-
-        prevFrame = thisFrame.shift(periods=-1)
-        gap = prevFrame - thisFrame
-        maxGap = gap.max()
-        idxOfMaxGap = thisFrame.loc[gap == maxGap][:1].index[0]
-        print ("idxOfMaxGap is"+idxOfMaxGap)
-        return idxOfMaxGap
-
     def __minFrameID(self):
         # type: () -> int
         return self.getPandasDF()[self.COLNAME_frameNumber].min() #[0]
@@ -390,13 +312,3 @@ class RedDotsData(PandasWrapper):
         # type: () -> int
         return self.getPandasDF()[self.COLNAME_frameNumber].max()
 
-    def __indexOfBiggestGap(self, newDF):
-        # type: (pd.DataFrame) -> int
-        df = newDF.copy()
-
-        df["nextFrameID"] = df["frameNumber"].shift(periods=-1)
-        df["gap"] = df["nextFrameID"] - df["frameNumber"]
-        maxGap = df["gap"].max()
-        idxOfMaxGap = df.loc[df['gap'] == maxGap][:1].index[0]
-
-        return idxOfMaxGap
