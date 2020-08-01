@@ -22,6 +22,10 @@ Other files that are used by application
 + reddots_manual.csv - manual mapping of red dots in frames are written here from RedDotsUI. Then this file is joined with reddots_raw.csv to generate reddots_interpolated.csv
 + drifts_interpolated.csv - There are many erroneous entries in drifts_raw.csv. The program removes outliers and "fills in the blanks"/interpolates missing drift data. 
 
+Additionally image files with graphs summarizing geometry:
++ reddots_angle - shows per frame at what inclanation of the line going through red dots. Theoretically red dots stay at the same angle to bottom of the frame no matter how camera moves
++ reddots_distance - shows per frame the distance between red dots in pixels
+
 ## Key Commands
 
 ### Commands in main "Scientist UI" screen
