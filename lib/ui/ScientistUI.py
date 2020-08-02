@@ -48,7 +48,7 @@ class ScientistUI:
         self.__crabData = CrabsData(self.__folderStruct)
         self.__redDotsUI = RedDotsUI(self.__videoStream)
         self.__markersData = MarkersData(folderStruct)
-        self.__marker_id = 0
+        self.__marker_id = "0"
 
     def processVideo(self):
 
@@ -69,10 +69,10 @@ class ScientistUI:
 
             print ("keyPressed", keyPressed)
 
-            if keyPressed >= ord("0") and keyPressed <= ord("9"):
-                print ("Using Marker #", chr(keyPressed))
-                self.__marker_id = int(chr(keyPressed))
-                print ("self.__marker_id", self.__marker_id)
+            if user_input.is_marker_key():
+                self.__marker_id = user_input.marker_id()
+                print ("Using Marker #", self.__marker_id)
+                continue
 
             if user_input.is_command_quit():
                 print("User requested to quit on frame: ", str(frame_id))
@@ -95,12 +95,12 @@ class ScientistUI:
                 continue
 
             if user_input.is_mouse_click():
-                if self.__marker_id == 0:
+                if self.__marker_id == "0":
                     self.__show_crab_ui(frame_id)
                 else:
                     markerPoint = self.__imageWin.featureCoordiate
-                    print("recording a marker at point", str(markerPoint))
-                    self.__markersData.add_mark(frame_id,markerPoint, self.__marker_id)
+                    print("recording a marker at point", str(markerPoint), "marker #:", self.__marker_id)
+                    self.__markersData.add_mark(frame_id, markerPoint, self.__marker_id)
                     self.__markersData.save_to_file()
                 continue
 
@@ -203,6 +203,7 @@ class ScientistUI:
         frameDeco = frameImagesFactory.getFrameDecoRedDots(frameDeco)
         frameDeco = frameImagesFactory.getFrameDecoMarkedCrabs(frameDeco)
         frameDeco = frameImagesFactory.getFrameDecoMarkers(frameDeco)
+
         return frameDeco.getImgObj().copy()
 
     #TODO: Figure out why pressing Right button and then left button does not return you to the same frame ID

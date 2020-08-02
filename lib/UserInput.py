@@ -25,6 +25,46 @@ class UserInput():
         # type: (int) -> UserInput
         self.__key = key_pressed
 
+    def is_marker_key(self):
+        # type: () -> bool
+        marker_keys = self.__marker_keys_mapping()
+
+        if self.__key in marker_keys.keys():
+            return True
+        return False
+
+    def marker_id(self):
+        if not self.is_marker_key():
+            raise ValueError("key is not one of the marker keys")
+        marker_keys = self.__marker_keys_mapping()
+        return marker_keys[self.__key]
+
+    def __marker_keys_mapping(self):
+        marker_keys = dict()
+        marker_keys[7340032] = "F1"
+        marker_keys[7405568] = "F2"
+        marker_keys[7471104] = "F3"
+        marker_keys[7536640] = "F4"
+        marker_keys[7602176] = "F5"
+        marker_keys[7667712] = "F6"
+        marker_keys[7733248] = "F7"
+        marker_keys[7798784] = "F8"
+        marker_keys[7798784] = "F9"
+        marker_keys[7929856] = "F10"
+        marker_keys[7995392] = "F11"
+        marker_keys[8060928] = "F12"
+        marker_keys[ord("1")] = "1"
+        marker_keys[ord("2")] = "2"
+        marker_keys[ord("3")] = "3"
+        marker_keys[ord("4")] = "4"
+        marker_keys[ord("5")] = "5"
+        marker_keys[ord("6")] = "6"
+        marker_keys[ord("7")] = "7"
+        marker_keys[ord("8")] = "8"
+        marker_keys[ord("9")] = "9"
+        marker_keys[ord("0")] = "0"
+        return marker_keys
+
     def is_mouse_click(self):
         if self.__key == ImageWindow.KEY_MOUSE_CLICK_EVENT:
             return True

@@ -50,17 +50,17 @@ class Image:
     def drawFrameID(self, frameID):
         self.drawTextInBox(Box(Point(0, 0), Point(80, 50)), frameID)
 
-    def drawTextInBox(self, box, text):
+    def drawTextInBox(self, box, text, color = (0, 255, 0)):
         font = cv2.FONT_HERSHEY_SIMPLEX
         bottomLeftCornerOfText = (box.topLeft.x, box.topLeft.y + 27)
         fontScale = 1
-        fontColor = (0, 255, 0)
+        #fontColor = (0, 255, 0)
         lineType = 2
         cv2.putText(self.__image, str(text),
                     bottomLeftCornerOfText,
                     font,
                     fontScale,
-                    fontColor,
+                    color,
                     lineType)
 
     def drawDriftVectorOnImage(self, driftVector):
