@@ -92,6 +92,7 @@ class ScientistUI:
 
             if user_input.is_command_fix_red_dot():
                 self.__show_red_dot_ui(frame_id)
+                # TODO: rerun interpolate, and make sure all xyzData objects are refreshed.
                 continue
 
             if user_input.is_mouse_click():
@@ -155,9 +156,6 @@ class ScientistUI:
         if frame_id_redDots is not None:
             redDots = self.__redDotsUI.selectedRedDots()
             self.__redDotsData.addManualDots(frame_id_redDots, redDots)
-
-            # TODO: rerun interpolate, and make sure all xyzData objects are refreshed.
-
         self.__redDotsUI.closeWindow()
 
     def __change_contrast(self):

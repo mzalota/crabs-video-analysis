@@ -273,7 +273,7 @@ class RedDotsData(PandasWrapper):
 
         frameId1, gap1 = self.__find_largest_gap('origin_dot1')
         frameId2, gap2 = self.__find_largest_gap('origin_dot2')
-        print ("frameId1", frameId1, "gap1", gap1,"frameId2", frameId2, "gap2", gap2)
+        print ("RedDotsData::getMiddleFrameIDOfBiggestGap", "frameId1", frameId1, "gap1", gap1,"frameId2", frameId2, "gap2", gap2)
         if gap1 > gap2:
             return frameId1, gap1
         else:
