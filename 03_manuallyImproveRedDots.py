@@ -27,7 +27,7 @@ if folderStruct is None:
 
     folderStruct = FolderStructure(rootDir, videoFileName)
 
-#StreamToLogger(folderStruct.getLogFilepath())
+StreamToLogger(folderStruct.getLogFilepath())
 
 videoStream = VideoStream(folderStruct.getVideoFilepath())
 

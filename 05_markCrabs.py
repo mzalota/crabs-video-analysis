@@ -24,7 +24,7 @@ if folderStruct is None:
 
     folderStruct = FolderStructure(rootDir, videoFileName)
 
-#StreamToLogger(folderStruct.getLogFilepath())
+StreamToLogger(folderStruct.getLogFilepath())
 
 print("cv2 version", cv2.__version__)
 
