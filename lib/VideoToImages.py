@@ -43,7 +43,7 @@ class VideoToImages:
             imageFileName = frame.constructFilename()
             imageFilePath = dirpath + "/" + imageFileName
 
-            print "writing frame image to file: " + imageFilePath
+            print ("writing frame image to file: " + imageFilePath)
             imgObj.writeToFile(imageFilePath)
 
         except Exception as error:

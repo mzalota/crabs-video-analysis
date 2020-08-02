@@ -22,9 +22,18 @@ Other files that are used by application
 + reddots_manual.csv - manual mapping of red dots in frames are written here from RedDotsUI. Then this file is joined with reddots_raw.csv to generate reddots_interpolated.csv
 + drifts_interpolated.csv - There are many erroneous entries in drifts_raw.csv. The program removes outliers and "fills in the blanks"/interpolates missing drift data. 
 
-Additionally image files with graphs summarizing geometry:
+Image files with graphs summarizing geometry of video footage:
 + reddots_angle - shows per frame the inclination of the line going through red dots. Red dots move closer or apart along the same line, which should, theoretically, always stay at the same angle to bottom of the frame no matter how camera moves. So far the angle was around 10 degrees.
 + reddots_distance - shows per frame the distance between red dots in pixels
+
+Debugging files:
++ stdout.log - Application writes out all user actions and application's debug information into this file. When reporting a bug to the developers, please attach this file - it will probably contain important technical message. If this file gets too large it can safely be deleted. 
+
+## Subdirectories
+Subdirectory
+1) seqFrames: sequence of images that captures the whole seefloor without overlaps or duplication. If reddots or drift files have buggy data, then the images may contain overlaps or may jump over parts of seefloor. Its important to have good drifts and reddots data! 
+2) crabFrames: images of only those frames from video that contain marked crabs.
+3) savedFrames: images that were manually saved by users by pressing "s" button in Scientist UI screen
 
 ## Key Commands
 
@@ -32,7 +41,8 @@ Additionally image files with graphs summarizing geometry:
 - **mouse click** - "open CrabUI": opens new window with 4 views of the crab.  
 - **z** - "Zoom": toggle between viewing just one frame (zoom-in) or viewing neighboring frames (zoom-out)   
 - **c** - "Contrast": toggle between make image *brighter*, *darker* and return to *normal* 
-- **b** - "Bad": mark this and next 50 frames as *bad* and just to 51st frame 
+- **b** - "Bad": mark this and next 50 frames as *bad* and just to 51st frame
+- **s** - "Save Image": save image of the currently viewed frame into savedFrames subdirectory  
 - **r** - "open RedDotsUI": opens new window zoomed to area around red dots. Click on each red dot once. Data will be saved to reddots_manual.csv and all files interpolated again.
 - **q** - "Quit": quite application 
 

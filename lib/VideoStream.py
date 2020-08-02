@@ -17,7 +17,7 @@ class VideoStream:
     def readImage(self, frameID):
         if  frameID not in self.__imagesCache:
             # image is not in the cache. Read it from VideoCapture and save into cache
-            image = self._readFromVideoCapture(frameID)
+            image = self.readFromVideoCapture(frameID)
             self.__imagesCache[frameID] = image
 
         return self.__imagesCache[frameID]
@@ -26,7 +26,7 @@ class VideoStream:
         # type: () -> Image
         return Image(self.readImage(frameID))
 
-    def _readFromVideoCapture(self, frameID):
+    def readFromVideoCapture(self, frameID):
         self._vidcap.set(cv2.CAP_PROP_POS_FRAMES, float(frameID))
         success, image = self._vidcap.read()
         if not success:

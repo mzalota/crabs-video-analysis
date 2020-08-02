@@ -1,3 +1,4 @@
+from lib.FolderStructure import FolderStructure
 from lib.Image import Image
 from lib.common import Point
 from lib.data.BadFramesData import BadFramesData
@@ -77,6 +78,10 @@ class ScientistUI:
                 print("User requested to quit on frame: ", str(frame_id))
                 break
 
+            if user_input.is_command_save_image():
+                frame_id = self.__saveFrameImageToFile(frame)
+                continue
+
             if user_input.is_command_zoom():
                 self.__change_zoom()
                 continue
@@ -109,6 +114,21 @@ class ScientistUI:
                 print ("now need to mark coordinate ",str(markedPoint))
 
             frame_id = new_frame_id
+
+    def __saveFrameImageToFile(self, frame):
+        print "Pressed S (save image) button"
+
+        #construct filepath where image will be saved
+        dirpath = self.__folderStruct.getSavedFramesDirpath()
+        imageFileName = frame.constructFilename()
+        imageFilePath = dirpath + "/" + imageFileName
+
+        #save image without any marks on it
+        rawUncachedImage = Image(self.__videoStream.readFromVideoCapture(frame.getFrameID()))
+        rawUncachedImage.drawFrameID(frame.getFrameID())
+
+        print("Saving current frame to file: ", imageFilePath)
+        rawUncachedImage.writeToFile(imageFilePath)
 
     def __change_zoom(self):
         # toggle Zoom flag

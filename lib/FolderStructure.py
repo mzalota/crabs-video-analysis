@@ -54,6 +54,9 @@ class FolderStructure:
     def getCrabFramesDirpath(self):
         return self.__getSubDirpath() + "/crabFrames/"
 
+    def getSavedFramesDirpath(self):
+        return self.__getSubDirpath() + "/savedFrames/"
+
     def getFramesFilepath(self):
         return self.__getSubDirpath() + self.__videoFilename + '_seqframes.csv'
 

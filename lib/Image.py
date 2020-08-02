@@ -45,7 +45,6 @@ class Image:
         if not box:
             return
 
-
         cv2.rectangle(self.__image, (box.topLeft.x, box.topLeft.y), (box.bottomRight.x, box.bottomRight.y), color, thickness)
 
     def drawFrameID(self, frameID):

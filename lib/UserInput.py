@@ -39,6 +39,15 @@ class UserInput():
 
         return False
 
+    def is_command_save_image(self):
+        if self.__key == ord("s"):
+            return True
+
+        if self.__key == ord("S"):
+            return True
+
+        return False
+
     def is_command_bad_frame(self):
         if self.__key == ord("b"):
             return True
