@@ -34,10 +34,9 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         if folderStruct.fileExists(filepath):
             #df = pd.read_csv(filepath, delimiter="\t", na_values="(null)")
             df = PandasWrapper.readDataFrameFromCSV(filepath)
-
         else:
             df = None
-        newObj = SeeFloorNoBadBlocks(driftsData, redDotsData, folderStruct,df)
+        newObj = SeeFloorNoBadBlocks(driftsData, redDotsData, folderStruct, df)
         return newObj
 
     def getDriftData(self):
@@ -258,6 +257,11 @@ class SeeFloorNoBadBlocks(PandasWrapper):
             return 0
 
         return vals[0]
+
+    def refreshItself(self):
+        self.__driftData = DriftData.createFromFolderStruct(self.__folderStruct)
+        self.__redDotsData = RedDotsData.createFromFolderStruct(self.__folderStruct)
+        self.saveToFile()
 
     def saveToFile(self):
         filepath = self.__folderStruct.getSeefloorFilepath()

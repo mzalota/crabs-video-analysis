@@ -15,12 +15,13 @@ class VideoStream:
         self.__imagesCache = pylru.lrucache(4) #set the size of cache to be 10 images large
 
     def readImage(self, frameID):
+        # type: (int) -> np
         if  frameID not in self.__imagesCache:
             # image is not in the cache. Read it from VideoCapture and save into cache
             image = self.readFromVideoCapture(frameID)
             self.__imagesCache[frameID] = image
 
-        return self.__imagesCache[frameID]
+        return self.__imagesCache[frameID].copy()
 
     def readImageObj(self, frameID):
         # type: () -> Image

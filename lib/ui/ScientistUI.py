@@ -92,7 +92,7 @@ class ScientistUI:
 
             if user_input.is_command_fix_red_dot():
                 self.__show_red_dot_ui(frame_id)
-                # TODO: rerun interpolate, and make sure all xyzData objects are refreshed.
+                self.__seeFloor.refreshItself()
                 continue
 
             if user_input.is_mouse_click():

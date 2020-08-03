@@ -27,25 +27,30 @@ if folderStruct is None:
 
 StreamToLogger(folderStruct.getLogFilepath())
 
-print ("interpolating DriftData")
-rawDrifts = DriftRawData(folderStruct)
-driftsStepSize = 2
-df = rawDrifts.interpolate(driftsStepSize)
+class InterpolateController:
 
-drifts = DriftData.createFromFolderStruct(folderStruct)
-drifts.setDF(df)
-drifts.saveToFile(folderStruct.getDriftsFilepath())
+    def run(self, folderStruct):
+        print ("interpolating DriftData")
+        rawDrifts = DriftRawData(folderStruct)
+        driftsStepSize = 2
+        df = rawDrifts.interpolate(driftsStepSize)
 
-print ("interpolating RedDots")
-rdd = RedDotsData.createFromFolderStruct(folderStruct)
-rdd.saveInterpolatedDFToFile(drifts.minFrameID(), drifts.maxFrameID()+1)
-rdd.saveGraphOfAngle()
-rdd.saveGraphOfDistance()
+        drifts = DriftData.createFromFolderStruct(folderStruct)
+        drifts.setDF(df)
+        drifts.saveToFile(folderStruct.getDriftsFilepath())
 
-print ("interpolating SeeFloor")
+        print ("interpolating RedDots")
+        rdd = RedDotsData.createFromFolderStruct(folderStruct)
+        rdd.saveInterpolatedDFToFile(drifts.minFrameID(), drifts.maxFrameID()+1)
+        rdd.saveGraphOfAngle()
+        rdd.saveGraphOfDistance()
 
-sf = SeeFloor.createFromFolderStruct(folderStruct)
-sf.saveToFile()
+        print ("interpolating SeeFloor")
 
+        sf = SeeFloor.createFromFolderStruct(folderStruct)
+        sf.saveToFile()
+
+controller = InterpolateController()
+controller.run(folderStruct)
 
 print ("Done inerpolating")
