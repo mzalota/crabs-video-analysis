@@ -2,6 +2,7 @@ from lib.FolderStructure import FolderStructure
 from lib.Image import Image
 from lib.common import Point
 from lib.data.BadFramesData import BadFramesData
+from lib.data.DriftManualData import DriftManualData
 from lib.data.MarkersData import MarkersData
 from lib.data.RedDotsManualData import RedDotsManualData
 from lib.data.SeeFloorNoBadBlocks import SeeFloorNoBadBlocks
@@ -33,6 +34,7 @@ class ScientistUI:
         # type: (ImageWindow, FolderStructure, VideoStream, DriftData) -> ScientistUI
 
         self.__zoom = False
+        self.__markingDrift = False
         self.__contrastLevel = self.CONTRAST_NORMAL
         self.__imageWin = imageWin
         self.__folderStruct = folderStruct
@@ -49,6 +51,7 @@ class ScientistUI:
         self.__redDotsUI = RedDotsUI(self.__videoStream)
         self.__markersData = MarkersData(folderStruct)
         self.__marker_id = "0"
+
 
     def processVideo(self):
 
@@ -112,7 +115,19 @@ class ScientistUI:
 
             if keyPressed == ImageWindow.KEY_RIGHT_MOUSE_CLICK_EVENT:
                 markedPoint = self.__imageWin.featureCoordiate
-                print ("now need to mark coordinate ",str(markedPoint))
+                if self.__markingDrift == True:
+                    print ("manual drift coordinate2 ",str(markedPoint))
+                    self.__markingDrift = False
+                    manualDrifts = DriftManualData.createFromFile(self.__folderStruct)
+                    manualDrifts.add_manual_drift(self.__driftFrame1, self.__driftPoint1, frame_id, markedPoint)
+                    manualDrifts.save_to_file()
+                else:
+                    print ("manual drift coordinate1 ",str(markedPoint))
+                    self.__markingDrift = True
+                    self.__driftFrame1 = frame_id
+                    self.__driftPoint1 = markedPoint
+
+
 
             frame_id = new_frame_id
 
@@ -179,6 +194,8 @@ class ScientistUI:
             imageToShow = collage.constructCollage(frame.getFrameID(), Frame.FRAME_HEIGHT / 2)
         else:
             imageToShow = self.__constructFrameImage(frameImagesFactory, frame)
+            if self.__markingDrift == True:
+                imageToShow.drawCross(self.__driftPoint1)
 
         imageToShow = self.__adjustImageBrightness(imageToShow)
 

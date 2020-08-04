@@ -58,13 +58,26 @@ class DriftManualData(PandasWrapper):
 
     def add_manual_drift(self, frame_number1, point1, frame_number2, point2):
         # type: (int, Point, int, Point) -> None
-        row_to_append = {
+
+
+        if frame_number1 < frame_number2:
+            row_to_append = {
                          self.COLNAME_frameNumber_1: str(int(frame_number1)),
                          self.COLNAME_locationX_1: point1.x,
                          self.COLNAME_locationY_1: point1.y,
                          self.COLNAME_frameNumber_2: str(int(frame_number2)),
                          self.COLNAME_locationX_2: point2.x,
                          self.COLNAME_locationY_2: point2.y,
+                         self.COLNAME_createdOn: datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+                         }
+        else:
+            row_to_append = {
+                         self.COLNAME_frameNumber_1: str(int(frame_number2)),
+                         self.COLNAME_locationX_1: point2.x,
+                         self.COLNAME_locationY_1: point2.y,
+                         self.COLNAME_frameNumber_2: str(int(frame_number1)),
+                         self.COLNAME_locationX_2: point1.x,
+                         self.COLNAME_locationY_2: point1.y,
                          self.COLNAME_createdOn: datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
                          }
 
@@ -99,6 +112,8 @@ class DriftManualData(PandasWrapper):
             startFrameID = int(rec["frameNumber1"])+1
             endFrameID = int(rec["frameNumber2"])+1
             numOfFrames = endFrameID-startFrameID
+            if numOfFrames == 0:
+                continue
 
             arrayOfFrameIDs = numpy.arange(start=startFrameID, stop=endFrameID, step=1)
             newDF = pd.DataFrame(arrayOfFrameIDs, columns=["frameNumber"])

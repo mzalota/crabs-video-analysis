@@ -198,7 +198,7 @@ class DecoMarkersWithNumbers(DecoMarkersAbstract):
 
     def _drawMarkerOnImage(self, mainImage, marker_id, location):
         textBox = self.__determineLocationOfTextBox(location)
-        #print("marker_id", marker_id, "marker textBox", str(textBox), "location", str(location))
+        print("marker_id", marker_id, "marker textBox", str(textBox), "location", str(location))
         mainImage.drawTextInBox(textBox, marker_id, color=Configuration.COLOR_LIGHT_BLUE)
         mainImage.drawCross(location, color=Configuration.COLOR_LIGHT_BLUE)
 
