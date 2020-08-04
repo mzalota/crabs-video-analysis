@@ -2,6 +2,7 @@ import numpy
 import pandas as pd
 
 from lib.FolderStructure import FolderStructure
+from lib.data.DriftManualData import DriftManualData
 
 from lib.data.PandasWrapper import PandasWrapper
 
@@ -25,17 +26,21 @@ class DriftRawData(PandasWrapper):
         # type: () -> int
         return len(self.__df.index)
 
-    def interpolate(self, driftsDetectionStep = 2):
-        # type: () -> pd.DataFrame
+    def interpolate(self, manualDrifts, driftsDetectionStep = 2):
+        # type: (DriftManualData, int) -> pd.DataFrame
 
         df = self._replaceInvalidValuesWithNaN(self.__df.copy(), driftsDetectionStep)
-
-        df = self.__interpolateToHaveEveryFrame(df)
 
         #TODO: dividiing drift by 2 is not flexible. What if detectDrift step is not 2, but 3 or if it is mixed?
         df["driftX"] = df["driftX"] / driftsDetectionStep
         df = df[[self.__COLNAME_frameNumber, self.__COLNAME_driftX, self.__COLNAME_driftY]]
         df["driftY"] = df["driftY"] / driftsDetectionStep
+
+        df = self.__interpolateToHaveEveryFrame(df)
+
+        df = manualDrifts.overwrite_values(df)
+
+        df = df.interpolate(limit_direction='both')
 
         #set drifts in the first row to zero.
         self.setValuesInFirstRowToZeros(df)
@@ -65,7 +70,6 @@ class DriftRawData(PandasWrapper):
         arrayOfFrameIDs = numpy.arange(start=minFrameID, stop=maxFrameID, step=1)
         everyFrame = pd.DataFrame(arrayOfFrameIDs, columns=["frameNumber"]).set_index("frameNumber")
         df = df.combine_first(everyFrame).reset_index()
-        df = df.interpolate(limit_direction='both')
         return df
 
     def minFrameID(self):

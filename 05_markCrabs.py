@@ -17,14 +17,14 @@ if folderStruct is None:
     rootDir = "C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
 
     #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6647"
-    #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6692"
+    rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6692"
     #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6651"
     #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6658"
-    videoFileName = "V2"
+    videoFileName = "V7"
 
     folderStruct = FolderStructure(rootDir, videoFileName)
 
-StreamToLogger(folderStruct.getLogFilepath())
+#StreamToLogger(folderStruct.getLogFilepath())
 
 print("cv2 version", cv2.__version__)
 

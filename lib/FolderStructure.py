@@ -33,6 +33,12 @@ class FolderStructure:
     def getRedDotsManualFilepath(self):
         return self.__getSubDirpath() + self.__videoFilename + '_reddots_manual.csv'
 
+    def getDriftsManualFilepath(self):
+        return self.__getSubDirpath() + self.getDriftsManualFilename()
+
+    def getDriftsManualFilename(self):
+        return self.__videoFilename + '_drifts_manual.csv'
+
     def getRawDriftsFilepath(self):
         return self.__getSubDirpath() + self.getRawDriftsFilename()
 

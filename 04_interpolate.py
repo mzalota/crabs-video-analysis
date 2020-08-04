@@ -2,6 +2,7 @@ import sys
 
 from lib.CommandLineLauncher import CommandLineLauncher
 from lib.StreamToLogger import StreamToLogger
+from lib.data.DriftManualData import DriftManualData
 from lib.data.DriftRawData import DriftRawData
 from lib.FolderStructure import FolderStructure
 from lib.data.DriftData import DriftData
@@ -17,11 +18,11 @@ if folderStruct is None:
     # videoFileName = "V2"
 
     #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6647"
-    #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6692"
+    rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6692"
     #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6651"
     #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6658"
 
-    videoFileName = "V2"
+    videoFileName = "V7"
 
     folderStruct = FolderStructure(rootDir, videoFileName)
 
@@ -31,9 +32,14 @@ class InterpolateController:
 
     def run(self, folderStruct):
         print ("interpolating DriftData")
+        manualDrifts = DriftManualData.createFromFile(folderStruct)
+
         rawDrifts = DriftRawData(folderStruct)
         driftsStepSize = 2
-        df = rawDrifts.interpolate(driftsStepSize)
+        df = rawDrifts.interpolate(manualDrifts, driftsStepSize)
+
+        # df = manualDrifts.overwrite_values(df)
+        # df = df.interpolate(limit_direction='both')
 
         drifts = DriftData.createFromFolderStruct(folderStruct)
         drifts.setDF(df)
