@@ -41,6 +41,10 @@ class Image:
         self.drawLine(point.translateBy(Vector(-size, -size)), point.translateBy(Vector(size, size)), color=color)
         self.drawLine(point.translateBy(Vector(size, -size)), point.translateBy(Vector(-size, size)), color=color)
 
+    def drawCrossVertical(self, point, size=8, color=(0, 255, 0)):
+        self.drawLine(point.translateBy(Vector(-size, 0)), point.translateBy(Vector(size, 0)), thickness=2, color=color)
+        self.drawLine(point.translateBy(Vector(0, -size)), point.translateBy(Vector(0, size)), thickness=2, color=color)
+
     def drawBoxOnImage(self, box, color=(0, 255, 0), thickness = 2):
         if not box:
             return

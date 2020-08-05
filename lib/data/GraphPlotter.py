@@ -9,3 +9,8 @@ class GraphPlotter:
         self.__df.plot(x=xColumn, y=yColumns, figsize=(15, 7), title=graphTitle)
         plt.gca().grid(which='major', axis='both', linestyle='--')  # specify grid lines
         plt.savefig(filePath, format='png', dpi=300)
+
+    def saveGraphToFileVertical(self, xColumn, yColumns, graphTitle, filePath):
+        self.__df.plot(x=xColumn, y=yColumns, figsize=(7, 15), title=graphTitle)
+        plt.gca().grid(which='major', axis='both', linestyle='--')  # specify grid lines
+        plt.savefig(filePath, format='png', dpi=300)

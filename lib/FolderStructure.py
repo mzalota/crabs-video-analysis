@@ -16,55 +16,55 @@ class FolderStructure:
         return self.__rootDirectory + "/" + self.__videoFilename + ".avi"
 
     def getRedDotsRawFilepath(self):
-        return self.__getSubDirpath() + self.getRedDotsRawFilename()
+        return self.getSubDirpath() + self.getRedDotsRawFilename()
 
     def getRedDotsRawFilename(self):
         return self.__videoFilename + '_reddots_raw.csv'
 
     def getRedDotsInterpolatedFilepath(self):
-        return self.__getSubDirpath() + self.__videoFilename + '_reddots_interpolated.csv'
+        return self.getSubDirpath() + self.__videoFilename + '_reddots_interpolated.csv'
 
     def getRedDotsGraphAngle(self):
-        return self.__getSubDirpath() + self.__videoFilename + '_reddots_angle.png'
+        return self.getSubDirpath() + self.__videoFilename + '_reddots_angle.png'
 
     def getRedDotsGraphDistance(self):
-        return self.__getSubDirpath() + self.__videoFilename + '_reddots_distance.png'
+        return self.getSubDirpath() + self.__videoFilename + '_reddots_distance.png'
 
     def getRedDotsManualFilepath(self):
-        return self.__getSubDirpath() + self.__videoFilename + '_reddots_manual.csv'
+        return self.getSubDirpath() + self.__videoFilename + '_reddots_manual.csv'
 
     def getDriftsManualFilepath(self):
-        return self.__getSubDirpath() + self.getDriftsManualFilename()
+        return self.getSubDirpath() + self.getDriftsManualFilename()
 
     def getDriftsManualFilename(self):
         return self.__videoFilename + '_drifts_manual.csv'
 
     def getRawDriftsFilepath(self):
-        return self.__getSubDirpath() + self.getRawDriftsFilename()
+        return self.getSubDirpath() + self.getRawDriftsFilename()
 
     def getRawDriftsFilename(self):
         return self.__videoFilename + '_raw_drifts.csv'
 
     def getDriftsFilepath(self):
-        return self.__getSubDirpath() + self.__videoFilename + '_drifts_interpolated.csv'
+        return self.getSubDirpath() + self.__videoFilename + '_drifts_interpolated.csv'
 
     def getSeefloorFilepath(self):
-        return self.__getSubDirpath() + self.__videoFilename + '_seefloor.csv'
+        return self.getSubDirpath() + self.__videoFilename + '_seefloor.csv'
 
     def getBadFramesFilepath(self):
-        return self.__getSubDirpath() + self.__videoFilename + '_badframes.csv'
+        return self.getSubDirpath() + self.__videoFilename + '_badframes.csv'
 
     def getFramesDirpath(self):
-        return self.__getSubDirpath() + "/seqFrames/"
+        return self.getSubDirpath() + "/seqFrames/"
 
     def getCrabFramesDirpath(self):
-        return self.__getSubDirpath() + "/crabFrames/"
+        return self.getSubDirpath() + "/crabFrames/"
 
     def getSavedFramesDirpath(self):
-        return self.__getSubDirpath() + "/savedFrames/"
+        return self.getSubDirpath() + "/savedFrames/"
 
     def getFramesFilepath(self):
-        return self.__getSubDirpath() + self.__videoFilename + '_seqframes.csv'
+        return self.getSubDirpath() + self.__videoFilename + '_seqframes.csv'
 
     #def getFramesFilepaths(self):
     #    framesDir = self.getFramesDirpath()
@@ -75,16 +75,16 @@ class FolderStructure:
     #    return filepaths
 
     def getCrabsFilepath(self):
-        return self.__getSubDirpath() + "/" + self.__videoFilename + "_crabs.csv"
+        return self.getSubDirpath() + "/" + self.__videoFilename + "_crabs.csv"
 
     def getMarkersFilepath(self):
-        return self.__getSubDirpath() + "/" + self.__videoFilename + "_markers.csv"
+        return self.getSubDirpath() + "/" + self.__videoFilename + "_markers.csv"
 
-    def __getSubDirpath(self):
+    def getSubDirpath(self):
         return self.__rootDirectory + "/" + self.__videoFilename + "/"
 
     def getLogFilepath(self):
-        return self.__getSubDirpath() + 'stdout.log'
+        return self.getSubDirpath() + 'stdout.log'
 
     def fileExists(self, filepath):
         return os.path.isfile(filepath)

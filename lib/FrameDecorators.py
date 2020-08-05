@@ -191,6 +191,7 @@ class DecoMarkersAbstract(FrameDecorator):
         # type: (int) -> dict
         prev_frame_id = self.__seefloorGeometry.getPrevFrameMM(frame_id)
         next_frame_id = self.__seefloorGeometry.getNextFrameMM(frame_id)
+        print("__markersOnFrame: frame_id",frame_id, "prev_frame_id", prev_frame_id, "next_frame_id", next_frame_id)
         return self.__markersData.marksBetweenFrames(prev_frame_id, next_frame_id)
 
 

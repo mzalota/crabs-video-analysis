@@ -3,6 +3,7 @@ import numpy
 from lib.data.BadFramesData import BadFramesData
 from lib.data.DriftData import DriftData
 from lib.Frame import Frame
+from lib.data.GraphPlotter import GraphPlotter
 from lib.data.PandasWrapper import PandasWrapper
 from lib.data.RedDotsData import RedDotsData
 from lib.FolderStructure import FolderStructure
@@ -324,3 +325,39 @@ class SeeFloorNoBadBlocks(PandasWrapper):
             newPoint = Point(newPoint.x, newY)
 
         return newPoint
+
+    def saveGraphSeefloorY(self):
+        filePath = self.__folderStruct.getSubDirpath()+"/graph_y.png"#self.__folderStruct.getRedDotsGraphAngle()
+        graphTitle = self.__folderStruct.getVideoFilename()+ " seefloor advancement along Y (vertical) axis"
+        xColumn = "frameNumber"
+        yColumns = ["driftY_sum_mm"]
+
+        graphPlotter = GraphPlotter(self.getDF())
+        graphPlotter.saveGraphToFile(xColumn, yColumns, graphTitle, filePath)
+
+    def saveGraphSeefloorX(self):
+        filePath = self.__folderStruct.getSubDirpath()+"/graph_x.png"#self.__folderStruct.getRedDotsGraphAngle()
+        graphTitle = self.__folderStruct.getVideoFilename()+ " seefloor advancement along X (horizontal) axis "
+        xColumn = "frameNumber"
+        yColumns = ["driftX_sum_mm"]
+
+        graphPlotter = GraphPlotter(self.getDF())
+        graphPlotter.saveGraphToFile(xColumn, yColumns, graphTitle, filePath)
+
+    def saveGraphSeefloorXY(self):
+        filePath = self.__folderStruct.getSubDirpath()+"/graph_xy.png"#self.__folderStruct.getRedDotsGraphAngle()
+        graphTitle = self.__folderStruct.getVideoFilename()+ " seefloor advancement along X (horizontal) axis "
+        xColumn = "driftX_sum_mm"
+        yColumns = ["driftY_sum_mm"]
+
+        graphPlotter = GraphPlotter(self.getDF())
+        graphPlotter.saveGraphToFileVertical(xColumn, yColumns, graphTitle, filePath)
+
+    def saveGraphDrifts(self):
+        filePath = self.__folderStruct.getSubDirpath()+"/graph_drifts.png"#self.__folderStruct.getRedDotsGraphAngle()
+        graphTitle = self.__folderStruct.getVideoFilename()+ " drift (pixels)"
+        xColumn = "frameNumber"
+        yColumns = ["driftY_mm", "driftX_mm"] #"driftX", "driftY"
+
+        graphPlotter = GraphPlotter(self.getDF())
+        graphPlotter.saveGraphToFile(xColumn, yColumns, graphTitle, filePath)

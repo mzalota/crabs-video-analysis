@@ -195,7 +195,7 @@ class ScientistUI:
         else:
             imageToShow = self.__constructFrameImage(frameImagesFactory, frame)
             if self.__markingDrift == True:
-                imageToShow.drawCross(self.__driftPoint1)
+                imageToShow.drawCrossVertical(self.__driftPoint1,size=12)
 
         imageToShow = self.__adjustImageBrightness(imageToShow)
 

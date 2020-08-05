@@ -14,7 +14,7 @@ print ("Starting to interpolate Data")
 folderStruct = CommandLineLauncher.initializeFolderStruct(sys.argv)
 if folderStruct is None:
 
-    rootDir ="C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
+    #rootDir ="C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
     # videoFileName = "V2"
 
     #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6647"
@@ -55,6 +55,10 @@ class InterpolateController:
 
         sf = SeeFloor.createFromFolderStruct(folderStruct)
         sf.saveToFile()
+        sf.saveGraphSeefloorY()
+        sf.saveGraphSeefloorX()
+        sf.saveGraphSeefloorXY()
+        sf.saveGraphDrifts()
 
 controller = InterpolateController()
 controller.run(folderStruct)
