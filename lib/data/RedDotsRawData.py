@@ -30,7 +30,7 @@ class RedDotsRawData(PandasWrapper):
 
         filepath = folderStruct.getRedDotsRawFilepath()
         if not folderStruct.fileExists(filepath):
-            return RedDotsRawData.createNewAndReplaceExistingCSVFile()
+            return RedDotsRawData.createNewAndReplaceExistingCSVFile(folderStruct)
 
         newObj = RedDotsRawData(folderStruct)
         # dfRaw = dfRaw.rename(columns={dfRaw.columns[0]: "rowNum"}) # rename first column to be rowNum
