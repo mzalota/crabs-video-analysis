@@ -30,11 +30,18 @@ if folderStruct is None:
     #videoFileName = "V2_R_20180911_165730"
     #videoFileName = "V3_R_20180911_170159"
 
-    rootDir = "C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
-    videoFileName = "V2"
+    #rootDir = "C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
+    #videoFileName = "V2"
+
+    rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6647"
+    #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6692"
+    #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6651"
+    #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6658"
+    videoFileName = "V4"
+
     folderStruct = FolderStructure(rootDir, videoFileName)
 
-StreamToLogger(folderStruct.getLogFilepath())
+#StreamToLogger(folderStruct.getLogFilepath())
 
 seefloorGeometry = SeeFloor.createFromFolderStruct(folderStruct)
 videoStream = VideoStream(folderStruct.getVideoFilepath())

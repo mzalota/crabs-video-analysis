@@ -22,7 +22,7 @@ if folderStruct is None:
     #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6651"
     #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6658"
 
-    videoFileName = "V12"
+    videoFileName = "V4"
 
     folderStruct = FolderStructure(rootDir, videoFileName)
 

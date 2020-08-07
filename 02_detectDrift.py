@@ -15,7 +15,7 @@ if folderStruct is None:
     # videoFileName = "V3"
 
     rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6647"
-    videoFileName = "V12"
+    videoFileName = "V4"
 
     folderStruct = FolderStructure(rootDir, videoFileName)
     folderStruct.createDirectoriesIfDontExist(folderStruct.getDriftsFilepath())
