@@ -212,7 +212,6 @@ class RedDotsData(PandasWrapper):
 
         print("outlier column", column_with_outliers, "Upper bound", upper_bound, "angle lower bound", lower_bound, "95th percentile", upper_95, "5th percentile", lower_5, "99th percentile", upper_99, "1st percentile", lower_1)
 
-
         #median_angle
         median_angle = self.__redDotsManual.median_angle()
         if median_angle:

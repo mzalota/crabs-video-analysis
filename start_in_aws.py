@@ -50,7 +50,6 @@ class RunInAWS():
 
         self.__s3client.download_file(s3_bucket, s3_key_video_file, local_filepath)
 
-
     def detect_red_dots(self, folderStruct, s3_bucket, s3_rootDir, videoFileName):
         controller = DetectRedDotsController(folderStruct)
         controller.run()
@@ -69,8 +68,6 @@ class RunInAWS():
         print("s3_key_raw_drifts", s3_key_raw_drifts)
 
         self.__s3client.upload_file(folderStruct.getRawDriftsFilepath(), s3_bucket, s3_key_raw_drifts)
-
-
 
     def read_message_from_queue(self):
         # Create SQS client
