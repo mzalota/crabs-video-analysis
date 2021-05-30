@@ -16,11 +16,15 @@ if folderStruct is None:
     #videoFileName = "V1"
     #rootDir = "C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
 
-    rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6647"
+    #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6647"
     #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6692"
     #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6651"
     #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6658"
-    videoFileName = "V4"
+    #videoFileName = "V4"
+
+    rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.01_6878"
+    videoFileName = "V20200901_215555_001"
+    
 
     folderStruct = FolderStructure(rootDir, videoFileName)
 

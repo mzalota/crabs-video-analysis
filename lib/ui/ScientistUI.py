@@ -67,6 +67,8 @@ class ScientistUI:
                 traceback.print_exc()
                 break
 
+            # print ("image height: ", frame.getImgObj().height())
+            # print ("image width: ", frame.getImgObj().width())
             keyPressed = self.showFrame(frame)
             user_input = UserInput(keyPressed)
 
@@ -126,8 +128,6 @@ class ScientistUI:
                     self.__markingDrift = True
                     self.__driftFrame1 = frame_id
                     self.__driftPoint1 = markedPoint
-
-
 
             frame_id = new_frame_id
 
@@ -243,12 +243,12 @@ class ScientistUI:
     def __process_navigation_key_press(self, frame_id, user_input):
 
         if user_input.is_large_step_forward():
-            # scroll 7 frames forward
+            # scroll 500 frames forward
             new_frame_id = frame_id+500
             return new_frame_id
 
         if user_input.is_large_step_backward():
-            # scroll 7 frames forward
+            # scroll 500 frames backward
             new_frame_id = frame_id-500
             return new_frame_id
 

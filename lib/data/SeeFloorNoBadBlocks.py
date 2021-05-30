@@ -156,6 +156,8 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         if df is None:
             return None
 
+        # print("SeeFloorNoBadBlocks.getFrame() yMMAway")
+
         yCoordMMOrigin = self.__getYCoordMMOrigin(fromFrameID)
         yCoordMMDestination = yCoordMMOrigin + yMMAway
 
@@ -282,7 +284,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         dfMerged["driftX_mm"] = dfMerged["driftX"] * dfMerged["mm_per_pixel"]
         dfMerged["driftY_sum_mm"] = dfMerged["driftY_mm"].cumsum()
         dfMerged["driftX_sum_mm"] = dfMerged["driftX_mm"].cumsum()
-        dfMerged["bottom_corner_mm"] = 1080 * dfMerged["mm_per_pixel"] + dfMerged["driftY_sum_mm"]
+        dfMerged["bottom_corner_mm"] = Frame.FRAME_HEIGHT * dfMerged["mm_per_pixel"] + dfMerged["driftY_sum_mm"]
         dfMerged = dfMerged.sort_values(by=['frameNumber'])
         return dfMerged
 

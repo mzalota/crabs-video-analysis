@@ -1,0 +1,7 @@
+{
+"s3bucket": "crab-videos",
+"rootDir": "2020-Kara/2020.09.03_6884",
+"videoFileName": "V20200903_201014_001"
+}
+
+C:\progs\Python38-32\python.exe C:\progs\PyCharm2020_2_3\plugins\python\helpers\pycharm\_jb_unittest_runner.py --path C:/workspaces/direction-of-arrival/tests

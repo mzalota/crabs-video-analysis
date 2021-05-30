@@ -6,8 +6,11 @@ class Frame:
     #__frameID = None
     #__image = None
 
-    FRAME_HEIGHT = 1080
-    FRAME_WIDTH = 1920
+    # FRAME_HEIGHT = 1080
+    # FRAME_WIDTH = 1920
+
+    FRAME_HEIGHT = 2048
+    FRAME_WIDTH = 3072
 
     def __init__(self, frameNumber, videoStream):
         # type: (int, VideoStream) -> Frame

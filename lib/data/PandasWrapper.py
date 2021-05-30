@@ -10,6 +10,10 @@ class PandasWrapper:
             dfRaw = pd.read_csv(filepath, delimiter="\t", na_values="(null)")
         return dfRaw
 
+    @staticmethod
+    def empty_df():
+        return pd.DataFrame()
+
     def __propertyInitialized(self, propertyStr):
         print ("__propertyInitialized")
         try:

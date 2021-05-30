@@ -9,7 +9,8 @@ class CrabUI:
         self.__videoStream = videoStream
         self.__driftData = driftData
         self.__crabsData = crabsData
-        self.__boxSize = 200
+        self.__boxSize = 300
+        # self.__boxSize = 200
         self.__crabFeature = Feature(self.__driftData, frameID, crabPoint, self.__boxSize)
 
     def showCrabWindow(self):

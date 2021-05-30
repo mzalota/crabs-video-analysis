@@ -1,6 +1,7 @@
 import cv2
 
 from lib.Frame import Frame
+from lib.Image import Image
 from lib.ImageWindow import ImageWindow
 from lib.data.RedDotsData import RedDotsData
 from lib.UserInput import UserInput
@@ -11,8 +12,8 @@ from lib.data.RedDotsRawData import RedDotsRawData
 
 class RedDotsUI:
     # we expect Red Dots to be alwas withing these Coordinates. If red dots wander outside, then these coordinates shoud be expanded
-    #__zoomBox = Box(Point(800, 400), Point(1300, 700))
     __zoomBox = Box(Point(400, 200), Point(1500, 900))
+    #__zoomBox = Box(Point(572, 548), Point(2500, 1500))
 
     def __init__(self, videoStream):
         # type: (VideoStream) -> RedDotsUI
@@ -21,7 +22,7 @@ class RedDotsUI:
 
     def selectedRedDots(self):
         redDotsInCoordinatesOfZoomWin = self.__imageZoomWin.featureBox
-        redDots = redDotsInCoordinatesOfZoomWin.translateCoordinateToOuter(self.__zoomBox.topLeft)
+        redDots = redDotsInCoordinatesOfZoomWin.translateCoordinateToOuter(self.__getZoomBox().topLeft)
         print("redDotsInCoordinatesOfZoomWin", str(redDotsInCoordinatesOfZoomWin),"redDots", str(redDots))
         return redDots
 
@@ -32,8 +33,8 @@ class RedDotsUI:
 
         while True:
             image = self.__videoStream.readImageObj(frameID)
-
-            zoomImage = image.subImage(self.__zoomBox)
+            self.__updateZoomBox(image)
+            zoomImage = image.subImage(self.__getZoomBox())
             zoomImage.drawFrameID(frameID)
 
             if gapSize is not None:
@@ -69,3 +70,12 @@ class RedDotsUI:
                 frameID = frameID - 20
             else:
                 print ("invalid Key pressed:", keyPressed)
+
+    def __getZoomBox(self):
+        return self.__zoomBox
+
+    def __updateZoomBox(self, imageOrig):
+        # type: (Image) -> void
+        height_offset = int(imageOrig.height() / 4)
+        width_offset = int(imageOrig.width() / 4)
+        self.__zoomBox = Box(Point(width_offset, height_offset), Point(imageOrig.width()-width_offset, imageOrig.height()- height_offset))

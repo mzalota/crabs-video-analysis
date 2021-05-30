@@ -11,7 +11,6 @@ class FillRedDotsGapsController:
 
     def showUI(self):
         while True:
-            #frameID = self.__redDotsData.getMiddleOfBiggestGap()
             frameID, gapSize = self.__redDotsData.getMiddleFrameIDOfBiggestGap()
             print ("next Frame to process", frameID)
 

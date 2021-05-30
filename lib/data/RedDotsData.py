@@ -63,7 +63,10 @@ class RedDotsData(PandasWrapper):
         except AttributeError:
             # attribute self.__interpolatedDF have not been initialized yet
             filepath = self.__folderStruct.getRedDotsInterpolatedFilepath()
-            self.__interpolatedDF = self.readDataFrameFromCSV(filepath)
+            if self.__folderStruct.fileExists(filepath):
+                self.__interpolatedDF = self.readDataFrameFromCSV(filepath)
+            else:
+                self.__interpolatedDF = PandasWrapper.empty_df()
             return self.__interpolatedDF
 
     def saveGraphOfAngle(self):
