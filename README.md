@@ -11,6 +11,8 @@ To process a new video of seefloor execute commands if the following order:
 
 You don't really need to use Jupyter Notebooks, other then to double-check data and to visualize contents of the files.
 
+If you are processing lower resolution video files, you need to modify FRAME_HEIGHT and FRAME_WIDTH constants in Frame class (1080x1920 vs 2048x3072)
+
 ## Files
 Relevant CSV Files that scientist may want to analyze:
 1) crabs.csv - one crab per line: frame number, size in pixels and location on the frame
