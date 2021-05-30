@@ -1,3 +1,4 @@
+from lib.Frame import Frame
 from lib.RedDot import RedDot
 from common import Point, Box
 
@@ -27,11 +28,9 @@ class RedDotsDetector:
         #return img
 
     def isolateRedDots(self):
-        self.__redDot1 = RedDot(self.__frame.getImgObj(), self.__redDotsSearchArea1())
-        #self.__redDot1.isolateRedDots()
-        self.__redDot2 = RedDot(self.__frame.getImgObj(), self.__redDotsSearchArea2())
-        #self.__redDot2.isolateRedDots()
-
+        imageObj = self.__frame.getImgObj()
+        self.__redDot1 = RedDot(imageObj, self.__redDotsSearchArea1())
+        self.__redDot2 = RedDot(imageObj, self.__redDotsSearchArea2())
 
     def __getImage(self):
         return self.__frame.getImgObj()
@@ -49,19 +48,26 @@ class RedDotsDetector:
     def __redDotsSearchArea1(self):
         if self.__redDot1 and self.__redDot1.dotWasDetected():
             return self.__updateRedDotsSearchArea(self.__redDot1.boxAroundDot)
-
-        #if self.__prevDetector:
-        #    return self.__prevDetector.__redDotsSearchArea1()
-
-        return Box(Point(600, 300), Point(900, 600))
+        return self.__initial_search_area1()
 
     def __redDotsSearchArea2(self):
         if self.__redDot2 and self.__redDot2.dotWasDetected():
             return self.__updateRedDotsSearchArea(self.__redDot2.boxAroundDot)
-        #if self.__prevDetector:
-        #    return self.__prevDetector.__redDotsSearchArea2()
+        return self.__initial_search_area2()
 
-        return Box(Point(900, 300), Point(1400, 800))
+    def __initial_search_area1(self):
+        # type: () -> Box
+        if (Frame.is_high_resolution() ):
+            return Box(Point(1200, 1000), Point(1600, 1400))
+        else:
+            return Box(Point(600, 300), Point(900, 600))
+
+    def __initial_search_area2(self):
+        # type: () -> Box
+        if (Frame.is_high_resolution()):
+            return Box(Point(1400, 1000), Point(1900, 1400))
+        else:
+            return Box(Point(900, 300), Point(1400, 800))
 
     def __updateRedDotsSearchArea(self, boxAroundRedDots):
         dotsShift = int(self.__distanceBetweenRedPoints() / 2)

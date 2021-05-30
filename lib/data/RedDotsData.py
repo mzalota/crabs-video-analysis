@@ -62,7 +62,9 @@ class RedDotsData(PandasWrapper):
             return self.__interpolatedDF
         except AttributeError:
             # attribute self.__interpolatedDF have not been initialized yet
+            print("RedDotsData in getPandasDF. creating __interpolatedDF")
             filepath = self.__folderStruct.getRedDotsInterpolatedFilepath()
+            print("getRedDotsInterpolatedFilepath: "+filepath)
             if self.__folderStruct.fileExists(filepath):
                 self.__interpolatedDF = self.readDataFrameFromCSV(filepath)
             else:
@@ -271,7 +273,7 @@ class RedDotsData(PandasWrapper):
     def getMiddleFrameIDOfBiggestGap(self):
         # type: () -> int
         if self.getCount() <=0:
-            return None
+            return None, None
 
         frameId1, gap1 = self.__find_largest_gap('origin_dot1')
         frameId2, gap2 = self.__find_largest_gap('origin_dot2')

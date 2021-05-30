@@ -1,5 +1,7 @@
 import sys
 
+import cv2
+
 from lib.DetectRedDotsController import DetectRedDotsController
 from lib.CommandLineLauncher import CommandLineLauncher
 from lib.FolderStructure import FolderStructure
@@ -8,6 +10,7 @@ from lib.StreamToLogger import StreamToLogger
 
 
 #https://www.pyimagesearch.com/2016/10/31/detecting-multiple-bright-spots-in-an-image-with-python-and-opencv/
+from lib.VideoStream import VideoStream
 
 print ("Starting to detect RedDots")
 
@@ -17,8 +20,11 @@ if folderStruct is None:
     # videoFileName = "V3"
 
     #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6647"
-    rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.13_6916"
-    videoFileName = "R_20200913_203053_20200913_203451"
+    # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.13_6916"
+    # videoFileName = "R_20200913_203053_20200913_203451"
+
+    rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.06_6902"
+    videoFileName = "V20200906_025014_001"
 
     # rootDir ="C:/workspaces/AnjutkaVideo/2019-Kara/St6236_19"
     # videoFileName = "V1"
@@ -40,8 +46,23 @@ if folderStruct is None:
     folderStruct = FolderStructure(rootDir, videoFileName)
     folderStruct.createDirectoriesIfDontExist(folderStruct.getRedDotsRawFilepath())
 
-
 StreamToLogger(folderStruct.getLogFilepath())
+
+# cap=cv2.VideoCapture(folderStruct.getVideoFilepath())
+# print("cv2.length")
+# # print(cv2.samples)
+# length = int(cap.get(cv2.CAP_PROP_POS_FRAMES ))
+# print( length )
+# vs = VideoStream(folderStruct.getVideoFilepath())
+# print( "vs.num_of_frames()")
+# print( vs.num_of_frames() )
+#
+# print( "vs.frame_width()")
+# print( vs.frame_width() )
+#
+# print( "vs.frame_height()")
+# print( vs.frame_height() )
+
 
 controller = DetectRedDotsController(folderStruct)
 controller.run()

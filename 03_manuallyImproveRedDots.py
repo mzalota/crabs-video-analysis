@@ -19,7 +19,8 @@ if folderStruct is None:
     #videoFileName = "V3"
     #rootDir = "C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
 
-    rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.01_6878"
+    # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.01_6878"
+    rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.06_6902"
     #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6647"
     #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6651"
     # rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6692"
@@ -27,12 +28,12 @@ if folderStruct is None:
 
     #videoFileName = "V4"
 
-    videoFileName = "V20200901_215555_001"
-
+    # videoFileName = "V20200901_215555_001"
+    videoFileName = "V20200906_025014_001"
 
     folderStruct = FolderStructure(rootDir, videoFileName)
 
-#StreamToLogger(folderStruct.getLogFilepath())
+StreamToLogger(folderStruct.getLogFilepath())
 
 videoStream = VideoStream(folderStruct.getVideoFilepath())
 
