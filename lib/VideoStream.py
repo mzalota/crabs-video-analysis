@@ -12,10 +12,16 @@ class VideoStreamException(Exception):
 #https://docs.opencv.org/3.4/d4/d15/group__videoio__flags__base.html#gaeb8dd9c89c10a5c63c139bf7c4f5704d
 
 class VideoStream:
+    FRAMES_PER_SECOND = 25
 
     def __init__(self, videoFilepath):
         self._vidcap = cv2.VideoCapture(videoFilepath)
         self.__imagesCache = pylru.lrucache(4) #set the size of cache to be 10 images large
+
+        print ("num_of_frames", self.num_of_frames())
+        print ("frame_height", self.frame_height())
+        print ("frame_width", self.frame_width())
+        print ("frames_per_second", self.frames_per_second())
 
     def num_of_frames(self):
         # type: () -> int
@@ -28,6 +34,10 @@ class VideoStream:
     def frame_height(self):
         # type: () -> int
         return int(self._vidcap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    def frames_per_second(self):
+        # type: () -> int
+        return int(self._vidcap.get(cv2.CAP_PROP_FPS))
 
     def readImage(self, frameID):
         # type: (int) -> np

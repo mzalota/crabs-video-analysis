@@ -4,6 +4,7 @@ import pandas as pd
 import numpy
 
 from lib.FolderStructure import FolderStructure
+from lib.VideoStream import VideoStream
 from lib.data.GraphPlotter import GraphPlotter
 from lib.data.PandasWrapper import PandasWrapper
 from lib.common import Point
@@ -25,6 +26,7 @@ class RedDotsData(PandasWrapper):
     VALUE_ORIGIN_raw = "raw"
 
     COLNAME_frameNumber = 'frameNumber'
+    __COLNAME_seconds = 'seconds'
     __COLNAME_centerPoint_x = "centerPoint_x"
     __COLNAME_centerPoint_y = "centerPoint_y"
     __COLNAME_mm_per_pixel = "mm_per_pixel"
@@ -74,7 +76,7 @@ class RedDotsData(PandasWrapper):
     def saveGraphOfAngle(self):
         filePath = self.__folderStruct.getGraphRedDotsAngle()
         graphTitle = self.__folderStruct.getVideoFilename()+ " Red Dots Angle (degrees)"
-        xColumn = self.COLNAME_frameNumber
+        xColumn = [self.COLNAME_frameNumber, self.__COLNAME_seconds]
         yColumns = [self.__COLNAME_angle]
 
         graphPlotter = GraphPlotter(self.getPandasDF())
@@ -83,7 +85,7 @@ class RedDotsData(PandasWrapper):
     def saveGraphOfDistance(self):
         filePath = self.__folderStruct.getGraphRedDotsDistance()
         graphTitle = self.__folderStruct.getVideoFilename()+ " Red Dots Distance (pixels)"
-        xColumn = self.COLNAME_frameNumber
+        xColumn = [self.COLNAME_frameNumber, self.__COLNAME_seconds]
         yColumns = [self.__COLNAME_distance]
 
         graphPlotter = GraphPlotter(self.getPandasDF())
@@ -170,6 +172,7 @@ class RedDotsData(PandasWrapper):
     def __calculateDerivedValues(self, df):
         self.__recalculate_column_distance(df)
         self.__recalculate_column_angle(df)
+        df[self.__COLNAME_seconds] = df[self.COLNAME_frameNumber]/VideoStream.FRAMES_PER_SECOND
 
     def __recalculate_column_distance(self, df):
         df['distance'] = pow(pow(df["centerPoint_x_dot2"] - df["centerPoint_x_dot1"], 2) + pow(

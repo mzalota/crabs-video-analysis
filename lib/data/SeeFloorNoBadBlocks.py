@@ -1,5 +1,6 @@
 import numpy
 
+from lib.VideoStream import VideoStream
 from lib.data.BadFramesData import BadFramesData
 from lib.data.DriftData import DriftData
 from lib.Frame import Frame
@@ -285,6 +286,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         dfMerged["driftY_sum_mm"] = dfMerged["driftY_mm"].cumsum()
         dfMerged["driftX_sum_mm"] = dfMerged["driftX_mm"].cumsum()
         dfMerged["bottom_corner_mm"] = Frame.FRAME_HEIGHT * dfMerged["mm_per_pixel"] + dfMerged["driftY_sum_mm"]
+        dfMerged["seconds"] = dfMerged["frameNumber"]/VideoStream.FRAMES_PER_SECOND
         dfMerged = dfMerged.sort_values(by=['frameNumber'])
         return dfMerged
 
@@ -332,7 +334,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         # filePath = self.__folderStruct.getSubDirpath()+"/graph_y.png"#self.__folderStruct.getRedDotsGraphAngle()
         filePath = self.__folderStruct.getGraphSeefloorAdvancementY()
         graphTitle = self.__folderStruct.getVideoFilename()+ " seefloor advancement along Y (vertical/forward) axis (mm)"
-        xColumn = "frameNumber"
+        xColumn = ["frameNumber", "seconds"]
         yColumns = ["driftY_sum_mm"]
 
         graphPlotter = GraphPlotter(self.getDF())
@@ -342,7 +344,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         # filePath = self.__folderStruct.getSubDirpath()+"/graph_x.png"#self.__folderStruct.getRedDotsGraphAngle()
         filePath = self.__folderStruct.getGraphSeefloorAdvancementX()
         graphTitle = self.__folderStruct.getVideoFilename()+ " seefloor advancement along X (horizontal/sideways) axis (mm)"
-        xColumn = "frameNumber"
+        xColumn = ["frameNumber", "seconds"]
         yColumns = ["driftX_sum_mm"]
 
         graphPlotter = GraphPlotter(self.getDF())
@@ -362,7 +364,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         # filePath = self.__folderStruct.getSubDirpath()+"/graph_drifts.png"#self.__folderStruct.getRedDotsGraphAngle()
         filePath = self.__folderStruct.getGraphDriftPerFrameMM()
         graphTitle = self.__folderStruct.getVideoFilename()+ " drift (mm)"
-        xColumn = "frameNumber"
+        xColumn = ["frameNumber", "seconds"]
         yColumns = ["driftY_mm", "driftX_mm"] #"driftX", "driftY"
 
         graphPlotter = GraphPlotter(self.getDF())
@@ -371,7 +373,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
     def saveGraphDriftsPixels(self):
         filePath = self.__folderStruct.getGraphDriftPerFramePixels()
         graphTitle = self.__folderStruct.getVideoFilename()+ " drift (pixels)"
-        xColumn = "frameNumber"
+        xColumn = ["frameNumber", "seconds"]
         yColumns = ["driftY", "driftX"]
 
         graphPlotter = GraphPlotter(self.getDF())
