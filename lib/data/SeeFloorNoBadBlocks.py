@@ -17,7 +17,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
     __COLNAME_frameNumber = 'frameNumber'
 
     def __init__(self, driftsData, redDotsData, folderStruct = None,  df = None):
-        # type: (DriftData, BadFramesData, RedDotsData) -> SeeFloorNoBadBlocks
+        # type: (DriftData, BadFramesData, RedDotsData, FolderStructure) -> SeeFloorNoBadBlocks
         self.__driftData = driftsData
         self.__redDotsData = redDotsData
         self.__df = df
@@ -329,8 +329,9 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         return newPoint
 
     def saveGraphSeefloorY(self):
-        filePath = self.__folderStruct.getSubDirpath()+"/graph_y.png"#self.__folderStruct.getRedDotsGraphAngle()
-        graphTitle = self.__folderStruct.getVideoFilename()+ " seefloor advancement along Y (vertical) axis"
+        # filePath = self.__folderStruct.getSubDirpath()+"/graph_y.png"#self.__folderStruct.getRedDotsGraphAngle()
+        filePath = self.__folderStruct.getGraphSeefloorAdvancementY()
+        graphTitle = self.__folderStruct.getVideoFilename()+ " seefloor advancement along Y (vertical/forward) axis (mm)"
         xColumn = "frameNumber"
         yColumns = ["driftY_sum_mm"]
 
@@ -338,8 +339,9 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         graphPlotter.saveGraphToFile(xColumn, yColumns, graphTitle, filePath)
 
     def saveGraphSeefloorX(self):
-        filePath = self.__folderStruct.getSubDirpath()+"/graph_x.png"#self.__folderStruct.getRedDotsGraphAngle()
-        graphTitle = self.__folderStruct.getVideoFilename()+ " seefloor advancement along X (horizontal) axis "
+        # filePath = self.__folderStruct.getSubDirpath()+"/graph_x.png"#self.__folderStruct.getRedDotsGraphAngle()
+        filePath = self.__folderStruct.getGraphSeefloorAdvancementX()
+        graphTitle = self.__folderStruct.getVideoFilename()+ " seefloor advancement along X (horizontal/sideways) axis (mm)"
         xColumn = "frameNumber"
         yColumns = ["driftX_sum_mm"]
 
@@ -347,19 +349,30 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         graphPlotter.saveGraphToFile(xColumn, yColumns, graphTitle, filePath)
 
     def saveGraphSeefloorXY(self):
-        filePath = self.__folderStruct.getSubDirpath()+"/graph_xy.png"#self.__folderStruct.getRedDotsGraphAngle()
-        graphTitle = self.__folderStruct.getVideoFilename()+ " seefloor advancement along X (horizontal) axis "
+        # filePath = self.__folderStruct.getSubDirpath()+"/graph_xy.png"#self.__folderStruct.getRedDotsGraphAngle()
+        filePath = self.__folderStruct.getGraphSeefloorPathXY()
+        graphTitle = self.__folderStruct.getVideoFilename()+ " seefloor advancement X and Y axis (mm)"
         xColumn = "driftX_sum_mm"
         yColumns = ["driftY_sum_mm"]
 
         graphPlotter = GraphPlotter(self.getDF())
         graphPlotter.saveGraphToFileVertical(xColumn, yColumns, graphTitle, filePath)
 
-    def saveGraphDrifts(self):
-        filePath = self.__folderStruct.getSubDirpath()+"/graph_drifts.png"#self.__folderStruct.getRedDotsGraphAngle()
-        graphTitle = self.__folderStruct.getVideoFilename()+ " drift (pixels)"
+    def saveGraphDriftsMillimeters(self):
+        # filePath = self.__folderStruct.getSubDirpath()+"/graph_drifts.png"#self.__folderStruct.getRedDotsGraphAngle()
+        filePath = self.__folderStruct.getGraphDriftPerFrameMM()
+        graphTitle = self.__folderStruct.getVideoFilename()+ " drift (mm)"
         xColumn = "frameNumber"
         yColumns = ["driftY_mm", "driftX_mm"] #"driftX", "driftY"
+
+        graphPlotter = GraphPlotter(self.getDF())
+        graphPlotter.saveGraphToFile(xColumn, yColumns, graphTitle, filePath)
+
+    def saveGraphDriftsPixels(self):
+        filePath = self.__folderStruct.getGraphDriftPerFramePixels()
+        graphTitle = self.__folderStruct.getVideoFilename()+ " drift (pixels)"
+        xColumn = "frameNumber"
+        yColumns = ["driftY", "driftX"]
 
         graphPlotter = GraphPlotter(self.getDF())
         graphPlotter.saveGraphToFile(xColumn, yColumns, graphTitle, filePath)

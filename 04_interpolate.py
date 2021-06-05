@@ -17,7 +17,6 @@ if folderStruct is None:
     #rootDir ="C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
     # videoFileName = "V2"
 
-    rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.06_6902"
     #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6647"
     #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6692"
     #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6651"
@@ -27,7 +26,16 @@ if folderStruct is None:
     # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.01_6878"
     # videoFileName = "V20200901_215555_001"
 
-    videoFileName = "V20200906_025014_001"
+    # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.06_6902"
+    # videoFileName = "V20200906_025014_001"
+
+    # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.13_6916"
+    # videoFileName = "V20200913_204908_001"
+
+    rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.18_6923"
+    videoFileName = "R_20200918_111643_20200918_112107"
+
+
 
     folderStruct = FolderStructure(rootDir, videoFileName)
 
@@ -63,7 +71,8 @@ class InterpolateController:
         sf.saveGraphSeefloorY()
         sf.saveGraphSeefloorX()
         sf.saveGraphSeefloorXY()
-        sf.saveGraphDrifts()
+        sf.saveGraphDriftsMillimeters()
+        sf.saveGraphDriftsPixels()
 
 controller = InterpolateController()
 controller.run(folderStruct)

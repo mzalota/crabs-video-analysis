@@ -24,12 +24,6 @@ class FolderStructure:
     def getRedDotsInterpolatedFilepath(self):
         return self.getSubDirpath() + self.__videoFilename + '_reddots_interpolated.csv'
 
-    def getRedDotsGraphAngle(self):
-        return self.getSubDirpath() + self.__videoFilename + '_reddots_angle.png'
-
-    def getRedDotsGraphDistance(self):
-        return self.getSubDirpath() + self.__videoFilename + '_reddots_distance.png'
-
     def getRedDotsManualFilepath(self):
         return self.getSubDirpath() + self.__videoFilename + '_reddots_manual.csv'
 
@@ -65,6 +59,28 @@ class FolderStructure:
 
     def getFramesFilepath(self):
         return self.getSubDirpath() + self.__videoFilename + '_seqframes.csv'
+
+    def getGraphRedDotsAngle(self):
+        return self.getSubDirpath() + "graph_" + self.__videoFilename + '_reddots_angle.png'
+
+    def getGraphRedDotsDistance(self):
+        return self.getSubDirpath() + "graph_" + self.__videoFilename + '_reddots_distance.png'
+
+    def getGraphDriftPerFrameMM(self):
+        return self.getSubDirpath() + "graph_" + self.__videoFilename + '_drift_per_frame_mm.png'
+
+    def getGraphDriftPerFramePixels(self):
+        return self.getSubDirpath() + "graph_" + self.__videoFilename + '_drift_per_frame_pixels.png'
+
+    def getGraphSeefloorPathXY(self):
+        return self.getSubDirpath() + "graph_" + self.__videoFilename + '_seefloor_path_XY.png'
+
+    def getGraphSeefloorAdvancementX(self):
+        return self.getSubDirpath() + "graph_" + self.__videoFilename + '_seefloor_advancement_X.png'
+
+    def getGraphSeefloorAdvancementY(self):
+        return self.getSubDirpath() + "graph_" + self.__videoFilename + '_seefloor_advancement_Y.png'
+
 
     #def getFramesFilepaths(self):
     #    framesDir = self.getFramesDirpath()

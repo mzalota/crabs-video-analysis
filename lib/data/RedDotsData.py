@@ -72,8 +72,8 @@ class RedDotsData(PandasWrapper):
             return self.__interpolatedDF
 
     def saveGraphOfAngle(self):
-        filePath = self.__folderStruct.getRedDotsGraphAngle()
-        graphTitle = self.__folderStruct.getVideoFilename()+ " Angle (degrees)"
+        filePath = self.__folderStruct.getGraphRedDotsAngle()
+        graphTitle = self.__folderStruct.getVideoFilename()+ " Red Dots Angle (degrees)"
         xColumn = self.COLNAME_frameNumber
         yColumns = [self.__COLNAME_angle]
 
@@ -81,8 +81,8 @@ class RedDotsData(PandasWrapper):
         graphPlotter.saveGraphToFile(xColumn, yColumns, graphTitle, filePath)
 
     def saveGraphOfDistance(self):
-        filePath = self.__folderStruct.getRedDotsGraphDistance()
-        graphTitle = self.__folderStruct.getVideoFilename()+ " Distance (pixels)"
+        filePath = self.__folderStruct.getGraphRedDotsDistance()
+        graphTitle = self.__folderStruct.getVideoFilename()+ " Red Dots Distance (pixels)"
         xColumn = self.COLNAME_frameNumber
         yColumns = [self.__COLNAME_distance]
 
