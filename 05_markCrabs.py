@@ -22,14 +22,14 @@ if folderStruct is None:
     #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6658"
     #videoFileName = "V4"
 
-    # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.01_6878"
-    # videoFileName = "V20200901_215555_001"
+    rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.01_6878"
+    videoFileName = "V20200901_215555_001"
     
     # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.06_6902"
     # videoFileName = "V20200906_025014_001"
 
-    rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.13_6916"
-    videoFileName = "V20200913_204908_001"
+    # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.13_6916"
+    # videoFileName = "V20200913_204908_001"
 
 
     folderStruct = FolderStructure(rootDir, videoFileName)

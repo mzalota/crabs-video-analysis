@@ -1,5 +1,6 @@
 import numpy
 import pandas as pd
+import statistics as statistics
 
 from lib.FolderStructure import FolderStructure
 from lib.data.DriftManualData import DriftManualData
@@ -36,14 +37,23 @@ class DriftRawData(PandasWrapper):
         df = df[[self.__COLNAME_frameNumber, self.__COLNAME_driftX, self.__COLNAME_driftY]]
         df["driftY"] = df["driftY"] / driftsDetectionStep
 
+        df = df.interpolate(limit_direction='both')
+        df = self.__replace_with_NaN_if_very_diff_to_neighbors(df, "driftY", driftsDetectionStep)
+
+
         df = self.__interpolateToHaveEveryFrame(df)
 
         df = manualDrifts.overwrite_values(df)
+
+
+
 
         df = df.interpolate(limit_direction='both')
 
         #set drifts in the first row to zero.
         self.setValuesInFirstRowToZeros(df)
+
+
         return df
 
     def setValuesInFirstRowToZeros(self, df):
@@ -60,6 +70,9 @@ class DriftRawData(PandasWrapper):
 
         df.loc[df['driftY'] < -10*step_size, ['driftX', 'driftY']] = numpy.nan #-20
         df.loc[df['driftY'] > 100+step_size*2, ['driftX', 'driftY']] = numpy.nan  #130
+
+        # wipDF["prevFrameID"] = wipDF[self.COLNAME_frameNumber].shift(periods=-1)
+
         return df
 
     def __interpolateToHaveEveryFrame(self, df):
@@ -79,3 +92,25 @@ class DriftRawData(PandasWrapper):
     def maxFrameID(self):
         # type: () -> int
         return self.__df[self.__COLNAME_frameNumber].max()
+
+
+    def __replace_with_NaN_if_very_diff_to_neighbors(self, data, colName, step_size): #, normalJump, normalMin, normalMax):
+
+        targetOfAnalysis = data[colName]
+        prevPrev = targetOfAnalysis.shift(periods=2)
+        nextNext = targetOfAnalysis.shift(periods=-2)
+        prev = targetOfAnalysis.shift(periods=1)
+        next = targetOfAnalysis.shift(periods=-1)
+
+        newDF =  pd.concat([prevPrev, prev, targetOfAnalysis, next, nextNext], axis=1)
+        median = newDF.median(axis=1)
+        diff_to_median = abs(targetOfAnalysis - median)
+        is_outlier = diff_to_median > (5 * step_size)
+
+        #whipe out
+        data.loc[is_outlier, ['driftX', 'driftY']] = numpy.nan
+
+        # data["median"] = median
+        # data["isOutlier"] = is_outlier
+
+        return data
