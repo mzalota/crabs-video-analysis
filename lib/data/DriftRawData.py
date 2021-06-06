@@ -27,32 +27,29 @@ class DriftRawData(PandasWrapper):
         # type: () -> int
         return len(self.__df.index)
 
-    def interpolate(self, manualDrifts, driftsDetectionStep = 2):
+    def interpolate(self, manualDrifts, driftsDetectionStep):
         # type: (DriftManualData, int) -> pd.DataFrame
 
         df = self._replaceInvalidValuesWithNaN(self.__df.copy(), driftsDetectionStep)
 
-        #TODO: dividiing drift by 2 is not flexible. What if detectDrift step is not 2, but 3 or if it is mixed?
+        #TODO: dividiing drift by driftsDetectionStep is not flexible.
+        # What if detectDrift step is not 2, but 3 or if it is mixed?
         df["driftX"] = df["driftX"] / driftsDetectionStep
-        df = df[[self.__COLNAME_frameNumber, self.__COLNAME_driftX, self.__COLNAME_driftY]]
         df["driftY"] = df["driftY"] / driftsDetectionStep
 
+        df = df[[self.__COLNAME_frameNumber, self.__COLNAME_driftX, self.__COLNAME_driftY]]
         df = df.interpolate(limit_direction='both')
-        df = self.__replace_with_NaN_if_very_diff_to_neighbors(df, "driftY", driftsDetectionStep)
 
+        df = self.__replace_with_NaN_if_very_diff_to_neighbors(df, "driftY", driftsDetectionStep)
 
         df = self.__interpolateToHaveEveryFrame(df)
 
         df = manualDrifts.overwrite_values(df)
 
-
-
-
         df = df.interpolate(limit_direction='both')
 
         #set drifts in the first row to zero.
         self.setValuesInFirstRowToZeros(df)
-
 
         return df
 
@@ -60,7 +57,7 @@ class DriftRawData(PandasWrapper):
         df.loc[0, self.__COLNAME_driftX] = 0
         df.loc[0, self.__COLNAME_driftY] = 0
 
-    def _replaceInvalidValuesWithNaN(self, df, step_size = 2):
+    def _replaceInvalidValuesWithNaN(self, df, step_size):
         # type: (pd.DataFrame) -> pd.DataFrame
         df.loc[df['driftY'] == -999, ['driftY', 'driftX']] = numpy.nan
         df.loc[df['driftX'] == -888, ['driftX', 'driftY']] = numpy.nan
@@ -69,7 +66,7 @@ class DriftRawData(PandasWrapper):
         df.loc[df['driftX'] > 10*step_size, ['driftX', 'driftY']] = numpy.nan  #30
 
         df.loc[df['driftY'] < -10*step_size, ['driftX', 'driftY']] = numpy.nan #-20
-        df.loc[df['driftY'] > 100+step_size*2, ['driftX', 'driftY']] = numpy.nan  #130
+        df.loc[df['driftY'] > 100*step_size/2, ['driftX', 'driftY']] = numpy.nan  #130
 
         # wipDF["prevFrameID"] = wipDF[self.COLNAME_frameNumber].shift(periods=-1)
 
@@ -94,7 +91,7 @@ class DriftRawData(PandasWrapper):
         return self.__df[self.__COLNAME_frameNumber].max()
 
 
-    def __replace_with_NaN_if_very_diff_to_neighbors(self, data, colName, step_size): #, normalJump, normalMin, normalMax):
+    def __replace_with_NaN_if_very_diff_to_neighbors(self, data, colName, step_size):
 
         targetOfAnalysis = data[colName]
         prevPrev = targetOfAnalysis.shift(periods=2)
@@ -105,12 +102,18 @@ class DriftRawData(PandasWrapper):
         newDF =  pd.concat([prevPrev, prev, targetOfAnalysis, next, nextNext], axis=1)
         median = newDF.median(axis=1)
         diff_to_median = abs(targetOfAnalysis - median)
-        is_outlier = diff_to_median > (5 * step_size)
-
-        #whipe out
-        data.loc[is_outlier, ['driftX', 'driftY']] = numpy.nan
+        is_outlier = diff_to_median > (5)
 
         # data["median"] = median
+        # data["diff_to_median"] = diff_to_median
         # data["isOutlier"] = is_outlier
+        #
+        # pd.set_option('display.max_columns', None)
+        # pd.set_option('display.max_rows', None)
+        # pd.set_option('expand_frame_repr', False)
+        # print(data.head(1300))
+
+        # whipe out
+        data.loc[is_outlier, ['driftX', 'driftY']] = numpy.nan
 
         return data
