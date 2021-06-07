@@ -33,7 +33,7 @@ class RedDotsData(PandasWrapper):
     __COLNAME_angle = "angle"
     __COLNAME_distance = "distance"
 
-    __distance_between_reddots_mm = 300
+    __distance_between_reddots_mm = 200
 
     def __init__(self, folderStruct, redDotsManual):
         # type: (FolderStructure, RedDotsManualData) -> RedDotsData

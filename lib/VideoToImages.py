@@ -28,10 +28,14 @@ class VideoToImages:
     def __writeToCSVFile(self, logger, frameID):
         heightMM = self.__seefloorGeometry.heightMM(frameID)
         widthMM = self.__seefloorGeometry.widthMM(frameID)
+        areaMM = heightMM*widthMM
+        areaMeters = areaMM/1000000
         row = []
         row.append(frameID)
         row.append(heightMM)
         row.append(widthMM)
+        row.append(areaMM)
+        row.append(areaMeters)
         logger.writeToFile(row)
 
     def __processFrame(self, frame, dirpath):
@@ -77,6 +81,8 @@ class VideoToImages:
         row.append("frameNumber")
         row.append("heightMM")
         row.append("widthMM")
+        row.append("areaMMsq")
+        row.append("areaMetersSq")
         logger.writeToFile(row)
 
         line_count = 0
