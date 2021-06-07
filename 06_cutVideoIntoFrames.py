@@ -54,7 +54,7 @@ if folderStruct is None:
 
     folderStruct = FolderStructure(rootDir, videoFileName)
 
-#StreamToLogger(folderStruct.getLogFilepath())
+StreamToLogger(folderStruct.getLogFilepath())
 
 seefloorGeometry = SeeFloor.createFromFolderStruct(folderStruct)
 videoStream = VideoStream(folderStruct.getVideoFilepath())

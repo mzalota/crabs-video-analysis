@@ -9,3 +9,4 @@ pandas==0.22.0
 Pebble==4.4.0
 PyAutoGUI==0.9.41
 matplotlib==2.2.2
+boto3
