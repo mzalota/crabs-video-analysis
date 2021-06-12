@@ -6,10 +6,9 @@ from common import Point, Box
 class RedDotsDetector:
     __initialDistanceForRedBoxSearchArea = 200
 
-    def __init__(self, frame, prevDetector=None):
-        # type: (Frame, RedDotsDetector) -> RedDotsDetector
+    def __init__(self, frame):
+        # type: (Frame) -> RedDotsDetector
         self.__frame = frame
-        #self.__prevDetector = prevDetector
         self.__redDot1 = None
         self.__redDot2 = None
 
@@ -57,14 +56,14 @@ class RedDotsDetector:
 
     def __initial_search_area1(self):
         # type: () -> Box
-        if (Frame.is_high_resolution() ):
+        if (self.__frame.is_high_resolution() ):
             return Box(Point(1200, 1000), Point(1600, 1400))
         else:
             return Box(Point(600, 300), Point(900, 600))
 
     def __initial_search_area2(self):
         # type: () -> Box
-        if (Frame.is_high_resolution()):
+        if (self.__frame.is_high_resolution()):
             return Box(Point(1400, 1000), Point(1900, 1400))
         else:
             return Box(Point(900, 300), Point(1400, 800))

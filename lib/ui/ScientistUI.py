@@ -191,7 +191,7 @@ class ScientistUI:
 
         if self.__zoom:
             collage = ImagesCollage( frameImagesFactory, self.__seeFloorNoBadBlocks)
-            imageToShow = collage.constructCollage(frame.getFrameID(), Frame.FRAME_HEIGHT / 2)
+            imageToShow = collage.constructCollage(frame, frame.frame_height() / 2)
         else:
             imageToShow = self.__constructFrameImage(frameImagesFactory, frame)
             if self.__markingDrift == True:

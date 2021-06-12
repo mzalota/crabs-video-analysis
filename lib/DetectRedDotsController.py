@@ -38,8 +38,7 @@ class DetectRedDotsController:
                     frame_id += stepSize
                     continue
 
-            vf_prev = vf
-            vf = RedDotsDetector(frame, vf_prev)
+            vf = RedDotsDetector(frame)
 
             # TODO: if this throws error, then surround it with try catch as it was before
             vf.isolateRedDots()

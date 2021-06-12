@@ -296,7 +296,7 @@ class RedDotsData(PandasWrapper):
             return frameId2, gap2
 
     def __find_largest_gap(self, whichDot):
-        # type: (str) -> int, float
+        # type: (str) -> (int, float)
 
         firstFrame = self.__minFrameID()
         lastFrame = self.__maxFrameID()

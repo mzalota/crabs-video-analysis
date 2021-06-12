@@ -17,21 +17,22 @@ class ImagesCollage:
         self.__frameImagesFactory = frameImagesFactory
         self.__seeFloorGeometry = seeFloorGeometry
 
-    def constructCollage(self, thisFrameID, neighboursHeight):
+    def constructCollage(self, thisFrame, neighboursHeight):
         # type: (Frame, Int) -> Image
 
         paddingBetweenCollages = 20
 
-        leftCollage = self.constructLeftCollage(thisFrameID, neighboursHeight)
-        rightCollage = self.constructRightCollage(thisFrameID, leftCollage.height())
+        leftCollage = self.constructLeftCollage(thisFrame, neighboursHeight)
+        rightCollage = self.constructRightCollage(thisFrame, leftCollage.height())
 
         #concatenate left collage to the right with a small padding in-between
         wholeCollage = leftCollage.padRight(paddingBetweenCollages).concatenateToTheRight(rightCollage)
 
         return wholeCollage
 
-    def constructLeftCollage(self, thisFrameID, neighboursHeight):
-
+    def constructLeftCollage(self, thisFrame, neighboursHeight):
+        # type: (Frame, int) -> object
+        thisFrameID=thisFrame.getFrameID()
         thisFrameImage = self.__constructImageUsingFrameDeco(thisFrameID, thisFrameID)
         thisFrameImage.drawFrameID(thisFrameID)
 
@@ -45,9 +46,10 @@ class ImagesCollage:
 
         return leftCollage
 
-    def constructRightCollage(self, thisFrameID, mainCollageHeight):
+    def constructRightCollage(self, thisFrame, mainCollageHeight):
         # type: (Frame, int) -> Image
-        height = Frame.FRAME_HEIGHT
+        height = thisFrame.frame_height() #Frame.FRAME_HEIGHT
+        thisFrameID=thisFrame.getFrameID()
 
         afterMiddleFrameID = self.__getFrameIDForRightTopImage(thisFrameID)
         beforeMiddleFrameID = self.__seeFloorGeometry.getPrevFrame(afterMiddleFrameID)
