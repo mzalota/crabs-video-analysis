@@ -177,7 +177,10 @@ class RedDotsData(PandasWrapper):
     def __recalculate_column_distance(self, df):
         df['distance'] = pow(pow(df["centerPoint_x_dot2"] - df["centerPoint_x_dot1"], 2) + pow(
             df["centerPoint_y_dot2"] - df["centerPoint_y_dot1"], 2), 0.5)  # .astype(int)
-        df[self.__COLNAME_mm_per_pixel] = self.__distance_between_reddots_mm / df['distance']
+        df[self.__COLNAME_mm_per_pixel] = self.__red_dots_separation() / df['distance']
+
+    def __red_dots_separation(self):
+        return self.__distance_between_reddots_mm
 
     def __recalculate_column_angle(self, df):
         yLength_df = (df["centerPoint_y_dot1"] - df["centerPoint_y_dot2"])

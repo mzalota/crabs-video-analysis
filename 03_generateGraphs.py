@@ -45,7 +45,7 @@ if folderStruct is None:
 
     folderStruct = FolderStructure(rootDir, videoFileName)
 
-StreamToLogger(folderStruct.getLogFilepath())
+# StreamToLogger(folderStruct.getLogFilepath())
 
 timer = MyTimer("InterpolateController")
 

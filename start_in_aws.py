@@ -61,8 +61,8 @@ class RunInAWS():
         self.__s3client.upload_file(folderStruct.getRedDotsRawFilepath(), s3_bucket, s3_key_raw_redDots)
 
     def detect_drifts(self, folderStruct, s3_bucket, s3_rootDir, videoFileName):
-        controller = DetectDriftsController()
-        controller.run(folderStruct)
+        controller = DetectDriftsController(folderStruct)
+        controller.run()
 
         s3_key_raw_drifts = s3_rootDir + "/" + videoFileName + "/" + folderStruct.getRawDriftsFilename()
         print("s3_key_raw_drifts", s3_key_raw_drifts)

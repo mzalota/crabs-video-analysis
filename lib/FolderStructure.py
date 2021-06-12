@@ -9,11 +9,17 @@ class FolderStructure:
     def getRootDirectory(self):
         return self.__rootDirectory
 
+    def getSubDirpath(self):
+        return self.__rootDirectory + "/" + self.__videoFilename + "/"
+
     def getVideoFilename(self):
         return self.__videoFilename
 
     def getVideoFilepath(self):
         return self.__rootDirectory + "/" + self.__videoFilename + ".avi"
+
+    def getConfigFilepath(self):
+        return self.getSubDirpath() + self.__videoFilename + '_config.txt'
 
     def getRedDotsRawFilepath(self):
         return self.getSubDirpath() + self.getRedDotsRawFilename()
@@ -78,9 +84,6 @@ class FolderStructure:
     def getGraphSeefloorAdvancementX(self):
         return self.getSubDirpath() + "graph_" + self.__videoFilename + '_seefloor_advancement_X.png'
 
-    def getGraphSeefloorAdvancementY(self):
-        return self.getSubDirpath() + "graph_" + self.__videoFilename + '_seefloor_advancement_Y.png'
-
 
     #def getFramesFilepaths(self):
     #    framesDir = self.getFramesDirpath()
@@ -90,14 +93,14 @@ class FolderStructure:
     #        filepaths.append(os.path.join(framesDir, filename))
     #    return filepaths
 
+    def getGraphSeefloorAdvancementY(self):
+        return self.getSubDirpath() + "graph_" + self.__videoFilename + '_seefloor_advancement_Y.png'
+
     def getCrabsFilepath(self):
         return self.getSubDirpath() + "/" + self.__videoFilename + "_crabs.csv"
 
     def getMarkersFilepath(self):
         return self.getSubDirpath() + "/" + self.__videoFilename + "_markers.csv"
-
-    def getSubDirpath(self):
-        return self.__rootDirectory + "/" + self.__videoFilename + "/"
 
     def getLogFilepath(self):
         return self.getSubDirpath() + 'stdout.log'
