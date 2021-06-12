@@ -29,13 +29,12 @@ class VideoToImages:
         heightMM = self.__seefloorGeometry.heightMM(frameID)
         widthMM = self.__seefloorGeometry.widthMM(frameID)
         areaMM = heightMM*widthMM
-        areaMeters = areaMM/1000000
+        areaMetersSquared = areaMM/1000000
         row = []
         row.append(frameID)
         row.append(heightMM)
         row.append(widthMM)
-        row.append(areaMM)
-        row.append(areaMeters)
+        row.append(areaMetersSquared)
         logger.writeToFile(row)
 
     def __processFrame(self, frame, dirpath):
@@ -81,7 +80,6 @@ class VideoToImages:
         row.append("frameNumber")
         row.append("heightMM")
         row.append("widthMM")
-        row.append("areaMMsq")
         row.append("areaMetersSq")
         logger.writeToFile(row)
 

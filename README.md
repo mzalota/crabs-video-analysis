@@ -16,7 +16,7 @@ If you are processing lower resolution video files, you need to modify FRAME_HEI
 ## Files
 #### Relevant for analysis 
 These CSV files may be interesting for scientist to analyze:
-1) crabs.csv - one crab per line: frame number, size in pixels and location on the frame
+1) crabs_on_seefloor.csv - one crab per line: frame number, size in pixels and millimeters, location on the frame and coordinates on seefloor (distance in millimeters from the bottom left corner of the first frame)
 2) markers.csv - one marker per line: markerId, frame number, location on the frame, created date 
 3) seefloor.csv - geometric data for each frame: mm-per-pixel, X and Y drifts in pixels and millimeters
 4) seqframes.csv - for each frame image that is saved in seqFrames folder: width and length in millimeters
@@ -48,6 +48,7 @@ Other files that are used by application. These files can be safely ignored by s
 + _reddots_raw.csv - holds coordinates of red dots detected automatically by "detectRedDots" algorithm.
 + _drifts_interpolated.csv - There are many erroneous entries in drifts_raw.csv. The program removes outliers and "fills in the blanks"/interpolates missing drift data. 
 + _reddots_interpolated.csv - Temporary file that combines data from _raw and _manual reddots files and interpolates it for every frame.
++ _crabs.csv - records manual clicks on crabs: frame number, size in pixels, location on the frame
 
 ## Subdirectories
 Subdirectory

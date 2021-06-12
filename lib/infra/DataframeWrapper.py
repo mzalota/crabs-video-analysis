@@ -12,3 +12,6 @@ class DataframeWrapper:
 
     def drop_first_row(self):
         self.__df = self.__df[1:] #.reset_index(drop=True)
+
+    def to_dict(self):
+        return self.__df.to_dict("records")

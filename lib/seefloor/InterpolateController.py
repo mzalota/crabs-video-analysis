@@ -1,5 +1,3 @@
-import pandas as pd
-
 from lib.FolderStructure import FolderStructure
 from lib.data.CrabsData import CrabsData
 from lib.data.DriftData import DriftData
@@ -8,7 +6,7 @@ from lib.data.DriftRawData import DriftRawData
 from lib.data.RedDotsData import RedDotsData
 from lib.data.SeeFloor import SeeFloor
 from lib.infra.Configurations import Configurations
-from lib.infra.DataframeWrapper import DataframeWrapper
+
 
 class InterpolateController:
     def __init__(self,folderStruct):
@@ -23,33 +21,29 @@ class InterpolateController:
         driftsStepSize = self.step_size()
         print "Using driftsStepSize: " + str(driftsStepSize)
 
+        #TODO: extract logic in few rows into a "regenerate drafts" module/class
+        print ("regenerating/interpolating Drafts")
         manualDrifts = DriftManualData.createFromFile(self.__folderStruct)
 
         rawDrifts = DriftRawData(self.__folderStruct)
         df = rawDrifts.interpolate(manualDrifts, driftsStepSize)
 
-        # df = manualDrifts.overwrite_values(df)
-        # df = df.interpolate(limit_direction='both')
-
         drifts = DriftData.createFromFolderStruct(self.__folderStruct)
         drifts.setDF(df)
         drifts.saveToFile(self.__folderStruct.getDriftsFilepath())
 
-        print ("interpolating RedDots")
+        print ("regenerating/interpolating RedDots")
         rdd = RedDotsData.createFromFolderStruct(self.__folderStruct)
         rdd.saveInterpolatedDFToFile(drifts.minFrameID(), drifts.maxFrameID()+1)
 
-        print ("interpolating SeeFloor")
+        print ("regenerating SeeFloor")
         sf = SeeFloor.createFromFolderStruct(self.__folderStruct)
         sf.saveToFile()
 
-        self.__generate_crabs_on_seefloor(sf)
-
-    def __generate_crabs_on_seefloor(self, sf):
+        print ("regenerating crabs_on_seefloor")
         crabs = CrabsData(self.__folderStruct)
-        bbDF = self.__generate_crabs_on_seefloor2(crabs, sf)
-        bbDF.save_file_csv(self.__folderStruct.getSubDirpath() + "maxim_crabs22.csv")
-
+        crabs_on_seefloor_df = crabs.generate_crabs_on_seefloor(sf)
+        crabs_on_seefloor_df.save_file_csv(self.__folderStruct.getCrabsOnSeefloorFilepath())
 
 
     def regenerateGraphs(self):

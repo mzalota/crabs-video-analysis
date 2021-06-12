@@ -99,6 +99,9 @@ class FolderStructure:
     def getCrabsFilepath(self):
         return self.getSubDirpath() + "/" + self.__videoFilename + "_crabs.csv"
 
+    def getCrabsOnSeefloorFilepath(self):
+        return self.getSubDirpath() + "/" + self.__videoFilename + "_crabs_on_seefloor.csv"
+
     def getMarkersFilepath(self):
         return self.getSubDirpath() + "/" + self.__videoFilename + "_markers.csv"
 

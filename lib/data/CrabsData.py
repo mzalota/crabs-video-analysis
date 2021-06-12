@@ -2,6 +2,7 @@ import pandas as pd
 from datetime import datetime
 from lib.FolderStructure import FolderStructure
 from lib.data.PandasWrapper import PandasWrapper
+from lib.data.SeeFloor import SeeFloor
 from lib.infra.DataframeWrapper import DataframeWrapper
 
 
@@ -112,17 +113,16 @@ class CrabsData(PandasWrapper):
         # {'crabLocationX': 101, 'crabLocationY': 420, 'frameNumber': 10530}]
         return tmpDF[["frameNumber", "crabLocationY", "crabLocationX"]].reset_index(drop=True).to_dict("records")
 
-    def __generate_crabs_on_seefloor(self, sf):
+    def generate_crabs_on_seefloor(self, sf):
+        # type: (SeeFloor) -> DataframeWrapper
         seed_df = self.getPandasDF()[["frameNumber", "crabWidthPixels", "crabLocationX", "crabLocationY"]]
-        crabsDict = seed_df.to_dict("records")
 
-        for_new_df = list()
-        for markedCrab in crabsDict:
-            result = self.__build_new_crab_row(markedCrab, sf)
-            for_new_df.append(result)
-        result_df = pd.DataFrame(for_new_df)
+        result_rows = list()
+        for markedCrab in DataframeWrapper(seed_df).to_dict():
+            new_row = self.__build_new_crab_row(markedCrab, sf)
+            result_rows.append(new_row)
 
-        return DataframeWrapper(result_df)
+        return DataframeWrapper(pd.DataFrame(result_rows))
 
     def __build_new_crab_row(self, markedCrab, sf):
         result = dict()
