@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
-from lib.Configuration import Configuration
+from lib.ui.MarkersConfiguration import MarkersConfiguration
 from lib.data.BadFramesData import BadFramesData
 from lib.Frame import Frame
 from lib.data.CrabsData import CrabsData
@@ -132,7 +132,7 @@ class DecoMarkers_orig(FrameDecorator):
         # timer.lap("Number of markers" + str(len(markers)))
 
     def __drawMarkerOnImage(self, mainImage, marker_id, location):
-        config = Configuration()
+        config = MarkersConfiguration()
         color = config.color_for_marker(marker_id)
         if marker_id % 2 == 0:
             # even markers are crosses
@@ -200,8 +200,8 @@ class DecoMarkersWithNumbers(DecoMarkersAbstract):
     def _drawMarkerOnImage(self, mainImage, marker_id, location):
         textBox = self.__determineLocationOfTextBox(location)
         print("marker_id", marker_id, "marker textBox", str(textBox), "location", str(location))
-        mainImage.drawTextInBox(textBox, marker_id, color=Configuration.COLOR_LIGHT_BLUE)
-        mainImage.drawCross(location, color=Configuration.COLOR_LIGHT_BLUE)
+        mainImage.drawTextInBox(textBox, marker_id, color=MarkersConfiguration.COLOR_LIGHT_BLUE)
+        mainImage.drawCross(location, color=MarkersConfiguration.COLOR_LIGHT_BLUE)
 
     def __determineLocationOfTextBox(self, location):
         boxHeight = 25
@@ -227,10 +227,10 @@ class DecoMarkersWithSymbols(DecoMarkersAbstract):
 
     def _drawMarkerOnImage(self, mainImage, marker_id, location):
         if not str(marker_id).isdigit():
-            mainImage.drawCross(location, color=Configuration.COLOR_RED)
+            mainImage.drawCross(location, color=MarkersConfiguration.COLOR_RED)
             return
 
-        config = Configuration()
+        config = MarkersConfiguration()
         color = config.color_for_marker(int(marker_id))
         if int(marker_id) % 2 == 0:
             # even markers are crosses

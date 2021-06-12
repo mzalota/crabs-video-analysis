@@ -3,6 +3,7 @@ import math
 import pandas as pd
 import numpy
 
+from lib.infra.Configurations import Configurations
 from lib.FolderStructure import FolderStructure
 from lib.VideoStream import VideoStream
 from lib.data.GraphPlotter import GraphPlotter
@@ -33,7 +34,7 @@ class RedDotsData(PandasWrapper):
     __COLNAME_angle = "angle"
     __COLNAME_distance = "distance"
 
-    __distance_between_reddots_mm = 200
+    __DEFAULT_DISTANCE_BETWEEN_REDDOTS_MM = 200
 
     def __init__(self, folderStruct, redDotsManual):
         # type: (FolderStructure, RedDotsManualData) -> RedDotsData
@@ -180,7 +181,12 @@ class RedDotsData(PandasWrapper):
         df[self.__COLNAME_mm_per_pixel] = self.__red_dots_separation() / df['distance']
 
     def __red_dots_separation(self):
-        return self.__distance_between_reddots_mm
+        configs = Configurations(self.__folderStruct)
+        if configs.has_distance_between_red_dots():
+            distance = configs.get_distance_between_red_dots()
+            return int(distance)
+        else:
+            return self.__DEFAULT_DISTANCE_BETWEEN_REDDOTS_MM
 
     def __recalculate_column_angle(self, df):
         yLength_df = (df["centerPoint_y_dot1"] - df["centerPoint_y_dot2"])

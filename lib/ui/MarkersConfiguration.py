@@ -1,4 +1,4 @@
-class Configuration:
+class MarkersConfiguration:
     COLOR_RED = (0, 0, 255)
     COLOR_DEEP_BLUE = (255, 0, 0)
     COLOR_GREEN = (0, 255, 0)

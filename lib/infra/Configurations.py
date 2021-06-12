@@ -5,8 +5,10 @@ from lib.FolderStructure import FolderStructure
 
 class Configurations:
     SECTION_DRIFTS = 'drifts'
+    SECTION_REDDOTS = 'reddots'
 
     OPTION_DRIFTS_STEP_SIZE = 'DriftsStepSize'
+    OPTION_DISTANCE_BETWEEN_REDDOTS = 'distanceBetweenRedDotsMillimeters'
 
     def __init__(self, folderStruct):
         # type: (FolderStructure) -> Configurations
@@ -23,6 +25,13 @@ class Configurations:
 
     def get_drifts_step_size(self):
         return self._get_value(self.SECTION_DRIFTS, self.OPTION_DRIFTS_STEP_SIZE)
+
+    def has_distance_between_red_dots(self):
+        return self._has_value(self.SECTION_REDDOTS, self.OPTION_DISTANCE_BETWEEN_REDDOTS)
+
+    def get_distance_between_red_dots(self):
+        return self._get_value(self.SECTION_REDDOTS, self.OPTION_DISTANCE_BETWEEN_REDDOTS)
+
 
     def _get_value(self, sectionName, optionName):
         return self.__parser.get(sectionName, optionName)
