@@ -1,36 +1,66 @@
 from ConfigParser import ConfigParser
 
 from lib.FolderStructure import FolderStructure
+from lib.infra.Defaults import Defaults
 
 
 class Configurations:
     SECTION_DRIFTS = 'drifts'
     SECTION_REDDOTS = 'reddots'
 
-    OPTION_DRIFTS_STEP_SIZE = 'DriftsStepSize'
-    OPTION_DISTANCE_BETWEEN_REDDOTS = 'distanceBetweenRedDotsMillimeters'
+    OPTION_DRIFTS_STEP_SIZE = 'drifts_step_size'
+    OPTION_DISTANCE_BETWEEN_REDDOTS = 'distance_between_reddots_millimeters'
 
     def __init__(self, folderStruct):
         # type: (FolderStructure) -> Configurations
+
+        filepath = folderStruct.getConfigFilepath()
+        if not folderStruct.fileExists(filepath):
+            print "Config file does not exist. Generating new one with default values"
+            newParser = self.__set_default_values()
+            self.__save_configs_to_file(newParser, filepath)
+
         self.__parser = ConfigParser()
-        self.__parser.read(folderStruct.getConfigFilepath())
+        self.__parser.read(filepath)
 
         # print "parser sections"
         # sections = parser.sections()
         # print sections
 
+    def __set_default_values(self):
+        parser = ConfigParser()
+        parser.add_section(self.SECTION_DRIFTS)
+        parser.set(self.SECTION_DRIFTS, self.OPTION_DRIFTS_STEP_SIZE, self.__default_drifts_step_size())
 
-    def has_drifts_step_size(self):
-        return self._has_value(self.SECTION_DRIFTS, self.OPTION_DRIFTS_STEP_SIZE)
+        parser.add_section(self.SECTION_REDDOTS)
+        parser.set(self.SECTION_REDDOTS, self.OPTION_DISTANCE_BETWEEN_REDDOTS, self.__default_distance_reddots())
+        return parser
+
+    def __save_configs_to_file(self, parser, filepath):
+        configFile = open(filepath, 'w')
+        # configDataStr = configFile.read()
+        parser.write(configFile)
+        configFile.close()
+
+    def __default_distance_reddots(self):
+        return Defaults.DEFAULT_DISTANCE_BETWEEN_REDDOTS_MM
+
+    def __default_drifts_step_size(self):
+        return Defaults.DEFAULT_DRIFTS_STEP_SIZE
 
     def get_drifts_step_size(self):
-        return self._get_value(self.SECTION_DRIFTS, self.OPTION_DRIFTS_STEP_SIZE)
-
-    def has_distance_between_red_dots(self):
-        return self._has_value(self.SECTION_REDDOTS, self.OPTION_DISTANCE_BETWEEN_REDDOTS)
+        # type: () -> int
+        if self._has_value(self.SECTION_DRIFTS, self.OPTION_DRIFTS_STEP_SIZE):
+            return int(self._get_value(self.SECTION_DRIFTS, self.OPTION_DRIFTS_STEP_SIZE))
+        else:
+            return self.__default_drifts_step_size()
 
     def get_distance_between_red_dots(self):
-        return self._get_value(self.SECTION_REDDOTS, self.OPTION_DISTANCE_BETWEEN_REDDOTS)
+        # type: () -> int
+        if self._has_value(self.SECTION_REDDOTS, self.OPTION_DISTANCE_BETWEEN_REDDOTS):
+            return int(self._get_value(self.SECTION_REDDOTS, self.OPTION_DISTANCE_BETWEEN_REDDOTS))
+        else:
+            return self.__default_distance_reddots()
 
 
     def _get_value(self, sectionName, optionName):
@@ -46,11 +76,3 @@ class Configurations:
             return False
 
         return True
-
-
-    def __manuallyOpenFile(self):
-        configFile = open(self.__configFilepath, 'r')
-        configDataStr = configFile.read()
-        # print "configDataStr"
-        # print configDataStr
-        configFile.close()

@@ -1,18 +1,16 @@
 import sys
 
-import cv2
-
 from lib.DetectRedDotsController import DetectRedDotsController
 from lib.CommandLineLauncher import CommandLineLauncher
 from lib.FolderStructure import FolderStructure
-
 from lib.StreamToLogger import StreamToLogger
 
 
 #https://www.pyimagesearch.com/2016/10/31/detecting-multiple-bright-spots-in-an-image-with-python-and-opencv/
 from lib.VideoStream import VideoStream
+from lib.infra.Configurations import Configurations
 
-print ("Starting to detect RedDots")
+print ("Launched Detect RedDots script")
 
 folderStruct = CommandLineLauncher.initializeFolderStruct(sys.argv)
 if folderStruct is None:
@@ -26,11 +24,13 @@ if folderStruct is None:
     # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.06_6902"
     # videoFileName = "V20200906_025014_001"
 
-    rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.13_6916"
+    # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.13_6916"
     # videoFileName = "V20200913_204908_001"
     # videoFileName = "R_20200913_203053_20200913_203451"
-    videoFileName = "R_20200913_203451_20200913_203849"
+    # videoFileName = "R_20200913_203451_20200913_203849"
 
+    rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.16_6922"
+    videoFileName = "R_20200916_194953_20200916_195355"
 
     # rootDir ="C:/workspaces/AnjutkaVideo/2019-Kara/St6236_19"
     # videoFileName = "V1"
@@ -53,6 +53,7 @@ if folderStruct is None:
     folderStruct.createDirectoriesIfDontExist(folderStruct.getRedDotsRawFilepath())
 
 StreamToLogger(folderStruct.getLogFilepath())
+print ("Starting to detect RedDots")
 
 # cap=cv2.VideoCapture(folderStruct.getVideoFilepath())
 # print("cv2.length")
@@ -69,6 +70,8 @@ StreamToLogger(folderStruct.getLogFilepath())
 # print( "vs.frame_height()")
 # print( vs.frame_height() )
 
+#Create _config.txt file if it does not exist
+configs = Configurations(folderStruct)
 
 controller = DetectRedDotsController(folderStruct)
 controller.run()

@@ -12,6 +12,8 @@ from lib.ImageWindow import ImageWindow
 from lib.VideoStream import VideoStream
 from lib.common import Point
 
+print ("Launched markCrabs script")
+
 folderStruct = CommandLineLauncher.initializeFolderStruct(sys.argv)
 if folderStruct is None:
     #rootDir ="C:/workspaces/AnjutkaVideo/2019-Kara/St6236_19"
@@ -43,8 +45,7 @@ if folderStruct is None:
     folderStruct = FolderStructure(rootDir, videoFileName)
 
 StreamToLogger(folderStruct.getLogFilepath())
-
-print("cv2 version", cv2.__version__)
+print ("Starting markCrabs script")
 
 timer = MyTimer("Starting MarkCrabs")
 

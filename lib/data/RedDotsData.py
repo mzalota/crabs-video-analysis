@@ -11,6 +11,7 @@ from lib.data.PandasWrapper import PandasWrapper
 from lib.common import Point
 from lib.data.RedDotsManualData import RedDotsManualData
 from lib.data.RedDotsRawData import RedDotsRawData
+from lib.infra.Defaults import Defaults
 
 
 class RedDotsData(PandasWrapper):
@@ -33,8 +34,6 @@ class RedDotsData(PandasWrapper):
     __COLNAME_mm_per_pixel = "mm_per_pixel"
     __COLNAME_angle = "angle"
     __COLNAME_distance = "distance"
-
-    __DEFAULT_DISTANCE_BETWEEN_REDDOTS_MM = 200
 
     def __init__(self, folderStruct, redDotsManual):
         # type: (FolderStructure, RedDotsManualData) -> RedDotsData
@@ -182,11 +181,7 @@ class RedDotsData(PandasWrapper):
 
     def __red_dots_separation(self):
         configs = Configurations(self.__folderStruct)
-        if configs.has_distance_between_red_dots():
-            distance = configs.get_distance_between_red_dots()
-            return int(distance)
-        else:
-            return self.__DEFAULT_DISTANCE_BETWEEN_REDDOTS_MM
+        return configs.get_distance_between_red_dots()
 
     def __recalculate_column_angle(self, df):
         yLength_df = (df["centerPoint_y_dot1"] - df["centerPoint_y_dot2"])

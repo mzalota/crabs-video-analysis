@@ -13,7 +13,7 @@ import cv2
 from lib.seefloor.InterpolateController import InterpolateController
 from lib.ui.RedDotsUI import RedDotsUI
 
-print ("Starting Manually Improving RedDots")
+print ("Launched manually Improving RedDots script")
 
 folderStruct = CommandLineLauncher.initializeFolderStruct(sys.argv)
 if folderStruct is None:
@@ -44,6 +44,7 @@ if folderStruct is None:
     folderStruct = FolderStructure(rootDir, videoFileName)
 
 StreamToLogger(folderStruct.getLogFilepath())
+print ("Starting Manually Improving RedDots")
 
 timer = MyTimer("Starting manuallyImproveRedDots")
 videoStream = VideoStream(folderStruct.getVideoFilepath())

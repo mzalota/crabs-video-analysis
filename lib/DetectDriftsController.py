@@ -8,16 +8,18 @@ from lib.VideoStreamMultiThreaded import VideoStreamMultiThreaded
 from lib.Logger import Logger
 from lib.data.DriftRawData import DriftRawData
 from lib.infra.Configurations import Configurations
+from lib.infra.Defaults import Defaults
+
 
 class DetectDriftsController:
-    DEFAULT_DRIFTS_STEP_SIZE = 2
+    # DEFAULT_DRIFTS_STEP_SIZE = 2
 
     def __init__(self, folderStruct):
         self.__folderStruct = folderStruct
 
     def run(self):
         stepSize = self.step_size()
-
+        print "using stepSize: "+ str(stepSize)
 
         folderStruct = self.__folderStruct
         # velocityDetector = VelocityDetectorMultiThreaded(folderStruct)
@@ -48,16 +50,9 @@ class DetectDriftsController:
         #cv2.destroyAllWindows()
 
     def step_size(self):
+        # type: () -> int
         configs = Configurations(self.__folderStruct)
-
-        if configs.has_drifts_step_size():
-            stepSize = configs.get_drifts_step_size()
-            print "DriftsStep from config file is: " + stepSize
-            stepSize = int(stepSize)
-        else:
-            stepSize = DetectDriftsController.DEFAULT_DRIFTS_STEP_SIZE
-            print "Using default drifts step: " + str(stepSize)
-        return stepSize
+        return configs.get_drifts_step_size()
 
     def __createNewRawFileWithHeaderRow(self, folderStruct):
         driftsFileHeaderRow = VelocityDetector.infoHeaders()

@@ -20,6 +20,7 @@ class VideoStream:
         self._vidcap = cv2.VideoCapture(videoFilepath)
         self.__imagesCache = pylru.lrucache(4) #set the size of cache to be 10 images large
 
+        print("cv2 version", cv2.__version__)
         print ("num_of_frames", self.num_of_frames())
         print ("frame_height", self.frame_height())
         print ("frame_width", self.frame_width())

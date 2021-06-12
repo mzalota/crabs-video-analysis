@@ -22,15 +22,15 @@ class ImagesCollage:
 
         paddingBetweenCollages = 20
 
-        leftCollage = self.constructLeftCollage(thisFrame, neighboursHeight)
-        rightCollage = self.constructRightCollage(thisFrame, leftCollage.height())
+        leftCollage = self._constructLeftCollage(thisFrame, neighboursHeight)
+        rightCollage = self._constructRightCollage(thisFrame, leftCollage.height())
 
         #concatenate left collage to the right with a small padding in-between
         wholeCollage = leftCollage.padRight(paddingBetweenCollages).concatenateToTheRight(rightCollage)
 
         return wholeCollage
 
-    def constructLeftCollage(self, thisFrame, neighboursHeight):
+    def _constructLeftCollage(self, thisFrame, neighboursHeight):
         # type: (Frame, int) -> object
         thisFrameID=thisFrame.getFrameID()
         thisFrameImage = self.__constructImageUsingFrameDeco(thisFrameID, thisFrameID)
@@ -46,7 +46,7 @@ class ImagesCollage:
 
         return leftCollage
 
-    def constructRightCollage(self, thisFrame, mainCollageHeight):
+    def _constructRightCollage(self, thisFrame, mainCollageHeight):
         # type: (Frame, int) -> Image
         height = thisFrame.frame_height() #Frame.FRAME_HEIGHT
         thisFrameID=thisFrame.getFrameID()

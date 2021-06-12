@@ -40,7 +40,6 @@ class DetectRedDotsController:
 
             vf = RedDotsDetector(frame)
 
-            # TODO: if this throws error, then surround it with try catch as it was before
             vf.isolateRedDots()
 
             self.__save_dots_info_to_file(frame_id, vf)

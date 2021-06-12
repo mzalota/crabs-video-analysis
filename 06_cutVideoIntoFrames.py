@@ -14,9 +14,7 @@ from lib.data.CrabsData import CrabsData
 from lib.data.SeeFloor import SeeFloor
 from lib.seefloor.InterpolateController import InterpolateController
 
-print(cv2.__version__)
-
-print ("Starting to cut video into frames")
+print ("Launched markCrabs script")
 
 folderStruct = CommandLineLauncher.initializeFolderStruct(sys.argv)
 if folderStruct is None:
@@ -58,6 +56,7 @@ if folderStruct is None:
 
 
 StreamToLogger(folderStruct.getLogFilepath())
+print ("Starting to cut video into frames")
 
 interpolator = InterpolateController(folderStruct)
 interpolator.regenerateSeefloor()

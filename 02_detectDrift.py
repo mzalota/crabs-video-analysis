@@ -6,8 +6,7 @@ from lib.FolderStructure import FolderStructure
 from lib.StreamToLogger import StreamToLogger
 from lib.infra.Configurations import Configurations
 
-print ("Starting DetectDrift")
-
+print ("Launched DetectDrift script")
 
 folderStruct = CommandLineLauncher.initializeFolderStruct(sys.argv)
 if folderStruct is None:
@@ -33,6 +32,10 @@ if folderStruct is None:
     folderStruct.createDirectoriesIfDontExist(folderStruct.getDriftsFilepath())
 
 StreamToLogger(folderStruct.getLogFilepath())
+print ("Starting DetectDrift")
+
+#Create _config.txt file if it does not exist
+configs = Configurations(folderStruct)
 
 controller = DetectDriftsController(folderStruct)
 controller.run()

@@ -1,0 +1,6 @@
+[drifts]
+drifts_step_size = 2
+
+[reddots]
+distance_between_reddots_millimeters = 200
+

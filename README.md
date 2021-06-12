@@ -14,22 +14,40 @@ You don't really need to use Jupyter Notebooks, other then to double-check data 
 If you are processing lower resolution video files, you need to modify FRAME_HEIGHT and FRAME_WIDTH constants in Frame class (1080x1920 vs 2048x3072)
 
 ## Files
-Relevant CSV Files that scientist may want to analyze:
+#### Relevant for analysis 
+These CSV files may be interesting for scientist to analyze:
 1) crabs.csv - one crab per line: frame number, size in pixels and location on the frame
-2) seefloor.csv - geometric data for each frame: mm-per-pixel, X and Y drifts in pixels and millimeters
-3) seqframes.csv - for each frame image that is saved in seqFrames folder: width and length in millimeters
-4) badframes.csv - ranges of frames that have bad quality and which should be excluded when generating images of seefloor in seqFrames
+2) markers.csv - one marker per line: markerId, frame number, location on the frame, created date 
+3) seefloor.csv - geometric data for each frame: mm-per-pixel, X and Y drifts in pixels and millimeters
+4) seqframes.csv - for each frame image that is saved in seqFrames folder: width and length in millimeters
+5) badframes.csv - ranges of frames that have bad quality and which should be excluded when generating images of seefloor in seqFrames
 
-Other files that are used by application
-+ reddots_manual.csv - manual mapping of red dots in frames are written here from RedDotsUI. Then this file is joined with reddots_raw.csv to generate reddots_interpolated.csv
-+ drifts_interpolated.csv - There are many erroneous entries in drifts_raw.csv. The program removes outliers and "fills in the blanks"/interpolates missing drift data. 
-
-Image files with graphs summarizing geometry of video footage:
+#### Image files
+Image with graphs explaining geometry of video footage:
 + reddots_angle - shows per frame the inclination of the line going through red dots. Red dots move closer or apart along the same line, which should, theoretically, always stay at the same angle to bottom of the frame no matter how camera moves. So far the angle was around 10 degrees.
 + reddots_distance - shows per frame the distance between red dots in pixels
++ drift_per_frame_pixels - shows, in pixels, the speed with which the seefloor moves from one video frame to the next
++ drift_per_frame_mm - shows, in millimeters, the speed with which the seefloor moves from one video frame to the next
++ seefloor_advancement_X - shows the total distance that the seefloor traveled in X (horizontal) direction 
++ seefloor_advancement_Y - shows the total distance that the seefloor traveled in Y (vertical) direction 
++ seefloor_path_XY - plots a path/route in 2 dimentions that the camera traveled over the seefloor
 
-Debugging files:
+#### Config file:
+_config.txt file holds overarching settings for this video file:
++ drifts_step_size - used in detectDrift algorithm to decide how many frames to jump between iterations. If video is moving fast, use values 2 or 3. If video is moving rather slow you can use value of 4 - 8. Using higher values will make algorithm faster, but may result in lower detection quality/fidelity. Default value is 2. 
++ distance_between_reddots_millimeters - defaults to 200mm
+You can see example file: "video_sample_config.txt" next to this README file.
+
+#### Debugging files:
 + stdout.log - Application writes out all user actions and application's debug information into this file. When reporting a bug to the developers, please attach this file - it will probably contain important technical message. If this file gets too large it can safely be deleted. 
+
+#### Other files
+Other files that are used by application. These files can be safely ignored by scientist:
++ _reddots_manual.csv - manual mapping of red dots in frames are written here from RedDotsUI. Then this file is joined with reddots_raw.csv to generate reddots_interpolated.csv
++ _raw_drifts.csv - holds drifts detected automatically by "detectDrift" algorithm. 
++ _reddots_raw.csv - holds coordinates of red dots detected automatically by "detectRedDots" algorithm.
++ _drifts_interpolated.csv - There are many erroneous entries in drifts_raw.csv. The program removes outliers and "fills in the blanks"/interpolates missing drift data. 
++ _reddots_interpolated.csv - Temporary file that combines data from _raw and _manual reddots files and interpolates it for every frame.
 
 ## Subdirectories
 Subdirectory

@@ -6,6 +6,7 @@ from lib.data.DriftRawData import DriftRawData
 from lib.data.RedDotsData import RedDotsData
 from lib.data.SeeFloor import SeeFloor
 from lib.infra.Configurations import Configurations
+from lib.infra.Defaults import Defaults
 
 
 class InterpolateController:
@@ -15,20 +16,12 @@ class InterpolateController:
 
     def step_size(self):
         configs = Configurations(self.__folderStruct)
-
-        if configs.has_drifts_step_size():
-            stepSize = configs.get_drifts_step_size()
-            print "DriftsStep from config file is: " + stepSize
-            stepSize = int(stepSize)
-        else:
-            stepSize = DetectDriftsController.DEFAULT_DRIFTS_STEP_SIZE
-            print "Using default drifts step: " + str(stepSize)
-        return stepSize
+        return configs.get_drifts_step_size()
 
     def regenerateSeefloor(self):
         driftsStepSize = self.step_size()
+        print "Using driftsStepSize: " + str(driftsStepSize)
 
-        print ("interpolating DriftData. driftsStepSize: ", driftsStepSize)
         manualDrifts = DriftManualData.createFromFile(self.__folderStruct)
 
         rawDrifts = DriftRawData(self.__folderStruct)

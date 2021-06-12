@@ -4,9 +4,10 @@ from lib.CommandLineLauncher import CommandLineLauncher
 from lib.MyTimer import MyTimer
 from lib.StreamToLogger import StreamToLogger
 from lib.FolderStructure import FolderStructure
+from lib.infra.Configurations import Configurations
 from lib.seefloor.InterpolateController import InterpolateController
 
-print ("Starting to Generate Graphs")
+print ("Launched Generate Graphs script")
 
 folderStruct = CommandLineLauncher.initializeFolderStruct(sys.argv)
 if folderStruct is None:
@@ -42,10 +43,13 @@ if folderStruct is None:
     # videoFileName = "R_20200918_111643_20200918_112107"
     # videoFileName = "R_20200918_114455_20200918_114853"
 
-
     folderStruct = FolderStructure(rootDir, videoFileName)
 
-# StreamToLogger(folderStruct.getLogFilepath())
+StreamToLogger(folderStruct.getLogFilepath())
+print ("Starting to Generate Graphs")
+
+#Create _config.txt file if it does not exist
+configs = Configurations(folderStruct)
 
 timer = MyTimer("InterpolateController")
 
