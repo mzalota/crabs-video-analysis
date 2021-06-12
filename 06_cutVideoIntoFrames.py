@@ -12,6 +12,7 @@ from lib.VideoStream import VideoStream
 from lib.common import Point, Box
 from lib.data.CrabsData import CrabsData
 from lib.data.SeeFloor import SeeFloor
+from lib.seefloor.InterpolateController import InterpolateController
 
 print(cv2.__version__)
 
@@ -43,18 +44,23 @@ if folderStruct is None:
     # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.01_6878"
     # videoFileName = "V20200901_215555_001"
 
-    rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.13_6916"
+    # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.13_6916"
     # videoFileName = "V20200913_204908_001"
-    videoFileName = "R_20200913_203053_20200913_203451"
+    # videoFileName = "R_20200913_203053_20200913_203451"
+
+    rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.16_6922"
+    videoFileName = "R_20200916_194953_20200916_195355"
 
     # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.18_6923"
     # videoFileName = "R_20200918_111643_20200918_112107"
 
-
-
     folderStruct = FolderStructure(rootDir, videoFileName)
 
+
 StreamToLogger(folderStruct.getLogFilepath())
+
+interpolator = InterpolateController(folderStruct)
+interpolator.regenerateSeefloor()
 
 seefloorGeometry = SeeFloor.createFromFolderStruct(folderStruct)
 videoStream = VideoStream(folderStruct.getVideoFilepath())
@@ -63,7 +69,6 @@ framesStitcher = VideoToImages(seefloorGeometry, videoStream)
 
 #framesToSaveToFile = framesStitcher.determineFrames()
 #print("Dataframe Contains:", framesToSaveToFile)
-
 
 frameIDs = framesStitcher.getListOfFrameIDs()
 framesStitcher.saveFramesToFile(frameIDs, folderStruct.getFramesDirpath())

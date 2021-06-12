@@ -2,8 +2,10 @@ import sys
 import cv2
 
 from lib.CommandLineLauncher import CommandLineLauncher
+from lib.MyTimer import MyTimer
 from lib.StreamToLogger import StreamToLogger
 from lib.data.DriftData import DriftData
+from lib.seefloor.InterpolateController import InterpolateController
 from lib.ui.ScientistUI import ScientistUI
 from lib.FolderStructure import FolderStructure
 from lib.ImageWindow import ImageWindow
@@ -32,8 +34,11 @@ if folderStruct is None:
     # videoFileName = "V20200913_204908_001"
     # videoFileName = "R_20200913_203451_20200913_203849"
 
-    rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.18_6923"
-    videoFileName = "R_20200918_111643_20200918_112107"
+    rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.16_6922"
+    videoFileName = "R_20200916_194953_20200916_195355"
+
+    # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.18_6923"
+    # videoFileName = "R_20200918_111643_20200918_112107"
 
     folderStruct = FolderStructure(rootDir, videoFileName)
 
@@ -41,17 +46,31 @@ StreamToLogger(folderStruct.getLogFilepath())
 
 print("cv2 version", cv2.__version__)
 
+timer = MyTimer("Starting MarkCrabs")
+
 videoStream = VideoStream(folderStruct.getVideoFilepath())
+timer.lap("Initialized VideoStream")
+
+interpolator = InterpolateController(folderStruct)
+interpolator.regenerateSeefloor()
+timer.lap("Interpolated Seefloor")
+
 driftData = DriftData.createFromFolderStruct(folderStruct)
+timer.lap("Initialized DriftData")
+
 imageWin = ImageWindow("mainWindow", Point(700, 200))
+timer.lap("Initialized ImageWindow")
 
 scientistUI = ScientistUI(imageWin, folderStruct, videoStream, driftData)
+timer.lap("Initialized ScientistUI")
 
 #Uncomment two lines below to get a nice summary which function uses the most time during excecution
 #import cProfile
 #cProfile.run('scientistUI.processVideo()')
 
 scientistUI.processVideo()
+
+timer.lap("Finished session")
 
 # close all open windows
 cv2.destroyAllWindows()

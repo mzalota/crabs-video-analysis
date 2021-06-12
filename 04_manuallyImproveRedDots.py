@@ -1,6 +1,7 @@
 import sys
 
 from lib.CommandLineLauncher import CommandLineLauncher
+from lib.MyTimer import MyTimer
 from lib.StreamToLogger import StreamToLogger
 from lib.data.RedDotsData import RedDotsData
 from lib.data.RedDotsManualData import RedDotsManualData
@@ -8,6 +9,8 @@ from lib.FillRedDotsGapsController import FillRedDotsGapsController
 from lib.FolderStructure import FolderStructure
 from lib.VideoStream import VideoStream
 import cv2
+
+from lib.seefloor.InterpolateController import InterpolateController
 from lib.ui.RedDotsUI import RedDotsUI
 
 print ("Starting Manually Improving RedDots")
@@ -32,22 +35,36 @@ if folderStruct is None:
     # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.06_6902"
     # videoFileName = "V20200906_025014_001"
 
-    rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.13_6916"
-    videoFileName = "V20200913_204908_001"
+    # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.13_6916"
+    # videoFileName = "V20200913_204908_001"
+
+    rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.16_6922"
+    videoFileName = "R_20200916_194953_20200916_195355"
 
     folderStruct = FolderStructure(rootDir, videoFileName)
 
 StreamToLogger(folderStruct.getLogFilepath())
 
+timer = MyTimer("Starting manuallyImproveRedDots")
 videoStream = VideoStream(folderStruct.getVideoFilepath())
+timer.lap("Initialized VideoStream")
+
+redDotsData = RedDotsData.createFromFolderStruct(folderStruct)
+timer.lap("Initialized redDotsData")
+
+interpolator = InterpolateController(folderStruct)
+interpolator.regenerateSeefloor()
+timer.lap("Interpolated SeeFloor")
 
 redDotsUI = RedDotsUI(videoStream)
-redDotsData = RedDotsData.createFromFolderStruct(folderStruct)
+timer.lap("Initialized RedDotsUI")
 
 ui = FillRedDotsGapsController(redDotsData, redDotsUI)
+timer.lap("Initialized FillRedDotsGapsController")
 ui.showUI()
 
 cv2.destroyAllWindows()
+timer.lap("Finished session")
 
 print ("Done Manually Improving RedDots")
 exit()

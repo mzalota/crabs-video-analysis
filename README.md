@@ -1,13 +1,13 @@
 # crabs-video-analysis project
 
 ## Processing Steps
-To process a new video of seefloor execute commands if the following order:
+To process a new video of seefloor execute commands in the following order:
 1) detectRedDots.py
 2) detectDrifts.py
-3) manuallyImproveRedDots.py
-4) interpolate.py
+3) generateGraphs.py
+4) manuallyImproveRedDots.py
 5) markCrabs.py
-7) cutVideoIntoFrames.py
+6) cutVideoIntoFrames.py
 
 You don't really need to use Jupyter Notebooks, other then to double-check data and to visualize contents of the files.
 
