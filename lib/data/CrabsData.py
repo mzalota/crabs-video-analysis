@@ -2,6 +2,7 @@ import pandas as pd
 from datetime import datetime
 from lib.FolderStructure import FolderStructure
 from lib.data.PandasWrapper import PandasWrapper
+from lib.infra.DataframeWrapper import DataframeWrapper
 
 
 class CrabsData(PandasWrapper):
@@ -54,7 +55,7 @@ class CrabsData(PandasWrapper):
             #first row is not header. Leave it
             pass
 
-    def add_crab_data(self, frame_number, crabCoordinate):
+    def add_crab_entry(self, frame_number, crabCoordinate):
         framesDir = self.__folderStruct.getVideoFilepath()
 
         row_to_append = {self.__COLNAME_dir: framesDir,
@@ -70,9 +71,13 @@ class CrabsData(PandasWrapper):
                          }
 
         self.__crabsDF = self.__crabsDF.append(row_to_append, ignore_index=True)
-        self.__crabsDF.to_csv(self.__folderStruct.getCrabsFilepath(), sep='\t', index=False)
+        self.__saveAsCSV()
 
         return row_to_append
+
+    def __saveAsCSV(self):
+        dfObj = DataframeWrapper(self.__crabsDF)
+        dfObj.save_file_csv(self.__folderStruct.getCrabsFilepath())
 
     def getCount(self):
         return len(self.__crabsDF.index)
@@ -106,3 +111,45 @@ class CrabsData(PandasWrapper):
         # {'crabLocationX': 865, 'crabLocationY': 304, 'frameNumber': 10243},
         # {'crabLocationX': 101, 'crabLocationY': 420, 'frameNumber': 10530}]
         return tmpDF[["frameNumber", "crabLocationY", "crabLocationX"]].reset_index(drop=True).to_dict("records")
+
+    def __generate_crabs_on_seefloor(self, sf):
+        seed_df = self.getPandasDF()[["frameNumber", "crabWidthPixels", "crabLocationX", "crabLocationY"]]
+        crabsDict = seed_df.to_dict("records")
+
+        for_new_df = list()
+        for markedCrab in crabsDict:
+            result = self.__build_new_crab_row(markedCrab, sf)
+            for_new_df.append(result)
+        result_df = pd.DataFrame(for_new_df)
+
+        return DataframeWrapper(result_df)
+
+    def __build_new_crab_row(self, markedCrab, sf):
+        result = dict()
+        frame_id = int(markedCrab['frameNumber'])
+        print("frame_id", frame_id)
+        crab_width_px = float(markedCrab['crabWidthPixels'])
+        print("crab_width_px", crab_width_px)
+        mm_per_pixel = sf.getRedDotsData().getMMPerPixel(frame_id)
+        print("mm_per_pixel", mm_per_pixel)
+        frame_coord_x_px = int(markedCrab['crabLocationX'])
+        frame_coord_y_px = int(markedCrab['crabLocationY'])
+        print("frame_coord_x_px", frame_coord_x_px)
+        print("frame_coord_y_px", frame_coord_y_px)
+
+        frame_coord_y_mm = frame_coord_y_px * mm_per_pixel
+        y_coord_mm = sf.getYCoordMMOrigin(frame_id) + frame_coord_y_mm
+        frame_coord_x_mm = frame_coord_x_px * mm_per_pixel
+        x_coord_mm = sf.getXCoordMMOrigin(frame_id) + frame_coord_x_mm
+        print("y_coord_mm", y_coord_mm)
+        print("x_coord_mm", x_coord_mm)
+
+        result['frameNumber'] = frame_id
+        result['mm_per_px'] = mm_per_pixel
+        result['width_px'] = crab_width_px
+        result['width_mm'] = crab_width_px * mm_per_pixel
+        result['frame_coord_x_px'] = frame_coord_x_px
+        result['frame_coord_y_px'] = frame_coord_y_px
+        result['seefloor_coord_y_mm'] = y_coord_mm
+        result['seefloor_coord_x_mm'] = x_coord_mm
+        return result

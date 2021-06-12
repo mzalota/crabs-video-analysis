@@ -42,7 +42,7 @@ class CrabUI:
         crabOnFrameID = self.getFrameIDOfCrab()
         crabBox = self.getCrabLocation()
 
-        appended_row = self.__crabsData.add_crab_data(crabOnFrameID, crabBox)
+        appended_row = self.__crabsData.add_crab_entry(crabOnFrameID, crabBox)
         print ("writing crab to file", appended_row)
 
     def __crabImageOnFrame(self, frameID):

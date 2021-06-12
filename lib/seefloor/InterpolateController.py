@@ -1,13 +1,14 @@
-from lib.DetectDriftsController import DetectDriftsController
+import pandas as pd
+
 from lib.FolderStructure import FolderStructure
+from lib.data.CrabsData import CrabsData
 from lib.data.DriftData import DriftData
 from lib.data.DriftManualData import DriftManualData
 from lib.data.DriftRawData import DriftRawData
 from lib.data.RedDotsData import RedDotsData
 from lib.data.SeeFloor import SeeFloor
 from lib.infra.Configurations import Configurations
-from lib.infra.Defaults import Defaults
-
+from lib.infra.DataframeWrapper import DataframeWrapper
 
 class InterpolateController:
     def __init__(self,folderStruct):
@@ -41,6 +42,15 @@ class InterpolateController:
         print ("interpolating SeeFloor")
         sf = SeeFloor.createFromFolderStruct(self.__folderStruct)
         sf.saveToFile()
+
+        self.__generate_crabs_on_seefloor(sf)
+
+    def __generate_crabs_on_seefloor(self, sf):
+        crabs = CrabsData(self.__folderStruct)
+        bbDF = self.__generate_crabs_on_seefloor2(crabs, sf)
+        bbDF.save_file_csv(self.__folderStruct.getSubDirpath() + "maxim_crabs22.csv")
+
+
 
     def regenerateGraphs(self):
         print ("drawign graphs for RedDots")

@@ -1,6 +1,7 @@
 from lib.MyTimer import MyTimer
 import pandas as pd
 
+#TODO: merge with DataframeWrapper class
 class PandasWrapper:
     @staticmethod
     def readDataFrameFromCSV(filepath, column_names = None):

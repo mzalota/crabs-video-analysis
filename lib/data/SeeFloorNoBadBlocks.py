@@ -159,13 +159,13 @@ class SeeFloorNoBadBlocks(PandasWrapper):
 
         # print("SeeFloorNoBadBlocks.getFrame() yMMAway")
 
-        yCoordMMOrigin = self.__getYCoordMMOrigin(fromFrameID)
+        yCoordMMOrigin = self.getYCoordMMOrigin(fromFrameID)
         yCoordMMDestination = yCoordMMOrigin + yMMAway
 
-        if yCoordMMDestination < self.__getYCoordMMOrigin(self.minFrameID()):
+        if yCoordMMDestination < self.getYCoordMMOrigin(self.minFrameID()):
             return self.minFrameID()
 
-        if yCoordMMDestination > self.__getYCoordMMOrigin(self.maxFrameID()):
+        if yCoordMMDestination > self.getYCoordMMOrigin(self.maxFrameID()):
             return self.maxFrameID()
 
         result = df.loc[(df['driftY_sum_mm'] < yCoordMMDestination)].max()["frameNumber"]
@@ -213,14 +213,14 @@ class SeeFloorNoBadBlocks(PandasWrapper):
 
     def getXDriftMM(self,fromFrameID, toFrameID):
         # type: (int, int) -> float
-        startXCoordMM = self.__getXCoordMMOrigin(fromFrameID)
-        endXCoordMM = self.__getXCoordMMOrigin(toFrameID)
+        startXCoordMM = self.getXCoordMMOrigin(fromFrameID)
+        endXCoordMM = self.getXCoordMMOrigin(toFrameID)
         return endXCoordMM-startXCoordMM
 
     def getYDriftMM(self,fromFrameID, toFrameID):
         # type: (int, int) -> float
-        startYCoordMM = self.__getYCoordMMOrigin(fromFrameID)
-        endYCoordMM = self.__getYCoordMMOrigin(toFrameID)
+        startYCoordMM = self.getYCoordMMOrigin(fromFrameID)
+        endYCoordMM = self.getYCoordMMOrigin(toFrameID)
         return endYCoordMM-startYCoordMM
 
     def heightMM(self,frame_id):
@@ -234,12 +234,12 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         return Frame.FRAME_WIDTH*float(mmPerPixel)
 
 
-    def __getYCoordMMOrigin(self, frame_id):
+    def getYCoordMMOrigin(self, frame_id):
         # type: (int) -> float
         retValue = self.__getValueFromDF("driftY_sum_mm", frame_id)
         return float(retValue)
 
-    def __getXCoordMMOrigin(self, frame_id):
+    def getXCoordMMOrigin(self, frame_id):
         # type: (int) -> float
         retValue = self.__getValueFromDF("driftX_sum_mm", frame_id)
         return float(retValue)
@@ -297,7 +297,6 @@ class SeeFloorNoBadBlocks(PandasWrapper):
     def getNextFrame(self, frame_id):
         # type: (int) -> int
         return self.jumpToSeefloorSlice(frame_id, 1)
-
 
     def translatePointCoordinate(self, pointLocation, origFrameID, targetFrameID):
         # type: (Point, int,int) -> Point
