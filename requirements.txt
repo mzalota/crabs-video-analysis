@@ -1,4 +1,4 @@
-opencv-python==4.0.0.21
+opencv-python==4.1.1.26
 numpy
 imutils==0.5.2
 scikit-image==0.14.2
