@@ -36,7 +36,7 @@ if folderStruct is None:
     # videoFileName = "V20200913_204908_001"
     # videoFileName = "R_20200913_203451_20200913_203849"
 
-    rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.16_6922"
+    rootDir = "C:/data/AnjutkaVideo/2020-Kara/2020.09.16_6922"
     videoFileName = "R_20200916_194953_20200916_195355"
 
     # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.18_6923"

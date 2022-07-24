@@ -1,6 +1,6 @@
 import numpy
 import pandas as pd
-import statistics as statistics
+#import statistics as statistics
 
 from lib.FolderStructure import FolderStructure
 from lib.data.DriftManualData import DriftManualData

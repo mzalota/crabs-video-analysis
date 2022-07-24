@@ -84,7 +84,7 @@ class ScientistUI:
                 break
 
             if user_input.is_command_save_image():
-                frame_id = self.__saveFrameImageToFile(frame)
+                self.__saveFrameImageToFile(frame)
                 continue
 
             if user_input.is_command_zoom():
