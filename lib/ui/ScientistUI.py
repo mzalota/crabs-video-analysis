@@ -100,6 +100,11 @@ class ScientistUI:
                 self.__seeFloor.refreshItself()
                 continue
 
+            if user_input.is_command_undo():
+                #TODO: only allow removing of marks added in this session, not earlier sessions
+                self.__remove_last_mark()
+                continue
+
             if user_input.is_mouse_click():
                 if self.__marker_id == "0":
                     self.__show_crab_ui(frame_id)
@@ -172,6 +177,10 @@ class ScientistUI:
             redDots = self.__redDotsUI.selectedRedDots()
             self.__redDotsData.addManualDots(frame_id_redDots, redDots)
         self.__redDotsUI.closeWindow()
+
+    def __remove_last_mark(self):
+        self.__markersData.delete_last_mark()
+        self.__markersData.save_to_file()
 
     def __change_contrast(self):
         print ("detected press C")

@@ -45,9 +45,17 @@ class MarkersData(PandasWrapper):
                          }
 
         self.__markersDF = self.__markersDF.append(row_to_append, ignore_index=True)
-        self.__markersDF.to_csv(self.__folderStruct.getMarkersFilepath(), sep='\t', index=False)
+        #self.__markersDF.to_csv(self.__folderStruct.getMarkersFilepath(), sep='\t', index=False)
 
         return row_to_append
+
+    def delete_last_mark(self):
+        if self.getCount()<=0:
+            return
+
+        last_item_idx = self.getCount()-1
+        self.__markersDF = self.__markersDF.drop([last_item_idx])
+        print("removed last marker, index: "+str(last_item_idx))
 
     def getCount(self):
         return len(self.__markersDF.index)

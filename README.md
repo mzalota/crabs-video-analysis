@@ -93,9 +93,14 @@ Subdirectory
 When Scientist UI starts, by default, the marker is set to **0**, for marking crabs. If mouse is clicked on image the "Crabs UI" will be opened.
 You can use 21 additional markers to mark other features in image. 
 
-Press keyboard keys **1-9** or **F1-F12** to switch marker. Then if you click mous on a feature this feature will be written to markers.csv file with this id.
+Press keyboard keys **1-9** or **F1-F12** to switch marker. Then if you click mouse on a feature this feature will be written to markers.csv file with this id.
 
+You can press Ctrl+Z to remove last marker from the file. 
 
+### Manually adjusting drifts
+You may notice that after you mark a feature and advance the video, the marking is diverging significantly from the feature. This means that the automated drift calculation was off. You may want to adjust the drifts manually as follows:
+Use right-click of the mouse to mark any discernible feature on a frame, advance 50-200 frames and then right-click on the same feature to save the adjustment.
+The drift adjustment between the two frames will be saved. When UI is restarted the adjuste will be reflected.
 
 ## Glossary
 

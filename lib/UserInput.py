@@ -15,6 +15,7 @@ class UserInput():
     KEY_BACKSPACE = 8
     KEY_MINUS = 45
     KEY_PLUS = 43
+    KEY_CTRL_Z = 26
 
     #KEY_UNDERSCORE = 95
     #KEY_MOUSE_CLICK_EVENT = 95 #97
@@ -134,6 +135,11 @@ class UserInput():
         if self.__key == ord("N"):
             return True
 
+        return False
+
+    def is_command_undo(self):
+        if self.__key == self.KEY_CTRL_Z:
+            return True
         return False
 
     def is_key_end(self):
