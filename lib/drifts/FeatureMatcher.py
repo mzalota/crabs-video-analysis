@@ -1,5 +1,5 @@
-from Frame import Frame
-from SeeFloorSection import SeeFloorSection
+from lib.Frame import Frame
+from lib.drifts.SeeFloorSection import SeeFloorSection
 
 
 class FeatureMatcher:

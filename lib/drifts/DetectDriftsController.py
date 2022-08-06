@@ -1,7 +1,5 @@
-import cv2
-
 from lib.Logger import Logger
-from lib.VelocityDetector import VelocityDetector
+from lib.drifts.VelocityDetector import VelocityDetector
 from lib.VideoStream import VideoStream
 from lib.data.DriftRawData import DriftRawData
 from lib.infra.Configurations import Configurations
@@ -33,9 +31,6 @@ class DetectDriftsController:
         else:
             startFrameID = 5
 
-        #cv2.startWindowThread()
-        #imageWin = ImageWindow("mainWithRedDots", Point(700, 200))
-
         print ("starting processing from frame", startFrameID)
 
         velocityDetector = VelocityDetector()
@@ -43,7 +38,6 @@ class DetectDriftsController:
         velocityDetector.runLoop(startFrameID, stepSize, logger, videoStream)
 
         logger.closeFile()
-        #cv2.destroyAllWindows()
 
     def step_size(self):
         # type: () -> int

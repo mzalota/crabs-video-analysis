@@ -4,7 +4,7 @@ import cv2
 
 from lib.Frame import Frame
 from lib.Image import Image
-from common import Box, Point, Vector
+from lib.common import Box, Point, Vector
 
 class SeeFloorSection:
     #__threshold_for_matching = 0.6
@@ -82,8 +82,8 @@ class SeeFloorSection:
         lastPoint = self.__topLeftPoints[lastFrame]
         beforeLastPoint = self.__topLeftPoints[beforeLastFrame]
         driftVector = Vector(lastPoint.x-beforeLastPoint.x, lastPoint.y-beforeLastPoint.y)
-        if (driftVector.isZeroVector()):
-            return None
+        #if (driftVector.isZeroVector()):
+        #    return None
 
         return driftVector
 
@@ -149,6 +149,18 @@ class SeeFloorSection:
 
         return topLeft
 
+    def getID(self):
+        # type: () -> String
+        return self.__id
+
+    def getMaxFrameID(self):
+        # type: () -> String
+        return max(self.__frameIDs)
+
+    def getMinFrameID(self):
+        # type: () -> String
+        return min(self.__frameIDs)
+
     @staticmethod
     def infoHeaders():
         row = []
@@ -174,17 +186,4 @@ class SeeFloorSection:
         row.append(self.getMaxFrameID())
         row.append(self.getMinFrameID())
         row.append(self.__correlation)
-
         return row
-
-    def getID(self):
-        # type: () -> String
-        return self.__id
-
-    def getMaxFrameID(self):
-        # type: () -> String
-        return max(self.__frameIDs)
-
-    def getMinFrameID(self):
-        # type: () -> String
-        return min(self.__frameIDs)

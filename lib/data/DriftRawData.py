@@ -68,8 +68,6 @@ class DriftRawData(PandasWrapper):
         df.loc[df['driftY'] < -10*step_size, ['driftX', 'driftY']] = numpy.nan #-20
         df.loc[df['driftY'] > 100*step_size/2, ['driftX', 'driftY']] = numpy.nan  #130
 
-        # wipDF["prevFrameID"] = wipDF[self.COLNAME_frameNumber].shift(periods=-1)
-
         return df
 
     def __interpolateToHaveEveryFrame(self, df):

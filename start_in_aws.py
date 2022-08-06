@@ -1,5 +1,5 @@
 from lib.DetectRedDotsController import DetectRedDotsController
-from lib.DetectDriftsController import DetectDriftsController
+from lib.drifts.DetectDriftsController import DetectDriftsController
 from lib.FolderStructure import FolderStructure
 import os
 import json

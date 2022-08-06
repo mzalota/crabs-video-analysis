@@ -3,13 +3,12 @@ import traceback
 
 import numpy
 
-from lib.FeatureMatcher import FeatureMatcher
-from Image import Image
-from common import Box, Point, Vector
+from lib.drifts.FeatureMatcher import FeatureMatcher
+from lib.common import Box, Point, Vector
 from lib.Frame import Frame
 from lib.ImageWindow import ImageWindow
 from lib.MyTimer import MyTimer
-from lib.VideoStream import VideoStreamException, VideoStream
+from lib.VideoStream import VideoStreamException
 
 
 class VelocityDetector():
@@ -17,12 +16,11 @@ class VelocityDetector():
         # type: () -> VelocityDetector
         self._prevFrame = None
         self._timer = MyTimer("VelocityDetector")
-        self.__ui_window = ImageWindow("mainWindow", Point(700, 200))
-        # self.__createFeatureMatchers()
 
     def runLoop(self, frameID, stepSize, logger, videoStream):
         self.__createFeatureMatchers(videoStream)
 
+        self.__ui_window = ImageWindow("mainWindow", Point(700, 200))
         success = True
         while success:
             try:
@@ -48,7 +46,7 @@ class VelocityDetector():
                 traceback.print_exc()
                 break
 
-            driftVector = self.getMedianDriftVector()
+            driftVector = self.__getMedianDriftVector()
             if driftVector is None:
                 driftsRow = self.emptyRow(frameID)
             else:
@@ -57,7 +55,7 @@ class VelocityDetector():
             print driftsRow
             logger.writeToFile(driftsRow)
 
-            self.__show_ui_window(driftVector, self._fm, frame)
+            self.__show_ui_window(self._fm, frame)
 
             frameID += stepSize
 
@@ -66,7 +64,7 @@ class VelocityDetector():
 
         self.__ui_window.closeWindow()
 
-    def __show_ui_window(self, driftVector, feature_matchers, frame):
+    def __show_ui_window(self, feature_matchers, frame):
         img = frame.getImgObj()
         #img.drawDriftVectorOnImage(driftVector)
         for feature_matcher in feature_matchers:
@@ -191,8 +189,8 @@ class VelocityDetector():
 
         driftsNew = list()
         for drift in driftsOld:
-            if drift.isZeroVector():
-                continue
+            #if drift.isZeroVector():
+            #    continue
 
             if drift.y > 150:
                 # the ship is not going to move that fast
@@ -210,8 +208,8 @@ class VelocityDetector():
 
         return driftsNew
 
-    def getMedianDriftVector(self):
-
+    def __getMedianDriftVector(self):
+        # type: () -> Vector
         withoutOutliers = self.excludeOutliers(self._drifts)
         if not withoutOutliers:
             return None
@@ -221,25 +219,25 @@ class VelocityDetector():
 
         driftX = list()
         driftY = list()
-
         for drift in withoutOutliers:
-            if not drift.isZeroVector():
-                driftX.append(drift.x)
-                driftY.append(drift.y)
+            #if not drift.isZeroVector():
+            driftX.append(drift.x)
+            driftY.append(drift.y)
 
         medianXDrift = numpy.median(driftX)
         medianYDrift = numpy.median(driftY)
         return Vector(medianXDrift, medianYDrift)
 
     def detectVelocity(self, frame):
+        # type: (Frame) -> None
         self._timer.lap("in detectVelocity() sequential start")
         self._drifts = list()
         for fm in self._fm:
             # TODO: If the next line is moved one down we get exception for video files that don't have first frame
-            imgObj = frame.getImgObj()
+            #imgObj = frame.getImgObj()
             fm.detectSeeFloorSection(frame)
             section = fm.seefloor_section()
-            section.drawFeatureOnFrame(imgObj)
+            #section.drawFeatureOnFrame(imgObj)
             if fm.detectionWasReset():
                 continue
 
@@ -259,7 +257,7 @@ class VelocityDetector():
         return len(self._drifts)
 
     def infoAboutDrift(self, frame_id):
-        driftVector = self.getMedianDriftVector()
+        driftVector = self.__getMedianDriftVector()
         driftDistance = self.getMedianDriftDistance()
         driftAngle = self.getMedianDriftAngle()
         driftsCount = self.getDriftsCount()

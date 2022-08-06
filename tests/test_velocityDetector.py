@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from lib.VelocityDetector import VelocityDetector
+from lib.drifts.VelocityDetector import VelocityDetector
 from lib.common import Vector
 
 

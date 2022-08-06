@@ -1,13 +1,7 @@
-import math
-
-import numpy
 from pebble import concurrent
 
-from lib.FeatureMatcher import FeatureMatcher
-from Image import Image
-from common import Box, Point, Vector
-from lib.MyTimer import MyTimer
-from lib.VelocityDetector import VelocityDetector
+from lib.drifts.FeatureMatcher import FeatureMatcher
+from lib.drifts.VelocityDetector import VelocityDetector
 
 
 class VelocityDetectorMultiThreaded(VelocityDetector):

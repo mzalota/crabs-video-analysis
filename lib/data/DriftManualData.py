@@ -126,7 +126,7 @@ class DriftManualData(PandasWrapper):
 
         return corrections
 
-    def overwrite_values(self,df):
+    def overwrite_values(self, df):
         # type: (pd.DataFrame) -> pd.DataFrame
         df = df.set_index("frameNumber")
         multipleCorrectionDFs = self.doIt()

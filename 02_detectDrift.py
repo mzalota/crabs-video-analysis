@@ -1,7 +1,7 @@
 import sys
 
 from lib.CommandLineLauncher import CommandLineLauncher
-from lib.DetectDriftsController import DetectDriftsController
+from lib.drifts.DetectDriftsController import DetectDriftsController
 from lib.FolderStructure import FolderStructure
 from lib.StreamToLogger import StreamToLogger
 from lib.infra.Configurations import Configurations
