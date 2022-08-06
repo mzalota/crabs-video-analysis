@@ -68,12 +68,16 @@ class VelocityDetector():
 
     def __show_ui_window(self, driftVector, feature_matchers, frame):
         img = frame.getImgObj()
-        # img.drawDriftVectorOnImage(driftVector)
+        #img.drawDriftVectorOnImage(driftVector)
         for feature_matcher in feature_matchers:
             if feature_matcher.detectionWasReset():
                 color = (0, 255, 255) # draw box in yellow color when it is reset
             else:
                 color = (0, 255, 0)
+                drift_vector = feature_matcher.seefloor_section().getDrift()
+                draw_starting_point = feature_matcher.seefloor_section().getLocation()
+                img.drawDriftVectorOnImage(drift_vector, draw_starting_point)
+
             img.drawBoxOnImage(feature_matcher.seefloor_section().box_around_feature(), color=color, thickness=4)
 
         self.__ui_window.showWindowAndWait(img.asNumpyArray())
@@ -233,7 +237,8 @@ class VelocityDetector():
         for fm in self._fm:
             # TODO: If the next line is moved one down we get exception for video files that don't have first frame
             imgObj = frame.getImgObj()
-            section = fm.detectSeeFloorSection(frame)
+            fm.detectSeeFloorSection(frame)
+            section = fm.seefloor_section()
             section.drawFeatureOnFrame(imgObj)
             if fm.detectionWasReset():
                 continue

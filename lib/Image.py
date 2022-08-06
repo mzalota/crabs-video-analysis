@@ -67,12 +67,13 @@ class Image:
                     color,
                     lineType)
 
-    def drawDriftVectorOnImage(self, driftVector):
+    def drawDriftVectorOnImage(self, driftVector, vectorStart = Point(100, 100)):
         if driftVector is not None:
-            vectorStart = Point(100, 100)
             vectorEnd = vectorStart.translateBy(driftVector)
-            vectorBox = Box(vectorStart, vectorEnd)
-            self.drawBoxOnImage(vectorBox)
+            #vectorBox = Box(vectorStart, vectorEnd)
+            #self.drawBoxOnImage(vectorBox)
+
+            self.drawLine(vectorStart, vectorEnd)
 
     def subImage(self, box):
         # type: (Box) -> Image

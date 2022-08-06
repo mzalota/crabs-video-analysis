@@ -45,8 +45,10 @@ class VelocityDetectorMultiThreaded(VelocityDetector):
         self._timer.lap("in detectVelocity() multithreaded end")
         self._prevFrame = frame
 
+    # https://pythonhosted.org/Pebble/#concurrent-decorators
     @concurrent.thread
     def parallelize(self, fm, frame):
-        #https://pythonhosted.org/Pebble/#concurrent-decorators
-        section = fm.detectSeeFloorSection(frame)
+        # type: (FeatureMatcher, Frame) -> SeeFloorSection
+        fm.detectSeeFloorSection(frame)
+        section = fm.seefloor_section()
         return section

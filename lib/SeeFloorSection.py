@@ -110,6 +110,7 @@ class SeeFloorSection:
         return img
 
     def getLocation(self):
+        # type: () -> Point
         box = self.__defaultBoxAroundFeature()
         return box.topLeft.calculateMidpoint(box.bottomRight)
 
