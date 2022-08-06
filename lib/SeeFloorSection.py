@@ -29,8 +29,12 @@ class SeeFloorSection:
         self.__topLeftPoints = dict()
         self.__startingBox = None
 
-    def setThreshold(self,newThresholdForMatching):
+    def setThreshold(self, newThresholdForMatching):
         self.__threshold_for_matching = newThresholdForMatching
+
+    def box_around_feature(self):
+        max_frame_id = max(self.__frameIDs)
+        return self.__boxAroundFeatureForFrame(max_frame_id)
 
     def __getWindowName(self):
         return self.__id
@@ -41,7 +45,8 @@ class SeeFloorSection:
                             self.__getTopLeft().y + self.__startingBox.hight()))
         return box
 
-    def __boxAroundFeatureForFrame(self,frameID):
+    def __boxAroundFeatureForFrame(self, frameID):
+        # type: (Int) -> Box
         topLeftPoint = self.__getTopLeftForFrame(frameID)
         box = Box(topLeftPoint,
                   Point(topLeftPoint.x + self.__startingBox.width(),
@@ -106,7 +111,7 @@ class SeeFloorSection:
 
     def getLocation(self):
         box = self.__defaultBoxAroundFeature()
-        return box.topLeft.calculateMidpoint (box.bottomRight)
+        return box.topLeft.calculateMidpoint(box.bottomRight)
 
     def findLocationInFrame(self, frame):
         # type: (Frame) -> Point

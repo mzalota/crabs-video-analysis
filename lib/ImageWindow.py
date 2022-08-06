@@ -2,7 +2,7 @@ import cv2
 from pyautogui import press
 
 from Image import Image
-from common import Point,Box
+from common import Point, Box
 
 
 class ImageWindow:
@@ -10,17 +10,17 @@ class ImageWindow:
     featureBox = None
     __windowPositionAndDimensionsInitialized = False
 
-    KEY_MOUSE_CLICK_EVENT = 95 # its an underscore "_" character
+    KEY_MOUSE_CLICK_EVENT = 95  # its an underscore "_" character
     KEY_RIGHT_MOUSE_CLICK_EVENT = 65
     KEY_UNDERSCORE = 95
 
-    def __init__ (self,windowName, position):
-        self.__windowName = windowName
+    def __init__(self, window_name, position):
+        self.__windowName = window_name
         self.__windowPosition = position
         self.__windowPositionAndDimensionsInitialized = False
-        self.__windowWidth = 960 #900
-        self.__windowHight = 540 #600
-        #cv2.startWindowThread()
+        self.__windowWidth = 960  # 900
+        self.__windowHight = 540  # 600
+        # cv2.startWindowThread()
 
     @staticmethod
     def createWindow(windowName, windowBox):
@@ -42,7 +42,7 @@ class ImageWindow:
 
     def __wasClicked(self, event, x, y):
         # check to see if the left mouse button was released
-        #print ("__wasClicked",event)
+        # print ("__wasClicked",event)
         if event == cv2.EVENT_LBUTTONDOWN:
             self.featureCoordiate = Point(x, y)
             self.__mouseButtomWasClicked = True
@@ -82,9 +82,9 @@ class ImageWindow:
         self.showWindow(image)
         return self.__waitForMouseClick()
 
-    def showWindowAndWait(self, image, delay):
+    def showWindowAndWait(self, image, delay_millisecs=1):
         self.showWindow(image)
-        cv2.waitKey(delay)
+        cv2.waitKey(delay_millisecs)
 
     def closeWindow(self):
         cv2.waitKey(1)
@@ -95,7 +95,7 @@ class ImageWindow:
         cv2.waitKey(1)
         cv2.waitKey(1)
         cv2.waitKey(1)
-        #print "trying to close window " + self.__windowName
+        # print "trying to close window " + self.__windowName
 
     def showWindowAndWaitForTwoClicks(self, image):
 
@@ -114,10 +114,10 @@ class ImageWindow:
 
         point2 = self.featureCoordiate
 
-        if point1.x<=point2.x:
+        if point1.x <= point2.x:
             self.featureBox = Box(point1, point2)
         else:
-            #second Click was to the left of the first. Reverse the two points
+            # second Click was to the left of the first. Reverse the two points
             self.featureBox = Box(point2, point1)
 
         return keyPress

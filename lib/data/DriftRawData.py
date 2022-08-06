@@ -90,7 +90,6 @@ class DriftRawData(PandasWrapper):
         # type: () -> int
         return self.__df[self.__COLNAME_frameNumber].max()
 
-
     def __replace_with_NaN_if_very_diff_to_neighbors(self, data, colName, step_size):
 
         targetOfAnalysis = data[colName]

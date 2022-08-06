@@ -21,12 +21,14 @@ if folderStruct is None:
     # videoFileName = "R_20200913_203451_20200913_203849"
 
 
-    rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.16_6922"
+    #rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.16_6922"
+    #videoFileName = "R_20200916_194953_20200916_195355"
+
+    rootDir = "C:/data/AnjutkaVideo/2020-Kara/2020.09.16_6922"
     videoFileName = "R_20200916_194953_20200916_195355"
 
     # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.01_6878"
     # videoFileName = "V20200901_214516_001"
-
 
     folderStruct = FolderStructure(rootDir, videoFileName)
     folderStruct.createDirectoriesIfDontExist(folderStruct.getDriftsFilepath())

@@ -7,6 +7,7 @@ from lib.FeatureMatcher import FeatureMatcher
 from Image import Image
 from common import Box, Point, Vector
 from lib.Frame import Frame
+from lib.ImageWindow import ImageWindow
 from lib.MyTimer import MyTimer
 from lib.VideoStream import VideoStreamException, VideoStream
 
@@ -16,10 +17,12 @@ class VelocityDetector():
         # type: () -> VelocityDetector
         self._prevFrame = None
         self._timer = MyTimer("VelocityDetector")
-        self.__createFeatureMatchers()
-        #self.__videoStream = VideoStream(folderStruct.getVideoFilepath())
+        self.__ui_window = ImageWindow("mainWindow", Point(700, 200))
+        # self.__createFeatureMatchers()
 
     def runLoop(self, frameID, stepSize, logger, videoStream):
+        self.__createFeatureMatchers(videoStream)
+
         success = True
         while success:
             try:
@@ -54,32 +57,72 @@ class VelocityDetector():
             print driftsRow
             logger.writeToFile(driftsRow)
 
-            img = frame.getImgObj()
-            img.drawDriftVectorOnImage(driftVector)
-
-            # imageWin.showWindowAndWait(img.asNumpyArray(), 1000)
-            # imageWin.showWindowAndWaitForClick(img.asNumpyArray())
+            self.__show_ui_window(driftVector, self._fm, frame)
 
             frameID += stepSize
 
             if frameID > 99100:
                 break
 
+        self.__ui_window.closeWindow()
 
-    def __createFeatureMatchers(self):
+    def __show_ui_window(self, driftVector, feature_matchers, frame):
+        img = frame.getImgObj()
+        # img.drawDriftVectorOnImage(driftVector)
+        for feature_matcher in feature_matchers:
+            if feature_matcher.detectionWasReset():
+                color = (0, 255, 255) # draw box in yellow color when it is reset
+            else:
+                color = (0, 255, 0)
+            img.drawBoxOnImage(feature_matcher.seefloor_section().box_around_feature(), color=color, thickness=4)
+
+        self.__ui_window.showWindowAndWait(img.asNumpyArray())
+
+    def __createFeatureMatchers(self, videoStream):
         self._fm = list()
-        self._fm.append(FeatureMatcher(Box(Point(1250, 650), Point(1250 + 300, 650 + 200)))) # middle right
-        self._fm.append(FeatureMatcher(Box(Point(700, 600), Point(700 + 400, 600 + 300))))  # center
-        self._fm.append(FeatureMatcher(Box(Point(1250, 125), Point(1450 + 200, 125 + 400)))) #top right
-        self._fm.append(FeatureMatcher(Box(Point(1200, 300), Point(1200 + 500, 300 + 300)))) #top right
-        self._fm.append(FeatureMatcher(Box(Point(200, 50), Point(200 + 600, 50 + 400))))
-        self._fm.append(FeatureMatcher(Box(Point(800, 50), Point(800 + 300, 50 + 200))))
-        self._fm.append(FeatureMatcher(Box(Point(300, 400), Point(300 + 250, 400 + 350)))) # middle left
-        self._fm.append(FeatureMatcher(Box(Point(800, 300), Point(800 + 300, 300 + 200))))
-        self._fm.append(FeatureMatcher(Box(Point(200, 650), Point(200 + 300, 650 + 200))))
+
+        # __FRAME_HEIGHT_LOW_RES = 1080
+        # __FRAME_WIDTH_LOW_RES = 1920
+
+        # _FRAME_HEIGHT_HIGH_RES = 2048  # diff from low res is 968
+        # __FRAME_WIDTH_HIGH_RES = 3072 # diff from low res is 1152
+
+        # TODO: Reuse Frame.is_high_resolution() function instead of reimplementing comparison here
+        if videoStream.frame_height() >= Frame._FRAME_HEIGHT_HIGH_RES:
+            hi_res_hight_diff = 968
+            hi_res_width_diff = 1152
+        else:
+            hi_res_hight_diff = 0
+            hi_res_width_diff = 0
+
+        # Boxes on the left side
+        self._fm.append(FeatureMatcher(Box(Point(200, 50), Point(200 + 600, 50 + 400))))  # left top
+        self._fm.append(FeatureMatcher(Box(Point(300, 400 + hi_res_hight_diff / 2), Point(300 + 200,
+                                                                                          400 + hi_res_hight_diff / 2 + 350))))  # left middle, taller one
+        self._fm.append(FeatureMatcher(Box(Point(200, 650 + hi_res_hight_diff / 2), Point(200 + 300,
+                                                                                          650 + hi_res_hight_diff / 2 + 200))))  # left middle, wider one
+
+        # Boxes in the middle
+        self._fm.append(FeatureMatcher(Box(Point(700 + hi_res_width_diff / 2, 600 + hi_res_hight_diff / 2),
+                                           Point(700 + hi_res_width_diff / 2 + 400,
+                                                 600 + hi_res_hight_diff / 2 + 300))))  # center over red dots
+        self._fm.append(FeatureMatcher(Box(Point(800 + hi_res_width_diff / 2, 50),
+                                           Point(800 + hi_res_width_diff / 2 + 300, 50 + 200))))  # middle top
+        self._fm.append(FeatureMatcher(Box(Point(800 + hi_res_width_diff, 300 + hi_res_hight_diff),
+                                           Point(800 + hi_res_width_diff + 300,
+                                                 300 + hi_res_hight_diff + 200))))  # between center box and "right middle" box
+
+        # boxes on the right side
+        self._fm.append(FeatureMatcher(Box(Point(1250 + hi_res_width_diff, 650 + hi_res_hight_diff / 2),
+                                           Point(1250 + hi_res_width_diff + 300,
+                                                 650 + hi_res_hight_diff / 2 + 200))))  # right middle
+        self._fm.append(FeatureMatcher(Box(Point(1250 + hi_res_width_diff, 125),
+                                           Point(1250 + hi_res_width_diff + 200, 125 + 400))))  # right top, taller
+        self._fm.append(FeatureMatcher(Box(Point(1200 + hi_res_width_diff, 300),
+                                           Point(1200 + hi_res_width_diff + 500, 300 + 300))))  # right top, wider
 
     def getMedianDriftDistance(self):
-        if len(self._drifts)<=0:
+        if len(self._drifts) <= 0:
             return None
 
         driftPixels = list()
@@ -88,7 +131,7 @@ class VelocityDetector():
         return numpy.median(driftPixels)
 
     def getMedianDriftAngle(self):
-        if len(self._drifts)<=0:
+        if len(self._drifts) <= 0:
             return None
 
         driftAngles = list()
@@ -113,7 +156,7 @@ class VelocityDetector():
             return True
 
         if number1 == 0 or number2 == 0:
-            #zero is neither negative nor positive. So if one number is zero, then the two numbers have SAME sign
+            # zero is neither negative nor positive. So if one number is zero, then the two numbers have SAME sign
             return False
 
         if self._isNegative(number1) and self._isNegative(number2):
@@ -131,39 +174,37 @@ class VelocityDetector():
         diff4 = next_next - next
 
         if abs(diff2) > 30 and abs(diff3) > 30:
-            #this is outlier
-            return prev + int(next-prev)/2
+            # this is outlier
+            return prev + int(next - prev) / 2
 
         return this
 
-
     def excludeOutliers(self, driftsOld):
-        if len(driftsOld)<=0:
+        if len(driftsOld) <= 0:
             return None
 
         medianLength = Vector.medianLengthOfVectorArray(driftsOld)
 
         driftsNew = list()
         for drift in driftsOld:
-            if  drift.isZeroVector():
+            if drift.isZeroVector():
                 continue
 
-            if drift.y >150:
-                #the ship is not going to move that fast
+            if drift.y > 150:
+                # the ship is not going to move that fast
                 continue
 
             if drift.y < -30:
-                #the ship is not going to move backward faster that -30...
+                # the ship is not going to move backward faster that -30...
                 continue
 
-            #print "medianLength "+str(medianLength)+ " drift.length() "+str(drift.length())+ " div two "+ str(medianLength / 2)
-            if (self.__isAbsoluteValueMoreThanTwiceBig(drift.length(),medianLength)):
+            # print "medianLength "+str(medianLength)+ " drift.length() "+str(drift.length())+ " div two "+ str(medianLength / 2)
+            if (self.__isAbsoluteValueMoreThanTwiceBig(drift.length(), medianLength)):
                 continue
 
             driftsNew.append(drift)
 
         return driftsNew
-
 
     def getMedianDriftVector(self):
 
@@ -192,7 +233,7 @@ class VelocityDetector():
         for fm in self._fm:
             # TODO: If the next line is moved one down we get exception for video files that don't have first frame
             imgObj = frame.getImgObj()
-            section = fm.detectSeeFloorSections(frame)
+            section = fm.detectSeeFloorSection(frame)
             section.drawFeatureOnFrame(imgObj)
             if fm.detectionWasReset():
                 continue
@@ -202,7 +243,6 @@ class VelocityDetector():
                 continue
 
             self._drifts.append(drift)
-
 
         self._prevFrame = frame
         self._timer.lap("in detectVelocity() sequential end")

@@ -5,15 +5,24 @@ from SeeFloorSection import SeeFloorSection
 class FeatureMatcher:
     def __init__(self, startingBox):
         self.__startingBox = startingBox
-        self.__detectionWasReset = False
         self.__resetReason = ""
         self.__correlation = 0
         self.__seeFloorSection = None
 
-    def detectionWasReset(self):
-        return self.__detectionWasReset
+    def startingBox(self):
+        return self.__startingBox
 
-    def detectSeeFloorSections(self, frame):
+    def seefloor_section(self):
+        #@rtype: SeeFloorSection
+        return self.__seeFloorSection
+
+    def detectionWasReset(self):
+        if self.__resetReason == "":
+            return False
+        else:
+            return True
+
+    def detectSeeFloorSection(self, frame):
         # type: (Frame) -> SeeFloorSection
         self.__seeFloorSection = self.__detectSeeFloorSection(frame, self.__seeFloorSection)
         return self.__seeFloorSection
@@ -25,34 +34,46 @@ class FeatureMatcher:
 
         newTopLeftOfFeature = section.findLocationInFrame(frame)
 
-        wasReset = self.__resetFeatureIfNecessary(newTopLeftOfFeature)
-        self.__detectionWasReset = wasReset
-        if wasReset:
-            #section.closeWindow()
+        self.__resetFeatureIfNecessary(newTopLeftOfFeature, frame.is_high_resolution())
+        if self.detectionWasReset():
+            #create bew SeeFloorSection
             return SeeFloorSection(frame, self.__startingBox)
         else:
             return section
 
-    def __resetFeatureIfNecessary(self, newTopLeftOfFeature):
+    def __resetFeatureIfNecessary(self, newTopLeftOfFeature, is_high_resolution):
         # type: (Point) -> bool
+
+        if is_high_resolution:
+            hi_res_height_diff = 968
+            hi_res_width_diff = 1152
+        else:
+            hi_res_height_diff = 0
+            hi_res_width_diff = 0
+
+        too_close_to_image_top_edge = 20
+        too_close_to_image_bottom_edge = 980+hi_res_height_diff
+        too_close_to_image_left_edge = 20
+        too_close_to_image_right_edge = 1900+hi_res_width_diff
+
         if newTopLeftOfFeature is None:
-            #print "Did not detect feature: resetting Location to Default: "+self.__seeFloorSection.getID()
+            #print "Did not detect feature: resetting Location to Default: "
             self.__resetReason = "NotDetected"
-            wasReset = True
-        elif ((newTopLeftOfFeature.y + self.__startingBox.hight()) > 980):
-            #print "Got to the bottom of the screen: resetting location to default: "+self.__seeFloorSection.getID()
-            #print newTopLeftOfFeature
-            self.__resetReason = "Bottom"
-            wasReset = True
-        elif newTopLeftOfFeature.x <= 20:
-            #print "Got too close to the left edge: resetting location to default: "+self.__seeFloorSection.getID()
-            #print newTopLeftOfFeature
+        elif newTopLeftOfFeature.y <= too_close_to_image_top_edge:
+            #print "Got to the bottom of the screen: resetting location to default: "
+            self.__resetReason = "TopEdge"
+        elif (newTopLeftOfFeature.y + self.__startingBox.hight()) > too_close_to_image_bottom_edge:
+            #print "Got to the bottom of the screen: resetting location to default: "
+            self.__resetReason = "BottomEdge"
+        elif newTopLeftOfFeature.x <= too_close_to_image_left_edge:
+            #print "Got too close to the left edge: resetting location to default: "
             self.__resetReason = "LeftEdge"
-            wasReset = True
+        elif (newTopLeftOfFeature.x + self.__startingBox.width()) > too_close_to_image_right_edge:
+            #print "Got too close to the right edge: resetting location to default: "
+            self.__resetReason = "RightEdge"
         else:
             self.__resetReason = ""
-            wasReset = False
-        return wasReset
+
 
     @staticmethod
     def infoHeaders():

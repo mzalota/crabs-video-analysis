@@ -1,14 +1,10 @@
-
-from lib.VelocityDetector import VelocityDetector
-
-from lib.VelocityDetectorMultiThreaded import VelocityDetectorMultiThreaded
-from lib.VideoStream import VideoStream
-from lib.VideoStreamMultiThreaded import VideoStreamMultiThreaded
+import cv2
 
 from lib.Logger import Logger
+from lib.VelocityDetector import VelocityDetector
+from lib.VideoStream import VideoStream
 from lib.data.DriftRawData import DriftRawData
 from lib.infra.Configurations import Configurations
-from lib.infra.Defaults import Defaults
 
 
 class DetectDriftsController:
@@ -19,7 +15,7 @@ class DetectDriftsController:
 
     def run(self):
         stepSize = self.step_size()
-        print "using stepSize: "+ str(stepSize)
+        print "using stepSize: " + str(stepSize)
 
         folderStruct = self.__folderStruct
         # velocityDetector = VelocityDetectorMultiThreaded(folderStruct)

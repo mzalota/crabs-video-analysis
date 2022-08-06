@@ -1,6 +1,5 @@
 from unittest import TestCase
 
-
 import pandas as pd
 from mock import MagicMock
 
