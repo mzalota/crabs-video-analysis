@@ -121,7 +121,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         new_frame_id = int(self._getNextFrame(pixels_to_jump, frame_id))
         return new_frame_id
 
-    def getDF(self):
+    def __getPandasDF(self):
         # type: () -> pd.DataFrame
         try:
             return self.__df
@@ -153,7 +153,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
 
     def getFrame(self, yMMAway, fromFrameID):
         # type: (float, int) -> int
-        df = self.getDF()
+        df = self.__getPandasDF()
         if df is None:
             return None
 
@@ -233,7 +233,6 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         mmPerPixel = self.__getValueFromDF("mm_per_pixel", frame_id)
         return Frame.FRAME_WIDTH*float(mmPerPixel)
 
-
     def getYCoordMMOrigin(self, frame_id):
         # type: (int) -> float
         retValue = self.__getValueFromDF("driftY_sum_mm", frame_id)
@@ -245,7 +244,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         return float(retValue)
 
     def __getValueFromDF(self, columnName, frame_id):
-        df = self.getDF()
+        df = self.__getPandasDF()
         if df is None:
             return 0
 
@@ -286,6 +285,8 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         dfMerged["driftY_sum_mm"] = dfMerged["driftY_mm"].cumsum()
         dfMerged["driftX_sum_mm"] = dfMerged["driftX_mm"].cumsum()
         dfMerged["bottom_corner_mm"] = Frame.FRAME_HEIGHT * dfMerged["mm_per_pixel"] + dfMerged["driftY_sum_mm"]
+        # dfMerged["center_coord_y_mm"] = int(Frame.FRAME_HEIGHT/2) * dfMerged["mm_per_pixel"] + dfMerged["driftY_sum_mm"]
+        # dfMerged["center_coord_x_mm"] = int(Frame.FRAME_WIDTH/2) * dfMerged["mm_per_pixel"] + dfMerged["driftX_sum_mm"]
         dfMerged["seconds"] = dfMerged["frameNumber"]/VideoStream.FRAMES_PER_SECOND
         dfMerged = dfMerged.sort_values(by=['frameNumber'])
         return dfMerged
@@ -297,6 +298,37 @@ class SeeFloorNoBadBlocks(PandasWrapper):
     def getNextFrame(self, frame_id):
         # type: (int) -> int
         return self.jumpToSeefloorSlice(frame_id, 1)
+
+    def translatePointCoordinate_new(self, pointLocation, origFrameID, targetFrameID):
+        # type: (Point, int,int) -> Point
+
+        target_mm_per_pixel = self.__getValueFromDF("mm_per_pixel", targetFrameID)
+        center_coordinate_x_mm_target = int(Frame.FRAME_WIDTH/2) * target_mm_per_pixel + self.__getValueFromDF("driftX_sum_mm", targetFrameID)
+        center_coordinate_y_mm_target = int(Frame.FRAME_HEIGHT/2) * target_mm_per_pixel + self.__getValueFromDF("driftY_sum_mm", targetFrameID)
+        center_coordinate_mm_target = Point(center_coordinate_x_mm_target, center_coordinate_y_mm_target)
+
+        orig_mm_per_pixel = self.__getValueFromDF("mm_per_pixel", origFrameID)
+        center_coordinate_x_mm_orig = int(Frame.FRAME_WIDTH/2) * orig_mm_per_pixel + self.__getValueFromDF("driftX_sum_mm", origFrameID)
+        center_coordinate_y_mm_orig = int(Frame.FRAME_HEIGHT/2) * orig_mm_per_pixel + self.__getValueFromDF("driftY_sum_mm", origFrameID)
+        center_coordinate_mm_orig = Point(center_coordinate_x_mm_orig, center_coordinate_y_mm_orig)
+
+        point_coordinate_x_mm = (Frame.FRAME_WIDTH-pointLocation.x) * orig_mm_per_pixel + self.__getValueFromDF("driftX_sum_mm", origFrameID)
+        point_coordinate_y_mm = (Frame.FRAME_HEIGHT-pointLocation.y) * orig_mm_per_pixel + self.__getValueFromDF("driftY_sum_mm", origFrameID)
+        point_coordinate_mm = Point(point_coordinate_x_mm, point_coordinate_y_mm)
+
+        print("origFrameID", origFrameID, "targetFrameID",targetFrameID, "pointLocation", str(pointLocation),  "point_coordinate_mm", str(point_coordinate_mm), "center_coordinate_mm_target", str(center_coordinate_mm_target), "center_coordinate_mm_orig", str(center_coordinate_mm_orig))
+
+        distance_x_mm = point_coordinate_x_mm - center_coordinate_x_mm_target
+        distance_y_mm = point_coordinate_y_mm - center_coordinate_y_mm_target
+
+
+        point_x_px = int(Frame.FRAME_WIDTH/2) - int(distance_x_mm/target_mm_per_pixel)
+        point_y_px = int(Frame.FRAME_HEIGHT/2) - int(distance_y_mm/target_mm_per_pixel)
+
+        point = Point(point_x_px, point_y_px)
+        print ("newPoint: ", str(point), "oldPoint: ", str(self.translatePointCoordinate_old(pointLocation, origFrameID, targetFrameID)))
+
+        return point
 
     def translatePointCoordinate(self, pointLocation, origFrameID, targetFrameID):
         # type: (Point, int,int) -> Point
@@ -336,7 +368,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         xColumn = ["frameNumber", "seconds"]
         yColumns = ["driftY_sum_mm"]
 
-        graphPlotter = GraphPlotter(self.getDF())
+        graphPlotter = GraphPlotter(self.__getPandasDF())
         graphPlotter.saveGraphToFile(xColumn, yColumns, graphTitle, filePath)
 
     def saveGraphSeefloorX(self):
@@ -346,7 +378,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         xColumn = ["frameNumber", "seconds"]
         yColumns = ["driftX_sum_mm"]
 
-        graphPlotter = GraphPlotter(self.getDF())
+        graphPlotter = GraphPlotter(self.__getPandasDF())
         graphPlotter.saveGraphToFile(xColumn, yColumns, graphTitle, filePath)
 
     def saveGraphSeefloorXY(self):
@@ -356,7 +388,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         xColumn = "driftX_sum_mm"
         yColumns = ["driftY_sum_mm"]
 
-        graphPlotter = GraphPlotter(self.getDF())
+        graphPlotter = GraphPlotter(self.__getPandasDF())
         graphPlotter.saveGraphToFileVertical(xColumn, yColumns, graphTitle, filePath)
 
     def saveGraphDriftsMillimeters(self):
@@ -366,7 +398,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         xColumn = ["frameNumber", "seconds"]
         yColumns = ["driftY_mm", "driftX_mm"] #"driftX", "driftY"
 
-        graphPlotter = GraphPlotter(self.getDF())
+        graphPlotter = GraphPlotter(self.__getPandasDF())
         graphPlotter.saveGraphToFile(xColumn, yColumns, graphTitle, filePath)
 
     def saveGraphDriftsPixels(self):
@@ -375,5 +407,5 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         xColumn = ["frameNumber", "seconds"]
         yColumns = ["driftY", "driftX"]
 
-        graphPlotter = GraphPlotter(self.getDF())
+        graphPlotter = GraphPlotter(self.__getPandasDF())
         graphPlotter.saveGraphToFile(xColumn, yColumns, graphTitle, filePath)
