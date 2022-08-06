@@ -179,9 +179,9 @@ class DriftData(PandasWrapper):
         if (fromFrameID == toFrameID):
             return Vector(0,0)
 
-        return self.__getDriftBetweenTwoFrames(fromFrameID, toFrameID)
+        return self.__getDriftBetweenTwoFramesPixels(fromFrameID, toFrameID)
 
-    def __getDriftBetweenTwoFrames(self, fromFrameID, toFrameID):
+    def __getDriftBetweenTwoFramesPixels(self, fromFrameID, toFrameID):
 
         #assuming fromFrameID is less than or equal to toFrameID and both are within valid range
         startingFrameIDInDataFrame = self.__nextFrameIDInFile(fromFrameID)

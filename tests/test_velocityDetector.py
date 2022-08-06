@@ -6,15 +6,6 @@ from lib.common import Vector
 
 class TestVelocityDetector(TestCase):
 
-    def test_getDriftsCount_zeroZero(self):
-        vd = VelocityDetector()
-
-        actual = vd.excludeOutliers([Vector(0, 0),Vector(-6, 41),Vector(-6, 41),Vector(-6, 41)])
-
-        # Assert
-        expected = [Vector(-6, 41), Vector(-6, 41), Vector(-6, 41)]
-        self.assertEqual(Vector.vectorArrayAsString(actual), Vector.vectorArrayAsString(expected))
-
     def test_getDriftsCount_2outliersAboveMedian(self):
         vd = VelocityDetector()
 
@@ -66,13 +57,13 @@ class TestVelocityDetector(TestCase):
 
         vd = VelocityDetector()
 
-        actual = vd.excludeOutliers([Vector(47, -408),Vector(-6, 41)])
+        actual = vd.excludeOutliers([Vector(47, -408), Vector(-6, 41)])
 
         # Assert
-        expected = [Vector(47, -408), Vector(-6, 41)]
-        self.assertEqual(2, len(expected))
-        self.assertEqual(2, len(actual))
+        expected = [Vector(-6, 41)]
+        #self.assertEqual(2, len(expected))
         self.assertEqual( Vector.vectorArrayAsString(actual), Vector.vectorArrayAsString(expected))
+        self.assertEqual(1, len(actual))
 
 
     def test_replaceOutlier(self):

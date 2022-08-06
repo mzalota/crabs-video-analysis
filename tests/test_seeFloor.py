@@ -272,8 +272,6 @@ class TestSeeFloor(TestCase):
         self.assertEqual(689, seeFloor.jumpToSeefloorSlice(180,4))
         self.assertEqual(700, seeFloor.jumpToSeefloorSlice(180,5))
 
-
-
     def test_jumpToSeefloorSlice_multiSlice_goingDownward(self):
         # Setup
         pixels_in_frame = Frame.FRAME_HEIGHT

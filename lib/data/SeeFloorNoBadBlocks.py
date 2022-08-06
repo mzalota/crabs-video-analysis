@@ -177,7 +177,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
             nextFrameID = fromFrameID
         return nextFrameID
 
-    def driftBetweenFrames(self, fromFrameID, toFrameID):
+    def __driftBetweenFramesPixels(self, fromFrameID, toFrameID):
         # type: (int, int) -> Vector
 
         if fromFrameID < self.__driftData.minFrameID() or toFrameID < self.__driftData.minFrameID():
@@ -275,7 +275,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
     def __interpolate(self):
         dfDrifts = self.getDriftData().getDF()
         dfRedDots = self.getRedDotsData().getPandasDF()
-        dfRedDots = dfRedDots[["frameNumber","distance", "mm_per_pixel"]]
+        dfRedDots = dfRedDots[["frameNumber", "distance", "mm_per_pixel"]]
 
         return self.__mergeDriftsAndRedDots(dfDrifts, dfRedDots)
 
@@ -300,7 +300,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
 
     def translatePointCoordinate(self, pointLocation, origFrameID, targetFrameID):
         # type: (Point, int,int) -> Point
-        drift = self.driftBetweenFrames(origFrameID, targetFrameID)
+        drift = self.__driftBetweenFramesPixels(origFrameID, targetFrameID)
         scalingFactor = self.getRedDotsData().scalingFactor(origFrameID, targetFrameID)
 
         newPoint = pointLocation.translateBy(drift)

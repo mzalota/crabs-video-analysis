@@ -1,7 +1,8 @@
 from unittest import TestCase
+from unittest.mock import MagicMock
 
 import pandas as pd
-from mock import MagicMock
+#from mock import MagicMock
 
 from lib.data.RedDotsData import RedDotsData
 
@@ -33,7 +34,7 @@ class TestRedDotsData(TestCase):
         rdData.getPandasDF = MagicMock(return_value=df)
 
         # Exercise
-        frame,gap = rdData.getMiddleFrameIDOfBiggestGap()
+        frame, gap = rdData.getMiddleFrameIDOfBiggestGap()
 
         # Assert
         self.assertEqual(12, frame)
