@@ -302,18 +302,20 @@ class SeeFloorNoBadBlocks(PandasWrapper):
     def translatePointCoordinate_new(self, pointLocation, origFrameID, targetFrameID):
         # type: (Point, int,int) -> Point
 
+        #It seems that the "focal point" of picture when zooming in or zooming out is at one quarter above bottom edge equidistant from left and right. check out drift vectors for each featureMatcher in detectDrifts.
+
         target_mm_per_pixel = self.__getValueFromDF("mm_per_pixel", targetFrameID)
-        center_coordinate_x_mm_target = int(Frame.FRAME_WIDTH/2) * target_mm_per_pixel + self.__getValueFromDF("driftX_sum_mm", targetFrameID)
-        center_coordinate_y_mm_target = int(Frame.FRAME_HEIGHT/2) * target_mm_per_pixel + self.__getValueFromDF("driftY_sum_mm", targetFrameID)
+        center_coordinate_x_mm_target = - int(Frame.FRAME_WIDTH/2) * target_mm_per_pixel + self.__getValueFromDF("driftX_sum_mm", targetFrameID)
+        center_coordinate_y_mm_target = -int(3*Frame.FRAME_HEIGHT/4) * target_mm_per_pixel + self.__getValueFromDF("driftY_sum_mm", targetFrameID)
         center_coordinate_mm_target = Point(center_coordinate_x_mm_target, center_coordinate_y_mm_target)
 
         orig_mm_per_pixel = self.__getValueFromDF("mm_per_pixel", origFrameID)
         center_coordinate_x_mm_orig = int(Frame.FRAME_WIDTH/2) * orig_mm_per_pixel + self.__getValueFromDF("driftX_sum_mm", origFrameID)
-        center_coordinate_y_mm_orig = int(Frame.FRAME_HEIGHT/2) * orig_mm_per_pixel + self.__getValueFromDF("driftY_sum_mm", origFrameID)
+        center_coordinate_y_mm_orig = -int(3*Frame.FRAME_HEIGHT/4) * orig_mm_per_pixel + self.__getValueFromDF("driftY_sum_mm", origFrameID)
         center_coordinate_mm_orig = Point(center_coordinate_x_mm_orig, center_coordinate_y_mm_orig)
 
-        point_coordinate_x_mm = (Frame.FRAME_WIDTH-pointLocation.x) * orig_mm_per_pixel + self.__getValueFromDF("driftX_sum_mm", origFrameID)
-        point_coordinate_y_mm = (Frame.FRAME_HEIGHT-pointLocation.y) * orig_mm_per_pixel + self.__getValueFromDF("driftY_sum_mm", origFrameID)
+        point_coordinate_x_mm = (-pointLocation.x) * orig_mm_per_pixel + self.__getValueFromDF("driftX_sum_mm", origFrameID)
+        point_coordinate_y_mm = (-pointLocation.y) * orig_mm_per_pixel + self.__getValueFromDF("driftY_sum_mm", origFrameID)
         point_coordinate_mm = Point(point_coordinate_x_mm, point_coordinate_y_mm)
 
         print("origFrameID", origFrameID, "targetFrameID",targetFrameID, "pointLocation", str(pointLocation),  "point_coordinate_mm", str(point_coordinate_mm), "center_coordinate_mm_target", str(center_coordinate_mm_target), "center_coordinate_mm_orig", str(center_coordinate_mm_orig))
@@ -323,7 +325,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
 
 
         point_x_px = int(Frame.FRAME_WIDTH/2) - int(distance_x_mm/target_mm_per_pixel)
-        point_y_px = int(Frame.FRAME_HEIGHT/2) - int(distance_y_mm/target_mm_per_pixel)
+        point_y_px = int(3*Frame.FRAME_HEIGHT/4) - int(distance_y_mm/target_mm_per_pixel)
 
         point = Point(point_x_px, point_y_px)
         print ("newPoint: ", str(point), "oldPoint: ", str(self.translatePointCoordinate_old(pointLocation, origFrameID, targetFrameID)))

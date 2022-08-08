@@ -46,9 +46,9 @@ class Point:
         return Box(Point(max(self.x - offset, 1), max(self.y - offset, 1)), Point(self.x + offset, self.y + offset))
 
 class Vector:
-    def __init__(self, point):
-        self.x = point.x
-        self.y = point.y
+    # def __init__(self, point):
+    #     self.x = point.x
+    #     self.y = point.y
 
     def __str__(self):
         return str(Point(self.x,self.y))

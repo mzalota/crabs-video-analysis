@@ -55,7 +55,7 @@ class VelocityDetector():
             print driftsRow
             logger.writeToFile(driftsRow)
 
-            self.__show_ui_window(self._fm, frame)
+            self.__show_ui_window(self._fm, frame, driftVector)
 
             frameID += stepSize
 
@@ -64,9 +64,8 @@ class VelocityDetector():
 
         self.__ui_window.closeWindow()
 
-    def __show_ui_window(self, feature_matchers, frame):
+    def __show_ui_window(self, feature_matchers, frame, driftVector):
         img = frame.getImgObj()
-        #img.drawDriftVectorOnImage(driftVector)
         for feature_matcher in feature_matchers:
             if feature_matcher.detectionWasReset():
                 color = (0, 255, 255) # draw box in yellow color when it is reset
@@ -75,6 +74,18 @@ class VelocityDetector():
                 drift_vector = feature_matcher.seefloor_section().getDrift()
                 draw_starting_point = feature_matcher.seefloor_section().getLocation()
                 img.drawDriftVectorOnImage(drift_vector, draw_starting_point)
+
+                if driftVector is not None:
+                    vector_shift_up = Vector(0, -50)
+                    # vector_shift_up = Vector(0, 0)
+                    draw_starting_point2 = draw_starting_point.translateBy(vector_shift_up)
+                    without_drift = drift_vector.asPoint().translateBy(Vector(-driftVector.x, -driftVector.y))
+                    img.drawDriftVectorOnImage(without_drift, draw_starting_point2)
+
+                    without_drift_elongated = Point(without_drift.x*20, without_drift.y)
+                    draw_starting_point3 = draw_starting_point2.translateBy(Vector(-without_drift_elongated.x, -without_drift_elongated.y))
+                    img.drawDriftVectorOnImage(without_drift_elongated, draw_starting_point3)
+
 
             img.drawBoxOnImage(feature_matcher.seefloor_section().box_around_feature(), color=color, thickness=4)
 
