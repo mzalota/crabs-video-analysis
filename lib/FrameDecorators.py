@@ -98,57 +98,6 @@ class DecoGridLines(FrameDecorator):
         imgObj.drawLine(verticalTop, verticalBottom, thickness=3, color=(255, 255, 0))
         imgObj.drawLine(horisontalLeft, horisontalRight, thickness=3, color=(255, 255, 0))
 
-class DecoMarkers_orig(FrameDecorator):
-
-    def __init__(self, frameDeco, seefloorGeometry, markersData):
-        # type: (FrameDecorator, SeeFloor, MarkersData) -> DecoMarkers
-        FrameDecorator.__init__(self, frameDeco)
-        self.__seefloorGeometry = seefloorGeometry
-        self.__markersData = markersData
-
-    def getImgObj(self):
-        # type: () -> Image
-        imgObj = self.frameDeco.getImgObj()
-        self.__paintMarkersOnImage(imgObj, self.getFrameID())
-        return imgObj
-
-    def __paintMarkersOnImage(self, mainImage, frame_id):
-        #timer = MyTimer("MarkersOnFrame")
-        markers = self.__markersOnFrame(frame_id)
-        if markers is None:
-            return
-
-        #timer.lap("drawing markers on frame: " + str(frame_id))
-        for marker in markers:
-            #print ('marker', marker)
-            frame_number = marker['frameNumber']
-            marker_id = marker['markerId']
-
-            orig_location = Point(marker['locationX'], marker['locationY'])
-            location = self.__seefloorGeometry.translatePointCoordinate(orig_location, frame_number, frame_id)
-
-            self.__drawMarkerOnImage(mainImage, marker_id, location)
-
-        # timer.lap("Number of markers" + str(len(markers)))
-
-    def __drawMarkerOnImage(self, mainImage, marker_id, location):
-        config = MarkersConfiguration()
-        color = config.color_for_marker(marker_id)
-        if marker_id % 2 == 0:
-            # even markers are crosses
-            mainImage.drawCross(location, color=color)
-        else:
-            # odd markers are squares
-            box = Box(location.translateBy(Vector(-9, -9)), location.translateBy(Vector(9, 9)))
-            mainImage.drawBoxOnImage(box, color=color, thickness=4)
-
-    def __markersOnFrame(self, frame_id):
-        # type: (int) -> dict
-        prev_frame_id = self.__seefloorGeometry.getPrevFrameMM(frame_id)
-        next_frame_id = self.__seefloorGeometry.getNextFrameMM(frame_id)
-        return self.__markersData.marksBetweenFrames(prev_frame_id, next_frame_id)
-
-
 class DecoMarkersAbstract(FrameDecorator):
     __metaclass__ = ABCMeta
 
@@ -239,8 +188,6 @@ class DecoMarkersWithSymbols(DecoMarkersAbstract):
             # odd markers are squares
             box = Box(location.translateBy(Vector(-9, -9)), location.translateBy(Vector(9, 9)))
             mainImage.drawBoxOnImage(box, color=color, thickness=4)
-
-
 
 
 class DecoMarkedCrabs(FrameDecorator):

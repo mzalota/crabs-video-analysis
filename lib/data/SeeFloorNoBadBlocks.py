@@ -335,33 +335,26 @@ class SeeFloorNoBadBlocks(PandasWrapper):
     def translatePointCoordinate(self, pointLocation, origFrameID, targetFrameID):
         # type: (Point, int,int) -> Point
         drift = self.__driftBetweenFramesPixels(origFrameID, targetFrameID)
+        point_after_drift = pointLocation.translateBy(drift)
+
         scalingFactor = self.getRedDotsData().scalingFactor(origFrameID, targetFrameID)
-
-        newPoint = pointLocation.translateBy(drift)
-        X = newPoint.x
-        if X < Frame.FRAME_WIDTH / 2:
-            xOffsetFromMiddle = (Frame.FRAME_WIDTH / 2 - X) / scalingFactor
-            newX = int(Frame.FRAME_WIDTH / 2 - xOffsetFromMiddle)
-            # print ("X smaller old ", X, "newX",newX,"xOffsetFromMiddle",xOffsetFromMiddle,Frame.FRAME_WIDTH)
-            newPoint = Point(newX, newPoint.y)
-        if X > Frame.FRAME_WIDTH / 2:
-            xOffsetFromMiddle = (X - Frame.FRAME_WIDTH / 2) / scalingFactor
-            newX = int(Frame.FRAME_WIDTH / 2 + xOffsetFromMiddle)
-            # print ("X bigger old ", X, "newX",newX,"xOffsetFromMiddle",xOffsetFromMiddle,Frame.FRAME_WIDTH)
-            newPoint = Point(newX, newPoint.y)
-
-        Y = newPoint.y
-        if Y < Frame.FRAME_HEIGHT / 2:
-            yOffsetFromMiddle = (Frame.FRAME_HEIGHT / 2 - Y) / scalingFactor
-            newY = int(Frame.FRAME_HEIGHT / 2 - yOffsetFromMiddle)
-            newPoint = Point(newPoint.x, newY)
-
-        if Y > Frame.FRAME_HEIGHT / 2:
-            yOffsetFromMiddle = (Y - Frame.FRAME_HEIGHT / 2) / scalingFactor
-            newY = int(Frame.FRAME_HEIGHT / 2 + yOffsetFromMiddle)
-            newPoint = Point(newPoint.x, newY)
+        newPoint = self.adjust_location_for_depth_change_zoom(point_after_drift, scalingFactor)
 
         return newPoint
+
+    @staticmethod
+    def adjust_location_for_depth_change_zoom(pointLocation, scalingFactor):
+        # type: (Point, float) -> Point
+        half_frame_width = Frame.FRAME_WIDTH / 2
+        half_frame_height = Frame.FRAME_HEIGHT / 2
+
+        x_offset_from_middle_new = (pointLocation.x - half_frame_width) / scalingFactor
+        new_x = half_frame_width + x_offset_from_middle_new
+
+        y_offset_from_middle_new = (pointLocation.y - half_frame_height) / scalingFactor
+        new_y = half_frame_height + y_offset_from_middle_new
+
+        return Point(int(new_x), int(new_y))
 
     def saveGraphSeefloorY(self):
         # filePath = self.__folderStruct.getSubDirpath()+"/graph_y.png"#self.__folderStruct.getRedDotsGraphAngle()
