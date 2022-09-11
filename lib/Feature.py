@@ -1,7 +1,6 @@
 from math import ceil
 
 from lib.Frame import Frame
-from lib.MyTimer import MyTimer
 from lib.common import Point, Box
 
 

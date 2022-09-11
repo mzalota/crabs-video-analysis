@@ -1,10 +1,8 @@
 from lib.FolderStructure import FolderStructure
 from lib.Image import Image
-from lib.common import Point
 from lib.data.BadFramesData import BadFramesData
 from lib.data.DriftManualData import DriftManualData
 from lib.data.MarkersData import MarkersData
-from lib.data.RedDotsManualData import RedDotsManualData
 from lib.data.SeeFloorNoBadBlocks import SeeFloorNoBadBlocks
 from lib.ui.CrabUI import CrabUI
 from lib.data.CrabsData import CrabsData
@@ -13,13 +11,12 @@ from lib.Frame import Frame
 from lib.ImageWindow import ImageWindow
 from lib.ImagesCollage import ImagesCollage
 from lib.data.RedDotsData import RedDotsData
-from cv2 import cv2
 
 import traceback
 from lib.FrameDecorators import FrameDecoFactory
 
-from lib.MyTimer import MyTimer
-from lib.UserInput import UserInput
+from lib.infra.MyTimer import MyTimer
+from lib.ui.UserInput import UserInput
 from lib.data.SeeFloor import SeeFloor
 from lib.ui.RedDotsUI import RedDotsUI
 

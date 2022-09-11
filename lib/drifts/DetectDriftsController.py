@@ -1,4 +1,4 @@
-from lib.Logger import Logger
+from lib.infra.Logger import Logger
 from lib.drifts.VelocityDetector import VelocityDetector
 from lib.VideoStream import VideoStream
 from lib.data.DriftRawData import DriftRawData

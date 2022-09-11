@@ -1,4 +1,4 @@
-#from collections import namedtuple
+# from collections import namedtuple
 
 import math
 import numpy
@@ -10,7 +10,7 @@ class Point:
         self.y = y
 
     def __str__(self):
-        return "("+str(self.x)+","+str(self.y)+")"
+        return "(" + str(self.x) + "," + str(self.y) + ")"
 
     def calculateMidpoint(self, point2):
         # type: (Point) -> Point
@@ -38,12 +38,12 @@ class Point:
 
     def translateBy(self, vector):
         # type: (Vector) -> Point
-        return Point(self.x+int(vector.x), int(self.y+vector.y))
-
+        return Point(self.x + int(vector.x), int(self.y + vector.y))
 
     def boxAroundPoint(self, boxSize):
-        offset = int(boxSize/2)
+        offset = int(boxSize / 2)
         return Box(Point(max(self.x - offset, 1), max(self.y - offset, 1)), Point(self.x + offset, self.y + offset))
+
 
 class Vector:
     # def __init__(self, point):
@@ -51,9 +51,9 @@ class Vector:
     #     self.y = point.y
 
     def __str__(self):
-        return str(Point(self.x,self.y))
+        return str(Point(self.x, self.y))
 
-    def __init__(self, x,y):
+    def __init__(self, x, y):
         self.x = x
         self.y = y
 
@@ -74,6 +74,9 @@ class Vector:
             drift_pixels.append(drift.length())
         return numpy.median(drift_pixels)
 
+    def invert(self):
+        # type: () -> Vector
+        return Vector((-1) * self.x, (-1) * self.y)
 
     def isZeroVector(self):
         if self.x == 0 and self.y == 0:
@@ -82,34 +85,34 @@ class Vector:
             return False
 
     def length(self):
-        zeroPoint = Point(0,0)
+        # type: () -> decimal
+        zeroPoint = Point(0, 0)
         endPoint = Point(self.x, self.y)
         return zeroPoint.distanceTo(endPoint)
 
     def angle(self):
         if self.x == 0:
-            #we want to avoid deviding by zero, hence we checked if x==0
+            # we want to avoid deviding by zero, hence we checked if x==0
             if self.y == 0:
-                #both x and y are zero so angle is also zero degrees
+                # both x and y are zero so angle is also zero degrees
                 return 0
-            if self.y <0:
-                #vector pointing streight south -> angle is -90 degrees
+            if self.y < 0:
+                # vector pointing streight south -> angle is -90 degrees
                 return -90
             if self.y > 0:
-                #vector pointing streight north -> angle is +90 degrees
+                # vector pointing streight north -> angle is +90 degrees
                 return 90
 
         # tan(theta) = Opposite / Adjacent
-        return math.degrees(math.atan(self.y/self.x))
+        return math.degrees(math.atan(self.y / self.x))
 
     def asPoint(self):
         return Point(self.x, self.y)
 
 
-
 class Box:
-    #topLeft = Point(0,0)
-    #bottomRight = Point(100, 100)
+    # topLeft = Point(0,0)
+    # bottomRight = Point(100, 100)
 
     def __init__(self, topLeft, bottomRight):
         # type: (Point, Point) -> Box
@@ -122,7 +125,7 @@ class Box:
         return Box(Point(0, 0), Point(x_width, y_height))
 
     def __str__(self):
-        return "["+str(self.topLeft)+":"+str(self.bottomRight)+"]"
+        return "[" + str(self.topLeft) + ":" + str(self.bottomRight) + "]"
 
     def width(self):
         return self.bottomRight.x - self.topLeft.x
@@ -158,7 +161,8 @@ class Box:
         newBottomRight = self.bottomRight.translateBy(vector)
         return Box(newTopLeft, newBottomRight)
 
+
 def boxAroundBoxes(box1, box2):
-    topLeft= Point(min(box1.topLeft.x, box2.topLeft.x), min(box1.topLeft.y, box2.topLeft.y))
-    bottomRight= Point(max(box1.bottomRight.x, box2.bottomRight.x), max(box1.bottomRight.y, box2.bottomRight.y))
+    topLeft = Point(min(box1.topLeft.x, box2.topLeft.x), min(box1.topLeft.y, box2.topLeft.y))
+    bottomRight = Point(max(box1.bottomRight.x, box2.bottomRight.x), max(box1.bottomRight.y, box2.bottomRight.y))
     return Box(topLeft, bottomRight)

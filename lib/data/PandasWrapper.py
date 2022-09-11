@@ -1,4 +1,3 @@
-from lib.MyTimer import MyTimer
 import pandas as pd
 
 #TODO: merge with DataframeWrapper class

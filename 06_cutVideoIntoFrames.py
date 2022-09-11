@@ -1,15 +1,11 @@
 import sys
 
-import cv2
-
 from lib.CommandLineLauncher import CommandLineLauncher
 from lib.FolderStructure import FolderStructure
-from lib.StreamToLogger import StreamToLogger
+from lib.ui.StreamToLogger import StreamToLogger
 from lib.VideoToImages import VideoToImages
-from lib.ImageWindow import ImageWindow
-from lib.Logger import Logger
+from lib.infra.Logger import Logger
 from lib.VideoStream import VideoStream
-from lib.common import Point, Box
 from lib.data.CrabsData import CrabsData
 from lib.data.SeeFloor import SeeFloor
 from lib.seefloor.InterpolateController import InterpolateController

@@ -1,13 +1,8 @@
 #from pandas.compat.numpy import np
-import numpy as np
-
-import cv2
 
 from lib.Frame import Frame
-from lib.FrameDecorators import DecoMarkedCrabs, DecoGridLines, FrameDecorator, DecoRedDots, FrameDecoFactory
+from lib.FrameDecorators import FrameDecoFactory
 from lib.Image import Image
-from lib.MyTimer import MyTimer
-from lib.common import Point, Box, Vector
 
 
 class ImagesCollage:

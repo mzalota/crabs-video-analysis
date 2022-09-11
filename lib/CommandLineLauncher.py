@@ -1,5 +1,4 @@
 from lib.FolderStructure import FolderStructure
-from lib.StreamToLogger import StreamToLogger
 
 
 class CommandLineLauncher:

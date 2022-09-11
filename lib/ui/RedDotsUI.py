@@ -1,13 +1,7 @@
-import cv2
-
-from lib.Frame import Frame
 from lib.Image import Image
 from lib.ImageWindow import ImageWindow
-from lib.data.RedDotsData import RedDotsData
-from lib.UserInput import UserInput
+from lib.ui.UserInput import UserInput
 from lib.common import Box, Point
-from lib.data.RedDotsManualData import RedDotsManualData
-from lib.data.RedDotsRawData import RedDotsRawData
 
 
 class RedDotsUI:

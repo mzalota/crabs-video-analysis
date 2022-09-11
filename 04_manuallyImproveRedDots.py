@@ -1,10 +1,9 @@
 import sys
 
 from lib.CommandLineLauncher import CommandLineLauncher
-from lib.MyTimer import MyTimer
-from lib.StreamToLogger import StreamToLogger
+from lib.infra.MyTimer import MyTimer
+from lib.ui.StreamToLogger import StreamToLogger
 from lib.data.RedDotsData import RedDotsData
-from lib.data.RedDotsManualData import RedDotsManualData
 from lib.FillRedDotsGapsController import FillRedDotsGapsController
 from lib.FolderStructure import FolderStructure
 from lib.VideoStream import VideoStream

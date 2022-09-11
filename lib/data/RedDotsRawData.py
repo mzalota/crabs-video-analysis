@@ -1,7 +1,7 @@
 import pandas as pd
 
 from lib.FolderStructure import FolderStructure
-from lib.Logger import Logger
+from lib.infra.Logger import Logger
 from lib.data.PandasWrapper import PandasWrapper
 
 class RedDotsRawData(PandasWrapper):

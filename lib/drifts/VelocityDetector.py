@@ -7,7 +7,7 @@ from lib.drifts.FeatureMatcher import FeatureMatcher
 from lib.common import Box, Point, Vector
 from lib.Frame import Frame
 from lib.ImageWindow import ImageWindow
-from lib.MyTimer import MyTimer
+from lib.infra.MyTimer import MyTimer
 from lib.VideoStream import VideoStreamException
 
 

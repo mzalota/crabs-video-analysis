@@ -1,5 +1,6 @@
 import numpy
 
+from lib.FrameId import FrameId
 from lib.VideoStream import VideoStream
 from lib.data.BadFramesData import BadFramesData
 from lib.data.DriftData import DriftData
@@ -219,6 +220,23 @@ class SeeFloorNoBadBlocks(PandasWrapper):
 
         return result
 
+    def get_drift_instantaneous(self, frame_id):
+        # type: (int) -> Vector
+        drift_x = self.__getValueFromDF(self.__COLNAME_driftX, frame_id)
+        drift_y = self.__getValueFromDF(self.__COLNAME_driftY, frame_id)
+        return Vector(drift_x, drift_y)
+
+    def zoom_instantaneous(self, frame_id):
+        # type: (int) -> float
+        if frame_id <= self.minFrameID():
+            return 1
+
+        scale_this = self.__getValueFromDF("mm_per_pixel", frame_id)
+        scale_prev = self.__getValueFromDF("mm_per_pixel", frame_id-1)
+        change = scale_this / scale_prev
+        return change
+
+
     def get_y_drift_px(self, fromFrameID, toFrameID):
         # type: (int, int) -> float
         df = self.__getPandasDF()
@@ -369,51 +387,25 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         # type: (Point, int,int) -> Point
         point_location_new = pointLocation
 
-        # if origFrameID > targetFrameID:
-        #     increment = -1
-        # else:
-        #     increment = 1
-        # for i in range(origFrameID, targetFrameID, increment):
-        #     point_location_new = self.__translate_point_one_frame(point_location_new, i, i + increment)
-
-        if origFrameID > targetFrameID:
-            increment = -1
-        else:
-            increment = 1
-
-        #print ("origFrameID", origFrameID, "targetFrameID", targetFrameID, "increment", increment)
-
-        individual_frames = list(range(origFrameID, targetFrameID, increment))
-        rang = range(len(individual_frames)-1)
-        #print ("rang", rang)
-        for idx in rang:
+        individual_frames = FrameId.sequence_of_frames(origFrameID, targetFrameID)
+        for idx in range(len(individual_frames) - 1):
             from_frame_id = individual_frames[idx]
             to_frame_id = individual_frames[idx + 1]
-            #print ("origFrameID", origFrameID, "targetFrameID", targetFrameID, "from_frame_id", from_frame_id, "to_frame_id", to_frame_id, "idx", idx )
             point_location_new = self.__translate_point_one_frame(point_location_new, from_frame_id, to_frame_id)
-
 
         return point_location_new
 
     def __translate_point_one_frame(self, pointLocation, origFrameID, targetFrameID):
         # type: (Point, int,int) -> Point
-        drift = self.__driftBetweenFramesPixels(origFrameID, targetFrameID)
+        drift = self.get_drift_instantaneous(targetFrameID)
+        depth_scaling_factor = self.zoom_instantaneous(targetFrameID)
+        if targetFrameID < origFrameID:
+            drift = drift.invert()
+            depth_scaling_factor = 1/depth_scaling_factor
+
         point_after_drift = pointLocation.translateBy(drift)
-
-        depth_scaling_factor = self.getRedDotsData().scalingFactor(origFrameID, targetFrameID)
         point_after_depth_scaling = self.adjust_location_for_depth_change_zoom(point_after_drift, depth_scaling_factor)
-
         return point_after_depth_scaling
-
-    # def translatePointCoordinate(self, pointLocation, origFrameID, targetFrameID):
-    #     # type: (Point, int,int) -> Point
-    #     drift = self.__driftBetweenFramesPixels(origFrameID, targetFrameID)
-    #     point_after_drift = pointLocation.translateBy(drift)
-    #
-    #     depth_scaling_factor = self.getRedDotsData().scalingFactor(origFrameID, targetFrameID)
-    #     point_after_depth_scaling = self.adjust_location_for_depth_change_zoom(point_after_drift, depth_scaling_factor)
-    #
-    #     return point_after_depth_scaling
 
     @staticmethod
     def adjust_location_for_depth_change_zoom(point, scaling_factor):

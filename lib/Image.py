@@ -1,5 +1,5 @@
 import numpy as np
-from cv2 import cv2, os
+from cv2 import cv2
 
 #from pandas.compat.numpy import np
 from common import Point, Box, Vector
@@ -8,7 +8,6 @@ from common import Point, Box, Vector
 #from Frame import Frame
 #from lib.Frame import Frame
 from lib.FolderStructure import FolderStructure
-from lib.MyTimer import MyTimer
 
 
 class Image:

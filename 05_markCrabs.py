@@ -2,8 +2,8 @@ import sys
 import cv2
 
 from lib.CommandLineLauncher import CommandLineLauncher
-from lib.MyTimer import MyTimer
-from lib.StreamToLogger import StreamToLogger
+from lib.infra.MyTimer import MyTimer
+from lib.ui.StreamToLogger import StreamToLogger
 from lib.data.DriftData import DriftData
 from lib.seefloor.InterpolateController import InterpolateController
 from lib.ui.ScientistUI import ScientistUI

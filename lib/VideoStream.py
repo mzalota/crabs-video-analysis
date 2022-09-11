@@ -4,7 +4,6 @@ import pylru
 import os
 
 from Image import Image
-from lib.MyTimer import MyTimer
 
 
 class VideoStreamException(Exception):

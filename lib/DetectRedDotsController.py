@@ -2,7 +2,6 @@ from lib.FolderStructure import FolderStructure
 from lib.Frame import Frame
 from lib.RedDotsDetector import RedDotsDetector
 from lib.VideoStream import VideoStream
-from lib.Logger import Logger
 
 #https://www.pyimagesearch.com/2016/10/31/detecting-multiple-bright-spots-in-an-image-with-python-and-opencv/
 from lib.data.RedDotsRawData import RedDotsRawData

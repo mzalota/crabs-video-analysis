@@ -1,8 +1,8 @@
 import sys
 
 from lib.CommandLineLauncher import CommandLineLauncher
-from lib.MyTimer import MyTimer
-from lib.StreamToLogger import StreamToLogger
+from lib.infra.MyTimer import MyTimer
+from lib.ui.StreamToLogger import StreamToLogger
 from lib.FolderStructure import FolderStructure
 from lib.infra.Configurations import Configurations
 from lib.seefloor.InterpolateController import InterpolateController

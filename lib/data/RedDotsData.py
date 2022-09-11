@@ -119,6 +119,12 @@ class RedDotsData(PandasWrapper):
         dfResult = self.__rowForFrame(frameId)
         return dfResult["distance"].iloc[0]
 
+    def zoom_instantaneous(self, frame_id):
+        # type: (int) -> float
+        if frame_id <= self.__minFrameID():
+            return 0
+        return self.scalingFactor(frame_id-1, frame_id)
+
     def scalingFactor(self, frameIDOrigin, frameIDTarget):
         # type: (int, int) -> float
         distanceRef = self.getDistancePixels(frameIDOrigin)

@@ -3,11 +3,10 @@ import sys
 from lib.DetectRedDotsController import DetectRedDotsController
 from lib.CommandLineLauncher import CommandLineLauncher
 from lib.FolderStructure import FolderStructure
-from lib.StreamToLogger import StreamToLogger
+from lib.ui.StreamToLogger import StreamToLogger
 
 
 #https://www.pyimagesearch.com/2016/10/31/detecting-multiple-bright-spots-in-an-image-with-python-and-opencv/
-from lib.VideoStream import VideoStream
 from lib.infra.Configurations import Configurations
 
 print ("Launched Detect RedDots script")

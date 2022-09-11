@@ -3,7 +3,7 @@ import sys
 from lib.CommandLineLauncher import CommandLineLauncher
 from lib.drifts.DetectDriftsController import DetectDriftsController
 from lib.FolderStructure import FolderStructure
-from lib.StreamToLogger import StreamToLogger
+from lib.ui.StreamToLogger import StreamToLogger
 from lib.infra.Configurations import Configurations
 
 print ("Launched DetectDrift script")
