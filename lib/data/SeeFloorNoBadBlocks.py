@@ -13,6 +13,8 @@ from lib.FolderStructure import FolderStructure
 import pandas as pd
 
 from lib.common import Vector, Point
+from lib.infra.MyTimer import MyTimer
+
 
 class SeeFloorNoBadBlocks(PandasWrapper):
     __COLNAME_driftX = 'driftX'
@@ -21,6 +23,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
 
     def __init__(self, driftsData, redDotsData, folderStruct = None,  df = None):
         # type: (DriftData, BadFramesData, RedDotsData, FolderStructure) -> SeeFloorNoBadBlocks
+        self.__mm_per_pixel_dict = None
         self.__driftData = driftsData
         self.__redDotsData = redDotsData
         self.__df = df
@@ -232,8 +235,17 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         if frame_id <= self.minFrameID():
             return 1
 
-        scale_this = self.__getValueFromDF("mm_per_pixel", frame_id)
-        scale_prev = self.__getValueFromDF("mm_per_pixel", frame_id-1)
+        # if !hasattr(self, '__mm_per_pixel_dict'):
+        if self.__mm_per_pixel_dict is None:
+            #Lazy loading of cache
+            # key is frame_id, value is mm_per_pixel
+            self.__mm_per_pixel_dict = self.__df.set_index(self.__COLNAME_frameNumber)["mm_per_pixel"].to_dict()
+
+        # scale_this = self.__getValueFromDF("mm_per_pixel", frame_id)
+        # scale_prev = self.__getValueFromDF("mm_per_pixel", frame_id-1)
+        scale_this = self.__mm_per_pixel_dict[frame_id]
+        scale_prev = self.__mm_per_pixel_dict[frame_id-1]
+
         change = scale_this / scale_prev
         return change
 
@@ -355,7 +367,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
     def translatePointCoordinate(self, pointLocation, origFrameID, targetFrameID):
         # type: (Point, int,int) -> Point
         point_location_new = pointLocation
-
+        timer = MyTimer("start translatePointCoordinate")
         individual_frames = FrameId.sequence_of_frames(origFrameID, targetFrameID)
         for idx in range(1, len(individual_frames)):
             to_frame_id = individual_frames[idx]
@@ -365,6 +377,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
             else:
                 result = frame_physics.translate_forward(point_location_new)
             point_location_new = result
+        timer.lap("end translatePointCoordinate loops:"+ str(len(individual_frames)) )
 
         return point_location_new
 
