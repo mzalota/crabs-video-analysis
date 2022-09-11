@@ -191,15 +191,20 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         if (fromFrameID == toFrameID):
             return Vector(0, 0)
 
-        driftX = self.getXDriftPixels(fromFrameID, toFrameID)
-        driftY = self.getYDriftPixels(fromFrameID, toFrameID)
+        # driftX = self.getXDriftPixels(fromFrameID, toFrameID)
+        # driftY = self.getYDriftPixels(fromFrameID, toFrameID)
+        # result = Vector(driftX, driftY)
+        # return result
 
-        return Vector(driftX, driftY)
+        result_new = Vector(self.get_x_drift_px(fromFrameID, toFrameID), self.get_y_drift_px(fromFrameID, toFrameID))
+        #print("__driftBetweenFramesPixels orig "+str(result), " new: ", str(result_new))
+        return result_new
+
 
     def getXDriftPixels(self, fromFrameID, toFrameID):
         # type: (int, int) -> int
         xDriftMM = self.getXDriftMM(fromFrameID, toFrameID)
-        #mmPerPixel = self.getRedDotsData().getMMPerPixel(fromFrameID)
+        # mmPerPixel = self.getRedDotsData().getMMPerPixel(fromFrameID)
         mmPerPixel = self.getRedDotsData().getMMPerPixel(toFrameID)
         xDrift = xDriftMM/mmPerPixel
         return int(xDrift)
@@ -207,17 +212,44 @@ class SeeFloorNoBadBlocks(PandasWrapper):
     def getYDriftPixels(self, fromFrameID, toFrameID):
         # type: (int, int) -> int
         yDriftMM = self.getYDriftMM(fromFrameID, toFrameID)
-        mmPerPixel = self.getRedDotsData().getMMPerPixel(fromFrameID)
+        # mmPerPixel = self.getRedDotsData().getMMPerPixel(fromFrameID)
+        mmPerPixel = self.getRedDotsData().getMMPerPixel(toFrameID)
         yDrift = yDriftMM/mmPerPixel
-        return int(yDrift)
+        result = int(yDrift)
 
-    def getXDriftMM(self,fromFrameID, toFrameID):
+        return result
+
+    def get_y_drift_px(self, fromFrameID, toFrameID):
+        # type: (int, int) -> float
+        df = self.__getPandasDF()
+        cumulative_y = df["driftY"].cumsum()
+
+        from_cum_drift = cumulative_y.iloc[self.__idx_of_frame_id(fromFrameID)]
+        to_cum_drift = cumulative_y.iloc[self.__idx_of_frame_id(toFrameID)]
+
+        return to_cum_drift - from_cum_drift
+
+    def get_x_drift_px(self, fromFrameID, toFrameID):
+        # type: (int, int) -> float
+        df = self.__getPandasDF()
+        cumulative_x = df["driftX"].cumsum()
+
+        from_cum_drift = cumulative_x.iloc[self.__idx_of_frame_id(fromFrameID)]
+        to_cum_drift = cumulative_x.iloc[self.__idx_of_frame_id(toFrameID)]
+
+        return to_cum_drift - from_cum_drift
+
+    def __idx_of_frame_id(self, frame_id):
+        df = self.__getPandasDF()
+        return df['frameNumber'][df['frameNumber'] == frame_id].index.tolist()[0]
+
+    def getXDriftMM(self, fromFrameID, toFrameID):
         # type: (int, int) -> float
         startXCoordMM = self.getXCoordMMOrigin(fromFrameID)
         endXCoordMM = self.getXCoordMMOrigin(toFrameID)
         return endXCoordMM-startXCoordMM
 
-    def getYDriftMM(self,fromFrameID, toFrameID):
+    def getYDriftMM(self, fromFrameID, toFrameID):
         # type: (int, int) -> float
         startYCoordMM = self.getYCoordMMOrigin(fromFrameID)
         endYCoordMM = self.getYCoordMMOrigin(toFrameID)
@@ -232,6 +264,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         # type: (int) -> float
         mmPerPixel = self.__getValueFromDF("mm_per_pixel", frame_id)
         return Frame.FRAME_WIDTH*float(mmPerPixel)
+
 
     def getYCoordMMOrigin(self, frame_id):
         # type: (int) -> float
@@ -334,25 +367,66 @@ class SeeFloorNoBadBlocks(PandasWrapper):
 
     def translatePointCoordinate(self, pointLocation, origFrameID, targetFrameID):
         # type: (Point, int,int) -> Point
+        point_location_new = pointLocation
+
+        # if origFrameID > targetFrameID:
+        #     increment = -1
+        # else:
+        #     increment = 1
+        # for i in range(origFrameID, targetFrameID, increment):
+        #     point_location_new = self.__translate_point_one_frame(point_location_new, i, i + increment)
+
+        if origFrameID > targetFrameID:
+            increment = -1
+        else:
+            increment = 1
+
+        #print ("origFrameID", origFrameID, "targetFrameID", targetFrameID, "increment", increment)
+
+        individual_frames = list(range(origFrameID, targetFrameID, increment))
+        rang = range(len(individual_frames)-1)
+        #print ("rang", rang)
+        for idx in rang:
+            from_frame_id = individual_frames[idx]
+            to_frame_id = individual_frames[idx + 1]
+            #print ("origFrameID", origFrameID, "targetFrameID", targetFrameID, "from_frame_id", from_frame_id, "to_frame_id", to_frame_id, "idx", idx )
+            point_location_new = self.__translate_point_one_frame(point_location_new, from_frame_id, to_frame_id)
+
+
+        return point_location_new
+
+    def __translate_point_one_frame(self, pointLocation, origFrameID, targetFrameID):
+        # type: (Point, int,int) -> Point
         drift = self.__driftBetweenFramesPixels(origFrameID, targetFrameID)
         point_after_drift = pointLocation.translateBy(drift)
 
-        scalingFactor = self.getRedDotsData().scalingFactor(origFrameID, targetFrameID)
-        newPoint = self.adjust_location_for_depth_change_zoom(point_after_drift, scalingFactor)
+        depth_scaling_factor = self.getRedDotsData().scalingFactor(origFrameID, targetFrameID)
+        point_after_depth_scaling = self.adjust_location_for_depth_change_zoom(point_after_drift, depth_scaling_factor)
 
-        return newPoint
+        return point_after_depth_scaling
+
+    # def translatePointCoordinate(self, pointLocation, origFrameID, targetFrameID):
+    #     # type: (Point, int,int) -> Point
+    #     drift = self.__driftBetweenFramesPixels(origFrameID, targetFrameID)
+    #     point_after_drift = pointLocation.translateBy(drift)
+    #
+    #     depth_scaling_factor = self.getRedDotsData().scalingFactor(origFrameID, targetFrameID)
+    #     point_after_depth_scaling = self.adjust_location_for_depth_change_zoom(point_after_drift, depth_scaling_factor)
+    #
+    #     return point_after_depth_scaling
 
     @staticmethod
-    def adjust_location_for_depth_change_zoom(pointLocation, scalingFactor):
+    def adjust_location_for_depth_change_zoom(point, scaling_factor):
         # type: (Point, float) -> Point
-        half_frame_width = Frame.FRAME_WIDTH / 2
-        half_frame_height = Frame.FRAME_HEIGHT / 2
+        mid_frame_width = Frame.FRAME_WIDTH / 2
+        x_offset_from_middle_old = point.x - mid_frame_width
+        x_offset_from_middle_new = x_offset_from_middle_old / scaling_factor
+        new_x = mid_frame_width + x_offset_from_middle_new
 
-        x_offset_from_middle_new = (pointLocation.x - half_frame_width) / scalingFactor
-        new_x = half_frame_width + x_offset_from_middle_new
-
-        y_offset_from_middle_new = (pointLocation.y - half_frame_height) / scalingFactor
-        new_y = half_frame_height + y_offset_from_middle_new
+        mid_frame_height = Frame.FRAME_HEIGHT / 2
+        y_offset_from_middle_old = point.y - mid_frame_height
+        y_offset_from_middle_new = y_offset_from_middle_old / scaling_factor
+        new_y = mid_frame_height + y_offset_from_middle_new
 
         return Point(int(new_x), int(new_y))
 

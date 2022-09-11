@@ -119,10 +119,10 @@ class RedDotsData(PandasWrapper):
         dfResult = self.__rowForFrame(frameId)
         return dfResult["distance"].iloc[0]
 
-    def scalingFactor(self, referenceFrameID, frameIDToScale):
+    def scalingFactor(self, frameIDOrigin, frameIDTarget):
         # type: (int, int) -> float
-        distanceRef = self.getDistancePixels(referenceFrameID)
-        distanceToScale = self.getDistancePixels(frameIDToScale)
+        distanceRef = self.getDistancePixels(frameIDOrigin)
+        distanceToScale = self.getDistancePixels(frameIDTarget)
         scalingFactor = distanceRef / distanceToScale
         return scalingFactor
 
