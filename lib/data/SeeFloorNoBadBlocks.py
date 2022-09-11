@@ -1,6 +1,7 @@
 import numpy
 
 from lib.FrameId import FrameId
+from lib.FramePhysics import FramePhysics
 from lib.VideoStream import VideoStream
 from lib.data.BadFramesData import BadFramesData
 from lib.data.DriftData import DriftData
@@ -350,77 +351,29 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         # type: (int) -> int
         return self.jumpToSeefloorSlice(frame_id, 1)
 
-    def translatePointCoordinate_new(self, pointLocation, origFrameID, targetFrameID):
-        # type: (Point, int,int) -> Point
-
-        #It seems that the "focal point" of picture when zooming in or zooming out is at one quarter above bottom edge equidistant from left and right. check out drift vectors for each featureMatcher in detectDrifts.
-
-        target_mm_per_pixel = self.__getValueFromDF("mm_per_pixel", targetFrameID)
-        center_coordinate_x_mm_target = - int(Frame.FRAME_WIDTH/2) * target_mm_per_pixel + self.__getValueFromDF("driftX_sum_mm", targetFrameID)
-        center_coordinate_y_mm_target = -int(3*Frame.FRAME_HEIGHT/4) * target_mm_per_pixel + self.__getValueFromDF("driftY_sum_mm", targetFrameID)
-        center_coordinate_mm_target = Point(center_coordinate_x_mm_target, center_coordinate_y_mm_target)
-
-        orig_mm_per_pixel = self.__getValueFromDF("mm_per_pixel", origFrameID)
-        center_coordinate_x_mm_orig = int(Frame.FRAME_WIDTH/2) * orig_mm_per_pixel + self.__getValueFromDF("driftX_sum_mm", origFrameID)
-        center_coordinate_y_mm_orig = -int(3*Frame.FRAME_HEIGHT/4) * orig_mm_per_pixel + self.__getValueFromDF("driftY_sum_mm", origFrameID)
-        center_coordinate_mm_orig = Point(center_coordinate_x_mm_orig, center_coordinate_y_mm_orig)
-
-        point_coordinate_x_mm = (-pointLocation.x) * orig_mm_per_pixel + self.__getValueFromDF("driftX_sum_mm", origFrameID)
-        point_coordinate_y_mm = (-pointLocation.y) * orig_mm_per_pixel + self.__getValueFromDF("driftY_sum_mm", origFrameID)
-        point_coordinate_mm = Point(point_coordinate_x_mm, point_coordinate_y_mm)
-
-        print("origFrameID", origFrameID, "targetFrameID",targetFrameID, "pointLocation", str(pointLocation),  "point_coordinate_mm", str(point_coordinate_mm), "center_coordinate_mm_target", str(center_coordinate_mm_target), "center_coordinate_mm_orig", str(center_coordinate_mm_orig))
-
-        distance_x_mm = point_coordinate_x_mm - center_coordinate_x_mm_target
-        distance_y_mm = point_coordinate_y_mm - center_coordinate_y_mm_target
-
-
-        point_x_px = int(Frame.FRAME_WIDTH/2) - int(distance_x_mm/target_mm_per_pixel)
-        point_y_px = int(3*Frame.FRAME_HEIGHT/4) - int(distance_y_mm/target_mm_per_pixel)
-
-        point = Point(point_x_px, point_y_px)
-        print ("newPoint: ", str(point), "oldPoint: ", str(self.translatePointCoordinate_old(pointLocation, origFrameID, targetFrameID)))
-
-        return point
-
+    #translates the point stepwise for each frame between orig and target.
     def translatePointCoordinate(self, pointLocation, origFrameID, targetFrameID):
         # type: (Point, int,int) -> Point
         point_location_new = pointLocation
 
         individual_frames = FrameId.sequence_of_frames(origFrameID, targetFrameID)
-        for idx in range(len(individual_frames) - 1):
-            from_frame_id = individual_frames[idx]
-            to_frame_id = individual_frames[idx + 1]
-            point_location_new = self.__translate_point_one_frame(point_location_new, from_frame_id, to_frame_id)
+        for idx in range(1, len(individual_frames)):
+            to_frame_id = individual_frames[idx]
+            frame_physics = self.get_frame_physics(to_frame_id)
+            if targetFrameID < origFrameID:
+                result = frame_physics.translate_backward(point_location_new)
+            else:
+                result = frame_physics.translate_forward(point_location_new)
+            point_location_new = result
 
         return point_location_new
 
-    def __translate_point_one_frame(self, pointLocation, origFrameID, targetFrameID):
-        # type: (Point, int,int) -> Point
-        drift = self.get_drift_instantaneous(targetFrameID)
-        depth_scaling_factor = self.zoom_instantaneous(targetFrameID)
-        if targetFrameID < origFrameID:
-            drift = drift.invert()
-            depth_scaling_factor = 1/depth_scaling_factor
-
-        point_after_drift = pointLocation.translateBy(drift)
-        point_after_depth_scaling = self.adjust_location_for_depth_change_zoom(point_after_drift, depth_scaling_factor)
-        return point_after_depth_scaling
-
-    @staticmethod
-    def adjust_location_for_depth_change_zoom(point, scaling_factor):
-        # type: (Point, float) -> Point
-        mid_frame_width = Frame.FRAME_WIDTH / 2
-        x_offset_from_middle_old = point.x - mid_frame_width
-        x_offset_from_middle_new = x_offset_from_middle_old / scaling_factor
-        new_x = mid_frame_width + x_offset_from_middle_new
-
-        mid_frame_height = Frame.FRAME_HEIGHT / 2
-        y_offset_from_middle_old = point.y - mid_frame_height
-        y_offset_from_middle_new = y_offset_from_middle_old / scaling_factor
-        new_y = mid_frame_height + y_offset_from_middle_new
-
-        return Point(int(new_x), int(new_y))
+    def get_frame_physics(self, to_frame_id):
+        # type: (int) -> FramePhysics
+        scale = self.getRedDotsData().getMMPerPixel(to_frame_id)
+        drift = self.get_drift_instantaneous(to_frame_id)
+        zoom = self.zoom_instantaneous(to_frame_id)
+        return FramePhysics(to_frame_id, scale, drift, zoom)
 
     def saveGraphSeefloorY(self):
         # filePath = self.__folderStruct.getSubDirpath()+"/graph_y.png"#self.__folderStruct.getRedDotsGraphAngle()

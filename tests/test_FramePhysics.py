@@ -1,11 +1,12 @@
 from unittest import TestCase
 
 from lib.Frame import Frame
+from lib.FramePhysics import FramePhysics
 from lib.common import Vector, Point
 from lib.data.SeeFloorNoBadBlocks import SeeFloorNoBadBlocks
 
 
-class TestSeeFloorNoBadBlocks(TestCase):
+class TestFramePhysics(TestCase):
     _center_point = Point(Frame.FRAME_WIDTH / 2, Frame.FRAME_HEIGHT / 2)
 
     def test_adjust_zoom_location_depth_not_changed(self):
@@ -14,7 +15,7 @@ class TestSeeFloorNoBadBlocks(TestCase):
         depth_change = 1
 
         #exercise
-        result = SeeFloorNoBadBlocks.adjust_location_for_depth_change_zoom(feature_location, depth_change)
+        result = FramePhysics._adjust_location_for_depth_change_zoom(feature_location, depth_change)
 
         #assert
         self.assertEqual(Frame.FRAME_WIDTH / 2, result.x)
@@ -26,7 +27,7 @@ class TestSeeFloorNoBadBlocks(TestCase):
         depth_change = 2
 
         #exercise
-        result = SeeFloorNoBadBlocks.adjust_location_for_depth_change_zoom(feature_location, depth_change)
+        result = FramePhysics._adjust_location_for_depth_change_zoom(feature_location, depth_change)
 
         #assert
         self.assertEqual(Frame.FRAME_WIDTH / 2, result.x)
@@ -38,7 +39,7 @@ class TestSeeFloorNoBadBlocks(TestCase):
         depth_change = 0.5 # depth is half the previous. All points on new frame are further away from center compared to previous frame
 
         #exercise
-        result = SeeFloorNoBadBlocks.adjust_location_for_depth_change_zoom(feature_location, depth_change)
+        result = FramePhysics._adjust_location_for_depth_change_zoom(feature_location, depth_change)
 
         #assert
         self.assertEqual((Frame.FRAME_WIDTH / 2) + 20, result.x ) #X dimention oved out by 20
@@ -50,7 +51,7 @@ class TestSeeFloorNoBadBlocks(TestCase):
         depth_change = 2 # all points appear closer to center on this frame image, compared to previous frame
 
         #exercise
-        result = SeeFloorNoBadBlocks.adjust_location_for_depth_change_zoom(feature_location, depth_change)
+        result = FramePhysics._adjust_location_for_depth_change_zoom(feature_location, depth_change)
 
         #assert
         self.assertEqual((Frame.FRAME_WIDTH / 2) - 33, result.x ) #X dimention oved in by 33, instead of 66
