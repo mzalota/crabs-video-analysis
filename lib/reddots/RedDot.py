@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from skimage import measure
 
+from lib.Image import Image
 from lib.common import Point, Box
 
 
@@ -21,35 +22,33 @@ class RedDot:
         else:
             return False
 
-    def __isolate(self, debugWindowName = None):
+    def __isolate(self):
 
         featureImage = self.__image.subImage(self.__redDotsSearchArea).asNumpyArray()
         mask_color = self.__isolateAreasWithRedColor(featureImage)
         mask_final = self.__blurErodeDilate(mask_color)
         contours = measure.find_contours(mask_final, 0.9)
+        if len(contours) <= 0:
+            return
 
         bounding_boxes = self.__boundingBoxesAroundContours(contours)
         top2Boxes = self.__keepTwoLargestContours(bounding_boxes)
 
-        if debugWindowName:
-            #print "top2Boxes"
-            #print top2Boxes
+        # debugWindowName = "reddot"
+        # cv2.imshow(debugWindowName + "_image_to_locate_red_dots", featureImage)
+        # cv2.imshow(debugWindowName + "_mask_in_before_blur", mask_color)
+        # # cv2.imshow(debugWindowName+"_mask01_after_blur", self.__mask_blurred)
+        # # cv2.imshow(debugWindowName+"_mask02_after_erode", self.__mask_eroded)
+        # cv2.imshow(debugWindowName + "_mask03_after_dilate", mask_final)
+        # for box in bounding_boxes:
+        #     print("box is", str(box))
+        #     image = Image(mask_final)
+        #     image.drawBoxOnImage(box, color=(255,255,255))
+        #     cv2.imshow(debugWindowName + "_mask04_bounded_box", image.asNumpyArray())
+        # cv2.waitKey(0)
 
-            cv2.imshow(debugWindowName+"_image_to_locate_red_dots", featureImage)
-            cv2.imshow(debugWindowName+"_mask_in_before_blur", mask_color)
-            #cv2.imshow(debugWindowName+"_mask01_after_blur", self.__mask_blurred)
-            #cv2.imshow(debugWindowName+"_mask02_after_erode", self.__mask_eroded)
-            cv2.imshow(debugWindowName+"_mask03_after_dilate", mask_final)
-            #cv2.waitKey(0)
-
-        if len(top2Boxes)>0:
-            #print "topBox"
-            #print top2Boxes[0]
-            self.__dotLocationInner = top2Boxes[0]
-            self.boxAroundDot = top2Boxes[0].translateCoordinateToOuter(self.__redDotsSearchArea.topLeft)
-        else:
-            pass
-
+        self.__dotLocationInner = top2Boxes[0]
+        self.boxAroundDot = top2Boxes[0].translateCoordinateToOuter(self.__redDotsSearchArea.topLeft)
 
     def __isolateAreasWithRedColor(self, featureImage):
 
@@ -59,20 +58,19 @@ class RedDot:
         #lower_red = np.array([150, 0, 190])
         #upper_red = np.array([200, 255, 255])
 
-        # lower mask (0-10)
+        # red mask (0-10) - red colors
         lower_red = np.array([0, 100, 150]) #150
         upper_red = np.array([10, 255, 255])
 
         mask0 = cv2.inRange(img_hsv, lower_red, upper_red)
 
-        # upper mask (170-180)
+        # green/blue mask: green (hue=150) and blue (hue=200)
         lower_red = np.array([150, 100, 150]) #150
         upper_red = np.array([200, 255, 255])
         mask1 = cv2.inRange(img_hsv, lower_red, upper_red)
 
         # join my masks
         mask = mask0 + mask1
-
         return mask
 
 

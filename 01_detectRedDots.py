@@ -28,7 +28,7 @@ if folderStruct is None:
     # videoFileName = "R_20200913_203053_20200913_203451"
     # videoFileName = "R_20200913_203451_20200913_203849"
 
-    rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.16_6922"
+    rootDir = "C:/data/AnjutkaVideo/2020-Kara/2020.09.16_6922"
     videoFileName = "R_20200916_194953_20200916_195355"
 
     # rootDir ="C:/workspaces/AnjutkaVideo/2019-Kara/St6236_19"
@@ -54,20 +54,6 @@ if folderStruct is None:
 StreamToLogger(folderStruct.getLogFilepath())
 print ("Starting to detect RedDots")
 
-# cap=cv2.VideoCapture(folderStruct.getVideoFilepath())
-# print("cv2.length")
-# # print(cv2.samples)
-# length = int(cap.get(cv2.CAP_PROP_POS_FRAMES ))
-# print( length )
-# vs = VideoStream(folderStruct.getVideoFilepath())
-# print( "vs.num_of_frames()")
-# print( vs.num_of_frames() )
-#
-# print( "vs.frame_width()")
-# print( vs.frame_width() )
-#
-# print( "vs.frame_height()")
-# print( vs.frame_height() )
 
 #Create _config.txt file if it does not exist
 configs = Configurations(folderStruct)
