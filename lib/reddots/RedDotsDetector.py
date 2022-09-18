@@ -1,6 +1,6 @@
 from lib.Frame import Frame
-from lib.RedDot import RedDot
-from common import Point, Box
+from lib.reddots.RedDot import RedDot
+from lib.common import Point, Box
 
 
 class RedDotsDetector:

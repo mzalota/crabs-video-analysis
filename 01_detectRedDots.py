@@ -1,6 +1,6 @@
 import sys
 
-from lib.DetectRedDotsController import DetectRedDotsController
+from lib.reddots.DetectRedDotsController import DetectRedDotsController
 from lib.CommandLineLauncher import CommandLineLauncher
 from lib.FolderStructure import FolderStructure
 from lib.ui.StreamToLogger import StreamToLogger

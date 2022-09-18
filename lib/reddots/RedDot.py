@@ -1,10 +1,8 @@
-from collections import namedtuple
-
 import cv2
 import numpy as np
 from skimage import measure
 
-from common import Point, Box
+from lib.common import Point, Box
 
 
 class RedDot:

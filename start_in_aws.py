@@ -1,4 +1,4 @@
-from lib.DetectRedDotsController import DetectRedDotsController
+from lib.reddots.DetectRedDotsController import DetectRedDotsController
 from lib.drifts.DetectDriftsController import DetectDriftsController
 from lib.FolderStructure import FolderStructure
 import os
