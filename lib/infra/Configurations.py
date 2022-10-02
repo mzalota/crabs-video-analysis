@@ -10,6 +10,7 @@ class Configurations:
 
     OPTION_DRIFTS_STEP_SIZE = 'drifts_step_size'
     OPTION_DISTANCE_BETWEEN_REDDOTS = 'distance_between_reddots_millimeters'
+    OPTION_MID_POINT_X_COORD_BETWEEN_REDDOTS = 'mid_point_x_coord_between_reddots'
 
     def __init__(self, folderStruct):
         # type: (FolderStructure) -> Configurations
@@ -34,6 +35,8 @@ class Configurations:
 
         parser.add_section(self.SECTION_REDDOTS)
         parser.set(self.SECTION_REDDOTS, self.OPTION_DISTANCE_BETWEEN_REDDOTS, self.__default_distance_reddots())
+        parser.set(self.SECTION_REDDOTS, self.OPTION_MID_POINT_X_COORD_BETWEEN_REDDOTS, self.__default_red_dots_x_mid_point())
+
         return parser
 
     def __save_configs_to_file(self, parser, filepath):
@@ -48,6 +51,10 @@ class Configurations:
     def __default_drifts_step_size(self):
         return Defaults.DEFAULT_DRIFTS_STEP_SIZE
 
+    def __default_red_dots_x_mid_point(self):
+        return Defaults.DEFAULT_MID_POINT_X_COORD_BETWEEN_REDDOTS
+
+
     def get_drifts_step_size(self):
         # type: () -> int
         if self._has_value(self.SECTION_DRIFTS, self.OPTION_DRIFTS_STEP_SIZE):
@@ -61,6 +68,13 @@ class Configurations:
             return int(self._get_value(self.SECTION_REDDOTS, self.OPTION_DISTANCE_BETWEEN_REDDOTS))
         else:
             return self.__default_distance_reddots()
+
+    def get_red_dots_x_mid_point(self):
+        # type: () -> int
+        if self._has_value(self.SECTION_REDDOTS, self.OPTION_MID_POINT_X_COORD_BETWEEN_REDDOTS):
+            return int(self._get_value(self.SECTION_REDDOTS, self.OPTION_MID_POINT_X_COORD_BETWEEN_REDDOTS))
+        else:
+            return self.__default_red_dots_x_mid_point()
 
 
     def _get_value(self, sectionName, optionName):

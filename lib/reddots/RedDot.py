@@ -44,6 +44,7 @@ class RedDot:
         selected_box = top2Boxes[0]
 
         if debugWindowName is not None:
+            print ("drawing in __isolate")
             self.__draw_debug_on_UI(debugWindowName, frame_id, featureImage, mask_color, mask_final, bounding_boxes, selected_box)
 
         return selected_box

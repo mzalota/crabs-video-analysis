@@ -1,15 +1,18 @@
 import cv2
 
 from lib.Frame import Frame
+from lib.infra.Configurations import Configurations
 from lib.reddots.RedDot import RedDot
 from lib.common import Point, Box
 
 
 class RedDotsDetector:
-    __initialDistanceForRedBoxSearchArea = 200
+    # __initialDistanceForRedBoxSearchArea = 200
 
-    def __init__(self, frame):
-        # type: (Frame) -> RedDotsDetector
+    def __init__(self, frame, configs):
+        # type: (Frame, Configurations) -> RedDotsDetector
+        self.__initial_x_coord_midpoint = configs.get_red_dots_x_mid_point()
+        self.__initialDistanceForRedBoxSearchArea = configs.get_distance_between_red_dots()
         self.__frame = frame
         self.__redDot1 = None
         self.__redDot2 = None
@@ -23,9 +26,10 @@ class RedDotsDetector:
         return self.__redDot2
 
     def show_on_UI(self, frame_id):
+
         drew1 = self.__redDot1.draw_on_UI("reddot_1_frame", frame_id)
         drew2 = self.__redDot2.draw_on_UI("reddot_2_frame", frame_id)
-
+        print("trying to show UI drew1 "+ str(drew1) + ", drew2 " + str(drew2))
         if drew1 or drew2:
             cv2.waitKey(0)
         # cv2.destroyAllWindows()
@@ -40,37 +44,51 @@ class RedDotsDetector:
 
     def __distanceBetweenRedPoints(self):
         if self.__redDot1.dotWasDetected() and self.__redDot2.dotWasDetected():
-            return int(self.__redDot1.boxAroundDot.distanceTo(self.__redDot2.boxAroundDot))
+            result = int(self.__redDot1.boxAroundDot.distanceTo(self.__redDot2.boxAroundDot))
+        else:
+            result = int(self.__initialDistanceForRedBoxSearchArea)
 
-        #if self.__prevDetector:
-        #    return int(self.__prevDetector.__distanceBetweenRedPoints())
-
-        return int(self.__initialDistanceForRedBoxSearchArea)
-
+        print ("__distanceBetweenRedPoints is "+str(result))
+        return result
 
     def __redDotsSearchArea1(self):
-        if self.__redDot1 and self.__redDot1.dotWasDetected():
-            return self.__updateRedDotsSearchArea(self.__redDot1.boxAroundDot)
-        return self.__initial_search_area1()
+        #TODO: The self.__redDot1 is ALWAYS NULL... We need to somehow get redDot1 from previous frame...
+        if self.__redDot1 is None:
+            return self.__initial_search_area1()
+
+        print ("__redDotsSearchArea1 detected "+str(self.__redDot1.dotWasDetected()))
+        if not self.__redDot1.dotWasDetected():
+            return self.__initial_search_area1()
+
+        return self.__updateRedDotsSearchArea(self.__redDot1.boxAroundDot)
+
 
     def __redDotsSearchArea2(self):
-        if self.__redDot2 and self.__redDot2.dotWasDetected():
-            return self.__updateRedDotsSearchArea(self.__redDot2.boxAroundDot)
-        return self.__initial_search_area2()
+        # TODO: The self.__redDot2 is ALWAYS NULL... We need to somehow get redDot2 from previous frame...
+        if self.__redDot2 is None:
+            return self.__initial_search_area2()
+
+        print ("__redDotsSearchArea2 detected " + str(self.__redDot2.dotWasDetected()))
+        if not self.__redDot2.dotWasDetected():
+            return self.__initial_search_area2()
+
+        return self.__updateRedDotsSearchArea(self.__redDot2.boxAroundDot)
 
     def __initial_search_area1(self):
         # type: () -> Box
         if (self.__frame.is_high_resolution() ):
-            return Box(Point(1200, 1000), Point(1600, 1400))
+            box = Box(Point(self.__initial_x_coord_midpoint - 400, 1000), Point(self.__initial_x_coord_midpoint, 1400))
         else:
-            return Box(Point(600, 300), Point(900, 600))
+            box = Box(Point(600, 300), Point(900, 600))
+        return box
 
     def __initial_search_area2(self):
         # type: () -> Box
         if (self.__frame.is_high_resolution()):
-            return Box(Point(1400, 1000), Point(1900, 1400))
+            box = Box(Point(self.__initial_x_coord_midpoint, 1000), Point(self.__initial_x_coord_midpoint + 400, 1400))
         else:
-            return Box(Point(900, 300), Point(1400, 800))
+            box = Box(Point(900, 300), Point(1400, 800))
+        return box
 
     def __updateRedDotsSearchArea(self, boxAroundRedDots):
         dotsShift = int(self.__distanceBetweenRedPoints() / 2)
@@ -84,6 +102,7 @@ class RedDotsDetector:
         bottomRightY = min(boxAroundRedDots.bottomRight.y + dotsShift, bottomRightLimit_y)
 
         redDotsSearchArea = Box(Point(topLeftX, topLeftY), Point(bottomRightX, bottomRightY))
+        print("in __updateRedDotsSearchArea: "+ str(redDotsSearchArea) + " bottomRightLimit_x: "+str(bottomRightLimit_x))
         return redDotsSearchArea
 
     def dotsWasDetected(self):

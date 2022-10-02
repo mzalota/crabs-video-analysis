@@ -1,5 +1,6 @@
 from lib.FolderStructure import FolderStructure
 from lib.Frame import Frame
+from lib.infra.Configurations import Configurations
 from lib.reddots.RedDotsDetector import RedDotsDetector
 from lib.VideoStream import VideoStream
 
@@ -7,10 +8,11 @@ from lib.VideoStream import VideoStream
 from lib.data.RedDotsRawData import RedDotsRawData
 
 class DetectRedDotsController:
+    __loop_count = 0
 
     def __init__(self, folderStruct):
         # type: (FolderStructure) -> None
-
+        self.__configs = Configurations(folderStruct)
         self.__rdRaw = RedDotsRawData.createNewAndReplaceExistingCSVFile(folderStruct)
         self.__videoStream = VideoStream(folderStruct.getVideoFilepath())
 
@@ -24,6 +26,7 @@ class DetectRedDotsController:
         stepSize = 5
         frame_id = self.__videoStream.get_id_of_first_frame(stepSize)
         while True:
+            self.__loop_count += 1
             print ("frame_id", frame_id)
             frame = Frame(frame_id, self.__videoStream)
 
@@ -48,9 +51,12 @@ class DetectRedDotsController:
             # videoStream.printMemoryUsage()
 
     def __detect_red_dots_on_frame(self, frame, frame_id):
-        vf = RedDotsDetector(frame)
+        vf = RedDotsDetector(frame, self.__configs)
         vf.isolateRedDots()
-        vf.show_on_UI(frame_id)
+        if (self.__loop_count % 5) == 0:
+            # show UI every 5th loop. Otherwise its too much.
+            vf.show_on_UI(frame_id)
+
         self.__save_dots_info_to_file(frame_id, vf)
 
     def __save_dots_info_to_file(self, frame_id, vf):
