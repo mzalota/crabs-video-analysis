@@ -1,6 +1,6 @@
 import math
 
-import numpy
+import numpy as np
 import pandas as pd
 
 from lib.FolderStructure import FolderStructure
@@ -116,7 +116,7 @@ class RedDotsManualData(PandasWrapper):
         df = self.__dotsJoinedOnOneLine()
         yLength_df = (df["centerPoint_y_dot1"] - df["centerPoint_y_dot2"])
         xLength_df = (df["centerPoint_x_dot1"] - df["centerPoint_x_dot2"])
-        angle_in_radians = numpy.arctan(yLength_df / xLength_df)*(-1)
+        angle_in_radians = np.arctan(yLength_df / xLength_df)*(-1)
         return (angle_in_radians / math.pi * 90)
 
     def __dotsJoinedOnOneLine(self):
