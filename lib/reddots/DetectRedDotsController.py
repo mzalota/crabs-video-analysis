@@ -16,9 +16,12 @@ class DetectRedDotsController:
 
     def run(self):
         # type: () -> None
-        vf = None
-        stepSize = 5
+        self.__loop_thru_all_frames()
 
+        self.__rdRaw.closeOpenFiles()
+
+    def __loop_thru_all_frames(self):
+        stepSize = 5
         frame_id = self.__videoStream.get_id_of_first_frame(stepSize)
         while True:
             print ("frame_id", frame_id)
@@ -37,18 +40,18 @@ class DetectRedDotsController:
                     frame_id += stepSize
                     continue
 
-            vf = RedDotsDetector(frame)
-
-            vf.isolateRedDots()
-
-            self.__save_dots_info_to_file(frame_id, vf)
+            self.__detect_red_dots_on_frame(frame, frame_id)
 
             frame_id += stepSize
             if frame_id > self.__videoStream.num_of_frames():
                 break
             # videoStream.printMemoryUsage()
 
-        self.__rdRaw.closeOpenFiles()
+    def __detect_red_dots_on_frame(self, frame, frame_id):
+        vf = RedDotsDetector(frame)
+        vf.isolateRedDots()
+        vf.show_on_UI(frame_id)
+        self.__save_dots_info_to_file(frame_id, vf)
 
     def __save_dots_info_to_file(self, frame_id, vf):
         # type: (int, RedDotsDetector) -> object

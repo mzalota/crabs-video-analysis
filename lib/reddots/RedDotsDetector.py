@@ -1,3 +1,5 @@
+import cv2
+
 from lib.Frame import Frame
 from lib.reddots.RedDot import RedDot
 from lib.common import Point, Box
@@ -20,11 +22,13 @@ class RedDotsDetector:
         # type: () -> RedDot
         return self.__redDot2
 
-    def drawBoxesAroundRedDots(self):
-        #img = self.__getImage()
-        self.__getImage().drawBoxOnImage(self.__redDot1.boxAroundDot)
-        self.__getImage().drawBoxOnImage(self.__redDot2.boxAroundDot)
-        #return img
+    def show_on_UI(self, frame_id):
+        drew1 = self.__redDot1.draw_on_UI("reddot_1_frame", frame_id)
+        drew2 = self.__redDot2.draw_on_UI("reddot_2_frame", frame_id)
+
+        if drew1 or drew2:
+            cv2.waitKey(0)
+        # cv2.destroyAllWindows()
 
     def isolateRedDots(self):
         imageObj = self.__frame.getImgObj()

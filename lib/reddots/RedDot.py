@@ -7,14 +7,15 @@ from lib.common import Point, Box
 
 
 class RedDot:
-    __dotLocationInner = None
     boxAroundDot = None
 
     def __init__(self, image, redDotsSearchArea):
         # type: (Image, Box) -> object
         self.__image = image
         self.__redDotsSearchArea = redDotsSearchArea
-        self.__isolate()
+        selected_box = self.__isolate()
+        if selected_box is not None:
+            self.boxAroundDot = selected_box.translateCoordinateToOuter(self.__redDotsSearchArea.topLeft)
 
     def dotWasDetected(self):
         if self.boxAroundDot:
@@ -22,7 +23,14 @@ class RedDot:
         else:
             return False
 
-    def __isolate(self):
+    def draw_on_UI(self, debugWindowName, frame_id):
+        result = self.__isolate(frame_id, debugWindowName)
+        if result is None:
+            return False
+        else:
+            return True
+
+    def __isolate(self, frame_id = None, debugWindowName = None):
 
         featureImage = self.__image.subImage(self.__redDotsSearchArea).asNumpyArray()
         mask_color = self.__isolateAreasWithRedColor(featureImage)
@@ -33,22 +41,35 @@ class RedDot:
 
         bounding_boxes = self.__boundingBoxesAroundContours(contours)
         top2Boxes = self.__keepTwoLargestContours(bounding_boxes)
+        selected_box = top2Boxes[0]
 
-        # debugWindowName = "reddot"
-        # cv2.imshow(debugWindowName + "_image_to_locate_red_dots", featureImage)
-        # cv2.imshow(debugWindowName + "_mask_in_before_blur", mask_color)
-        # # cv2.imshow(debugWindowName+"_mask01_after_blur", self.__mask_blurred)
-        # # cv2.imshow(debugWindowName+"_mask02_after_erode", self.__mask_eroded)
-        # cv2.imshow(debugWindowName + "_mask03_after_dilate", mask_final)
-        # for box in bounding_boxes:
-        #     print("box is", str(box))
-        #     image = Image(mask_final)
-        #     image.drawBoxOnImage(box, color=(255,255,255))
-        #     cv2.imshow(debugWindowName + "_mask04_bounded_box", image.asNumpyArray())
-        # cv2.waitKey(0)
+        if debugWindowName is not None:
+            self.__draw_debug_on_UI(debugWindowName, frame_id, featureImage, mask_color, mask_final, bounding_boxes, selected_box)
 
-        self.__dotLocationInner = top2Boxes[0]
-        self.boxAroundDot = top2Boxes[0].translateCoordinateToOuter(self.__redDotsSearchArea.topLeft)
+        return selected_box
+
+    def __draw_debug_on_UI(self, debugWindowName, frame_id, featureImage, mask_color, mask_final, bounding_boxes, selected_box):
+
+        orig_img = Image(featureImage)
+        orig_img.drawFrameID(frame_id)
+        cv2.imshow(debugWindowName + "_image_orig", orig_img.asNumpyArray())
+
+        mask_color_img = Image(mask_color)
+        mask_color_img.drawFrameID(frame_id)
+        cv2.imshow(debugWindowName + "_mask01_isolated_colors", mask_color_img.asNumpyArray())
+
+        mask_final_img = Image(mask_final)
+        mask_final_img.drawFrameID(frame_id)
+        cv2.imshow(debugWindowName + "_mask02_after_blur_dilate", mask_final_img.asNumpyArray())
+
+        image = Image(mask_final)
+        for box in bounding_boxes:
+            # print("box is", str(box))
+            image.drawBoxOnImage(box, color=(255, 255, 255))
+        image.drawBoxOnImage(selected_box, color=(255, 255, 0))
+        image.drawFrameID(frame_id)
+        cv2.imshow(debugWindowName + "_mask02_bounded_box", image.asNumpyArray())
+
 
     def __isolateAreasWithRedColor(self, featureImage):
 
