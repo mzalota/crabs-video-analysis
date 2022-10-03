@@ -59,7 +59,8 @@ print ("Starting to detect RedDots")
 configs = Configurations(folderStruct)
 
 controller = DetectRedDotsController(folderStruct)
-controller.run()
+# controller.run()
+controller.run_with_debug_UI()
 
 print ("Done detecting RedDots")
 

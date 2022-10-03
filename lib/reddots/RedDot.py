@@ -16,6 +16,8 @@ class RedDot:
         selected_box = self.__isolate()
         if selected_box is not None:
             self.boxAroundDot = selected_box.translateCoordinateToOuter(self.__redDotsSearchArea.topLeft)
+        else:
+            self.boxAroundDot = None
 
     def dotWasDetected(self):
         if self.boxAroundDot:
@@ -23,18 +25,19 @@ class RedDot:
         else:
             return False
 
-    def draw_on_UI(self, debugWindowName, frame_id):
-        result = self.__isolate(frame_id, debugWindowName)
-        if result is None:
-            return False
-        else:
-            return True
+    def debugging_images(self):
+        return self.__for_debugging
 
-    def __isolate(self, frame_id = None, debugWindowName = None):
-
+    def __isolate(self):
         featureImage = self.__image.subImage(self.__redDotsSearchArea).asNumpyArray()
         mask_color = self.__isolateAreasWithRedColor(featureImage)
         mask_final = self.__blurErodeDilate(mask_color)
+
+        self.__for_debugging = dict()
+        self.__for_debugging["image_orig"] = featureImage
+        self.__for_debugging["01_isolated_colors"] = mask_color
+        self.__for_debugging["02_blur_dilate"] = mask_final
+
         contours = measure.find_contours(mask_final, 0.9)
         if len(contours) <= 0:
             return
@@ -43,42 +46,21 @@ class RedDot:
         top2Boxes = self.__keepTwoLargestContours(bounding_boxes)
         selected_box = top2Boxes[0]
 
-        if debugWindowName is not None:
-            print ("drawing in __isolate")
-            self.__draw_debug_on_UI(debugWindowName, frame_id, featureImage, mask_color, mask_final, bounding_boxes, selected_box)
+        image = self.__draw_boxes(mask_final, bounding_boxes, selected_box)
+        self.__for_debugging["03_bounded_boxes"] = image.asNumpyArray()
 
         return selected_box
 
-    def __draw_debug_on_UI(self, debugWindowName, frame_id, featureImage, mask_color, mask_final, bounding_boxes, selected_box):
-
-        orig_img = Image(featureImage)
-        orig_img.drawFrameID(frame_id)
-        cv2.imshow(debugWindowName + "_image_orig", orig_img.asNumpyArray())
-
-        mask_color_img = Image(mask_color)
-        mask_color_img.drawFrameID(frame_id)
-        cv2.imshow(debugWindowName + "_mask01_isolated_colors", mask_color_img.asNumpyArray())
-
-        mask_final_img = Image(mask_final)
-        mask_final_img.drawFrameID(frame_id)
-        cv2.imshow(debugWindowName + "_mask02_after_blur_dilate", mask_final_img.asNumpyArray())
-
-        image = Image(mask_final)
+    def __draw_boxes(self, mask_final, bounding_boxes, selected_box):
+        image = Image(mask_final).copy()
         for box in bounding_boxes:
             # print("box is", str(box))
             image.drawBoxOnImage(box, color=(255, 255, 255))
         image.drawBoxOnImage(selected_box, color=(255, 255, 0))
-        image.drawFrameID(frame_id)
-        cv2.imshow(debugWindowName + "_mask02_bounded_box", image.asNumpyArray())
-
+        return image
 
     def __isolateAreasWithRedColor(self, featureImage):
-
         img_hsv = cv2.cvtColor(featureImage, cv2.COLOR_BGR2HSV)
-
-        #TODO: add both ranges of color 0-10 and 150-200
-        #lower_red = np.array([150, 0, 190])
-        #upper_red = np.array([200, 255, 255])
 
         # red mask (0-10) - red colors
         lower_red = np.array([0, 100, 150]) #150
@@ -95,7 +77,6 @@ class RedDot:
         mask = mask0 + mask1
         return mask
 
-
     def __blurErodeDilate(self, mask_in):
         # perform a series of erosions and dilations to remove
         # any small blobs of noise from the thresholded image
@@ -105,16 +86,11 @@ class RedDot:
         #return np.copy(mask_dilated)
         return mask_dilated
 
-
     def __keepTwoLargestContours(self, bounding_boxes):
         bounding_boxes = sorted(bounding_boxes, key=lambda box: abs((box.topLeft.x - box.bottomRight.x) * (box.topLeft.y - box.bottomRight.y)), reverse=True)
-        #print "bounding_boxes"
-        #print bounding_boxes
         return bounding_boxes[:2]
 
     def __boundingBoxesAroundContours(self, contours):
-        #print "contours"
-        # print contours
         bounding_boxes = []
         for contour in contours:
             box = self.__boundingBoxAroundContour(contour)
@@ -141,14 +117,12 @@ class RedDot:
 
         return row
 
-
-    def __findBoundingBox(self):
+    def __UNUSED_findBoundingBox(self):
         #https://docs.opencv.org/trunk/dd/d49/tutorial_py_contour_features.html#gsc.tab=0
 
         image_with_boxes = np.copy(self.__getImage())
 
         bounding_boxes = []
-        #bounding_boxes = [self.redDot1.boxAroundDot, self.redDot2.boxAroundDot]
         if self.redDot1.dotWasDetected():
             bounding_boxes.append(self.redDot1.boxAroundDot)
         if self.redDot2.dotWasDetected():
@@ -162,7 +136,7 @@ class RedDot:
         return image_with_boxes
 
 
-    def __findBrightestSpot(self, image):
+    def __UNUSED_findBrightestSpot(self, image):
         # https://www.pyimagesearch.com/2014/09/29/finding-brightest-spot-image-using-python-opencv/
         orig = image.copy()
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -174,4 +148,4 @@ class RedDot:
         #print "brigtest spot maxLoc"
         #print maxLoc
         #print maxVal
-        imageWin.showWindowAndWaitForClick(image)
+        #imageWin.showWindowAndWaitForClick(image)
