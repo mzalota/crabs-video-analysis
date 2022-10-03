@@ -51,7 +51,7 @@ if folderStruct is None:
     folderStruct = FolderStructure(rootDir, videoFileName)
     folderStruct.createDirectoriesIfDontExist(folderStruct.getRedDotsRawFilepath())
 
-# StreamToLogger(folderStruct.getLogFilepath())
+StreamToLogger(folderStruct.getLogFilepath())
 print ("Starting to detect RedDots")
 
 
@@ -59,8 +59,8 @@ print ("Starting to detect RedDots")
 configs = Configurations(folderStruct)
 
 controller = DetectRedDotsController(folderStruct)
-# controller.run()
-controller.run_with_debug_UI()
+controller.run()
+# controller.run_with_debug_UI()
 
 print ("Done detecting RedDots")
 
