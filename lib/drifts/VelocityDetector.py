@@ -55,7 +55,7 @@ class VelocityDetector():
             print driftsRow
             logger.writeToFile(driftsRow)
 
-            self.__show_ui_window(self._fm, frame, driftVector)
+            self.__show_ui_window(self._fm.values(), frame, driftVector)
 
             frameID += stepSize
 
@@ -92,7 +92,7 @@ class VelocityDetector():
         self.__ui_window.showWindowAndWait(img.asNumpyArray())
 
     def __createFeatureMatchers(self, videoStream):
-        self._fm = list()
+
 
         # __FRAME_HEIGHT_LOW_RES = 1080
         # __FRAME_WIDTH_LOW_RES = 1920
@@ -108,31 +108,32 @@ class VelocityDetector():
             hi_res_hight_diff = 0
             hi_res_width_diff = 0
 
+        self._fm = dict()
         # Boxes on the left side
-        self._fm.append(FeatureMatcher(Box(Point(200, 50), Point(200 + 600, 50 + 400))))  # left top
-        self._fm.append(FeatureMatcher(Box(Point(300, 400 + hi_res_hight_diff / 2), Point(300 + 200,
-                                                                                          400 + hi_res_hight_diff / 2 + 350))))  # left middle, taller one
-        self._fm.append(FeatureMatcher(Box(Point(200, 650 + hi_res_hight_diff / 2), Point(200 + 300,
-                                                                                          650 + hi_res_hight_diff / 2 + 200))))  # left middle, wider one
+        self._fm[0] = FeatureMatcher(Box(Point(200, 50), Point(200 + 600, 50 + 400)))  # left top
+        self._fm[1] = FeatureMatcher(Box(Point(300, 400 + hi_res_hight_diff / 2), Point(300 + 200,
+                                                                                          400 + hi_res_hight_diff / 2 + 350)))  # left middle, taller one
+        self._fm[2] = FeatureMatcher(Box(Point(200, 650 + hi_res_hight_diff / 2), Point(200 + 300,
+                                                                                          650 + hi_res_hight_diff / 2 + 200)))  # left middle, wider one
 
         # Boxes in the middle
-        self._fm.append(FeatureMatcher(Box(Point(700 + hi_res_width_diff / 2, 600 + hi_res_hight_diff / 2),
+        self._fm[3] = FeatureMatcher(Box(Point(700 + hi_res_width_diff / 2, 600 + hi_res_hight_diff / 2),
                                            Point(700 + hi_res_width_diff / 2 + 400,
-                                                 600 + hi_res_hight_diff / 2 + 300))))  # center over red dots
-        self._fm.append(FeatureMatcher(Box(Point(800 + hi_res_width_diff / 2, 50),
-                                           Point(800 + hi_res_width_diff / 2 + 300, 50 + 200))))  # middle top
-        self._fm.append(FeatureMatcher(Box(Point(800 + hi_res_width_diff, 300 + hi_res_hight_diff),
+                                                 600 + hi_res_hight_diff / 2 + 300)))  # center over red dots
+        self._fm[4] = FeatureMatcher(Box(Point(800 + hi_res_width_diff / 2, 50),
+                                           Point(800 + hi_res_width_diff / 2 + 300, 50 + 200)))  # middle top
+        self._fm[5] = FeatureMatcher(Box(Point(800 + hi_res_width_diff, 300 + hi_res_hight_diff),
                                            Point(800 + hi_res_width_diff + 300,
-                                                 300 + hi_res_hight_diff + 200))))  # between center box and "right middle" box
+                                                 300 + hi_res_hight_diff + 200)))  # between center box and "right middle" box
 
         # boxes on the right side
-        self._fm.append(FeatureMatcher(Box(Point(1250 + hi_res_width_diff, 650 + hi_res_hight_diff / 2),
+        self._fm[6] = FeatureMatcher(Box(Point(1250 + hi_res_width_diff, 650 + hi_res_hight_diff / 2),
                                            Point(1250 + hi_res_width_diff + 300,
-                                                 650 + hi_res_hight_diff / 2 + 200))))  # right middle
-        self._fm.append(FeatureMatcher(Box(Point(1250 + hi_res_width_diff, 125),
-                                           Point(1250 + hi_res_width_diff + 200, 125 + 400))))  # right top, taller
-        self._fm.append(FeatureMatcher(Box(Point(1200 + hi_res_width_diff, 300),
-                                           Point(1200 + hi_res_width_diff + 500, 300 + 300))))  # right top, wider
+                                                 650 + hi_res_hight_diff / 2 + 200))) # right middle
+        self._fm[7] = FeatureMatcher(Box(Point(1250 + hi_res_width_diff, 125),
+                                           Point(1250 + hi_res_width_diff + 200, 125 + 400)))  # right top, taller
+        self._fm[8] = FeatureMatcher(Box(Point(1200 + hi_res_width_diff, 300),
+                                           Point(1200 + hi_res_width_diff + 500, 300 + 300)))  # right top, wider
 
     def getMedianDriftDistance(self):
         if len(self._drifts) <= 0:
@@ -243,7 +244,7 @@ class VelocityDetector():
         # type: (Frame) -> None
         self._timer.lap("in detectVelocity() sequential start")
         self._drifts = list()
-        for fm in self._fm:
+        for fm_id, fm in self._fm.items():
             # TODO: If the next line is moved one down we get exception for video files that don't have first frame
             #imgObj = frame.getImgObj()
             fm.detectSeeFloorSection(frame)
@@ -287,6 +288,23 @@ class VelocityDetector():
             driftsRow.append(driftsCount)
             driftsRow.append(driftsStr)
             driftsRow.append(driftsNoOutliersStr)
+            driftsRow.append("DETECTED_DRIFTS")
+            for idx in range(0, 9):
+                section = self._fm[idx].seefloor_section()
+                box = section.box_around_feature()
+                drift = section.getDrift()
+                driftsRow.append(box.topLeft.x)
+                driftsRow.append(box.topLeft.y)
+                driftsRow.append(box.bottomRight.x)
+                driftsRow.append(box.bottomRight.y)
+                if section.drift_was_detected():
+                    driftsRow.append("DETECTED")
+                    driftsRow.append(drift.x)
+                    driftsRow.append(drift.y)
+                else:
+                    driftsRow.append("FAILED")
+                    driftsRow.append(0)
+                    driftsRow.append(0)
 
         return driftsRow
 
@@ -317,4 +335,77 @@ class VelocityDetector():
         row.append("drifts")
         row.append("driftsNoOutliers")
         row.append("outlier")
+
+        row.append("fm_0_top_x")
+        row.append("fm_0_top_y")
+        row.append("fm_0_bottom_x")
+        row.append("fm_0_bottom_y")
+        row.append("fm_0_result")
+        row.append("fm_0_drift_x")
+        row.append("fm_0_drift_y")
+
+        row.append("fm_1_top_x")
+        row.append("fm_1_top_y")
+        row.append("fm_1_bottom_x")
+        row.append("fm_1_bottom_y")
+        row.append("fm_1_result")
+        row.append("fm_1_drift_x")
+        row.append("fm_1_drift_y")
+
+        row.append("fm_2_top_x")
+        row.append("fm_2_top_y")
+        row.append("fm_2_bottom_x")
+        row.append("fm_2_bottom_y")
+        row.append("fm_2_result")
+        row.append("fm_2_drift_x")
+        row.append("fm_2_drift_y")
+
+        row.append("fm_3_top_x")
+        row.append("fm_3_top_y")
+        row.append("fm_3_bottom_x")
+        row.append("fm_3_bottom_y")
+        row.append("fm_3_result")
+        row.append("fm_3_drift_x")
+        row.append("fm_3_drift_y")
+
+        row.append("fm_4_top_x")
+        row.append("fm_4_top_y")
+        row.append("fm_4_bottom_x")
+        row.append("fm_4_bottom_y")
+        row.append("fm_4_result")
+        row.append("fm_4_drift_x")
+        row.append("fm_4_drift_y")
+
+        row.append("fm_5_top_x")
+        row.append("fm_5_top_y")
+        row.append("fm_5_bottom_x")
+        row.append("fm_5_bottom_y")
+        row.append("fm_5_result")
+        row.append("fm_5_drift_x")
+        row.append("fm_5_drift_y")
+
+        row.append("fm_6_top_x")
+        row.append("fm_6_top_y")
+        row.append("fm_6_bottom_x")
+        row.append("fm_6_bottom_y")
+        row.append("fm_6_result")
+        row.append("fm_6_drift_x")
+        row.append("fm_6_drift_y")
+
+        row.append("fm_7_top_x")
+        row.append("fm_7_top_y")
+        row.append("fm_7_bottom_x")
+        row.append("fm_7_bottom_y")
+        row.append("fm_7_result")
+        row.append("fm_7_drift_x")
+        row.append("fm_7_drift_y")
+
+        row.append("fm_8_top_x")
+        row.append("fm_8_top_y")
+        row.append("fm_8_bottom_x")
+        row.append("fm_8_bottom_y")
+        row.append("fm_8_result")
+        row.append("fm_8_drift_x")
+        row.append("fm_8_drift_y")
+
         return row

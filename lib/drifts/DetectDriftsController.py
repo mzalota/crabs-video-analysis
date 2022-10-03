@@ -29,7 +29,7 @@ class DetectDriftsController:
         if maxFrameID > 1:
             startFrameID = maxFrameID + stepSize
         else:
-            startFrameID = 5
+            startFrameID = 800  #5
 
         print ("starting processing from frame", startFrameID)
 

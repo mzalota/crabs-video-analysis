@@ -33,7 +33,7 @@ if folderStruct is None:
     folderStruct = FolderStructure(rootDir, videoFileName)
     folderStruct.createDirectoriesIfDontExist(folderStruct.getDriftsFilepath())
 
-StreamToLogger(folderStruct.getLogFilepath())
+# StreamToLogger(folderStruct.getLogFilepath())
 print ("Starting DetectDrift")
 
 #Create _config.txt file if it does not exist

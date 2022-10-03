@@ -71,12 +71,19 @@ class SeeFloorSection:
         self.__topLeftPoints[frame.getFrameID()] = topLeftPoint #append
         self.__frames[frame.getFrameID()] = frame
 
-    def getDrift(self):
-        # type: () -> Vector
+    def drift_was_detected(self):
         numOfFrames = len(self.__topLeftPoints)
         if numOfFrames <= 1:
+            return False
+        else:
+            return True
+
+    def getDrift(self):
+        # type: () -> Vector
+        if not self.drift_was_detected():
             return None
 
+        numOfFrames = len(self.__topLeftPoints)
         lastFrame = self.__frameIDs[numOfFrames-1]
         beforeLastFrame = self.__frameIDs[numOfFrames-2]
         lastPoint = self.__topLeftPoints[lastFrame]
