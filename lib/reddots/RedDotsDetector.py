@@ -8,8 +8,6 @@ from lib.common import Point, Box
 
 
 class RedDotsDetector:
-    # __initialDistanceForRedBoxSearchArea = 200
-
     def __init__(self, frame, configs):
         # type: (Frame, Configurations) -> RedDotsDetector
         self.__initial_x_coord_midpoint = configs.get_red_dots_x_mid_point()
@@ -74,62 +72,3 @@ class RedDotsDetector:
         else:
             box = Box(Point(900, 300), Point(1400, 800))
         return box
-
-    # def infoAboutFrame(self):
-    #     row = []
-    #
-    #     row.append(self.__distanceBetweenRedPoints())
-    #     row.append(self.__redDot1.dotWasDetected())
-    #     row.append(self.__redDot2.dotWasDetected())
-    #     if self.__redDot1.dotWasDetected():
-    #         row.append(self.__redDot1.boxAroundDot.topLeft.x)
-    #         row.append(self.__redDot1.boxAroundDot.topLeft.y)
-    #         row.append(self.__redDot1.boxAroundDot.bottomRight.x)
-    #         row.append(self.__redDot1.boxAroundDot.bottomRight.y)
-    #         row.append(self.__redDot1.boxAroundDot.diagonal())
-    #     else:
-    #         row.append(-1)
-    #         row.append(-1)
-    #         row.append(-1)
-    #         row.append(-1)
-    #         row.append(-1)
-    #     if self.__redDot2.dotWasDetected():
-    #         row.append(self.__redDot2.boxAroundDot.topLeft.x)
-    #         row.append(self.__redDot2.boxAroundDot.topLeft.y)
-    #         row.append(self.__redDot2.boxAroundDot.bottomRight.x)
-    #         row.append(self.__redDot2.boxAroundDot.bottomRight.y)
-    #         row.append(self.__redDot2.boxAroundDot.diagonal())
-    #     else:
-    #         row.append(-1)
-    #         row.append(-1)
-    #         row.append(-1)
-    #         row.append(-1)
-    #         row.append(-1)
-    #     row.append(self.__getSearchAreaAsString())
-    #
-    #     return row
-
-
-    # def __getSearchAreaAsString(self):
-    #     redBox1 = self.__initial_search_area1()
-    #     redBox2 = self.__initial_search_area2()
-    #     return str(redBox1)+"_"+str(redBox2)
-    #
-    # @staticmethod
-    # def infoHeaders():
-    #     row = []
-    #     row.append("distance")
-    #     row.append("redDot1Detected")
-    #     row.append("redDot2Detected")
-    #     row.append("redDot1_topLeft_x")
-    #     row.append("redDot1_topLeft_y")
-    #     row.append("redDot1_bootomRight_x")
-    #     row.append("redDot1_bootomRight_y")
-    #     row.append("redDot1_box_diagonal")
-    #     row.append("redDot2_topLeft_x")
-    #     row.append("redDot2_topLeft_y")
-    #     row.append("redDot2_bootomRight_x")
-    #     row.append("redDot2_bootomRight_y")
-    #     row.append("redDot2_box_diagonal")
-    #     row.append("searchArea")
-    #     return row
