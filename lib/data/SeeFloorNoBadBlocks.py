@@ -56,21 +56,19 @@ class SeeFloorNoBadBlocks(PandasWrapper):
 
     def maxFrameID(self):
         # type: () -> int
-        maxFrameID = self.__driftData.maxFrameID()
-        return maxFrameID
+        return self._max_frame_id()
 
     def minFrameID(self):
         # type: () -> int
-        minFrameID = self.__driftData.minFrameID()
-        return minFrameID
+        return self._min_frame_id()
 
     def jumpToSeefloorSlice(self, frame_id, frames_to_jump):
         # type: (int, int) -> int
-        if frame_id < self.getDriftData().minFrameID():
-            return int(self.getDriftData().minFrameID())
+        if frame_id < self._min_frame_id():
+            return int(self._min_frame_id())
 
-        if frame_id > self.getDriftData().maxFrameID():
-            return int(self.getDriftData().maxFrameID())
+        if frame_id > self._max_frame_id():
+            return int(self._max_frame_id())
 
         new_frame_id = frame_id
         while frames_to_jump != 0:
@@ -91,22 +89,22 @@ class SeeFloorNoBadBlocks(PandasWrapper):
 
     def _adjust_outofbound_values(self, frame_id):
         # type: (int) -> int
-        if frame_id < self.getDriftData().minFrameID():
-            return self.getDriftData().minFrameID()
+        if frame_id < self._min_frame_id():
+            return self._min_frame_id()
 
-        if frame_id > self.getDriftData().maxFrameID():
-            return self.getDriftData().maxFrameID()
+        if frame_id > self._max_frame_id():
+            return self._max_frame_id()
 
         return frame_id
 
 
     def _jump_to_previous_seefloor_slice(self, frame_id):
         # type: (int) -> int
-        if frame_id < self.getDriftData().minFrameID():
-            return self.getDriftData().minFrameID()
+        if frame_id < self._min_frame_id():
+            return self._min_frame_id()
 
-        if frame_id > self.getDriftData().maxFrameID():
-            return self.getDriftData().maxFrameID()
+        if frame_id > self._max_frame_id():
+            return self._max_frame_id()
 
         # we are in a good segment and not in its first frame.
         pixels_to_jump = Frame.FRAME_HEIGHT * (-1)
@@ -115,16 +113,22 @@ class SeeFloorNoBadBlocks(PandasWrapper):
 
     def _jump_to_next_seefloor_slice(self, frame_id, fraction=1):
         # type: (int) -> int
-        if frame_id < self.getDriftData().minFrameID():
-            return self.getDriftData().minFrameID()
+        if frame_id < self._min_frame_id():
+            return self._min_frame_id()
 
-        if frame_id > self.getDriftData().maxFrameID():
-            return self.getDriftData().maxFrameID()
+        if frame_id > self._max_frame_id():
+            return self._max_frame_id()
 
         # we are in a good segment and not in its last frame.
         pixels_to_jump = Frame.FRAME_HEIGHT * fraction
         new_frame_id = int(self._getNextFrame(pixels_to_jump, frame_id))
         return new_frame_id
+
+    def _min_frame_id(self):
+        return self.getDriftData().minFrameID()
+
+    def _max_frame_id(self):
+        return self.getDriftData().maxFrameID()
 
     def __getPandasDF(self):
         # type: () -> pd.DataFrame
@@ -185,15 +189,15 @@ class SeeFloorNoBadBlocks(PandasWrapper):
     def __driftBetweenFramesPixels(self, fromFrameID, toFrameID):
         # type: (int, int) -> Vector
 
-        if fromFrameID < self.__driftData.minFrameID() or toFrameID < self.__driftData.minFrameID():
+        if fromFrameID < self._min_frame_id() or toFrameID < self._min_frame_id():
             # return Vector(0,0)
             return None
 
-        if fromFrameID > self.__driftData.maxFrameID() or toFrameID > self.__driftData.maxFrameID():
+        if fromFrameID > self._max_frame_id() or toFrameID > self._max_frame_id():
             # return Vector(0, 0)
             return None
 
-        if (fromFrameID == toFrameID):
+        if fromFrameID == toFrameID:
             return Vector(0, 0)
 
         # driftX = self.getXDriftPixels(fromFrameID, toFrameID)

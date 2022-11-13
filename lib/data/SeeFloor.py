@@ -34,7 +34,7 @@ class SeeFloor(SeeFloorNoBadBlocks):
             df = PandasWrapper.readDataFrameFromCSV(filepath)
         else:
             df = None
-        newObj = SeeFloor(driftsData, badFramesData, redDotsData, folderStruct,df)
+        newObj = SeeFloor(driftsData, badFramesData, redDotsData, folderStruct, df)
         return newObj
 
     def setBadFramesData(self, badFramesData):
@@ -43,25 +43,25 @@ class SeeFloor(SeeFloorNoBadBlocks):
 
     def maxFrameID(self):
         # type: () -> int
-        maxFrameID = self.getDriftData().maxFrameID()
+        maxFrameID = self._max_frame_id()
         maxFrameID = self.__badFramesData.firstGoodFrameBefore(maxFrameID)
         return maxFrameID
 
     def minFrameID(self):
         # type: () -> int
-        minFrameID = self.getDriftData().minFrameID()
+        minFrameID = self._min_frame_id()
         minFrameID = self.__badFramesData.firstGoodFrameAfter(minFrameID)
         return minFrameID
 
     def _jump_to_previous_seefloor_slice(self, frame_id):
         # type: (int) -> int
-        if frame_id < self.getDriftData().minFrameID():
-            return self.getDriftData().minFrameID()
+        if frame_id < self._min_frame_id():
+            return self._min_frame_id()
 
-        if frame_id > self.getDriftData().maxFrameID():
-            return self.getDriftData().maxFrameID()
+        if frame_id > self._max_frame_id():
+            return self._max_frame_id()
 
-        first_good_frame = self.getDriftData().minFrameID()
+        first_good_frame = self._min_frame_id()
 
         if self.__badFramesData.is_bad_frame(frame_id):
             # we are currently in a bad frame. Jump out of this bad segment to the closest previous good frame
@@ -84,16 +84,15 @@ class SeeFloor(SeeFloorNoBadBlocks):
         else:
             return new_frame_id
 
-
     def _jump_to_next_seefloor_slice(self, frame_id, fraction = 1):
         # type: (int) -> int
-        if frame_id < self.getDriftData().minFrameID():
-            return self.getDriftData().minFrameID()
+        if frame_id < self._min_frame_id():
+            return self._min_frame_id()
 
-        if frame_id > self.getDriftData().maxFrameID():
-            return self.getDriftData().maxFrameID()
+        if frame_id > self._max_frame_id():
+            return self._max_frame_id()
 
-        last_good_frame = self.getDriftData().maxFrameID()
+        last_good_frame = self._max_frame_id()
 
         if self.__badFramesData.is_bad_frame(frame_id):
             #we are currently in a bad frame. Jump out of this bad segment to the closest next good frame
