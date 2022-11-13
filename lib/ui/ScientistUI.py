@@ -6,7 +6,6 @@ from lib.data.MarkersData import MarkersData
 from lib.data.SeeFloorNoBadBlocks import SeeFloorNoBadBlocks
 from lib.ui.CrabUI import CrabUI
 from lib.data.CrabsData import CrabsData
-from lib.data.DriftData import DriftData
 from lib.Frame import Frame
 from lib.ImageWindow import ImageWindow
 from lib.ImagesCollage import ImagesCollage
@@ -27,8 +26,8 @@ class ScientistUI:
     CONTRAST_DOWN = (0.7, -10)
     CONTRAST_NORMAL = (1, 0)
 
-    def __init__(self, imageWin, folderStruct, videoStream, driftData):
-        # type: (ImageWindow, FolderStructure, VideoStream, DriftData) -> ScientistUI
+    def __init__(self, imageWin, folderStruct, videoStream):
+        # type: (ImageWindow, FolderStructure, VideoStream) -> ScientistUI
 
         self.__zoom = False
         self.__markingDrift = False
@@ -37,7 +36,6 @@ class ScientistUI:
         self.__folderStruct = folderStruct
         self.__videoStream = videoStream
 
-        self.__driftData = driftData
         self.__badFramesData = BadFramesData.createFromFolderStruct(folderStruct)
         self.__redDotsData = RedDotsData.createFromFolderStruct(folderStruct)
 
@@ -52,7 +50,7 @@ class ScientistUI:
 
     def processVideo(self):
 
-        frame_id = self.__driftData.minFrameID()
+        frame_id = self.__seeFloor.minFrameID()
         while True:
             print ("processing frame ID", int(frame_id))
 
@@ -239,11 +237,11 @@ class ScientistUI:
                 print ("Ignoring the fact that user pressed button:", keyPressed)  # , chr(keyPressed))
                 new_frame_id = frame_id
 
-        if new_frame_id > self.__driftData.maxFrameID():
-            new_frame_id = self.__driftData.maxFrameID()
+        if new_frame_id > self.__seeFloor.maxFrameID():
+            new_frame_id = self.__seeFloor.maxFrameID()
 
-        if new_frame_id < self.__driftData.minFrameID():
-            new_frame_id = self.__driftData.minFrameID()
+        if new_frame_id < self.__seeFloor.minFrameID():
+            new_frame_id = self.__seeFloor.minFrameID()
 
         return new_frame_id
 

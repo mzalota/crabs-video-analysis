@@ -4,7 +4,6 @@ import cv2
 from lib.CommandLineLauncher import CommandLineLauncher
 from lib.infra.MyTimer import MyTimer
 from lib.ui.StreamToLogger import StreamToLogger
-from lib.data.DriftData import DriftData
 from lib.seefloor.InterpolateController import InterpolateController
 from lib.ui.ScientistUI import ScientistUI
 from lib.FolderStructure import FolderStructure
@@ -56,13 +55,10 @@ interpolator = InterpolateController(folderStruct)
 interpolator.regenerateSeefloor()
 timer.lap("Interpolated Seefloor")
 
-driftData = DriftData.createFromFolderStruct(folderStruct)
-timer.lap("Initialized DriftData")
-
 imageWin = ImageWindow("mainWindow", Point(700, 200))
 timer.lap("Initialized ImageWindow")
 
-scientistUI = ScientistUI(imageWin, folderStruct, videoStream, driftData)
+scientistUI = ScientistUI(imageWin, folderStruct, videoStream)
 timer.lap("Initialized ScientistUI")
 
 #Uncomment two lines below to get a nice summary which function uses the most time during excecution

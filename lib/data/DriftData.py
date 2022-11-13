@@ -155,7 +155,7 @@ class DriftData(PandasWrapper):
     def minFrameID(self):
         return self.__minFrameID
 
-    def yPixelsBetweenFrames(self, fromFrameID, toFrameID):
+    def _yPixelsBetweenFrames(self, fromFrameID, toFrameID):
         drift = self.driftBetweenFrames(fromFrameID, toFrameID)
         if drift is None:
             return None

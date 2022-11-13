@@ -15,7 +15,7 @@ class TestDriftData(TestCase):
 
         # Exercise
         driftData = DriftData(df)
-        result = driftData.yPixelsBetweenFrames(50,99)
+        result = driftData._yPixelsBetweenFrames(50, 99)
 
         # Assert
         self.assertEqual(result, None)
@@ -30,7 +30,7 @@ class TestDriftData(TestCase):
 
         # Exercise
         driftData = DriftData(df)
-        result = driftData.yPixelsBetweenFrames(107,99)
+        result = driftData._yPixelsBetweenFrames(107, 99)
 
         # Assert
         self.assertEqual(result, None)
@@ -45,7 +45,7 @@ class TestDriftData(TestCase):
 
         # Exercise
         driftData = DriftData(df)
-        result = driftData.yPixelsBetweenFrames(99, 105)
+        result = driftData._yPixelsBetweenFrames(99, 105)
 
         # Assert
         self.assertEqual(result, None)
@@ -60,7 +60,7 @@ class TestDriftData(TestCase):
 
         # Exercise
         driftData = DriftData(df)
-        result = driftData.yPixelsBetweenFrames(50,60)
+        result = driftData._yPixelsBetweenFrames(50, 60)
 
         # Assert
         self.assertEqual(result, None)
@@ -74,7 +74,7 @@ class TestDriftData(TestCase):
 
         # Exercise
         driftData = DriftData(df)
-        result = driftData.yPixelsBetweenFrames(100,50)
+        result = driftData._yPixelsBetweenFrames(100, 50)
 
         # Assert
         self.assertEqual(result, None)
@@ -88,7 +88,7 @@ class TestDriftData(TestCase):
 
         # Exercise
         driftData = DriftData(df)
-        result = driftData.yPixelsBetweenFrames(100,100)
+        result = driftData._yPixelsBetweenFrames(100, 100)
 
         # Assert
         self.assertEqual(result, 0)
@@ -101,7 +101,7 @@ class TestDriftData(TestCase):
 
         # Exercise
         driftData = DriftData(df)
-        result = driftData.yPixelsBetweenFrames(101,103)
+        result = driftData._yPixelsBetweenFrames(101, 103)
 
         # Assert
         self.assertEqual(result, 8)
@@ -116,7 +116,7 @@ class TestDriftData(TestCase):
 
         # Exercise
         driftData = DriftData(df)
-        result = driftData.yPixelsBetweenFrames(100,102)
+        result = driftData._yPixelsBetweenFrames(100, 102)
 
         # Assert
         self.assertEqual(result, 11)
@@ -133,7 +133,7 @@ class TestDriftData(TestCase):
 
         # Exercise
         driftData = DriftData(df)
-        result = driftData.yPixelsBetweenFrames(100,106)
+        result = driftData._yPixelsBetweenFrames(100, 106)
 
         # Assert
         self.assertEqual(result, (11+13+17))
@@ -150,7 +150,7 @@ class TestDriftData(TestCase):
 
         # Exercise
         driftData = DriftData(df)
-        result = driftData.yPixelsBetweenFrames(106,100)
+        result = driftData._yPixelsBetweenFrames(106, 100)
 
         # Assert
         self.assertEqual(result, -(11+13+17))
@@ -165,7 +165,7 @@ class TestDriftData(TestCase):
 
         # Exercise
         driftData = DriftData(df)
-        result = driftData.yPixelsBetweenFrames(101,101)
+        result = driftData._yPixelsBetweenFrames(101, 101)
 
         # Assert
         self.assertEqual(result, 0)
@@ -181,11 +181,11 @@ class TestDriftData(TestCase):
 
         # Exercise
         driftData = DriftData(df)
-        resultTwoFramesStep = driftData.yPixelsBetweenFrames(98,100)
-        resultThreeFramesStep = driftData.yPixelsBetweenFrames(97,100)
+        resultTwoFramesStep = driftData._yPixelsBetweenFrames(98, 100)
+        resultThreeFramesStep = driftData._yPixelsBetweenFrames(97, 100)
 
-        oneFrameStep = driftData.yPixelsBetweenFrames(104,105)
-        fourFramesStep = driftData.yPixelsBetweenFrames(101,105)
+        oneFrameStep = driftData._yPixelsBetweenFrames(104, 105)
+        fourFramesStep = driftData._yPixelsBetweenFrames(101, 105)
         # Assert
         self.assertEqual(resultTwoFramesStep, (3*2))
         self.assertEqual(resultThreeFramesStep, (3*3))
@@ -203,11 +203,11 @@ class TestDriftData(TestCase):
 
         # Exercise
         driftData = DriftData(df)
-        resultTwoFramesStep = driftData.yPixelsBetweenFrames(95,97)
-        resultThreeFramesStep = driftData.yPixelsBetweenFrames(95,98)
+        resultTwoFramesStep = driftData._yPixelsBetweenFrames(95, 97)
+        resultThreeFramesStep = driftData._yPixelsBetweenFrames(95, 98)
 
-        oneFrameStep = driftData.yPixelsBetweenFrames(100,101)
-        fourFramesStep = driftData.yPixelsBetweenFrames(100,104)
+        oneFrameStep = driftData._yPixelsBetweenFrames(100, 101)
+        fourFramesStep = driftData._yPixelsBetweenFrames(100, 104)
         # Assert
         self.assertEqual(resultTwoFramesStep, (3*2))
         self.assertEqual(resultThreeFramesStep, (3*3))
@@ -225,7 +225,7 @@ class TestDriftData(TestCase):
 
         # Exercise
         driftData = DriftData(df)
-        resultTwoFramesStep = driftData.yPixelsBetweenFrames(97,107)
+        resultTwoFramesStep = driftData._yPixelsBetweenFrames(97, 107)
 
         # Assert
         self.assertEqual(resultTwoFramesStep, (3*3+25+7*2))
@@ -242,7 +242,7 @@ class TestDriftData(TestCase):
 
         # Exercise
         driftData = DriftData(df)
-        resultTwoFramesStep = driftData.yPixelsBetweenFrames(98,108)
+        resultTwoFramesStep = driftData._yPixelsBetweenFrames(98, 108)
 
         # Assert
         self.assertEqual(resultTwoFramesStep, (2*5+21+1*2))
