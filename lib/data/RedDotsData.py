@@ -76,20 +76,20 @@ class RedDotsData(PandasWrapper):
     def saveGraphOfAngle(self):
         filePath = self.__folderStruct.getGraphRedDotsAngle()
         graphTitle = self.__folderStruct.getVideoFilename()+ " Red Dots Angle (degrees)"
-        xColumn = [self.COLNAME_frameNumber, self.__COLNAME_seconds]
+        xColumns = [self.COLNAME_frameNumber, self.__COLNAME_seconds]
         yColumns = [self.__COLNAME_angle]
 
         graphPlotter = GraphPlotter(self.getPandasDF())
-        graphPlotter.saveGraphToFile(xColumn, yColumns, graphTitle, filePath)
+        graphPlotter.saveGraphToFile(xColumns, yColumns, graphTitle, filePath)
 
     def saveGraphOfDistance(self):
         filePath = self.__folderStruct.getGraphRedDotsDistance()
         graphTitle = self.__folderStruct.getVideoFilename()+ " Red Dots Distance (pixels)"
-        xColumn = [self.COLNAME_frameNumber, self.__COLNAME_seconds]
+        xColumns = [self.COLNAME_frameNumber, self.__COLNAME_seconds]
         yColumns = [self.__COLNAME_distance]
 
         graphPlotter = GraphPlotter(self.getPandasDF())
-        graphPlotter.saveGraphToFile(xColumn, yColumns, graphTitle, filePath)
+        graphPlotter.saveGraphToFile(xColumns, yColumns, graphTitle, filePath)
 
     def getCount(self):
         # type: () -> int

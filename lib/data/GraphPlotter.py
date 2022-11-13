@@ -6,13 +6,13 @@ class GraphPlotter:
         # type: (pd.DataFrame) -> GraphPlotter
         self.__df = df
 
-    def saveGraphToFile(self, xColumn, yColumns, graphTitle, filePath):
+    def saveGraphToFile(self, xColumns, yColumns, graphTitle, filePath):
         fig, ax = plt.subplots(figsize=(15,7))
         ax.title.set_text(graphTitle)
 
         # add all y columns to the graph
         for i in range (0, len(yColumns)):
-            self.__df[yColumns[i]].plot(ax=ax)
+            ax.plot(self.__df[xColumns[0]], self.__df[yColumns[i]])
 
         ax.grid(which='major', axis='both', linestyle='--')  # specify grid lines
 
@@ -25,7 +25,7 @@ class GraphPlotter:
         else:
             ax.legend().set_visible(True)
 
-        self.__add_second_x_axis_if_necessary(ax, graphTitle, xColumn, yColumns)
+        self.__add_second_x_axis_if_necessary(ax, graphTitle, xColumns, yColumns)
 
         # save to file
         plt.savefig(filePath, format='png', dpi=300)
