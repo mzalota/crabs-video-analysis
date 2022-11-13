@@ -25,27 +25,20 @@ class InterpolateController:
         min_frame_id = rawDrifts.minFrameID()
         max_frame_id = rawDrifts.maxFrameID() + 1
 
-        print ("min_frame_id: ", min_frame_id, " max_frame_id: ", max_frame_id)
-
-
+        print ("regenerating/interpolating RedDots")
+        rdd = RedDotsData.createFromFolderStruct(self.__folderStruct)
+        rdd.saveInterpolatedDFToFile(min_frame_id, max_frame_id)
 
         #TODO: extract logic in few rows into a "regenerate drafts" module/class
         print ("regenerating/interpolating Drafts")
         manualDrifts = DriftManualData.createFromFile(self.__folderStruct)
 
-        df = rawDrifts.interpolate(manualDrifts, driftsStepSize)
+        rawDrifts.compensate_for_zoom(rdd)
+        df = rawDrifts.interpolate(manualDrifts, rdd, driftsStepSize)
 
         drifts = DriftData.createFromFolderStruct(self.__folderStruct)
         drifts.setDF(df)
         drifts.saveToFile(self.__folderStruct.getDriftsFilepath())
-
-        # min_frame_id = drifts.minFrameID()
-        # max_frame_id = drifts.maxFrameID() + 1
-        print ("drifts.minFrameID(): ", drifts.minFrameID(), " drifts.maxFrameID(): ", drifts.maxFrameID())
-
-        print ("regenerating/interpolating RedDots")
-        rdd = RedDotsData.createFromFolderStruct(self.__folderStruct)
-        rdd.saveInterpolatedDFToFile(min_frame_id, max_frame_id)
 
         print ("regenerating SeeFloor")
         sf = SeeFloor.createFromFolderStruct(self.__folderStruct)

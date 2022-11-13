@@ -63,6 +63,8 @@ class RedDotsData(PandasWrapper):
         try:
             return self.__interpolatedDF
         except AttributeError:
+            #TODO: Interpolation does not work for early frames where video was bad. It still shows steps of 5
+
             # attribute self.__interpolatedDF have not been initialized yet
             print("RedDotsData in getPandasDF. creating __interpolatedDF")
             filepath = self.__folderStruct.getRedDotsInterpolatedFilepath()
@@ -72,6 +74,14 @@ class RedDotsData(PandasWrapper):
             else:
                 self.__interpolatedDF = PandasWrapper.empty_df()
             return self.__interpolatedDF
+
+    def scalingFactorColumn(self):
+        df = self.getPandasDF()
+        dist_diff = df[self.__COLNAME_distance] - df[self.__COLNAME_distance].shift(periods=-1)
+        df["scaling_factor"] = dist_diff/df[self.__COLNAME_distance]
+
+        return df
+        # return df["scaling_factor"]
 
     def saveGraphOfAngle(self):
         filePath = self.__folderStruct.getGraphRedDotsAngle()
