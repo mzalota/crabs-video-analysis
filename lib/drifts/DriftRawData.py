@@ -33,37 +33,19 @@ class DriftRawData(PandasWrapper):
         # type: (RedDotsData) -> void
         factor = redDotsData.scalingFactorColumn()
 
+        # toDo sum previous driftsDetectionStep values to come up with more correct scaling factor and not hard coding 3.
         prev = factor["scaling_factor"].shift(periods=-1)
         prev_prev = factor["scaling_factor"].shift(periods=-2)
         factor["scaling_factor3"] =factor["scaling_factor"]+prev+prev_prev
 
-        filePath = self.__folderStruct.getGraphRedDotsAngle()+"_scalingFactor.png"
-        graphTitle = self.__folderStruct.getVideoFilename()+ "_Maxim_ScalingFactor_1"
-        xColumns = ["frameNumber"]
-        yColumns = ["scaling_factor", "scaling_factor3"]
-
-        factor.to_csv(self.__folderStruct.getGraphRedDotsAngle()+"aaa.csv", sep='\t', index=False)
-        graphPlotter = GraphPlotter(factor)
-        graphPlotter.saveGraphToFile(xColumns, yColumns, graphTitle, filePath)
-
-        #toDo sum previous driftsDetectionStep values to come up with more correct scaling factor
-
+        # just for debugging
+        self.__plot_scaling_factor(factor)
 
         df = self.__df.copy()
-        dfToPlot = pd.merge(df, factor, on='frameNumber', how='outer', suffixes=('_draft', '_reddot'))
+        df = pd.merge(df, factor, on='frameNumber', how='left', suffixes=('_draft', '_reddot'))
 
         for i in range(0, 9):
-            self.__generate_new_drift(df, dfToPlot, i)
-
-        df.loc[df['fm_0_result'] == "FAILED", ['fm_0_drift_y', 'fm_0_drift_y_new']] = numpy.nan
-        df.loc[df['fm_1_result'] == "FAILED", ['fm_1_drift_y', 'fm_1_drift_y_new']] = numpy.nan
-        df.loc[df['fm_2_result'] == "FAILED", ['fm_2_drift_y', 'fm_2_drift_y_new']] = numpy.nan
-        df.loc[df['fm_3_result'] == "FAILED", ['fm_3_drift_y', 'fm_3_drift_y_new']] = numpy.nan
-        df.loc[df['fm_4_result'] == "FAILED", ['fm_4_drift_y', 'fm_4_drift_y_new']] = numpy.nan
-        df.loc[df['fm_5_result'] == "FAILED", ['fm_5_drift_y', 'fm_5_drift_y_new']] = numpy.nan
-        df.loc[df['fm_6_result'] == "FAILED", ['fm_6_drift_y', 'fm_6_drift_y_new']] = numpy.nan
-        df.loc[df['fm_7_result'] == "FAILED", ['fm_7_drift_y', 'fm_7_drift_y_new']] = numpy.nan
-        df.loc[df['fm_8_result'] == "FAILED", ['fm_8_drift_y', 'fm_8_drift_y_new']] = numpy.nan
+            self.__generate_new_drift(df, df, i)
 
         yColumns_orig = ["fm_0_drift_y", "fm_1_drift_y", "fm_2_drift_y", "fm_3_drift_y", "fm_4_drift_y", "fm_5_drift_y",
                          "fm_6_drift_y", "fm_7_drift_y", "fm_8_drift_y"]
@@ -75,42 +57,54 @@ class DriftRawData(PandasWrapper):
         df['median_new'] = df[yColumns_new].median(axis=1)
         df['median_orig'] = df[yColumns_orig].median(axis=1)
 
-        dfToPlot.to_csv(self.__folderStruct.getGraphRedDotsAngle() + "merged.csv", sep='\t', index=False)
+        df.to_csv(self.__folderStruct.getGraphRedDotsAngle() + "merged.csv", sep='\t', index=False)
 
-        #df = df.set_index("frameNumber")
-        #correctionsDF = factor.set_index("frameNumber")
-        #df = correctionsDF.combine_first(df)
-
-        graphTitle = self.__folderStruct.getVideoFilename()+ "_Maxim_ScalingFactor_orig"
-        xColumns = ["frameNumber"]
-        graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 2000) & (df['frameNumber'] < 3000)])
-        graphPlotter.saveGraphToFile(xColumns, yColumns_orig, graphTitle, self.__folderStruct.getGraphRedDotsDistance()+"_drift_orig.png")
-
-
-        graphTitle = self.__folderStruct.getVideoFilename() + "_Maxim_ScalingFactor_new"
-        xColumns = ["frameNumber"]
-        graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 2000) & (df['frameNumber'] < 3000)])
-        graphPlotter.saveGraphToFile(xColumns, yColumns_new, graphTitle,
-                                     self.__folderStruct.getGraphRedDotsDistance() + "_drift_new.png")
-
-        graphTitle = self.__folderStruct.getVideoFilename() + "_Maxim_averages"
-        xColumns = ["frameNumber"]
-        graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 2000) & (df['frameNumber'] < 3000)])
-        graphPlotter.saveGraphToFile(xColumns, ["average_new", "average_orig", "median_new", "median_orig"], graphTitle,
-                                     self.__folderStruct.getGraphRedDotsDistance() + "_drift_compare_avg.png")
+        self.__plot_graphs_for_debugging(df, yColumns_new, yColumns_orig)
 
         return df
 
+    def __plot_graphs_for_debugging(self, df, yColumns_new, yColumns_orig):
+        graphTitle = self.__folderStruct.getVideoFilename() + "_Maxim_ScalingFactor_orig"
+        xColumns = ["frameNumber"]
+        graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 3000)])
+        graphPlotter.saveGraphToFile(xColumns, yColumns_orig, graphTitle,
+                                     self.__folderStruct.getGraphRedDotsDistance() + "_drift_orig.png")
+        graphTitle = self.__folderStruct.getVideoFilename() + "_Maxim_ScalingFactor_new"
+        xColumns = ["frameNumber"]
+        graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 3000)])
+        graphPlotter.saveGraphToFile(xColumns, yColumns_new, graphTitle,
+                                     self.__folderStruct.getGraphRedDotsDistance() + "_drift_new.png")
+        graphTitle = self.__folderStruct.getVideoFilename() + "_Maxim_averages"
+        xColumns = ["frameNumber"]
+        graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 3000)])
+        graphPlotter.saveGraphToFile(xColumns, ["average_new", "average_orig", "median_new", "median_orig"], graphTitle,
+                                     self.__folderStruct.getGraphRedDotsDistance() + "_drift_compare_avg.png")
+
+    def __plot_scaling_factor(self, factor):
+        filePath = self.__folderStruct.getGraphRedDotsAngle() + "_scalingFactor.png"
+        graphTitle = self.__folderStruct.getVideoFilename() + "_Maxim_ScalingFactor_1"
+        xColumns = ["frameNumber"]
+        yColumns = ["scaling_factor", "scaling_factor3"]
+        factor.to_csv(self.__folderStruct.getGraphRedDotsAngle() + "aaa.csv", sep='\t', index=False)
+        graphPlotter = GraphPlotter(factor)
+        graphPlotter.saveGraphToFile(xColumns, yColumns, graphTitle, filePath)
 
     def __generate_new_drift(self, df, dfToPlot, num):
         num = str(num)
-        df["compensation"] = (df["fm_" + num + "_bottom_y"] - 1024) * dfToPlot["scaling_factor3"]
+        df["compensation"] = (df["fm_" + num + "_bottom_y"] - 1024) * df["scaling_factor3"]
         df["fm_" + num + "_drift_y_new"] = df["fm_" + num + "_drift_y"] + df["compensation"]
+
+        # set to NaN values where FeatureMatcher was reset (value in Result column = FAILED
+        df.loc[df['fm_' + num + '_result'] == "FAILED", ['fm_' + num + '_drift_y', 'fm_' + num + '_drift_y_new']] = numpy.nan
 
     def interpolate(self, manualDrifts, redDotsData, driftsDetectionStep):
         # type: (DriftManualData, int) -> pd.DataFrame
+        df = self.__df.copy()
 
-        df = self.compensate_for_zoom(redDotsData)
+        #comment out next 3 lines to skip new logic
+        df_comp = self.compensate_for_zoom(redDotsData)
+        df = pd.merge(df, df_comp[['average_new', "frameNumber"]], on='frameNumber', how='left', suffixes=('_draft', '_reddot'))
+        df["driftY"] = df['average_new']
 
         df = self._replaceInvalidValuesWithNaN(df, driftsDetectionStep)
 
@@ -118,21 +112,18 @@ class DriftRawData(PandasWrapper):
         # What if detectDrift step is not 2, but 3 or if it is mixed?
         df["driftX"] = df["driftX"] / driftsDetectionStep
         df["driftY"] = df["driftY"] / driftsDetectionStep
+        df["average_new"] = df["average_new"] / driftsDetectionStep
 
-        df = df[[self.__COLNAME_frameNumber, self.__COLNAME_driftX, self.__COLNAME_driftY]]
+        df = df[[self.__COLNAME_frameNumber, self.__COLNAME_driftX, self.__COLNAME_driftY, 'average_new']] #, 'average_new'
         df = df.interpolate(limit_direction='both')
 
         df = self.__replace_with_NaN_if_very_diff_to_neighbors(df, "driftY", driftsDetectionStep)
-
         df = self.__interpolateToHaveEveryFrame(df)
 
         df = manualDrifts.overwrite_values(df)
-
         df = df.interpolate(limit_direction='both')
-
         #set drifts in the first row to zero.
         self.setValuesInFirstRowToZeros(df)
-
         return df
 
     def setValuesInFirstRowToZeros(self, df):
