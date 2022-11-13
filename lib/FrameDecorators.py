@@ -33,10 +33,7 @@ class FrameDecoFactory:
 
     def __centerPointForGrid(self, frameID, referenceFrameID):
         gridMidPoint = self.__seeFloorGeometry.getRedDotsData().midPoint(referenceFrameID)
-        # TODO: change drift calculation to use Seefloor (based on MM) instead of driftData (which uses pixels)
-        drift = self.__seeFloorGeometry.getDriftData().driftBetweenFrames(referenceFrameID, frameID)
-        newPoint = gridMidPoint.translateBy(drift)
-        return newPoint
+        return self.__seeFloorGeometry.translatePointCoordinate(gridMidPoint, referenceFrameID, frameID)
 
     def getFrameDecoRedDots(self, frameDeco):
         # type: (FrameDecorator) -> DecoRedDots
@@ -49,11 +46,10 @@ class FrameDecoFactory:
     def getFrameDecoMarkers(self, frameDeco):
         # type: (FrameDecorator) -> DecoMarkersAbstract
         return DecoMarkersWithNumbers(frameDeco, self.__seeFloorGeometry, self.__markersData)
-        #return DecoMarkersWithSymbols(frameDeco, self.__seeFloorGeometry, self.__markersData)
 
     def getFrameDecoFrameID(self, frameDeco):
         # type: (FrameDecorator) -> DecoFrameID
-        return DecoFrameID(frameDeco, self.__seeFloorGeometry.getDriftData(), self.__badFramesData)
+        return DecoFrameID(frameDeco, self.__seeFloorGeometry, self.__badFramesData)
 
 class FrameDecorator(object):
 
@@ -250,10 +246,10 @@ class DecoRedDots(FrameDecorator):
 
 
 class DecoFrameID(FrameDecorator):
-    def __init__(self, frameDeco, driftData, badFramesData):
-        # type: (FrameDecorator, DriftData, badFramesData) -> DecoFrameID
+    def __init__(self, frameDeco, seeFloor, badFramesData):
+        # type: (FrameDecorator, SeeFloor, badFramesData) -> DecoFrameID
         FrameDecorator.__init__(self, frameDeco)
-        self.__driftData = driftData
+        self.__seeFloor = seeFloor
         self.__badFramesData = badFramesData
 
     def getImgObj(self):
@@ -267,9 +263,9 @@ class DecoFrameID(FrameDecorator):
 
     def __drawFrameID(self, frame_id):
         # type: (int) -> str
-        if frame_id == self.__driftData.minFrameID():
+        if frame_id == self.__seeFloor.minFrameID():
             frame_name = str(int(frame_id)) + " (First)"
-        elif frame_id == self.__driftData.maxFrameID():
+        elif frame_id == self.__seeFloor.maxFrameID():
             frame_name = str(int(frame_id)) + " (Last)"
         elif self.__badFramesData.is_bad_frame(frame_id):
             frame_name = str(int(frame_id)) + " (Bad)"

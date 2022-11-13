@@ -156,13 +156,13 @@ class DriftData(PandasWrapper):
         return self.__minFrameID
 
     def _yPixelsBetweenFrames(self, fromFrameID, toFrameID):
-        drift = self.driftBetweenFrames(fromFrameID, toFrameID)
+        drift = self.__driftBetweenFrames(fromFrameID, toFrameID)
         if drift is None:
             return None
 
         return drift.y
 
-    def driftBetweenFrames(self, fromFrameID, toFrameID):
+    def __driftBetweenFrames(self, fromFrameID, toFrameID):
         # type: (int, int) -> Vector
 
         if fromFrameID < self.minFrameID() or toFrameID < self.minFrameID():
@@ -174,7 +174,7 @@ class DriftData(PandasWrapper):
             return None
 
         if (fromFrameID > toFrameID):
-            drift = self.driftBetweenFrames(toFrameID, fromFrameID)
+            drift = self.__driftBetweenFrames(toFrameID, fromFrameID)
             return Vector(-(drift.x), -(drift.y))
 
         if (fromFrameID == toFrameID):

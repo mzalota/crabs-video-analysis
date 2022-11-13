@@ -162,7 +162,6 @@ class ScientistUI:
 
     def __show_crab_ui(self, frame_id):
         crabPoint = self.__imageWin.featureCoordiate
-        # crabUI = CrabUI(self.__crabData, self.__videoStream, self.__driftData, frame_id, crabPoint)
         crabUI = CrabUI(self.__crabData, self.__videoStream, self.__seeFloorNoBadBlocks, frame_id, crabPoint)
         crabUI.showCrabWindow()
 

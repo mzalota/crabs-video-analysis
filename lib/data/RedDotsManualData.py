@@ -50,8 +50,6 @@ class RedDotsManualData(PandasWrapper):
         return self.__df[self.__COLNAME_frameNumber].max()
 
     def addManualDots(self, frameID, box):
-        #self.__driftData[self.__COLNAME_frameNumber][0]
-
         rowRedDot1 = {}
         rowRedDot1[self.__COLNAME_frameNumber]=frameID
         rowRedDot1[self.__COLNAME_dotName]=self.__VALUE_redDot1

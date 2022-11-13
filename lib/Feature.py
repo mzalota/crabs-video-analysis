@@ -18,8 +18,6 @@ class Feature:
     #__frameID
     #__location
 
-    #__driftData
-    # type: (DriftData, int, Point, int) -> Feature
 
     def __init__(self, seeFloor, frameID, location, boxSize):
         # type: (SeeFloorNoBadBlocks, int, Point, int) -> Feature

@@ -140,7 +140,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
     def _getNextFrame(self, pixels_to_jump, frame_id):
         nextFrameID = self.__getNextFrameMM(pixels_to_jump, frame_id)
         if nextFrameID is None:
-            return self.__driftData.getNextFrame(pixels_to_jump, frame_id)
+            return self.getDriftData().getNextFrame(pixels_to_jump, frame_id)
         else:
             return nextFrameID
 
