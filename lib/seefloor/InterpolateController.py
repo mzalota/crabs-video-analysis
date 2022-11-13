@@ -2,7 +2,7 @@ from lib.FolderStructure import FolderStructure
 from lib.data.CrabsData import CrabsData
 from lib.data.DriftData import DriftData
 from lib.data.DriftManualData import DriftManualData
-from lib.data.DriftRawData import DriftRawData
+from lib.drifts.DriftRawData import DriftRawData
 from lib.data.RedDotsData import RedDotsData
 from lib.data.SeeFloor import SeeFloor
 from lib.infra.Configurations import Configurations

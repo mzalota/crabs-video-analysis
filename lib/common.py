@@ -97,10 +97,10 @@ class Vector:
                 # both x and y are zero so angle is also zero degrees
                 return 0
             if self.y < 0:
-                # vector pointing streight south -> angle is -90 degrees
+                # vector pointing straight south -> angle is -90 degrees
                 return -90
             if self.y > 0:
-                # vector pointing streight north -> angle is +90 degrees
+                # vector pointing straight north -> angle is +90 degrees
                 return 90
 
         # tan(theta) = Opposite / Adjacent

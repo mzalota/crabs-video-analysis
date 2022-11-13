@@ -89,7 +89,6 @@ class DriftRawData(PandasWrapper):
         return self.__df[self.__COLNAME_frameNumber].max()
 
     def __replace_with_NaN_if_very_diff_to_neighbors(self, data, colName, step_size):
-
         targetOfAnalysis = data[colName]
         prevPrev = targetOfAnalysis.shift(periods=2)
         nextNext = targetOfAnalysis.shift(periods=-2)
@@ -99,11 +98,11 @@ class DriftRawData(PandasWrapper):
         newDF =  pd.concat([prevPrev, prev, targetOfAnalysis, next, nextNext], axis=1)
         median = newDF.median(axis=1)
         diff_to_median = abs(targetOfAnalysis - median)
-        is_outlier = diff_to_median > (5)
+        is_outlier = diff_to_median > (10)
 
-        # data["median"] = median
-        # data["diff_to_median"] = diff_to_median
-        # data["isOutlier"] = is_outlier
+        data["median"] = median
+        data["diff_to_median"] = diff_to_median
+        data["isOutlier"] = is_outlier
         #
         # pd.set_option('display.max_columns', None)
         # pd.set_option('display.max_rows', None)
