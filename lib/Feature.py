@@ -5,6 +5,8 @@ from lib.common import Point, Box
 
 
 #TODO: SeeFloorSection and Feature classes are very similar. The concepts are not clearly defined/separated. Refactor!
+from lib.data.SeeFloorNoBadBlocks import SeeFloorNoBadBlocks
+
 
 class Feature:
     #__maximumAreaFrameID
@@ -17,19 +19,21 @@ class Feature:
     #__location
 
     #__driftData
+    # type: (DriftData, int, Point, int) -> Feature
 
-    def __init__(self, driftData, frameID, location, boxSize):
-        # type: (DriftData, int, Point, int) -> Feature
-        self.__driftData = driftData
+    def __init__(self, seeFloor, frameID, location, boxSize):
+        # type: (SeeFloorNoBadBlocks, int, Point, int) -> Feature
+        self.__seeFloor = seeFloor
         self.__frameID = frameID
         self.__location = location
 
         #timer = MyTimer("Feature constructor")
 
-        if frameID > driftData.maxFrameID():
-            raise ValueError("Frame Number above maximum. Passed frame: "+str(frameID)+". Maximum frame: "+str(int(driftData.maxFrameID())))
-        if frameID < driftData.minFrameID():
-            raise ValueError("Frame Number below minimum. Passed frame: "+str(frameID)+". Minimum frame: "+str(int(driftData.minFrameID())))
+        #TODO: replace int FrameID with a domain object that is guaranteed to be valid (more than min and less than max)
+        if frameID > seeFloor.maxFrameID():
+            raise ValueError("Frame Number above maximum. Passed frame: " + str(frameID) +". Maximum frame: " + str(int(seeFloor.maxFrameID())))
+        if frameID < seeFloor.minFrameID():
+            raise ValueError("Frame Number below minimum. Passed frame: " + str(frameID) +". Minimum frame: " + str(int(seeFloor.minFrameID())))
 
         #self.__firstFrameID = frameID
         #self.__lastFrameID = frameID
@@ -107,8 +111,8 @@ class Feature:
         loop_counter =0
         while (True):
             nextFrameID = nextFrameID + 1
-            if nextFrameID > self.__driftData.maxFrameID():
-                self.__lastFrameID = self.__driftData.maxFrameID()
+            if nextFrameID > self.__seeFloor.maxFrameID():
+                self.__lastFrameID = self.__seeFloor.maxFrameID()
                 break
 
             newPoint = self.getCoordinateInFrame(nextFrameID)
@@ -131,8 +135,8 @@ class Feature:
         while (True):
             nextFrameID = nextFrameID - 1
 
-            if nextFrameID < self.__driftData.minFrameID():
-                self.__firstFrameID = self.__driftData.minFrameID()
+            if nextFrameID < self.__seeFloor.minFrameID():
+                self.__firstFrameID = self.__seeFloor.minFrameID()
                 break
 
             newPoint = self.getCoordinateInFrame(nextFrameID)
@@ -186,9 +190,13 @@ class Feature:
         #timer.lap()
         return visibleBoxArea
 
-
     def getCoordinateInFrame(self, frameID):
         # type: (String) -> Point
-        drift = self.__driftData.driftBetweenFrames(self.__frameID, frameID)
-        newPoint = self.__location.translateBy(drift)
+        newPoint = self.__seeFloor.translatePointCoordinate(self.__location, self.__frameID, frameID)
         return newPoint
+
+    # def getCoordinateInFrame_old(self, frameID):
+    #     # type: (String) -> Point
+    #     drift = self.__seeFloor.driftBetweenFrames(self.__frameID, frameID)
+    #     newPoint = self.__location.translateBy(drift)
+    #     return newPoint

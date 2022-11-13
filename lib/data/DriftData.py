@@ -6,8 +6,9 @@ from lib.data.PandasWrapper import PandasWrapper
 from lib.common import Vector
 from lib.FolderStructure import FolderStructure
 
+
 class DriftData(PandasWrapper):
-    #__driftData = None
+    # __driftData = None
     __COLNAME_driftX = 'driftX'
     __COLNAME_driftY = 'driftY'
     __COLNAME_frameNumber = 'frameNumber'
@@ -61,7 +62,7 @@ class DriftData(PandasWrapper):
         # type: (pd.DataFrame) -> DriftData
         return DriftData(driftData)
 
-    def saveToFile(self,filepath):
+    def saveToFile(self, filepath):
         # type: (String) -> None
         self.getDF().to_csv(filepath, sep='\t', index=False)
 
@@ -143,7 +144,7 @@ class DriftData(PandasWrapper):
 
         index = self.__getIndexOfFrame(frameID)
         while index is None:
-            frameID+=1
+            frameID += 1
             index = self.__getIndexOfFrame(frameID)
 
         return frameID
@@ -154,22 +155,22 @@ class DriftData(PandasWrapper):
     def minFrameID(self):
         return self.__minFrameID
 
-    def yPixelsBetweenFrames(self,fromFrameID, toFrameID):
+    def yPixelsBetweenFrames(self, fromFrameID, toFrameID):
         drift = self.driftBetweenFrames(fromFrameID, toFrameID)
         if drift is None:
             return None
 
         return drift.y
 
-    def driftBetweenFrames(self,fromFrameID, toFrameID):
+    def driftBetweenFrames(self, fromFrameID, toFrameID):
         # type: (int, int) -> Vector
 
-        if fromFrameID<self.minFrameID() or toFrameID < self.minFrameID():
-            #return Vector(0,0)
+        if fromFrameID < self.minFrameID() or toFrameID < self.minFrameID():
+            # return Vector(0,0)
             return None
 
-        if fromFrameID>self.maxFrameID() or toFrameID>self.maxFrameID():
-            #return Vector(0, 0)
+        if fromFrameID > self.maxFrameID() or toFrameID > self.maxFrameID():
+            # return Vector(0, 0)
             return None
 
         if (fromFrameID > toFrameID):
@@ -177,13 +178,13 @@ class DriftData(PandasWrapper):
             return Vector(-(drift.x), -(drift.y))
 
         if (fromFrameID == toFrameID):
-            return Vector(0,0)
+            return Vector(0, 0)
 
         return self.__getDriftBetweenTwoFramesPixels(fromFrameID, toFrameID)
 
     def __getDriftBetweenTwoFramesPixels(self, fromFrameID, toFrameID):
 
-        #assuming fromFrameID is less than or equal to toFrameID and both are within valid range
+        # assuming fromFrameID is less than or equal to toFrameID and both are within valid range
         startingFrameIDInDataFrame = self.__nextFrameIDInFile(fromFrameID)
         startIndex = self.__getIndexOfFrame(startingFrameIDInDataFrame)
         endingFrameIDInDataFrame = self.__nextFrameIDInFile(toFrameID)
@@ -207,8 +208,7 @@ class DriftData(PandasWrapper):
             nextIndex = nextIndex + 1
             cumulativeYDrift += self.__getYDrift(nextIndex)
             cumulativeXDrift += self.__getXDrift(nextIndex)
-        return Vector(cumulativeXDrift,cumulativeYDrift)
-
+        return Vector(cumulativeXDrift, cumulativeYDrift)
 
     def getNextFrame(self, yPixelsAway, fromFrameID):
         # type: (int, int) -> int
@@ -220,15 +220,15 @@ class DriftData(PandasWrapper):
         yPixelsToStartingFrame = driftToStartingFrame.y
 
         nextFrameIDInDataFrame = startingFrameIDInDataFrame
-        cumulativeYDrift= yPixelsToStartingFrame
+        cumulativeYDrift = yPixelsToStartingFrame
         while cumulativeYDrift < yPixelsAway and nextFrameIDInDataFrame < self.maxFrameID():
-            #keep checking next frameID in DataFrame until found one that is just a bit further away from "fromFrameID" than "pixelsAway"
-            #print("DriftData::getNextFrame nextFrameIDInDataFrame", nextFrameIDInDataFrame)
+            # keep checking next frameID in DataFrame until found one that is just a bit further away from "fromFrameID" than "pixelsAway"
+            # print("DriftData::getNextFrame nextFrameIDInDataFrame", nextFrameIDInDataFrame)
             nextIndex = self.__getIndexOfFrame(nextFrameIDInDataFrame) + 1
             nextFrameIDInDataFrame = self.__getFrameID(nextIndex)
             cumulativeYDrift += self.__getYDrift(nextIndex)
 
-        #go back zero-to-four frames to minimize the number of pixels overshot.
+        # go back zero-to-four frames to minimize the number of pixels overshot.
         pixelsToBacktrack = cumulativeYDrift - yPixelsAway
         searchedFrameID = self.__frameIDThatIsYPixelsAwayFromIndex(nextFrameIDInDataFrame, pixelsToBacktrack)
 

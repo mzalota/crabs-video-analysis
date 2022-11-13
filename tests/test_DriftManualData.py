@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from lib.FolderStructure import FolderStructure
 from lib.common import Point
-from lib.data.DriftManualData import DriftManualData
+from lib.drifts.DriftManualData import DriftManualData
 import pandas as pd
 
 class TestDriftManualData(TestCase):

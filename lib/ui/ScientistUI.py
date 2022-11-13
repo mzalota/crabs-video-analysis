@@ -1,7 +1,7 @@
 from lib.FolderStructure import FolderStructure
 from lib.Image import Image
 from lib.data.BadFramesData import BadFramesData
-from lib.data.DriftManualData import DriftManualData
+from lib.drifts.DriftManualData import DriftManualData
 from lib.data.MarkersData import MarkersData
 from lib.data.SeeFloorNoBadBlocks import SeeFloorNoBadBlocks
 from lib.ui.CrabUI import CrabUI
@@ -164,7 +164,8 @@ class ScientistUI:
 
     def __show_crab_ui(self, frame_id):
         crabPoint = self.__imageWin.featureCoordiate
-        crabUI = CrabUI(self.__crabData, self.__videoStream, self.__driftData, frame_id, crabPoint)
+        # crabUI = CrabUI(self.__crabData, self.__videoStream, self.__driftData, frame_id, crabPoint)
+        crabUI = CrabUI(self.__crabData, self.__videoStream, self.__seeFloorNoBadBlocks, frame_id, crabPoint)
         crabUI.showCrabWindow()
 
     def __show_red_dot_ui(self, frame_id):

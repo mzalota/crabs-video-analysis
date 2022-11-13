@@ -125,6 +125,7 @@ class CrabsData(PandasWrapper):
         return DataframeWrapper(pd.DataFrame(result_rows))
 
     def __build_new_crab_row(self, markedCrab, sf):
+        # type: (Dict, SeeFloor) -> DataframeWrapper
         result = dict()
         frame_id = int(markedCrab['frameNumber'])
         print("frame_id", frame_id)

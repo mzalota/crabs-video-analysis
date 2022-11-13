@@ -5,13 +5,12 @@ from lib.common import Box, Point, Vector
 
 
 class CrabUI:
-    def __init__(self, crabsData, videoStream, driftData, frameID, crabPoint):
+    def __init__(self, crabsData, videoStream, seeFloor, frameID, crabPoint):
+        # type: (CrabsData, VideoStream, SeeFloorNoBadBlocks, int, Point) -> CrabUI
         self.__videoStream = videoStream
-        self.__driftData = driftData
         self.__crabsData = crabsData
         self.__boxSize = 300
-        # self.__boxSize = 200
-        self.__crabFeature = Feature(self.__driftData, frameID, crabPoint, self.__boxSize)
+        self.__crabFeature = Feature(seeFloor, frameID, crabPoint, self.__boxSize)
 
     def showCrabWindow(self):
 
