@@ -33,7 +33,6 @@ class InterpolateController:
         print ("regenerating/interpolating Drafts")
         manualDrifts = DriftManualData.createFromFile(self.__folderStruct)
 
-        rawDrifts.compensate_for_zoom(rdd)
         df = rawDrifts.interpolate(manualDrifts, rdd, driftsStepSize)
 
         drifts = DriftData.createFromFolderStruct(self.__folderStruct)

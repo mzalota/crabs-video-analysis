@@ -75,13 +75,21 @@ class RedDotsData(PandasWrapper):
                 self.__interpolatedDF = PandasWrapper.empty_df()
             return self.__interpolatedDF
 
-    def scalingFactorColumn(self):
+    def scalingFactorColumn(self, driftsDetectionStep = 1):
+        # type: (int) -> pd.DataFrame
+
         df = self.getPandasDF()
         dist_diff = df[self.__COLNAME_distance] - df[self.__COLNAME_distance].shift(periods=-1)
-        df["scaling_factor"] = dist_diff/df[self.__COLNAME_distance]
+        scaling_factor_single_step = dist_diff/df[self.__COLNAME_distance]
 
-        return df
-        # return df["scaling_factor"]
+        result = scaling_factor_single_step+0
+        for increment in range(1, driftsDetectionStep):
+            prev = scaling_factor_single_step.shift(periods=-increment)
+            result = result + prev
+        df["scaling_factor"] = result
+
+        return df[[self.COLNAME_frameNumber, "scaling_factor"]]
+
 
     def saveGraphOfAngle(self):
         filePath = self.__folderStruct.getGraphRedDotsAngle()
