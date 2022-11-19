@@ -48,7 +48,7 @@ if folderStruct is None:
 
     folderStruct = FolderStructure(rootDir, videoFileName)
 
-#StreamToLogger(folderStruct.getLogFilepath())
+StreamToLogger(folderStruct.getLogFilepath())
 print ("Starting to Generate Graphs")
 
 #Create _config.txt file if it does not exist
