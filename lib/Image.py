@@ -194,6 +194,28 @@ class Image:
         adjusted = cv2.convertScaleAbs(self.asNumpyArray(), alpha=contrast, beta=brightness)
         return Image(adjusted)
 
+    def sharpen(self):
+        # image_sharp = self._sharp_mask(self.asNumpyArray(), amount=3.0)
+        image_sharp = self.__sharp_mask(self.asNumpyArray(), sigma=2.0, amount=6.0, threshold=1)
+        return Image(image_sharp)
+
+    def sharpen_more(self):
+        image_sharp = self.__sharp_mask(self.asNumpyArray(), sigma=4.0, amount=12.0, threshold=2)
+        return Image(image_sharp)
+
+    # as described here https://stackoverflow.com/a/55590133/962244
+    def __sharp_mask(self, image, kernel_size=(5, 5), sigma=1.0, amount=1.0, threshold=0):
+        """Return a sharpened version of the image, using an unsharp mask."""
+        blurred = cv2.GaussianBlur(image, kernel_size, sigma)
+        sharpened = float(amount + 1) * image - float(amount) * blurred
+        sharpened = np.maximum(sharpened, np.zeros(sharpened.shape))
+        sharpened = np.minimum(sharpened, 255 * np.ones(sharpened.shape))
+        sharpened = sharpened.round().astype(np.uint8)
+        if threshold > 0:
+            low_contrast_mask = np.absolute(image - blurred) < threshold
+            np.copyto(sharpened, image, where=low_contrast_mask)
+        return sharpened
+
     def writeToFile(self, filepath):
         FolderStructure.createDirectoriesIfDontExist(filepath)
         cv2.imwrite(filepath, self.asNumpyArray())  # save frame as JPEG file

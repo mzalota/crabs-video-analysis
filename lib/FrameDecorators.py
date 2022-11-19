@@ -51,6 +51,7 @@ class FrameDecoFactory:
         # type: (FrameDecorator) -> DecoFrameID
         return DecoFrameID(frameDeco, self.__seeFloorGeometry, self.__badFramesData)
 
+#Every FrameDecorator object must implement getImgObj()
 class FrameDecorator(object):
 
     def __init__(self, frameDeco):

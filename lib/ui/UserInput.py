@@ -110,20 +110,24 @@ class UserInput():
     def is_command_fix_red_dot(self):
         if self.__key == ord("r"):
             return True
-
         if self.__key == ord("R"):
             return True
-
         return False
 
     def is_command_contrast(self):
         if self.__key == ord("c"):
             return True
-
         if self.__key == ord("C"):
             return True
-
         return False
+
+    def is_command_sharpness(self):
+        if self.__key == ord("f"):
+            return True
+        if self.__key == ord("F"):
+            return True
+        return False
+
 
     def is_next_seefloor_slice_command(self):
         if self.is_key_arrow_right():

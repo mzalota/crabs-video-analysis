@@ -23,8 +23,12 @@ from lib.ui.RedDotsUI import RedDotsUI
 class ScientistUI:
     __badFramesJump = 50 # how many frames to mark as bad when user presses B key
     CONTRAST_UP = (2, 10)
-    CONTRAST_DOWN = (0.7, -10)
     CONTRAST_NORMAL = (1, 0)
+    CONTRAST_DOWN = (0.7, -10)
+
+    SHARPNESS_NORMAL = "normal"
+    SHARPNESS_UP = "up"
+    SHARPNESS_MORE = "more"
 
     def __init__(self, imageWin, folderStruct, videoStream):
         # type: (ImageWindow, FolderStructure, VideoStream) -> ScientistUI
@@ -32,6 +36,7 @@ class ScientistUI:
         self.__zoom = False
         self.__markingDrift = False
         self.__contrastLevel = self.CONTRAST_NORMAL
+        self.__sharpnessLevel = self.SHARPNESS_NORMAL
         self.__imageWin = imageWin
         self.__folderStruct = folderStruct
         self.__videoStream = videoStream
@@ -88,6 +93,10 @@ class ScientistUI:
 
             if user_input.is_command_contrast():
                 self.__change_contrast()
+                continue
+
+            if user_input.is_command_sharpness():
+                self.__change_sharpness()
                 continue
 
             if user_input.is_command_fix_red_dot():
@@ -186,6 +195,15 @@ class ScientistUI:
         elif self.__contrastLevel == self.CONTRAST_DOWN:
             self.__contrastLevel = self.CONTRAST_NORMAL
 
+    def __change_sharpness(self):
+        print ("detected press F")
+        if self.__sharpnessLevel == self.SHARPNESS_NORMAL:
+            self.__sharpnessLevel = self.SHARPNESS_UP
+        elif self.__sharpnessLevel == self.SHARPNESS_UP:
+            self.__sharpnessLevel = self.SHARPNESS_MORE
+        elif self.__sharpnessLevel == self.SHARPNESS_MORE:
+            self.__sharpnessLevel = self.SHARPNESS_NORMAL
+
     def showFrame(self, frame):
         # type: (Frame) -> String
 
@@ -201,6 +219,7 @@ class ScientistUI:
             if self.__markingDrift == True:
                 imageToShow.drawCrossVertical(self.__driftPoint1,size=12)
 
+        imageToShow = self.__adjustImageFocus(imageToShow)
         imageToShow = self.__adjustImageBrightness(imageToShow)
 
         markCrabsTimer.lap("imageToShow")
@@ -216,6 +235,15 @@ class ScientistUI:
         if self.__contrastLevel == self.CONTRAST_UP:
             imageToShow = imageToShow.changeBrightness(self.CONTRAST_UP[0], self.CONTRAST_UP[1])
         return imageToShow
+
+    def __adjustImageFocus(self, imageToShow):
+        # type: (Image) -> Image
+        if self.__sharpnessLevel == self.SHARPNESS_UP:
+            imageToShow = imageToShow.sharpen()
+        if self.__sharpnessLevel == self.SHARPNESS_MORE:
+            imageToShow = imageToShow.sharpen_more()
+        return imageToShow
+
 
     def __constructFrameImage(self, frameImagesFactory, frameDeco):
         frameDeco = frameImagesFactory.getFrameDecoFrameID(frameDeco)
