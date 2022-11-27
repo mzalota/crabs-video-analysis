@@ -109,6 +109,12 @@ class ScientistUI:
                 self.__remove_last_mark()
                 continue
 
+            if user_input.is_key_esc():
+                #user wants to cancel marking drift adjustment
+                print ("manual drift coordinate FINISHED ")
+                self.__markingDrift = False
+                continue
+
             if user_input.is_mouse_click():
                 if self.__marker_id == "0":
                     self.__show_crab_ui(frame_id)
@@ -122,18 +128,19 @@ class ScientistUI:
             if user_input.is_command_bad_frame():
                 self.__mark_as_bad_frame(frame_id)
 
+
             new_frame_id = self.__determine_next_frame_id(frame_id, keyPressed)
 
             if keyPressed == ImageWindow.KEY_RIGHT_MOUSE_CLICK_EVENT:
                 markedPoint = self.__imageWin.featureCoordiate
                 if self.__markingDrift == True:
-                    print ("manual drift coordinate2 ",str(markedPoint))
+                    print ("manual drift coordinate2 ", str(markedPoint))
                     self.__markingDrift = False
                     manualDrifts = DriftManualData.createFromFile(self.__folderStruct)
                     manualDrifts.add_manual_drift(self.__driftFrame1, self.__driftPoint1, frame_id, markedPoint)
                     manualDrifts.save_to_file()
                 else:
-                    print ("manual drift coordinate1 ",str(markedPoint))
+                    print ("manual drift coordinate1 ", str(markedPoint))
                     self.__markingDrift = True
                     self.__driftFrame1 = frame_id
                     self.__driftPoint1 = markedPoint
@@ -216,8 +223,8 @@ class ScientistUI:
             imageToShow = collage.constructCollage(frame, frame.frame_height() / 2)
         else:
             imageToShow = self.__constructFrameImage(frameImagesFactory, frame)
-            if self.__markingDrift == True:
-                imageToShow.drawCrossVertical(self.__driftPoint1,size=12)
+            #if self.__markingDrift == True:
+            #    imageToShow.drawCrossVertical(self.__driftPoint1, size=12)
 
         imageToShow = self.__adjustImageFocus(imageToShow)
         imageToShow = self.__adjustImageBrightness(imageToShow)
@@ -250,6 +257,10 @@ class ScientistUI:
         frameDeco = frameImagesFactory.getFrameDecoRedDots(frameDeco)
         frameDeco = frameImagesFactory.getFrameDecoMarkedCrabs(frameDeco)
         frameDeco = frameImagesFactory.getFrameDecoMarkers(frameDeco)
+
+        if self.__markingDrift == True:
+
+            frameDeco = frameImagesFactory.getFrameDecoAdjustDrift(frameDeco, self.__driftPoint1, self.__driftFrame1)
 
         return frameDeco.getImgObj().copy()
 

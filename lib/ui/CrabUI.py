@@ -55,7 +55,6 @@ class CrabUI:
         crabImage.drawFrameID(frameID)
         return crabImage
 
-
     def getCrabLocation(self):
         if self.__user_clicked_in_right_half():
             xOffset = -self.__boxSize
@@ -69,25 +68,6 @@ class CrabUI:
 
         offsetOfCrabImageFrom0x0 = Vector(xOffset, yOffset)
         return self.__crabCoordinatesOnItsFrame(self.getFrameIDOfCrab(), offsetOfCrabImageFrom0x0)
-
-    def getCrabLocation_bck(self):
-        if self.__user_clicked_in_right_half() and self.__user_clicked_in_bottom_half():
-            # user marked crab is on "imageThis", which is the bottom right image
-            offsetOfCrabImageFrom0x0 = Vector(-self.__boxSize, -self.__boxSize)
-
-        if self.__user_clicked_in_left_half() and self.__user_clicked_in_bottom_half():
-            # user marked crab is on "imageFirst", which is bottom left image
-            offsetOfCrabImageFrom0x0 = Vector(0, -self.__boxSize)
-
-        if self.__user_clicked_in_right_half() and self.__user_clicked_in_top_half():
-            # user marked crab is on "imageLast", which is top right image
-            offsetOfCrabImageFrom0x0 = Vector(-self.__boxSize, 0)
-
-        if self.__user_clicked_in_left_half() and self.__user_clicked_in_top_half():
-            # user marked crab is on "imageMiddle", which is top left image
-            offsetOfCrabImageFrom0x0 = Vector(0, 0)
-
-        #return self.__crabCoordinatesOnItsFrame(self.getFrameIDOfCrab(), offsetOfCrabImageFrom0x0)
 
     def getFrameIDOfCrab(self):
         if self.__user_clicked_in_right_half() and self.__user_clicked_in_bottom_half():

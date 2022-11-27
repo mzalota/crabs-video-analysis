@@ -51,6 +51,12 @@ class FrameDecoFactory:
         # type: (FrameDecorator) -> DecoFrameID
         return DecoFrameID(frameDeco, self.__seeFloorGeometry, self.__badFramesData)
 
+    def getFrameDecoAdjustDrift(self, frameDeco, start_point, start_frame_id):
+        # type: (FrameDecorator, Point) -> DecoAdjustDrift
+        return DecoAdjustDrift(frameDeco, self.__seeFloorGeometry, start_point, start_frame_id)
+
+
+
 #Every FrameDecorator object must implement getImgObj()
 class FrameDecorator(object):
 
@@ -145,7 +151,7 @@ class DecoMarkersWithNumbers(DecoMarkersAbstract):
 
     def _drawMarkerOnImage(self, mainImage, marker_id, location):
         textBox = self.__determineLocationOfTextBox(location)
-        print("marker_id", marker_id, "marker textBox", str(textBox), "location", str(location))
+        #print("marker_id", marker_id, "marker textBox", str(textBox), "location", str(location))
         mainImage.drawTextInBox(textBox, marker_id, color=MarkersConfiguration.COLOR_LIGHT_BLUE)
         mainImage.drawCross(location, color=MarkersConfiguration.COLOR_LIGHT_BLUE)
 
@@ -226,6 +232,22 @@ class DecoMarkedCrabs(FrameDecorator):
         return markedCrabs
 
 
+class DecoAdjustDrift(FrameDecorator):
+    def __init__(self, frameDeco, seefloorGeometry, start_point, start_frame_id):
+        # type: (FrameDecorator, SeeFloor,  Point, int) -> DecoAdjustDrift
+        FrameDecorator.__init__(self, frameDeco)
+        self.__seefloorGeometry = seefloorGeometry
+        self.__start_point = start_point
+        self.__start_frame_id = start_frame_id
+
+    def getImgObj(self):
+        # type: () -> Image
+        imgObj = self.frameDeco.getImgObj()
+
+        new_location = self.__seefloorGeometry.translatePointCoordinate(self.__start_point, self.__start_frame_id, self.getFrameID())
+        #print ("trying to mark manual drift", new_location, self.getFrameID(), self.__start_frame_id)
+        imgObj.drawCrossVertical(new_location, size=12)
+        return imgObj
 
 class DecoRedDots(FrameDecorator):
     def __init__(self, frameDeco, redDotsData):

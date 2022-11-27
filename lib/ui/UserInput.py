@@ -16,6 +16,8 @@ class UserInput():
     KEY_MINUS = 45
     KEY_PLUS = 43
     KEY_CTRL_Z = 26
+    KEY_ESC = 27
+
 
     #KEY_UNDERSCORE = 95
     #KEY_MOUSE_CLICK_EVENT = 95 #97
@@ -143,6 +145,11 @@ class UserInput():
 
     def is_command_undo(self):
         if self.__key == self.KEY_CTRL_Z:
+            return True
+        return False
+
+    def is_key_esc(self):
+        if self.__key == self.KEY_ESC:
             return True
         return False
 
