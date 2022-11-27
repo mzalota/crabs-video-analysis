@@ -1,4 +1,7 @@
+import os
 import sys
+
+import easygui
 
 from lib.CommandLineLauncher import CommandLineLauncher
 from lib.infra.MyTimer import MyTimer
@@ -37,8 +40,16 @@ if folderStruct is None:
     # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.13_6916"
     # videoFileName = "V20200913_204908_001"
 
-    rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.16_6922"
-    videoFileName = "R_20200916_194953_20200916_195355"
+    # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.16_6922"
+    # videoFileName = "R_20200916_194953_20200916_195355"
+
+    path = easygui.fileopenbox()
+    print ("selected file is: ", path)
+
+    rootDir = os.path.dirname(path)
+    filename = os.path.basename(path)
+    fileparts = filename.split(".")
+    videoFileName = fileparts[0]
 
     folderStruct = FolderStructure(rootDir, videoFileName)
 

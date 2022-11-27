@@ -1,4 +1,7 @@
+import os
 import sys
+
+import easygui
 
 from lib.reddots.DetectRedDotsController import DetectRedDotsController
 from lib.CommandLineLauncher import CommandLineLauncher
@@ -28,9 +31,6 @@ if folderStruct is None:
     # videoFileName = "R_20200913_203053_20200913_203451"
     # videoFileName = "R_20200913_203451_20200913_203849"
 
-    rootDir = "C:/data/AnjutkaVideo/2020-Kara/2020.09.16_6922"
-    videoFileName = "R_20200916_194953_20200916_195355"
-
     # rootDir ="C:/workspaces/AnjutkaVideo/2019-Kara/St6236_19"
     # videoFileName = "V1"
 
@@ -47,6 +47,17 @@ if folderStruct is None:
     # videoFileName = "V1_R_20180911_165259"
     # videoFileName = "V2_R_20180911_165730"
     # videoFileName = "V3_R_20180911_170159"
+
+    #rootDir = "C:/data/AnjutkaVideo/2020-Kara/2020.09.16_6922"
+    #videoFileName = "R_20200916_194953_20200916_195355"
+
+    path = easygui.fileopenbox()
+    print ("selected file is: ", path)
+
+    rootDir = os.path.dirname(path)
+    filename = os.path.basename(path)
+    fileparts = filename.split(".")
+    videoFileName =fileparts[0]
 
     folderStruct = FolderStructure(rootDir, videoFileName)
     folderStruct.createDirectoriesIfDontExist(folderStruct.getRedDotsRawFilepath())

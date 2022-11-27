@@ -1,5 +1,7 @@
 import sys
 import cv2
+import os
+import easygui
 
 from lib.CommandLineLauncher import CommandLineLauncher
 from lib.infra.MyTimer import MyTimer
@@ -10,6 +12,7 @@ from lib.FolderStructure import FolderStructure
 from lib.ImageWindow import ImageWindow
 from lib.VideoStream import VideoStream
 from lib.common import Point
+
 
 print ("Launched markCrabs script")
 
@@ -35,11 +38,21 @@ if folderStruct is None:
     # videoFileName = "V20200913_204908_001"
     # videoFileName = "R_20200913_203451_20200913_203849"
 
-    rootDir = "C:/data/AnjutkaVideo/2020-Kara/2020.09.16_6922"
-    videoFileName = "R_20200916_194953_20200916_195355"
 
     # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.18_6923"
     # videoFileName = "R_20200918_111643_20200918_112107"
+
+    # rootDir = "C:/data/AnjutkaVideo/2020-Kara/2020.09.16_6922"
+    # videoFileName = "R_20200916_194953_20200916_195355"
+
+
+    path = easygui.fileopenbox()
+    print ("selected file is: ", path)
+
+    rootDir = os.path.dirname(path)
+    filename = os.path.basename(path)
+    fileparts = filename.split(".")
+    videoFileName =fileparts[0]
 
     folderStruct = FolderStructure(rootDir, videoFileName)
 
