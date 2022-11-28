@@ -55,7 +55,7 @@ class VelocityDetector():
             print driftsRow
             logger.writeToFile(driftsRow)
 
-            self.__show_ui_window(self._fm.values(), frame, driftVector)
+            #self.__show_ui_window(self._fm.values(), frame, driftVector)
 
             frameID += stepSize
 

@@ -1,7 +1,6 @@
 import os
 import sys
-
-import easygui
+from easygui import fileopenbox
 
 from lib.reddots.DetectRedDotsController import DetectRedDotsController
 from lib.CommandLineLauncher import CommandLineLauncher
@@ -51,7 +50,7 @@ if folderStruct is None:
     #rootDir = "C:/data/AnjutkaVideo/2020-Kara/2020.09.16_6922"
     #videoFileName = "R_20200916_194953_20200916_195355"
 
-    path = easygui.fileopenbox()
+    path = fileopenbox()
     print ("selected file is: ", path)
 
     rootDir = os.path.dirname(path)

@@ -1,7 +1,7 @@
 import os
 import sys
 
-import easygui
+from easygui import easygui
 
 from lib.CommandLineLauncher import CommandLineLauncher
 from lib.infra.MyTimer import MyTimer
