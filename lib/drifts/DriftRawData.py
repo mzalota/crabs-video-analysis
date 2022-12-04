@@ -105,7 +105,7 @@ class DriftRawData(PandasWrapper):
         graphPlotter.saveGraphToFile(xColumns, [ "median_x_orig", "average_x_orig"], graphTitle,
                                      self.__folderStruct.getGraphRedDotsDistance() + "_drift_compare_median_x_orig.png")
 
-        df.to_csv(self.__folderStruct.getGraphRedDotsAngle() + "merged.csv", sep='\t', index=False)
+        #df.to_csv(self.__folderStruct.getGraphRedDotsAngle() + "merged.csv", sep='\t', index=False)
 
         self.__plot_graphs_for_debugging(df, xColumns_new, xColumns_orig)
 
@@ -128,7 +128,7 @@ class DriftRawData(PandasWrapper):
         graphTitle = self.__folderStruct.getVideoFilename() + "_Maxim_ScalingFactor_1"
         xColumns = ["frameNumber"]
         yColumns = ["scaling_factor"]
-        factor.to_csv(self.__folderStruct.getGraphRedDotsAngle() + "aaa.csv", sep='\t', index=False)
+        #factor.to_csv(self.__folderStruct.getGraphRedDotsAngle() + "aaa.csv", sep='\t', index=False)
         graphPlotter = GraphPlotter(factor)
         graphPlotter.saveGraphToFile(xColumns, yColumns, graphTitle, filePath)
 

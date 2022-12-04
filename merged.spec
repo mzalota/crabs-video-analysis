@@ -71,29 +71,35 @@ def construct_in_folders(analysis, scriptName):
                name=scriptName)              
               
 
-a01 = analyze_dependencies(detectRedDots)
-a02 = analyze_dependencies(detectDrift)
+#a01 = analyze_dependencies(detectRedDots)
+#a02 = analyze_dependencies(detectDrift)
 a03 = analyze_dependencies(generateGraphs)
-a04 = analyze_dependencies(manuallyImproveRedDots)
-a05 = analyze_dependencies(markCrabs)
-a06 = analyze_dependencies(cutVideoIntoFrames)
+#a04 = analyze_dependencies(manuallyImproveRedDots)
+#a05 = analyze_dependencies(markCrabs)
+#a06 = analyze_dependencies(cutVideoIntoFrames)
 
 
-MERGE( (a01, detectRedDots, detectRedDots), 
-        (a02, detectDrift, detectDrift), 
-        (a03, generateGraphs, generateGraphs),
-        (a04, manuallyImproveRedDots, manuallyImproveRedDots),
-        (a05, markCrabs, markCrabs),
-        (a06, cutVideoIntoFrames, cutVideoIntoFrames)         
-        )  
+#MERGE( (a01, detectRedDots, detectRedDots),
+#        (a02, detectDrift, detectDrift),
+#        (a03, generateGraphs, generateGraphs),
+#        (a04, manuallyImproveRedDots, manuallyImproveRedDots),
+#        (a05, markCrabs, markCrabs),
+#        (a06, cutVideoIntoFrames, cutVideoIntoFrames)
+#        )
 
  		 
-construct_in_folders(a01, detectRedDots)          
-construct_in_folders(a02, detectDrift)          
-construct_in_folders(a03, generateGraphs)          
-construct_in_folders(a04, manuallyImproveRedDots)    
-construct_in_folders(a05, markCrabs)          
-construct_in_folders(a06, cutVideoIntoFrames)  
+#construct_in_folders(a01, detectRedDots)
+#construct_in_folders(a02, detectDrift)
+#construct_in_folders(a03, generateGraphs)
+#construct_in_folders(a04, manuallyImproveRedDots)
+#construct_in_folders(a05, markCrabs)
+#construct_in_folders(a06, cutVideoIntoFrames)
 
 
+#construct_in_files(a01, detectRedDots)
+#construct_in_files(a02, detectDrift)
+construct_in_files(a03, generateGraphs)
+#construct_in_files(a04, manuallyImproveRedDots)
+#construct_in_files(a05, markCrabs)
+#construct_in_files(a06, cutVideoIntoFrames)
       

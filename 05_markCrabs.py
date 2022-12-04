@@ -1,18 +1,17 @@
+import os
 import sys
 import cv2
-import os
-import easygui
+from easygui import fileopenbox
 
 from lib.CommandLineLauncher import CommandLineLauncher
-from lib.infra.MyTimer import MyTimer
-from lib.ui.StreamToLogger import StreamToLogger
-from lib.seefloor.InterpolateController import InterpolateController
-from lib.ui.ScientistUI import ScientistUI
 from lib.FolderStructure import FolderStructure
 from lib.ImageWindow import ImageWindow
 from lib.VideoStream import VideoStream
 from lib.common import Point
-
+from lib.infra.MyTimer import MyTimer
+from lib.seefloor.InterpolateController import InterpolateController
+from lib.ui.ScientistUI import ScientistUI
+from lib.ui.StreamToLogger import StreamToLogger
 
 print ("Launched markCrabs script")
 
@@ -46,7 +45,7 @@ if folderStruct is None:
     # videoFileName = "R_20200916_194953_20200916_195355"
 
 
-    path = easygui.fileopenbox()
+    path = fileopenbox()
     print ("selected file is: ", path)
 
     rootDir = os.path.dirname(path)
@@ -80,10 +79,9 @@ timer.lap("Initialized ScientistUI")
 
 scientistUI.processVideo()
 
-timer.lap("Finished session")
 
 # close all open windows
 cv2.destroyAllWindows()
-exit()
 
+timer.lap("Finished session")
 

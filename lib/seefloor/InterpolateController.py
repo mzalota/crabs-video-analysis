@@ -9,7 +9,7 @@ from lib.infra.Configurations import Configurations
 
 
 class InterpolateController:
-    def __init__(self,folderStruct):
+    def __init__(self, folderStruct):
         # type: (FolderStructure) -> InterpolateController
         self.__folderStruct = folderStruct
 
@@ -29,7 +29,7 @@ class InterpolateController:
         rdd = RedDotsData.createFromFolderStruct(self.__folderStruct)
         rdd.saveInterpolatedDFToFile(min_frame_id, max_frame_id)
 
-        #TODO: extract logic in few rows into a "regenerate drafts" module/class
+        # TODO: extract logic in few rows into a "regenerate drafts" module/class
         print ("regenerating/interpolating Drafts")
         manualDrifts = DriftManualData.createFromFile(self.__folderStruct)
 
@@ -48,9 +48,8 @@ class InterpolateController:
         crabs_on_seefloor_df = crabs.generate_crabs_on_seefloor(sf)
         crabs_on_seefloor_df.save_file_csv(self.__folderStruct.getCrabsOnSeefloorFilepath())
 
-
     def regenerateGraphs(self):
-        print ("drawign graphs for RedDots")
+        print ("drawing graphs for RedDots")
         rdd = RedDotsData.createFromFolderStruct(self.__folderStruct)
         rdd.saveGraphOfAngle()
         rdd.saveGraphOfDistance()
