@@ -1,15 +1,23 @@
 # crabs-video-analysis project
 
+## Download executable
+Download latest version of crabs-dist.zip from
+https://github.com/mzalota/crabs-video-analysis/releases
+
+
 ## Processing Steps
 To process a new video of seefloor execute commands in the following order:
-1) detectRedDots.py
-2) detectDrifts.py
-3) generateGraphs.py
-4) manuallyImproveRedDots.py
-5) markCrabs.py
-6) cutVideoIntoFrames.py
+- 01_detectRedDots 
+- 02_detectDrifts
+- 03_generateGraphs (optional step)
+- 04_manuallyImproveRedDots (optional step)
+- 05_markCrabs
+- 06_cutVideoIntoFrames
 
-You don't really need to use Jupyter Notebooks, other then to double-check data and to visualize contents of the files.
+#### Starting from command line
+You can start any of the scripts from command line, but you need to provide one parameter - full filepath to the video file. For example: 
+'03_generateGraphs.exe C:\videos\2020-Kara\2020.09.16_6922\R_20200916_202543_20200916_202941.avi'
+
 
 If you are processing lower resolution video files, you need to modify FRAME_HEIGHT and FRAME_WIDTH constants in Frame class (1080x1920 vs 2048x3072)
 
@@ -69,8 +77,8 @@ Subdirectory
 - **q** - "Quit": quite application 
 
 #### Navigation commands in main "Scientist UI" screen
-- **arrow right** - jump to next seefloor slice, but still show 20% of current seefloor to convince scientist that no seefloor area is missing 
-- **arrow left** - jump to previous seefloor slice, but still show 20% of current seefloor. 
+- **arrow right** - jump to next seefloor slice.
+- **arrow left** - jump to previous seefloor slice. 
 - **page down** - jump 10 seefloor slice backwoard. 
 - **page up** - jump 10 seefloor slice forward.
 - **home** - jump to the very first frame of the video
@@ -115,25 +123,17 @@ An object on the see floor that appears in multiple frames. Feature could just b
 A frame such that next slice would show seefloor area consequent to this frame without overlaping area or missing any area
 
 
-## Project Dependencies
+## Project Dependencies for Development
+It's best if you install Anaconda distribution of Python (https://docs.anaconda.com/anaconda/install/windows/), because it includes precompiled numpy library. Trying to install numpy library on "vanilla" Python sometimes is card, because installion will need to compile C libraries. Getting C compiler to work is error-prone and tricky.
+
+
 To install all dependencies:
+`pip3 install -r requirements.txt`
+or
 `python -m pip install --trusted-host pypi.python.org --global http.sslVerify false -r requirements.txt`
 
 When installing PyAutoGUI package the process will invoke C compiler. If GCC is not installed on your computer the installation will fail with some cryptic message, which would have words "gcc" and "C compiler" in it.
 
-To install dependancies manually execute following commands 
-+ `python -m pip install opencv-python`
-+ `python -m pip install numpy`
-+ `python -m pip install --upgrade imutils`
-+ `python -m pip install scikit-image`
-+ `python -m pip install scipy`
-+ `python -m pip install matplotlib`
-+ `python -m pip install pyautogui`
-+ `pip install pyautogui==0.9.35`
-+ `python -m pip install psutil`
-+ `python -m pip install pylru`
-+ `python -m pip install pandas-compat`
-+ `python -m pip install pebble`
 
 
 #### Relevant links

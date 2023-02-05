@@ -1,6 +1,4 @@
-import os
 import sys
-from easygui import fileopenbox
 
 from lib.CommandLineLauncher import CommandLineLauncher
 from lib.infra.MyTimer import MyTimer
@@ -25,7 +23,7 @@ if folderStruct is None:
     folderStruct = FolderStructure(rootDir, videoFileName)
 
 StreamToLogger(folderStruct.getLogFilepath())
-print ("Starting to Generate Graphs")
+print("Starting to Generate Graphs")
 
 #Create _config.txt file if it does not exist
 configs = Configurations(folderStruct)

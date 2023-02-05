@@ -63,7 +63,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         return self._min_frame_id()
 
     def jumpToSeefloorSlice(self, frame_id, frames_to_jump):
-        # type: (int, int) -> int
+        # type: (int, float) -> int
         if frame_id < self._min_frame_id():
             return int(self._min_frame_id())
 

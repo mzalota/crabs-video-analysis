@@ -326,12 +326,12 @@ class ScientistUI:
         if user_input.is_next_seefloor_slice_command():
             # show next seefloor slices
             #return self.__seeFloor.getNextFrame(frame_id)
-            return self.__seeFloor.jumpToSeefloorSlice(frame_id, 0.8)
+            return self.__seeFloor.jumpToSeefloorSlice(frame_id, 1)
 
         if user_input.is_key_arrow_left():
             # show previous seefloor slices
             #return self.__seeFloor.getPrevFrame(frame_id)
-            return self.__seeFloor.jumpToSeefloorSlice(frame_id, -0.8)
+            return self.__seeFloor.jumpToSeefloorSlice(frame_id, -1)
 
         if user_input.is_key_page_down():
             #Jump 10 steps forward
