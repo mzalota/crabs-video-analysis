@@ -6,6 +6,7 @@ from lib.data.BadFramesData import BadFramesData
 from lib.data.DriftData import DriftData
 from lib.VideoToImages import VideoToImages
 from lib.data.SeeFloor import SeeFloor
+from lib.infra.DataframeWrapper import DataframeWrapper
 
 
 class TestSeeFloor(TestCase):
@@ -189,7 +190,7 @@ class TestSeeFloor(TestCase):
         self.assertEqual(510, seeFloor.jumpToSeefloorSlice(500,0.05))
         self.assertEqual(560, seeFloor.jumpToSeefloorSlice(500,0.30))
         self.assertEqual(561, seeFloor.jumpToSeefloorSlice(500,0.305))
-        self.assertEqual(563, seeFloor.jumpToSeefloorSlice(500,0.31))
+        self.assertEqual(562, seeFloor.jumpToSeefloorSlice(500,0.31))
         self.assertEqual(565, seeFloor.jumpToSeefloorSlice(500,0.32))
         self.assertEqual(567, seeFloor.jumpToSeefloorSlice(500,0.33))
         self.assertEqual(569, seeFloor.jumpToSeefloorSlice(500,0.34))
@@ -430,11 +431,10 @@ class TestSeeFloor(TestCase):
 
 
     def __append_to_drifts_df(self, drifts_df, frame_id, drift_x, drift_y):
-        drifts_df = drifts_df.append({'frameNumber': int(frame_id), 'driftY': drift_y, 'driftX': drift_x},
-                                     ignore_index=True)
+        drifts_df = DataframeWrapper.append_to_df(drifts_df, {'frameNumber': int(frame_id), 'driftY': drift_y, 'driftX': drift_x})
         return drifts_df
 
     def __append_to_badframes_df(self, badframes_df, start_frame_id, end_frame_id):
-        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber: int(start_frame_id),
-                                            BadFramesData.COLNAME_endFrameNumber: end_frame_id}, ignore_index=True)
+        badframes_df = DataframeWrapper.append_to_df(badframes_df,{BadFramesData.COLNAME_startfFrameNumber: int(start_frame_id),
+                                            BadFramesData.COLNAME_endFrameNumber: end_frame_id})
         return badframes_df

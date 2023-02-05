@@ -13,50 +13,25 @@ from lib.seefloor.InterpolateController import InterpolateController
 from lib.ui.ScientistUI import ScientistUI
 from lib.ui.StreamToLogger import StreamToLogger
 
-print ("Launched markCrabs script")
+print("Launched markCrabs script")
 
 folderStruct = CommandLineLauncher.initializeFolderStruct(sys.argv)
 if folderStruct is None:
-    #rootDir ="C:/workspaces/AnjutkaVideo/2019-Kara/St6236_19"
-    #videoFileName = "V1"
-    #rootDir = "C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
-
-    #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6647"
-    #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6692"
-    #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6651"
-    #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6658"
-    #videoFileName = "V4"
-
-    # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.01_6878"
-    # videoFileName = "V20200901_215555_001"
-    
-    # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.06_6902"
-    # videoFileName = "V20200906_025014_001"
-
-    # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.13_6916"
-    # videoFileName = "V20200913_204908_001"
-    # videoFileName = "R_20200913_203451_20200913_203849"
-
-
-    # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.18_6923"
-    # videoFileName = "R_20200918_111643_20200918_112107"
-
     # rootDir = "C:/data/AnjutkaVideo/2020-Kara/2020.09.16_6922"
     # videoFileName = "R_20200916_194953_20200916_195355"
 
-
-    path = fileopenbox()
-    print ("selected file is: ", path)
+    path = fileopenbox(title="Select AVI video file", default="*.avi")
+    print("Selected file is: ", path)
 
     rootDir = os.path.dirname(path)
     filename = os.path.basename(path)
     fileparts = filename.split(".")
-    videoFileName =fileparts[0]
+    videoFileName = fileparts[0]
 
     folderStruct = FolderStructure(rootDir, videoFileName)
 
 StreamToLogger(folderStruct.getLogFilepath())
-print ("Starting markCrabs script")
+print("Starting markCrabs script")
 
 timer = MyTimer("Starting MarkCrabs")
 
@@ -73,15 +48,13 @@ timer.lap("Initialized ImageWindow")
 scientistUI = ScientistUI(imageWin, folderStruct, videoStream)
 timer.lap("Initialized ScientistUI")
 
-#Uncomment two lines below to get a nice summary which function uses the most time during excecution
-#import cProfile
-#cProfile.run('scientistUI.processVideo()')
+# Uncomment two lines below to get a nice summary which function uses the most time during excecution
+# import cProfile
+# cProfile.run('scientistUI.processVideo()')
 
 scientistUI.processVideo()
-
 
 # close all open windows
 cv2.destroyAllWindows()
 
 timer.lap("Finished session")
-

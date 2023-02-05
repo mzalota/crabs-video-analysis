@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import datetime
 from lib.FolderStructure import FolderStructure
 from lib.data.PandasWrapper import PandasWrapper
+from lib.infra.DataframeWrapper import DataframeWrapper
 
 
 class DriftManualData(PandasWrapper):
@@ -81,7 +82,8 @@ class DriftManualData(PandasWrapper):
                          self.COLNAME_createdOn: datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
                          }
 
-        self.__df = self.__df.append(row_to_append, ignore_index=True)
+        # self.__df = self.__df.append(row_to_append, ignore_index=True)
+        self.__df = DataframeWrapper.append_to_df(self.__df, row_to_append)
         #self.saveToFile()
 
         return row_to_append

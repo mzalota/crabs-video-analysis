@@ -6,6 +6,7 @@ import pandas as pd
 from lib.FolderStructure import FolderStructure
 from lib.data.PandasWrapper import PandasWrapper
 from lib.data.RedDotsRawData import RedDotsRawData
+from lib.infra.DataframeWrapper import DataframeWrapper
 
 
 class RedDotsManualData(PandasWrapper):
@@ -63,8 +64,11 @@ class RedDotsManualData(PandasWrapper):
         rowRedDot2[self.__COLNAME_centerPoint_y] = box.bottomRight.y
 
         # Pass the rowRedDot1 elements as key value pairs to append() function
-        self.__df = self.__df.append(rowRedDot1, ignore_index=True)
-        self.__df = self.__df.append(rowRedDot2, ignore_index=True)
+        # self.__df = self.__df.append(rowRedDot1, ignore_index=True)
+        # self.__df = self.__df.append(rowRedDot2, ignore_index=True)
+
+        self.__df = DataframeWrapper.append_to_df(self.__df, rowRedDot1)
+        self.__df = DataframeWrapper.append_to_df(self.__df, rowRedDot2)
 
         manual_filepath = self.__folderStruct.getRedDotsManualFilepath()
         self.__saveManualDFToFile(manual_filepath)

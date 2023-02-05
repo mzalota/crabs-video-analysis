@@ -2,6 +2,7 @@ from unittest import TestCase
 
 import pandas as pd
 from lib.data.BadFramesData import BadFramesData
+from lib.infra.DataframeWrapper import DataframeWrapper
 
 
 class TestBadFramesData(TestCase):
@@ -18,11 +19,11 @@ class TestBadFramesData(TestCase):
     def test_isBadFrame(self):
         # Setup
         badframes_df = pd.DataFrame()
-        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber : int(99), BadFramesData.COLNAME_endFrameNumber: 101}, ignore_index=True)
-        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber : int(44), BadFramesData.COLNAME_endFrameNumber: 46}, ignore_index=True)
+        badframes_df = DataframeWrapper.append_to_df(badframes_df, {BadFramesData.COLNAME_startfFrameNumber : int(99), BadFramesData.COLNAME_endFrameNumber: 101})
+        badframes_df = DataframeWrapper.append_to_df(badframes_df, {BadFramesData.COLNAME_startfFrameNumber : int(44), BadFramesData.COLNAME_endFrameNumber: 46})
 
         #single BadFrame
-        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber : int(222), BadFramesData.COLNAME_endFrameNumber: 222}, ignore_index=True)
+        badframes_df = DataframeWrapper.append_to_df(badframes_df, {BadFramesData.COLNAME_startfFrameNumber : int(222), BadFramesData.COLNAME_endFrameNumber: 222})
 
         badframesData = BadFramesData.createFromDataFrame(None, badframes_df)
 
@@ -64,11 +65,11 @@ class TestBadFramesData(TestCase):
         badframes_df = pd.DataFrame()
 
         #two partially overlapping bad frame ranges
-        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber : int(10), BadFramesData.COLNAME_endFrameNumber: 26}, ignore_index=True)
-        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber : int(24), BadFramesData.COLNAME_endFrameNumber: 28}, ignore_index=True)
+        badframes_df = DataframeWrapper.append_to_df(badframes_df, {BadFramesData.COLNAME_startfFrameNumber : int(10), BadFramesData.COLNAME_endFrameNumber: 26})
+        badframes_df = DataframeWrapper.append_to_df(badframes_df, {BadFramesData.COLNAME_startfFrameNumber : int(24), BadFramesData.COLNAME_endFrameNumber: 28})
 
         #bad frame range that is fully inside the first bad frame range
-        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber : int(10), BadFramesData.COLNAME_endFrameNumber: 16}, ignore_index=True)
+        badframes_df = DataframeWrapper.append_to_df(badframes_df, {BadFramesData.COLNAME_startfFrameNumber : int(10), BadFramesData.COLNAME_endFrameNumber: 16})
 
         badframesData = BadFramesData.createFromDataFrame(None, badframes_df)
 
@@ -101,11 +102,11 @@ class TestBadFramesData(TestCase):
     def test_firstGoodFrameBefore(self):
         # Setup
         badframes_df = pd.DataFrame()
-        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber : int(99), BadFramesData.COLNAME_endFrameNumber: 101}, ignore_index=True)
-        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber : int(44), BadFramesData.COLNAME_endFrameNumber: 46}, ignore_index=True)
+        badframes_df = DataframeWrapper.append_to_df(badframes_df,{BadFramesData.COLNAME_startfFrameNumber : int(99), BadFramesData.COLNAME_endFrameNumber: 101})
+        badframes_df = DataframeWrapper.append_to_df(badframes_df,{BadFramesData.COLNAME_startfFrameNumber : int(44), BadFramesData.COLNAME_endFrameNumber: 46})
 
         #single BadFrame
-        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber : int(222), BadFramesData.COLNAME_endFrameNumber: 222}, ignore_index=True)
+        badframes_df = DataframeWrapper.append_to_df(badframes_df,{BadFramesData.COLNAME_startfFrameNumber : int(222), BadFramesData.COLNAME_endFrameNumber: 222})
 
         badframesData = BadFramesData.createFromDataFrame(None, badframes_df)
 
@@ -137,13 +138,13 @@ class TestBadFramesData(TestCase):
         badframes_df = pd.DataFrame()
 
         # two partially overlapping bad frame ranges
-        badframes_df = badframes_df.append(
-            {BadFramesData.COLNAME_startfFrameNumber: int(10), BadFramesData.COLNAME_endFrameNumber: 26}, ignore_index=True)
-        badframes_df = badframes_df.append(
-            {BadFramesData.COLNAME_startfFrameNumber: int(24), BadFramesData.COLNAME_endFrameNumber: 30}, ignore_index=True)
+        badframes_df = DataframeWrapper.append_to_df(badframes_df,
+            {BadFramesData.COLNAME_startfFrameNumber: int(10), BadFramesData.COLNAME_endFrameNumber: 26})
+        badframes_df = DataframeWrapper.append_to_df(badframes_df,
+            {BadFramesData.COLNAME_startfFrameNumber: int(24), BadFramesData.COLNAME_endFrameNumber: 30})
 
         # bad frame range that is fully inside the first bad frame range
-        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber: int(23), BadFramesData.COLNAME_endFrameNumber: 27}, ignore_index=True)
+        badframes_df = DataframeWrapper.append_to_df(badframes_df,{BadFramesData.COLNAME_startfFrameNumber: int(23), BadFramesData.COLNAME_endFrameNumber: 27})
 
         badframesData = BadFramesData.createFromDataFrame(None, badframes_df)
 
@@ -185,11 +186,11 @@ class TestBadFramesData(TestCase):
     def test_firstBadFrame_AfterAndBefore_nonOverlaptingRanges(self):
         # Setup
         badframes_df = pd.DataFrame()
-        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber : int(99), BadFramesData.COLNAME_endFrameNumber: 101}, ignore_index=True)
-        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber : int(44), BadFramesData.COLNAME_endFrameNumber: 46}, ignore_index=True)
+        badframes_df = DataframeWrapper.append_to_df(badframes_df,{BadFramesData.COLNAME_startfFrameNumber : int(99), BadFramesData.COLNAME_endFrameNumber: 101})
+        badframes_df = DataframeWrapper.append_to_df(badframes_df,{BadFramesData.COLNAME_startfFrameNumber : int(44), BadFramesData.COLNAME_endFrameNumber: 46})
 
         #single BadFrame
-        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber : int(222), BadFramesData.COLNAME_endFrameNumber: 222}, ignore_index=True)
+        badframes_df = DataframeWrapper.append_to_df(badframes_df,{BadFramesData.COLNAME_startfFrameNumber : int(222), BadFramesData.COLNAME_endFrameNumber: 222})
 
         badframesData = BadFramesData.createFromDataFrame(None, badframes_df)
 
@@ -244,13 +245,14 @@ class TestBadFramesData(TestCase):
         badframes_df = pd.DataFrame()
 
         # two partially overlapping bad frame ranges
-        badframes_df = badframes_df.append(
-            {BadFramesData.COLNAME_startfFrameNumber: int(10), BadFramesData.COLNAME_endFrameNumber: 26}, ignore_index=True)
-        badframes_df = badframes_df.append(
-            {BadFramesData.COLNAME_startfFrameNumber: int(24), BadFramesData.COLNAME_endFrameNumber: 30}, ignore_index=True)
+        badframes_df = DataframeWrapper.append_to_df(badframes_df,
+            {BadFramesData.COLNAME_startfFrameNumber: int(10), BadFramesData.COLNAME_endFrameNumber: 26})
+
+        badframes_df = DataframeWrapper.append_to_df(badframes_df,
+            {BadFramesData.COLNAME_startfFrameNumber: int(24), BadFramesData.COLNAME_endFrameNumber: 30})
 
         # bad frame range that is fully inside the first bad frame range
-        badframes_df = badframes_df.append({BadFramesData.COLNAME_startfFrameNumber: int(23), BadFramesData.COLNAME_endFrameNumber: 27}, ignore_index=True)
+        badframes_df = DataframeWrapper.append_to_df(badframes_df, {BadFramesData.COLNAME_startfFrameNumber: int(23), BadFramesData.COLNAME_endFrameNumber: 27})
 
         badframesData = BadFramesData.createFromDataFrame(None, badframes_df)
 

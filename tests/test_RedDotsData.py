@@ -1,9 +1,11 @@
 from unittest import TestCase
-from mock import patch, MagicMock
+#from mock import patch, MagicMock
+from unittest.mock import MagicMock
 
 import pandas as pd
 
 from lib.data.RedDotsData import RedDotsData
+from lib.infra.DataframeWrapper import DataframeWrapper
 
 
 class TestRedDotsData(TestCase):
@@ -105,7 +107,7 @@ class TestRedDotsData(TestCase):
         self.assertEqual(3, gap)
 
     def add_value_to_df(self, df, frame, origin1, origin2):
-        df = df.append({'frameNumber': int(frame), "origin_dot1": origin1, "origin_dot2": origin2}, ignore_index=True)
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(frame), "origin_dot1": origin1, "origin_dot2": origin2})
         return df
 
     def test_getMiddleFrameIDOfBiggestGap_dot2HasLargerGapThenDot1_middleFrameOfDot2EndingGapIsReturned(self):

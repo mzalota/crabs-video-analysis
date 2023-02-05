@@ -5,6 +5,9 @@ from lib.common import Point
 from lib.drifts.DriftManualData import DriftManualData
 import pandas as pd
 
+from lib.infra.DataframeWrapper import DataframeWrapper
+
+
 class TestDriftManualData(TestCase):
     def test_doIt(self):
         folderStruct = FolderStructure("dirName", "V987")
@@ -17,14 +20,15 @@ class TestDriftManualData(TestCase):
                 "locationX2": 205,
                 "locationY2": 500,
                 }
-        df = df.append(data, ignore_index=True)
+        # df = df.append(data, ignore_index=True)
+        df = DataframeWrapper.append_to_df(df, data)
 
         ddm = DriftManualData.createFromDataFrame(df, folderStruct)
 
-        #Exercise
+        # Exercise
         result = ddm.doIt()
 
-        #Assert
+        # Assert
         self.assertEqual(1, len(result))
         dfDrifts = result[0]
 
@@ -59,14 +63,14 @@ class TestDriftManualData(TestCase):
                 "locationX2": 1063,
                 "locationY2": 594,
                 }
-        df = df.append(data, ignore_index=True)
+        df = DataframeWrapper.append_to_df(df, data)
 
         ddm = DriftManualData.createFromDataFrame(df, folderStruct)
 
-        #Exercise
+        # Exercise
         result = ddm.doIt()
 
-        #Assert
+        # Assert
         self.assertEqual(1, len(result))
         dfDrifts = result[0]
 
@@ -86,20 +90,19 @@ class TestDriftManualData(TestCase):
         self.assertAlmostEqual(float(0.542857), dfDrifts.iloc[15]["driftX"], 5)
         self.assertAlmostEqual(float(0.542857), dfDrifts.iloc[34]["driftX"], 5)
 
-
     def test_add_manual_drift(self):
         folderStruct = FolderStructure("dirName", "V987")
         ddm = DriftManualData.createBrandNew(folderStruct)
 
-        #Exercise
-        ddm.add_manual_drift(100,Point(125,175), 200,Point(225,375))
+        # Exercise
+        ddm.add_manual_drift(100, Point(125, 175), 200, Point(225, 375))
 
-        #Assert
+        # Assert
         dfDict = ddm.getPandasDF().to_dict('records')
         self.assertEqual(1, len(dfDict))
         self.assertEqual("100", dfDict[0][DriftManualData.COLNAME_frameNumber_1])
         self.assertEqual("200", dfDict[0][DriftManualData.COLNAME_frameNumber_2])
-        self.assertEquals(125, int(dfDict[0][DriftManualData.COLNAME_locationX_1]))
+        self.assertEqual(125, int(dfDict[0][DriftManualData.COLNAME_locationX_1]))
         self.assertEqual(175, int(dfDict[0][DriftManualData.COLNAME_locationY_1]))
         self.assertEqual(225, int(dfDict[0][DriftManualData.COLNAME_locationX_2]))
         self.assertEqual(375, int(dfDict[0][DriftManualData.COLNAME_locationY_2]))
@@ -109,19 +112,20 @@ class TestDriftManualData(TestCase):
 
         dfRaw = pd.DataFrame()
         data = list()
-        data.append({'frameNumber': 100,"driftX": 2,"driftY": 7})
-        data.append({'frameNumber': 101,"driftX": 2,"driftY": 7})
-        data.append({'frameNumber': 102,"driftX": 2,"driftY": 7})
-        data.append({'frameNumber': 103,"driftX": 2,"driftY": 7})
-        dfRaw = dfRaw.append(data, ignore_index=True)
+        data.append({'frameNumber': 100, "driftX": 2, "driftY": 7})
+        data.append({'frameNumber': 101, "driftX": 2, "driftY": 7})
+        data.append({'frameNumber': 102, "driftX": 2, "driftY": 7})
+        data.append({'frameNumber': 103, "driftX": 2, "driftY": 7})
+        # dfRaw = DataframeWrapper.append_to_df(dfRaw, data)
+        dfRaw = pd.concat([dfRaw, pd.DataFrame(data)])
 
         ddm = DriftManualData.createBrandNew(folderStruct)
-        ddm.add_manual_drift("101",Point("100","200"), "102",Point("103","211")) # xDrift = 3, yDrift = 11
+        ddm.add_manual_drift("101", Point("100", "200"), "102", Point("103", "211"))  # xDrift = 3, yDrift = 11
 
-        #Exercise
+        # Exercise
         resultDF = ddm.overwrite_values(dfRaw)
 
-        #Assert
+        # Assert
         dfDict = resultDF.to_dict('records')
         self.assertEqual(4, len(dfDict))
         self.assertEqual(100, dfDict[0]["frameNumber"])
@@ -145,22 +149,22 @@ class TestDriftManualData(TestCase):
 
         dfRaw = pd.DataFrame()
         data = list()
-        data.append({'frameNumber': 100,"driftX": 2,"driftY": 7})
-        data.append({'frameNumber': 101,"driftX": 2,"driftY": 7})
-        data.append({'frameNumber': 102,"driftX": 2,"driftY": 7})
-        data.append({'frameNumber': 103,"driftX": 2,"driftY": 7})
-        data.append({'frameNumber': 104,"driftX": 2,"driftY": 7})
-        data.append({'frameNumber': 105,"driftX": 2,"driftY": 7})
-        dfRaw = dfRaw.append(data, ignore_index=True)
+        data.append({'frameNumber': 100, "driftX": 2, "driftY": 7})
+        data.append({'frameNumber': 101, "driftX": 2, "driftY": 7})
+        data.append({'frameNumber': 102, "driftX": 2, "driftY": 7})
+        data.append({'frameNumber': 103, "driftX": 2, "driftY": 7})
+        data.append({'frameNumber': 104, "driftX": 2, "driftY": 7})
+        data.append({'frameNumber': 105, "driftX": 2, "driftY": 7})
+        dfRaw = pd.concat([dfRaw, pd.DataFrame(data)])
 
         ddm = DriftManualData.createBrandNew(folderStruct)
-        ddm.add_manual_drift("101",Point("100","200"), "103",Point("106","222")) # xDrift = 3, yDrift = 11
-        ddm.add_manual_drift("102",Point("400","800"), "104",Point("410","826")) # xDrift = 5, yDrift = 13
+        ddm.add_manual_drift("101", Point("100", "200"), "103", Point("106", "222"))  # xDrift = 3, yDrift = 11
+        ddm.add_manual_drift("102", Point("400", "800"), "104", Point("410", "826"))  # xDrift = 5, yDrift = 13
 
-        #Exercise
+        # Exercise
         resultDF = ddm.overwrite_values(dfRaw)
 
-        #Assert
+        # Assert
         dfDict = resultDF.to_dict('records')
         self.assertEqual(6, len(dfDict))
 
@@ -176,7 +180,7 @@ class TestDriftManualData(TestCase):
         self.assertEqual(3, dfDict[2]["driftX"])
         self.assertEqual(11, dfDict[2]["driftY"])
 
-        #second manual row overwrites values of the first row.
+        # second manual row overwrites values of the first row.
         self.assertEqual(103, dfDict[3]["frameNumber"])
         self.assertEqual(5, dfDict[3]["driftX"])
         self.assertEqual(13, dfDict[3]["driftY"])

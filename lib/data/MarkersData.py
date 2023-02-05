@@ -2,6 +2,7 @@ import pandas as pd
 from datetime import datetime
 from lib.FolderStructure import FolderStructure
 from lib.data.PandasWrapper import PandasWrapper
+from lib.infra.DataframeWrapper import DataframeWrapper
 
 
 class MarkersData(PandasWrapper):
@@ -44,7 +45,9 @@ class MarkersData(PandasWrapper):
                          self.__COLNAME_createdOn: datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
                          }
 
-        self.__markersDF = self.__markersDF.append(row_to_append, ignore_index=True)
+        #self.__markersDF = self.__markersDF.append(row_to_append, ignore_index=True)
+        self.__markersDF = DataframeWrapper.append_to_df(self.__markersDF, row_to_append)
+
         #self.__markersDF.to_csv(self.__folderStruct.getMarkersFilepath(), sep='\t', index=False)
 
         return row_to_append

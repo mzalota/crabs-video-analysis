@@ -3,15 +3,16 @@ from unittest import TestCase
 from lib.data.DriftData import DriftData
 import pandas as pd
 
+from lib.infra.DataframeWrapper import DataframeWrapper
+
+
 class TestDriftData(TestCase):
 
     def test_yPixelsBetweenFrames_firstParemeterIsLessThanFirstFrame_returnsNone(self):
         # Setup
         df = pd.DataFrame()
-        #df = pd.DataFrame(columns=['frameNumber', 'driftY'])
-
-        df = df.append({'frameNumber': int(98), 'driftY': 16, 'driftX': 0}, ignore_index=True)
-        df = df.append({'frameNumber': int(100), 'driftY': 16, 'driftX': 0}, ignore_index=True)
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(98), 'driftY': 16, 'driftX': 0})
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(100), 'driftY': 16, 'driftX': 0})
 
         # Exercise
         driftData = DriftData(df)
@@ -23,10 +24,8 @@ class TestDriftData(TestCase):
     def test_yPixelsBetweenFrames_firstParemeterIsLargerThanLastFrameID_returnsNone(self):
         # Setup
         df = pd.DataFrame()
-        #df = pd.DataFrame(columns=['frameNumber', 'driftY'])
-
-        df = df.append({'frameNumber': int(98), 'driftY': 16, 'driftX': 0}, ignore_index=True)
-        df = df.append({'frameNumber': int(100), 'driftY': 16, 'driftX': 0}, ignore_index=True)
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(98), 'driftY': 16, 'driftX': 0})
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(100), 'driftY': 16, 'driftX': 0})
 
         # Exercise
         driftData = DriftData(df)
@@ -38,10 +37,8 @@ class TestDriftData(TestCase):
     def test_yPixelsBetweenFrames_secondParemeterIsLargerThanLastFrameID_returnsNone(self):
         # Setup
         df = pd.DataFrame()
-        #df = pd.DataFrame(columns=['frameNumber', 'driftY'])
-
-        df = df.append({'frameNumber': int(98), 'driftY': 16, 'driftX': 0}, ignore_index=True)
-        df = df.append({'frameNumber': int(100), 'driftY': 16, 'driftX': 0}, ignore_index=True)
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(98), 'driftY': 16, 'driftX': 0})
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(100), 'driftY': 16, 'driftX': 0})
 
         # Exercise
         driftData = DriftData(df)
@@ -53,10 +50,8 @@ class TestDriftData(TestCase):
     def test_yPixelsBetweenFrames_secondParemeterIsLessThanFirstFrameID_returnsNone(self):
         # Setup
         df = pd.DataFrame()
-        #df = pd.DataFrame(columns=['frameNumber', 'driftY'])
-
-        df = df.append({'frameNumber': int(98), 'driftY': 16, 'driftX': 0}, ignore_index=True)
-        df = df.append({'frameNumber': int(100), 'driftY': 16, 'driftX': 0}, ignore_index=True)
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(98), 'driftY': 16, 'driftX': 0})
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(100), 'driftY': 16, 'driftX': 0})
 
         # Exercise
         driftData = DriftData(df)
@@ -68,9 +63,8 @@ class TestDriftData(TestCase):
     def test_yPixelsBetweenFrames_secondParemeterIsLessThanFirstFrame_returnsNone(self):
         # Setup
         df = pd.DataFrame()
-
-        df = df.append({'frameNumber': int(98), 'driftY': 16, 'driftX': 0}, ignore_index=True)
-        df = df.append({'frameNumber': int(100), 'driftY': 16, 'driftX': 0}, ignore_index=True)
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(98), 'driftY': 16, 'driftX': 0})
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(100), 'driftY': 16, 'driftX': 0})
 
         # Exercise
         driftData = DriftData(df)
@@ -82,9 +76,9 @@ class TestDriftData(TestCase):
     def test_yPixelsBetweenFrames_sameFrameInDataFrame_zeroPixels(self):
         # Setup
         df = pd.DataFrame()
-        df = df.append({'frameNumber': int(98), 'driftY': 16, 'driftX': 0}, ignore_index=True)
-        df = df.append({'frameNumber': int(100), 'driftY': 16, 'driftX': 0}, ignore_index=True)
-        df = df.append({'frameNumber': int(102), 'driftY': 16, 'driftX': 0}, ignore_index=True)
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(98), 'driftY': 16, 'driftX': 0})
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(100), 'driftY': 16, 'driftX': 0})
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(102), 'driftY': 16, 'driftX': 0})
 
         # Exercise
         driftData = DriftData(df)
@@ -96,8 +90,9 @@ class TestDriftData(TestCase):
     def test_yPixelsBetweenFrames_betweenFirstAndSecondIndex_zeroPixels(self):
         # Setup
         df = pd.DataFrame()
-        df = df.append({'frameNumber': int(100), 'driftY': 0, 'driftX': 0}, ignore_index=True)
-        df = df.append({'frameNumber': int(104), 'driftY': 16, 'driftX': 0}, ignore_index=True)
+
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(100), 'driftY': 0, 'driftX': 0})
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(104), 'driftY': 16, 'driftX': 0})
 
         # Exercise
         driftData = DriftData(df)
@@ -110,9 +105,9 @@ class TestDriftData(TestCase):
         # Setup
         df = pd.DataFrame()
 
-        df = df.append({'frameNumber': int(98), 'driftY': 0, 'driftX': 0}, ignore_index=True)
-        df = df.append({'frameNumber': int(100), 'driftY': 7, 'driftX': 0}, ignore_index=True)
-        df = df.append({'frameNumber': int(102), 'driftY': 11, 'driftX': 0}, ignore_index=True)
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(98), 'driftY': 0, 'driftX': 0})
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(100), 'driftY': 7, 'driftX': 0})
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(102), 'driftY': 11, 'driftX': 0})
 
         # Exercise
         driftData = DriftData(df)
@@ -125,11 +120,11 @@ class TestDriftData(TestCase):
         # Setup
         df = pd.DataFrame()
 
-        df = df.append({'frameNumber': int(98), 'driftY': 0, 'driftX': 0}, ignore_index=True)
-        df = df.append({'frameNumber': int(100), 'driftY': 7, 'driftX': 0}, ignore_index=True)
-        df = df.append({'frameNumber': int(102), 'driftY': 11, 'driftX': 0}, ignore_index=True)
-        df = df.append({'frameNumber': int(104), 'driftY': 13, 'driftX': 0}, ignore_index=True)
-        df = df.append({'frameNumber': int(106), 'driftY': 17, 'driftX': 0}, ignore_index=True)
+        df = DataframeWrapper.append_to_df(df,{'frameNumber': int(98), 'driftY': 0, 'driftX': 0})
+        df = DataframeWrapper.append_to_df(df,{'frameNumber': int(100), 'driftY': 7, 'driftX': 0})
+        df = DataframeWrapper.append_to_df(df,{'frameNumber': int(102), 'driftY': 11, 'driftX': 0})
+        df = DataframeWrapper.append_to_df(df,{'frameNumber': int(104), 'driftY': 13, 'driftX': 0})
+        df = DataframeWrapper.append_to_df(df,{'frameNumber': int(106), 'driftY': 17, 'driftX': 0})
 
         # Exercise
         driftData = DriftData(df)
@@ -141,12 +136,11 @@ class TestDriftData(TestCase):
     def test_yPixelsBetweenFrames_frameIDsinReverseOrder_negativePixels(self):
         # Setup
         df = pd.DataFrame()
-
-        df = df.append({'frameNumber': int(98), 'driftY': 0, 'driftX': 0}, ignore_index=True)
-        df = df.append({'frameNumber': int(100), 'driftY': 7, 'driftX': 0}, ignore_index=True)
-        df = df.append({'frameNumber': int(102), 'driftY': 11, 'driftX': 0}, ignore_index=True)
-        df = df.append({'frameNumber': int(104), 'driftY': 13, 'driftX': 0}, ignore_index=True)
-        df = df.append({'frameNumber': int(106), 'driftY': 17, 'driftX': 0}, ignore_index=True)
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(98), 'driftY': 0, 'driftX': 0})
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(100), 'driftY': 7, 'driftX': 0})
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(102), 'driftY': 11, 'driftX': 0})
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(104), 'driftY': 13, 'driftX': 0})
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(106), 'driftY': 17, 'driftX': 0})
 
         # Exercise
         driftData = DriftData(df)
@@ -158,10 +152,9 @@ class TestDriftData(TestCase):
     def test_yPixelsBetweenFrames_sameFrameIDbetweenDataFrameEntries_zeroPixels(self):
         # Setup
         df = pd.DataFrame()
-        df = df.append({'frameNumber': int(98), 'driftY': 16, 'driftX': 0}, ignore_index=True)
-        df = df.append({'frameNumber': int(100), 'driftY': 16, 'driftX': 0}, ignore_index=True)
-        df = df.append({'frameNumber': int(102), 'driftY': 16, 'driftX': 0}, ignore_index=True)
-        #df.count()
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(98), 'driftY': 16, 'driftX': 0})
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(100), 'driftY': 16, 'driftX': 0})
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(102), 'driftY': 16, 'driftX': 0})
 
         # Exercise
         driftData = DriftData(df)
@@ -174,10 +167,9 @@ class TestDriftData(TestCase):
     def test_yPixelsBetweenFrames_smallStepToFrameIDinDataFrame_proRatedPixels(self):
         # Setup
         df = pd.DataFrame()
-        df = df.append({'frameNumber': int(95), 'driftY': 0, 'driftX': 0}, ignore_index=True)
-        df = df.append({'frameNumber': int(100), 'driftY': 15, 'driftX': 0}, ignore_index=True) #drift-per-frame = 3
-        df = df.append({'frameNumber': int(105), 'driftY': 25, 'driftX': 0}, ignore_index=True) #drift-per-frame = 5
-        #df.count()
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(95), 'driftY': 0, 'driftX': 0})
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(100), 'driftY': 15, 'driftX': 0}) #drift-per-frame = 3
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(105), 'driftY': 25, 'driftX': 0}) #drift-per-frame = 5
 
         # Exercise
         driftData = DriftData(df)
@@ -196,9 +188,9 @@ class TestDriftData(TestCase):
     def test_yPixelsBetweenFrames_smallStepFromFrameIDinDataFrame_proRatedPixels(self):
         # Setup
         df = pd.DataFrame()
-        df = df.append({'frameNumber': int(95), 'driftY': 0, 'driftX': 0}, ignore_index=True)
-        df = df.append({'frameNumber': int(100), 'driftY': 15, 'driftX': 0}, ignore_index=True) #drift-per-frame = 3
-        df = df.append({'frameNumber': int(105), 'driftY': 25, 'driftX': 0}, ignore_index=True) #drift-per-frame = 5
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(95), 'driftY': 0, 'driftX': 0})
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(100), 'driftY': 15, 'driftX': 0}) #drift-per-frame = 3
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(105), 'driftY': 25, 'driftX': 0}) #drift-per-frame = 5
         #df.count()
 
         # Exercise
@@ -217,11 +209,10 @@ class TestDriftData(TestCase):
     def test_yPixelsBetweenFrames_complexStep_proRatedAndYDrift(self):
         # Setup
         df = pd.DataFrame()
-        df = df.append({'frameNumber': int(95), 'driftY': 0, 'driftX': 0}, ignore_index=True)
-        df = df.append({'frameNumber': int(100), 'driftY': 15, 'driftX': 0}, ignore_index=True) #drift-per-frame = 3
-        df = df.append({'frameNumber': int(105), 'driftY': 25, 'driftX': 0}, ignore_index=True) #drift-per-frame = 5
-        df = df.append({'frameNumber': int(110), 'driftY': 35, 'driftX': 0}, ignore_index=True) #drift-per-frame = 2
-        #df.count()
+        df = DataframeWrapper.append_to_df(df,{'frameNumber': int(95), 'driftY': 0, 'driftX': 0})
+        df = DataframeWrapper.append_to_df(df,{'frameNumber': int(100), 'driftY': 15, 'driftX': 0}) #drift-per-frame = 3
+        df = DataframeWrapper.append_to_df(df,{'frameNumber': int(105), 'driftY': 25, 'driftX': 0}) #drift-per-frame = 5
+        df = DataframeWrapper.append_to_df(df,{'frameNumber': int(110), 'driftY': 35, 'driftX': 0}) #drift-per-frame = 2
 
         # Exercise
         driftData = DriftData(df)
@@ -234,11 +225,10 @@ class TestDriftData(TestCase):
     def test_yPixelsBetweenFrames_stepsInDataFrameAreUnequal_proRatedAndYDrift(self):
         # Setup
         df = pd.DataFrame()
-        df = df.append({'frameNumber': int(97), 'driftY': 0, 'driftX': 0}, ignore_index=True)
-        df = df.append({'frameNumber': int(100), 'driftY': 15, 'driftX': 0}, ignore_index=True) #drift-per-frame = 5
-        df = df.append({'frameNumber': int(107), 'driftY': 21, 'driftX': 0}, ignore_index=True) #drift-per-frame = 3
-        df = df.append({'frameNumber': int(110), 'driftY': 6, 'driftX': 0}, ignore_index=True) #drift-per-frame = 2
-        #df.count()
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(97), 'driftY': 0, 'driftX': 0})
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(100), 'driftY': 15, 'driftX': 0}) #drift-per-frame = 5
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(107), 'driftY': 21, 'driftX': 0}) #drift-per-frame = 3
+        df = DataframeWrapper.append_to_df(df, {'frameNumber': int(110), 'driftY': 6, 'driftX': 0}) #drift-per-frame = 2
 
         # Exercise
         driftData = DriftData(df)

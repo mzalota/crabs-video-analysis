@@ -52,7 +52,7 @@ class VelocityDetector():
             else:
                 driftsRow = self.infoAboutDrift(frameID)
 
-            print driftsRow
+            print(driftsRow)
             logger.writeToFile(driftsRow)
 
             #self.__show_ui_window(self._fm.values(), frame, driftVector)

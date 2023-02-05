@@ -71,7 +71,8 @@ class CrabsData(PandasWrapper):
                          self.__COLNAME_cranbCoordinateBox: str(crabCoordinate)
                          }
 
-        self.__crabsDF = self.__crabsDF.append(row_to_append, ignore_index=True)
+        # self.__crabsDF = self.__crabsDF.append(row_to_append, ignore_index=True)
+        self.__crabsDF = DataframeWrapper.append_to_df(self.__crabsDF, row_to_append)
         self.__saveAsCSV()
 
         return row_to_append

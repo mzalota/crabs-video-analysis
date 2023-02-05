@@ -15,3 +15,8 @@ class DataframeWrapper:
 
     def to_dict(self):
         return self.__df.to_dict("records")
+
+    @staticmethod
+    def append_to_df(df, row_to_append):
+        # type: (pd.DataFrame, Dict) -> pd.DataFrame
+        return pd.concat([df, pd.DataFrame([row_to_append])])
