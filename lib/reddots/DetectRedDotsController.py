@@ -43,7 +43,7 @@ class DetectRedDotsController:
                     # traceback.print_exc()
                     break
                 else:
-                    print "cannot read frame " + str(frame_id) + ", skipping to next"
+                    print("cannot read frame " + str(frame_id) + ", skipping to next")
                     frame_id += stepSize
                     continue
 

@@ -34,12 +34,12 @@ class Runner:
 		
 	def download_file(self, url):
 		
-		print "URL: "+ url
-		
+		print("URL: " + url)
+
 		filename = self.filename_from_url(url)
 
-		print "filename: "+ filename
-		
+		print("filename: " + filename)
+
 		# New lines begin here
 		http_logger = urllib2.HTTPHandler(debuglevel = 1)
 		opener = urllib2.build_opener(http_logger) # put your other handlers here too!
@@ -47,19 +47,18 @@ class Runner:
 		# End of new lines
 		
 		filedata = urllib2.urlopen(url)
-		print "Content Length"
-		print filedata.headers.get("Content-Length")
+		print("Content Length")
+		print(filedata.headers.get("Content-Length"))
 
-			
-		CHUNK = 1024 * 1024	
+		CHUNK = 1024 * 1024
 		with open(filename, 'wb') as f:
 			while True:
 				chunk = filedata.read(CHUNK)
 				if not chunk:
 					break
-				f.write(chunk)			
-			
-		print "downloaded file: " + filename
+				f.write(chunk)
+
+		print("downloaded file: " + filename)
 
 	def read_file_as_whole(self):
 		datatowrite = filedata.read()

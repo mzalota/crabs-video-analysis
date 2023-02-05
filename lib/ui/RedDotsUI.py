@@ -41,7 +41,7 @@ class RedDotsUI:
 
             if user_input.is_command_quit():
                 message = "User pressed Q button"
-                print message
+                print(message)
                 return None
 
             if user_input.is_mouse_click():

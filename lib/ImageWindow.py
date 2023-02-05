@@ -1,8 +1,8 @@
 import cv2
 from pyautogui import press
 
-from Image import Image
-from common import Point, Box
+from lib.Image import Image
+from lib.common import Box, Point
 
 
 class ImageWindow:

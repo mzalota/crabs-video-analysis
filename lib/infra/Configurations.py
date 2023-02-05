@@ -1,4 +1,4 @@
-from ConfigParser import ConfigParser
+from configparser import ConfigParser
 
 from lib.FolderStructure import FolderStructure
 from lib.infra.Defaults import Defaults
@@ -17,7 +17,7 @@ class Configurations:
 
         filepath = folderStruct.getConfigFilepath()
         if not folderStruct.fileExists(filepath):
-            print "Config file does not exist. Generating new one with default values"
+            print("Config file does not exist. Generating new one with default values")
             newParser = self.__set_default_values()
             self.__save_configs_to_file(newParser, filepath)
 

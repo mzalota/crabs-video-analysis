@@ -1,9 +1,10 @@
 import psutil
-from cv2 import cv2
+import cv2
 import pylru
 import os
 
-from Image import Image
+# import Image
+from lib.Image import Image
 
 
 class VideoStreamException(Exception):
@@ -83,6 +84,6 @@ class VideoStream:
                 self.readFromVideoCapture(frame_id)
                 return frame_id
             except VideoStreamException as error:
-                print "Cannot read frame " + str(frame_id) + ", skipping to next"
+                print("Cannot read frame " + str(frame_id) + ", skipping to next")
 
             frame_id += step_size

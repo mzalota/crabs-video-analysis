@@ -19,7 +19,7 @@ class InterpolateController:
 
     def regenerateSeefloor(self):
         driftsStepSize = self.step_size()
-        print "Using driftsStepSize: " + str(driftsStepSize)
+        print("Using driftsStepSize: " + str(driftsStepSize))
 
         rawDrifts = DriftRawData(self.__folderStruct)
         min_frame_id = rawDrifts.minFrameID()

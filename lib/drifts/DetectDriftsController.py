@@ -13,7 +13,7 @@ class DetectDriftsController:
 
     def run(self):
         stepSize = self.step_size()
-        print "using stepSize: " + str(stepSize)
+        print("using stepSize: " + str(stepSize))
 
         folderStruct = self.__folderStruct
         # velocityDetector = VelocityDetectorMultiThreaded(folderStruct)

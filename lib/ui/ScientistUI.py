@@ -148,7 +148,7 @@ class ScientistUI:
             frame_id = new_frame_id
 
     def __saveFrameImageToFile(self, frame):
-        print "Pressed S (save image) button"
+        print("Pressed S (save image) button")
 
         #construct filepath where image will be saved
         dirpath = self.__folderStruct.getSavedFramesDirpath()
@@ -170,7 +170,7 @@ class ScientistUI:
             self.__zoom = True
 
     def __mark_as_bad_frame(self, frame_id):
-        print "Pressed B (bad frame) button"
+        print("Pressed B (bad frame) button")
         end_frame_id = frame_id + self.__badFramesJump
         self.__badFramesData.add_badframes(frame_id, end_frame_id)
         self.__badFramesData.save_to_file()
@@ -183,7 +183,7 @@ class ScientistUI:
 
     def __show_red_dot_ui(self, frame_id):
         frame_id_redDots = self.__redDotsUI.showUI(frame_id)
-        print "catching frame_id_redDots"
+        print("catching frame_id_redDots")
         if frame_id_redDots is not None:
             redDots = self.__redDotsUI.selectedRedDots()
             self.__redDotsData.addManualDots(frame_id_redDots, redDots)

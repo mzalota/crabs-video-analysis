@@ -87,7 +87,7 @@ class RedDotsRawData(PandasWrapper):
         row.insert(0, frame_id)
         row.insert(1, dotName)
         self.__getLogger().writeToFile(row)
-        print row
+        print(row)
 
     def closeOpenFiles(self):
         if self.__logger:

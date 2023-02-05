@@ -33,7 +33,7 @@ class VelocityDetector():
                     # traceback.print_exc()
                     break
                 else:
-                    print "cannot read frame " + str(frameID) + ", skipping to next"
+                    print("cannot read frame " + str(frameID) + ", skipping to next")
                     frameID += stepSize
                     continue
 

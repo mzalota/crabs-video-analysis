@@ -22,7 +22,7 @@ class TmpProc:
 if __name__ == '__main__':
     #freeze_support()
 
-    print "here I am"
+    print ("here I am")
     obj1 = TmpProc()
     obj2 = TmpProc()
 
