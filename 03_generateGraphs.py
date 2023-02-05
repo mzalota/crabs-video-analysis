@@ -4,6 +4,7 @@ from easygui import fileopenbox
 
 from lib.CommandLineLauncher import CommandLineLauncher
 from lib.infra.MyTimer import MyTimer
+from lib.ui.FileOpenUI import FileOpenUI
 from lib.ui.StreamToLogger import StreamToLogger
 from lib.FolderStructure import FolderStructure
 from lib.infra.Configurations import Configurations
@@ -17,13 +18,9 @@ if folderStruct is None:
     # rootDir = "C:/data/AnjutkaVideo/2020-Kara/2020.09.16_6922"
     # videoFileName = "R_20200916_194953_20200916_195355"
 
-    path = fileopenbox()
-    print ("selected file is: ", path)
-
-    rootDir = os.path.dirname(path)
-    filename = os.path.basename(path)
-    fileparts = filename.split(".")
-    videoFileName = fileparts[0]
+    show_file_select = FileOpenUI()
+    rootDir = show_file_select.root_dir()
+    videoFileName = show_file_select.filename()
 
     folderStruct = FolderStructure(rootDir, videoFileName)
 

@@ -1,9 +1,8 @@
-import os
 import sys
-from easygui import fileopenbox
 
 from lib.CommandLineLauncher import CommandLineLauncher
 from lib.infra.MyTimer import MyTimer
+from lib.ui.FileOpenUI import FileOpenUI
 from lib.ui.StreamToLogger import StreamToLogger
 from lib.data.RedDotsData import RedDotsData
 from lib.FillRedDotsGapsController import FillRedDotsGapsController
@@ -19,36 +18,12 @@ print ("Launched manually Improving RedDots script")
 folderStruct = CommandLineLauncher.initializeFolderStruct(sys.argv)
 if folderStruct is None:
 
-    #rootDir = "C:/workspaces/AnjutkaVideo/2019-Kara/St6267_19"
-    #videoFileName = "V3"
-    #rootDir = "C:/workspaces/AnjutkaVideo/2019-Kara/St6279_19"
-
-    #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6647"
-    #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6651"
-    # rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6692"
-    #rootDir = "C:\workspaces\AnjutkaVideo\Antarctic_2020_AMK79\st6658"
-
-    #videoFileName = "V4"
-
-    # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.01_6878"
-    # videoFileName = "V20200901_215555_001"
-
-    # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.06_6902"
-    # videoFileName = "V20200906_025014_001"
-
-    # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.13_6916"
-    # videoFileName = "V20200913_204908_001"
-
     # rootDir = "C:/workspaces/AnjutkaVideo/2020-Kara/2020.09.16_6922"
     # videoFileName = "R_20200916_194953_20200916_195355"
 
-    path = fileopenbox()
-    print ("selected file is: ", path)
-
-    rootDir = os.path.dirname(path)
-    filename = os.path.basename(path)
-    fileparts = filename.split(".")
-    videoFileName = fileparts[0]
+    show_file_select = FileOpenUI()
+    rootDir = show_file_select.root_dir()
+    videoFileName = show_file_select.filename()
 
     folderStruct = FolderStructure(rootDir, videoFileName)
 
