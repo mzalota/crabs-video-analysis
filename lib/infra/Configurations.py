@@ -31,11 +31,11 @@ class Configurations:
     def __set_default_values(self):
         parser = ConfigParser()
         parser.add_section(self.SECTION_DRIFTS)
-        parser.set(self.SECTION_DRIFTS, self.OPTION_DRIFTS_STEP_SIZE, self.__default_drifts_step_size())
+        parser.set(self.SECTION_DRIFTS, self.OPTION_DRIFTS_STEP_SIZE, str(self.__default_drifts_step_size()))
 
         parser.add_section(self.SECTION_REDDOTS)
-        parser.set(self.SECTION_REDDOTS, self.OPTION_DISTANCE_BETWEEN_REDDOTS, self.__default_distance_reddots())
-        parser.set(self.SECTION_REDDOTS, self.OPTION_MID_POINT_X_COORD_BETWEEN_REDDOTS, self.__default_red_dots_x_mid_point())
+        parser.set(self.SECTION_REDDOTS, self.OPTION_DISTANCE_BETWEEN_REDDOTS, str(self.__default_distance_reddots()))
+        parser.set(self.SECTION_REDDOTS, self.OPTION_MID_POINT_X_COORD_BETWEEN_REDDOTS, str(self.__default_red_dots_x_mid_point()))
 
         return parser
 
