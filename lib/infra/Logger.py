@@ -14,7 +14,7 @@ class Logger:
     @staticmethod
     def openInOverwriteMode(filePath):
         # type: (String) -> Logger
-        logger = Logger(filePath, 'wb')
+        logger = Logger(filePath, 'w')
         return logger
 
     def writeToFile(self, row):
