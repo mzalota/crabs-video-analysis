@@ -2,6 +2,8 @@ import psutil
 import cv2
 import pylru
 import os
+import glob
+import numpy as np
 
 # import Image
 from lib.Image import Image
@@ -19,6 +21,8 @@ class VideoStream:
     def __init__(self, videoFilepath):
         self._vidcap = cv2.VideoCapture(videoFilepath)
         self.__imagesCache = pylru.lrucache(4) #set the size of cache to be 10 images large
+        self._mtx = np.load(glob.glob('resources/CAMERA/*mtx.npy')[0])
+        self._dst = np.load(glob.glob('resources/CAMERA/*dst.npy')[0])
 
         print("cv2 version", cv2.__version__)
         print ("num_of_frames", self.num_of_frames())
@@ -55,13 +59,19 @@ class VideoStream:
         # type: () -> Image
         return Image(self.readImage(frameID))
 
-    def readFromVideoCapture(self, frameID):
+    def readFromVideoCapture(self, frameID, undistorted=True, cropped=True):
         # type: (int) -> np
         self._vidcap.set(cv2.CAP_PROP_POS_FRAMES, float(frameID))
         success, image = self._vidcap.read()
         if not success:
             errorMessage = "Could not read frame " + str(frameID) + " from videofile"
             raise VideoStreamException(errorMessage)
+        if undistorted:
+            image = self.undistortImage(image, crop=cropped)
+            # # Uncomment if need to show raw image
+            # show_img = cv2.resize(image, (720, 576))
+            # cv2.imshow('Debug', show_img)
+            cv2.waitKey(10)
         return image
 
     def printMemoryUsage(self):
@@ -87,3 +97,15 @@ class VideoStream:
                 print("Cannot read frame " + str(frame_id) + ", skipping to next")
 
             frame_id += step_size
+
+    def undistortImage(self, img, crop=False):
+        mtx = self._mtx
+        dist = self._dst
+        h, w = img.shape[:2]
+        newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
+        ret = cv2.undistort(img, mtx, dist, None, newcameramtx)
+        if crop:
+            x, y, w1, h1 = roi
+            ret = ret[y:y+h1, x:x+w1]
+            ret = cv2.resize(ret, (w,h))
+        return ret

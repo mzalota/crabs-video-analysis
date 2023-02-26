@@ -21,6 +21,13 @@ You can start any of the scripts from command line, but you need to provide one 
 
 If you are processing lower resolution video files, you need to modify FRAME_HEIGHT and FRAME_WIDTH constants in Frame class (1080x1920 vs 2048x3072)
 
+
+Also you need to ensure that files in "resources/CAMERA" of a root program folder contain proper camera parameters. Files can be found in subfolders and replaced when needed:
+
+- 4K videos (default) - **BD3670M_4K_dst.npy**, **BD3670M_4K_mtx.npy**
+- Full HD videos from Atcrtic - **BD3270Z FullHD_dst.npy**, **BD3270Z FullHD_mtx.npy**
+- Full HD vides from Antarcic - we will add files later
+
 ## Files
 #### Relevant for analysis 
 These CSV files may be interesting for scientist to analyze:
