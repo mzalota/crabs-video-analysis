@@ -71,7 +71,7 @@ class VideoStream:
             # # Uncomment if need to show raw image
             # show_img = cv2.resize(image, (720, 576))
             # cv2.imshow('Debug', show_img)
-            cv2.waitKey(10)
+            # cv2.waitKey(10)
         return image
 
     def printMemoryUsage(self):
