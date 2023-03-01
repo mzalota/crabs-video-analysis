@@ -10,6 +10,7 @@ from lib.Frame import Frame
 from lib.ImageWindow import ImageWindow
 from lib.ImagesCollage import ImagesCollage
 from lib.data.RedDotsData import RedDotsData
+from lib.imageProcessing.Rectificator import Rectificator
 
 import traceback
 from lib.FrameDecorators import FrameDecoFactory
@@ -85,6 +86,11 @@ class ScientistUI:
 
             if user_input.is_command_save_image():
                 self.__saveFrameImageToFile(frame)
+                continue
+
+            if user_input.is_command_rectify():
+                Rect = Rectificator(self.__videoStream, frame_id)
+                Rect.run()
                 continue
 
             if user_input.is_command_zoom():
