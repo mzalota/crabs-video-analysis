@@ -7,6 +7,7 @@ import numpy as np
 
 # import Image
 from lib.Image import Image
+from lib.imageProcessing.Utils import ImageEnhancer
 
 
 class VideoStreamException(Exception):
@@ -21,8 +22,8 @@ class VideoStream:
     def __init__(self, videoFilepath):
         self._vidcap = cv2.VideoCapture(videoFilepath)
         self.__imagesCache = pylru.lrucache(4) #set the size of cache to be 10 images large
-        self._mtx = np.load(glob.glob('resources/CAMERA/*mtx.npy')[0])
-        self._dst = np.load(glob.glob('resources/CAMERA/*dst.npy')[0])
+        self.__mtx = np.load(glob.glob('resources/CAMERA/*mtx.npy')[0])
+        self.__dst = np.load(glob.glob('resources/CAMERA/*dst.npy')[0])
 
         print("cv2 version", cv2.__version__)
         print ("num_of_frames", self.num_of_frames())
@@ -52,7 +53,8 @@ class VideoStream:
             # image is not in the cache. Read it from VideoCapture and save into cache
             image = self.readFromVideoCapture(frameID)
             if undistorted:
-                image = self.undistortImage(image, crop=cropped)
+                # image = self.undistortImage(image, crop=cropped)
+                image = ImageEnhancer.undistortImage(image, self.__mtx, self.__dst, crop=cropped)
              # Uncomment if need to show raw image
             show_img = cv2.resize(image, (720, 576))
             cv2.imshow('Debug', show_img)
@@ -99,8 +101,8 @@ class VideoStream:
             frame_id += step_size
 
     def undistortImage(self, img, crop=False):
-        mtx = self._mtx
-        dist = self._dst
+        mtx = self.__mtx
+        dist = self.__dst
         h, w = img.shape[:2]
         newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
         ret = cv2.undistort(img, mtx, dist, None, newcameramtx)
@@ -109,3 +111,9 @@ class VideoStream:
             ret = ret[y:y+h1, x:x+w1]
             ret = cv2.resize(ret, (w,h))
         return ret
+
+    def getCalibrationMatrix(self):
+        return self.__mtx
+
+    def getDistortionCoefficients(self):
+        return self.__dst
