@@ -42,7 +42,7 @@ class Frame:
         return self.__videoStream
 
     def getImage(self):
-        return self.__videoStream.readImage(self.__frameID)
+        return self.__videoStream.readImage(self.__frameID, undistorted=True)
 
     def getImgObj(self):
         # type: () -> Image
