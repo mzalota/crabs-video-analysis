@@ -14,10 +14,10 @@ class Rectificator:
         self.__dst = self.__vs.getDistortionCoefficients()
         # By default scale 4K video dowm 4 times
         self.__scale_factor = 0.25
-        self.__abs_motion_threshold = 80.0
+        self.__abs_motion_threshold = 50.0
         self.__init_frame_step = 10
         self.__frame_step_size = 2
-        self.__show_debug = True
+        self.__show_debug = False
 
     @staticmethod
     def calculateAbsoluteMotion(ptsA, ptsB):
@@ -167,30 +167,66 @@ class Rectificator:
         # return transformed image
         return cv2.normalize(tf_img, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
 
+    def triangulateMatchedPoints(self, ptsA, ptsB, R, T):
+        """
+        Return: points in 3D estimated from 2 views
+        """
+        proj_mtx01 = np.zeros((3,4))
+        proj_mtx01[:3,:3] = np.identity(3)
+        proj_mtx01 = self.__mtx @ proj_mtx01
+
+        proj_mtx02 = np.zeros((3,4))
+        proj_mtx02[:3,:3] = R
+        proj_mtx02[:, -1] = T.transpose()
+        proj_mtx02 = self.__mtx @ proj_mtx02
+
+        return cv2.triangulatePoints(proj_mtx01, proj_mtx02,
+                                        ptsA.transpose(),
+                                        ptsB.transpose())
+
+    def estimateAveragePlane(self, points3d):
+        calib_points = (points3d / points3d[-1, :]).transpose()
+
+        _, _, v = np.linalg.svd(calib_points)
+        v = v.transpose()
+        a, b, c, d = v[:, -1]
+        if c < 0:
+            a, b, c, d = [-element for element in (a,b,c,d)]
+        nomal_abs = np.sqrt(a*a + b*b + c*c)
+        return np.float32([a/nomal_abs, b/nomal_abs, c/nomal_abs])
+
     def estimateRectifyStepDirection(self, frame_step):
         # By default step is positive, but if the video is close to end, make it negative instead
         if self.__frameID + frame_step > self.__vs.num_of_frames():
             return -frame_step
         return frame_step
+        
 
-    def run(self, lo_ratio=0.6, ransac_thresh=2):
+    def run(self, lo_ratio=0.8, ransac_thresh=10):
         print('Attempt to rectify current frame')
         motion = 0.0
         step = self.__init_frame_step
+
         frame1 = self.__image_to_rectify.copy()
         frame1 = IE.scaleImage(frame1, self.__scale_factor)
+        frame1 = IE.eqHist(frame1)
+        
         h,w = frame1.shape[:2]
         kps1, ds1 = PD.detectKeypoints(frame1)
         iteration = 0
+
         while motion < self.__abs_motion_threshold and iteration < 20:
             step = self.estimateRectifyStepDirection(step)
+
             frame2_ID = self.__frameID + step
-            print(f'Analyzing frames {self.__frameID} and {frame2_ID}')
             frame2 = self.__vs.readFromVideoCapture(frame2_ID, undistorted=True, cropped=False)
             frame2 = IE.scaleImage(frame2, self.__scale_factor)
+            frame2 = IR.eqHist(frame2)
+
             kps2, ds2 = PD.detectKeypoints(frame2)
             matcher = PD.matchKeypoints(ds1, ds2, lo_ratio)
             ret = PD.estimateInliers(matcher, kps1, kps2, ransac_thresh)
+
             if ret is None:
                 print('None returned from matcher')
                 step += self.__frame_step_size
@@ -215,4 +251,24 @@ class Rectificator:
             motion = self.calculateAbsoluteMotion(ptsA, ptsB)
             print(f'Motion between frame {self.__frameID} and {frame2_ID} is {motion}')
             step += self.__frame_step_size
+
+        if motion == 0.0:
+            print('Unable to rectify current frame: no motion detected')
+            return None
+
+        # Calculate translation vector
+        try:
+            R2 = np.identity(3)
+            translate = self.computeTranslationVector(ptsA, ptsB)
+        except(TypeError, np.linalg.LinAlgError):
+            print('Unable to rectify current frame: can not estimate translation vector')
+            return None
+
+        # Triangulate points and calculate plane
+        points3D = self.triangulateMatchedPoints(ptsA, ptsB, R2, translate)
+        plane_normal = self.estimateAveragePlane(points3d)
+
+
+
+        
             
