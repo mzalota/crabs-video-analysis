@@ -9,7 +9,7 @@ class Rectificator:
     def __init__(self, video_stream: VideoStream, frameID):
         self.__vs = video_stream
         self.__frameID = frameID
-        self.__image_to_rectify = self.__vs.readFromVideoCapture(frameID, undistorted=True, cropped=False)
+        self.__image_to_rectify = self.__vs.readFromVideoCapture(frameID, undistorted=True, cropped=True)
         self.__mtx = self.__vs.getCalibrationMatrix()
         self.__dst = self.__vs.getDistortionCoefficients()
         # By default scale 4K video dowm 4 times
@@ -63,11 +63,13 @@ class Rectificator:
         Based on vanishing point
         """
         # Intrinsic parameters
-        fx = self.__mtx[0, 0]
-        fy = self.__mtx[1, 1]
+        mtx = self.__mtx * self.__scale_factor
+        mtx[-1, -1] = 1.0
+        fx = mtx[0, 0]
+        fy = mtx[1, 1]
         f = (fx + fy)/2
-        cx = self.__mtx[0, -1]
-        cy = self.__mtx[1, -1]
+        cx = mtx[0, -1]
+        cy = mtx[1, -1]
 
         # Matrix for vanihing point calc
         equation_matrix = []
@@ -171,14 +173,16 @@ class Rectificator:
         """
         Return: points in 3D estimated from 2 views
         """
+        mtx = self.__mtx * self.__scale_factor
+        mtx[-1, -1] = 1.0
         proj_mtx01 = np.zeros((3,4))
         proj_mtx01[:3,:3] = np.identity(3)
-        proj_mtx01 = self.__mtx @ proj_mtx01
+        proj_mtx01 = mtx @ proj_mtx01
 
         proj_mtx02 = np.zeros((3,4))
         proj_mtx02[:3,:3] = R
         proj_mtx02[:, -1] = T.transpose()
-        proj_mtx02 = self.__mtx @ proj_mtx02
+        proj_mtx02 = mtx @ proj_mtx02
 
         return cv2.triangulatePoints(proj_mtx01, proj_mtx02,
                                         ptsA.transpose(),
@@ -207,7 +211,7 @@ class Rectificator:
         motion = 0.0
         step = self.__init_frame_step
 
-        frame1 = self.__image_to_rectify.copy()
+        frame1 = self.__vs.readFromVideoCapture(self.__frameID, undistorted=True, cropped=False)
         frame1 = IE.scaleImage(frame1, self.__scale_factor)
         frame1 = IE.eqHist(frame1)
         
@@ -221,7 +225,7 @@ class Rectificator:
             frame2_ID = self.__frameID + step
             frame2 = self.__vs.readFromVideoCapture(frame2_ID, undistorted=True, cropped=False)
             frame2 = IE.scaleImage(frame2, self.__scale_factor)
-            frame2 = IR.eqHist(frame2)
+            frame2 = IE.eqHist(frame2)
 
             kps2, ds2 = PD.detectKeypoints(frame2)
             matcher = PD.matchKeypoints(ds1, ds2, lo_ratio)
@@ -258,15 +262,22 @@ class Rectificator:
 
         # Calculate translation vector
         try:
-            R2 = np.identity(3)
-            translate = self.computeTranslationVector(ptsA, ptsB)
+            # We assume no rotation between frames, only translation
+            rotation = np.identity(3)
+            translation = self.computeTranslationVector(ptsA, ptsB)
         except(TypeError, np.linalg.LinAlgError):
             print('Unable to rectify current frame: can not estimate translation vector')
             return None
 
         # Triangulate points and calculate plane
-        points3D = self.triangulateMatchedPoints(ptsA, ptsB, R2, translate)
-        plane_normal = self.estimateAveragePlane(points3d)
+        points3D = self.triangulateMatchedPoints(ptsA, ptsB, rotation, translation)
+        plane_normal = self.estimateAveragePlane(points3D)
+        rot_mtx = self.rotMatrixFromNormal(*plane_normal)
+        res_img = self.rotateImagePlane(self.__image_to_rectify, rot_mtx)
+        res_img = IE.scaleImage(res_img, 0.25)
+        cv2.imshow('Rectified', res_img)
+        cv2.waitKey(1000)
+        cv2.destroyWindow('Rectified')
 
 
 
