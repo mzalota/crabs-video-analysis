@@ -47,18 +47,11 @@ class VideoStream:
         # type: () -> int
         return int(self._vidcap.get(cv2.CAP_PROP_FPS))
 
-    def readImage(self, frameID , undistorted=True, cropped=True):
+    def readImage(self, frameID):
         # type: (int) -> np
         if  frameID not in self.__imagesCache:
             # image is not in the cache. Read it from VideoCapture and save into cache
             image = self.readFromVideoCapture(frameID)
-            if undistorted:
-                # image = self.undistortImage(image, crop=cropped)
-                image = ImageEnhancer.undistortImage(image, self.__mtx, self.__dst, crop=cropped)
-             # Uncomment if need to show raw image
-            show_img = cv2.resize(image, (720, 576))
-            cv2.imshow('Debug', show_img)
-            cv2.waitKey(10)
             self.__imagesCache[frameID] = image
 
         return self.__imagesCache[frameID].copy()
@@ -67,13 +60,20 @@ class VideoStream:
         # type: () -> Image
         return Image(self.readImage(frameID))
 
-    def readFromVideoCapture(self, frameID):
+    def readFromVideoCapture(self, frameID, undistorted=True, cropped=True):
         # type: (int) -> np
         self._vidcap.set(cv2.CAP_PROP_POS_FRAMES, float(frameID))
         success, image = self._vidcap.read()
         if not success:
             errorMessage = "Could not read frame " + str(frameID) + " from videofile"
             raise VideoStreamException(errorMessage)
+        if undistorted:
+            # image = self.undistortImage(image, crop=cropped)
+            image = ImageEnhancer.undistortImage(image, self.__mtx, self.__dst, crop=cropped)
+            # Uncomment if need to show raw image
+            show_img = cv2.resize(image, (720, 576))
+            cv2.imshow('Debug', show_img)
+            cv2.waitKey(10)
         return image
 
     def printMemoryUsage(self):
