@@ -9,7 +9,7 @@ class Rectificator:
     def __init__(self, video_stream: VideoStream, frameID):
         self.__vs = video_stream
         self.__frameID = frameID
-        self.__image_to_rectify = self.__vs.readImage(frameID, undistorted=True, cropped=False)
+        self.__image_to_rectify = self.__vs.readFromVideoCapture(frameID, undistorted=True, cropped=False)
         self.__mtx = self.__vs.getCalibrationMatrix()
         self.__dst = self.__vs.getDistortionCoefficients()
         # By default scale 4K video dowm 4 times
@@ -173,13 +173,11 @@ class Rectificator:
             return -frame_step
         return frame_step
 
-    def run(self, lo_ratio=0.8, ransac_thresh=2):
-        #TODO Somehow frame1 is cropped: DEAL WITH IT
+    def run(self, lo_ratio=0.6, ransac_thresh=2):
         print('Attempt to rectify current frame')
         motion = 0.0
         step = self.__init_frame_step
-        # frame1 = self.__image_to_rectify.copy()
-        frame1 = self.__vs.readImage(self.__frameID, undistorted=True, cropped=False)
+        frame1 = self.__image_to_rectify.copy()
         frame1 = IE.scaleImage(frame1, self.__scale_factor)
         h,w = frame1.shape[:2]
         kps1, ds1 = PD.detectKeypoints(frame1)
@@ -188,7 +186,7 @@ class Rectificator:
             step = self.estimateRectifyStepDirection(step)
             frame2_ID = self.__frameID + step
             print(f'Analyzing frames {self.__frameID} and {frame2_ID}')
-            frame2 = self.__vs.readImage(frame2_ID, undistorted=True, cropped=False)
+            frame2 = self.__vs.readFromVideoCapture(frame2_ID, undistorted=True, cropped=False)
             frame2 = IE.scaleImage(frame2, self.__scale_factor)
             kps2, ds2 = PD.detectKeypoints(frame2)
             matcher = PD.matchKeypoints(ds1, ds2, lo_ratio)
@@ -205,11 +203,11 @@ class Rectificator:
                 sh_f = cv2.resize(sh_f, (1024, 400))
                 shifted_frame = cv2.warpPerspective(frame2, H, (w,h))
                 cv2.imshow("WARP", frame1)
-                cv2.waitKey()
+                cv2.waitKey(1000)
                 cv2.imshow("WARP",shifted_frame)
-                cv2.waitKey()
+                cv2.waitKey(1000)
                 cv2.imshow('Matches', sh_f)
-                cv2.waitKey()
+                cv2.waitKey(1000)
                 cv2.destroyWindow('WARP')
                 cv2.destroyWindow('Matches')
 
