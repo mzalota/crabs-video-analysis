@@ -60,6 +60,8 @@ class ScientistUI:
         while True:
             print ("processing frame ID", int(frame_id))
 
+            self.__videoStream.setUndistortDefault() # Ensure default undistortion is applied
+
             try:
                 frame = Frame(frame_id, self.__videoStream)
             except Exception as error:

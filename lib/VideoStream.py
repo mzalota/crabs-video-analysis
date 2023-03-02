@@ -24,6 +24,8 @@ class VideoStream:
         self.__imagesCache = pylru.lrucache(4) #set the size of cache to be 10 images large
         self.__mtx = np.load(glob.glob('resources/CAMERA/*mtx.npy')[0])
         self.__dst = np.load(glob.glob('resources/CAMERA/*dst.npy')[0])
+        self.__is_undistorted = True
+        self.__is_cropped = True
 
         print("cv2 version", cv2.__version__)
         print ("num_of_frames", self.num_of_frames())
@@ -60,16 +62,16 @@ class VideoStream:
         # type: () -> Image
         return Image(self.readImage(frameID))
 
-    def readFromVideoCapture(self, frameID, undistorted=True, cropped=True):
+    def readFromVideoCapture(self, frameID):
         # type: (int) -> np
         self._vidcap.set(cv2.CAP_PROP_POS_FRAMES, float(frameID))
         success, image = self._vidcap.read()
         if not success:
             errorMessage = "Could not read frame " + str(frameID) + " from videofile"
             raise VideoStreamException(errorMessage)
-        if undistorted:
+        if self.__is_undistorted:
             # image = self.undistortImage(image, crop=cropped)
-            image = ImageEnhancer.undistortImage(image, self.__mtx, self.__dst, crop=cropped)
+            image = ImageEnhancer.undistortImage(image, self.__mtx, self.__dst, crop=self.__is_cropped)
             # Uncomment if need to show raw image
             show_img = cv2.resize(image, (720, 576))
             cv2.imshow('Debug', show_img)
@@ -100,17 +102,15 @@ class VideoStream:
 
             frame_id += step_size
 
-    def undistortImage(self, img, crop=False):
-        mtx = self.__mtx
-        dist = self.__dst
-        h, w = img.shape[:2]
-        newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
-        ret = cv2.undistort(img, mtx, dist, None, newcameramtx)
-        if crop:
-            x, y, w1, h1 = roi
-            ret = ret[y:y+h1, x:x+w1]
-            ret = cv2.resize(ret, (w,h))
-        return ret
+    def setUndistorted(self, value: bool):
+        self.__is_undistorted = value
+
+    def setCropped(self, value: bool):
+        self.__is_cropped = value
+
+    def setUndistortDefault(self):
+        self.__is_undistorted = True
+        self.__is_cropped = True
 
     def getCalibrationMatrix(self):
         return self.__mtx

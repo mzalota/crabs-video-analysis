@@ -9,7 +9,8 @@ class Rectificator:
     def __init__(self, video_stream: VideoStream, frameID):
         self.__vs = video_stream
         self.__frameID = frameID
-        self.__image_to_rectify = self.__vs.readFromVideoCapture(frameID, undistorted=True, cropped=True)
+        self.__vs.setUndistortDefault() # Ensure that frame is undistorted and cropped
+        self.__image_to_rectify = self.__vs.readFromVideoCapture(frameID)
         self.__mtx = self.__vs.getCalibrationMatrix()
         self.__dst = self.__vs.getDistortionCoefficients()
         # By default scale 4K video dowm 4 times
@@ -17,7 +18,7 @@ class Rectificator:
         self.__abs_motion_threshold = 50.0
         self.__init_frame_step = 10
         self.__frame_step_size = 2
-        self.__show_debug = False
+        self.__show_debug = True
 
     @staticmethod
     def calculateAbsoluteMotion(ptsA, ptsB):
@@ -210,8 +211,10 @@ class Rectificator:
         print('Attempt to rectify current frame')
         motion = 0.0
         step = self.__init_frame_step
+        self.__vs.setCropped(False)
+        self.__vs.setUndistorted(True)
 
-        frame1 = self.__vs.readFromVideoCapture(self.__frameID, undistorted=True, cropped=False)
+        frame1 = self.__vs.readFromVideoCapture(self.__frameID)
         frame1 = IE.scaleImage(frame1, self.__scale_factor)
         frame1 = IE.eqHist(frame1)
         
@@ -223,7 +226,7 @@ class Rectificator:
             step = self.estimateRectifyStepDirection(step)
 
             frame2_ID = self.__frameID + step
-            frame2 = self.__vs.readFromVideoCapture(frame2_ID, undistorted=True, cropped=False)
+            frame2 = self.__vs.readFromVideoCapture(frame2_ID)
             frame2 = IE.scaleImage(frame2, self.__scale_factor)
             frame2 = IE.eqHist(frame2)
 
@@ -243,11 +246,11 @@ class Rectificator:
                 sh_f = cv2.resize(sh_f, (1024, 400))
                 shifted_frame = cv2.warpPerspective(frame2, H, (w,h))
                 cv2.imshow("WARP", frame1)
-                cv2.waitKey(1000)
+                cv2.waitKey(300)
                 cv2.imshow("WARP",shifted_frame)
-                cv2.waitKey(1000)
+                cv2.waitKey(300)
                 cv2.imshow('Matches', sh_f)
-                cv2.waitKey(1000)
+                cv2.waitKey(300)
                 cv2.destroyWindow('WARP')
                 cv2.destroyWindow('Matches')
 
@@ -276,7 +279,7 @@ class Rectificator:
         res_img = self.rotateImagePlane(self.__image_to_rectify, rot_mtx)
         res_img = IE.scaleImage(res_img, 0.25)
         cv2.imshow('Rectified', res_img)
-        cv2.waitKey(1000)
+        cv2.waitKey(2000)
         cv2.destroyWindow('Rectified')
 
 
