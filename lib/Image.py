@@ -10,6 +10,7 @@ import numpy as np
 #from lib.Frame import Frame
 from lib.FolderStructure import FolderStructure
 from lib.common import Point, Box, Vector
+from lib.imageProcessing.Utils import ImageEnhancer as IE
 
 
 class Image:
@@ -196,6 +197,10 @@ class Image:
         # type: (float, float) -> Image
         adjusted = cv2.convertScaleAbs(self.asNumpyArray(), alpha=contrast, beta=brightness)
         return Image(adjusted)
+
+    def equalize(self):
+        equalized = IE.eqHist(self.asNumpyArray())
+        return Image(equalized)
 
     def sharpen(self):
         # image_sharp = self._sharp_mask(self.asNumpyArray(), amount=3.0)

@@ -26,6 +26,7 @@ class ScientistUI:
     CONTRAST_UP = (2, 10)
     CONTRAST_NORMAL = (1, 0)
     CONTRAST_DOWN = (0.7, -10)
+    CONTRAST_EQ = (2, 10)
 
     SHARPNESS_NORMAL = "normal"
     SHARPNESS_UP = "up"
@@ -208,6 +209,8 @@ class ScientistUI:
         elif self.__contrastLevel == self.CONTRAST_UP:
             self.__contrastLevel = self.CONTRAST_DOWN
         elif self.__contrastLevel == self.CONTRAST_DOWN:
+            self.__contrastLevel = self.CONTRAST_EQ
+        elif self.__contrastLevel == self.CONTRAST_EQ:
             self.__contrastLevel = self.CONTRAST_NORMAL
 
     def __change_sharpness(self):
@@ -249,6 +252,8 @@ class ScientistUI:
             imageToShow = imageToShow.changeBrightness(self.CONTRAST_DOWN[0], self.CONTRAST_DOWN[1])
         if self.__contrastLevel == self.CONTRAST_UP:
             imageToShow = imageToShow.changeBrightness(self.CONTRAST_UP[0], self.CONTRAST_UP[1])
+        if self.__contrastLevel == self.CONTRAST_EQ:
+            imageToShow = imageToShow.equalize()
         return imageToShow
 
     def __adjustImageFocus(self, imageToShow):
