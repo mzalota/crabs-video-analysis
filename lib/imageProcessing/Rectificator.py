@@ -53,6 +53,24 @@ class Rectificator:
         
         return ret
 
+    @staticmethod
+    def rectifyPoints(points, mtx, dst, normal):
+        R = pl.rotMatrixFromNormal(*normal)
+        K = mtx.copy()
+        K_inv = np.vstack((np.linalg.inv(K), np.array([0,0,1])))
+        d = np.array([0,0,1]).transpose()
+        t = (d - R.dot(d)).reshape((3,1))
+        R1 = np.hstack((R, t))
+        matrix = K @ R1 @ K_inv
+        matrix = np.linalg.inv(matrix)
+        rec_pts = []
+        for pt in points:
+            ptN = np.append(pt[0], 1.0)
+            ptNN = matrix @ ptN
+            recPt = (ptNN[0] / ptNN[-1], ptNN[1] / ptNN[-1])
+            rec_pts.append(recPt)
+        return np.array(rec_pts)
+
     def setScale(self, value):
         if value > 0.0:
             self.__scale_factor = value
@@ -278,9 +296,13 @@ class Rectificator:
         rot_mtx = self.rotMatrixFromNormal(*plane_normal)
         res_img = self.rotateImagePlane(self.__image_to_rectify, rot_mtx)
         res_img = IE.scaleImage(res_img, 0.25)
-        cv2.imshow('Rectified', res_img)
-        cv2.waitKey(2000)
-        cv2.destroyWindow('Rectified')
+
+        if __show_debug:
+            cv2.imshow('Rectified', res_img)
+            cv2.waitKey(2000)
+            cv2.destroyWindow('Rectified')
+
+        return res_img, plane_normal
 
 
 
