@@ -92,7 +92,8 @@ class ScientistUI:
                 continue
 
             if user_input.is_command_rectify():
-                Rect = Rectificator(self.__videoStream, frame_id)
+                # For observation puropses only: shows how good rectification is
+                Rect = Rectificator(self.__videoStream, frame_id, debug_mode=True)
                 Rect.run()
                 continue
 

@@ -6,7 +6,7 @@ import cv2
 
 class Rectificator:
 
-    def __init__(self, video_stream: VideoStream, frameID):
+    def __init__(self, video_stream: VideoStream, frameID, debug_mode=False):
         self.__vs = video_stream
         self.__frameID = frameID
         self.__vs.setUndistortDefault() # Ensure that frame is undistorted and cropped
@@ -18,7 +18,7 @@ class Rectificator:
         self.__abs_motion_threshold = 50.0
         self.__init_frame_step = 10
         self.__frame_step_size = 2
-        self.__show_debug = True
+        self.__show_debug = debug_mode
 
     @staticmethod
     def calculateAbsoluteMotion(ptsA, ptsB):
@@ -297,7 +297,7 @@ class Rectificator:
         res_img = self.rotateImagePlane(self.__image_to_rectify, rot_mtx)
         res_img = IE.scaleImage(res_img, 0.25)
 
-        if __show_debug:
+        if self.__show_debug:
             cv2.imshow('Rectified', res_img)
             cv2.waitKey(2000)
             cv2.destroyWindow('Rectified')
