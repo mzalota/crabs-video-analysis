@@ -20,6 +20,8 @@ from lib.ui.UserInput import UserInput
 from lib.data.SeeFloor import SeeFloor
 from lib.ui.RedDotsUI import RedDotsUI
 
+from lib.common import Point
+
 
 class ScientistUI:
     __badFramesJump = 50 # how many frames to mark as bad when user presses B key
@@ -93,8 +95,13 @@ class ScientistUI:
 
             if user_input.is_command_rectify():
                 # For observation puropses only: shows how good rectification is
-                Rect = Rectificator(self.__videoStream, frame_id, debug_mode=True)
-                Rect.run()
+                Rect = Rectificator(self.__videoStream, frame_id)
+                ret = Rect.run()
+                if ret is not None:
+                    res_img, normal = ret
+                    rectified_window = ImageWindow(f'FRAME {frame_id} RECTIFIED', Point(600, 100))
+                    rectified_window.showWindowAndWaitForClick(res_img)
+                    rectified_window.closeWindow()
                 continue
 
             if user_input.is_command_zoom():
