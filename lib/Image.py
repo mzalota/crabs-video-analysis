@@ -50,7 +50,7 @@ class Image:
         if not box:
             return
 
-        cv2.rectangle(self.__image, (box.topLeft.x, box.topLeft.y), (box.bottomRight.x, box.bottomRight.y), color, thickness)
+        cv2.rectangle(self.__image, (int(box.topLeft.x), int(box.topLeft.y)), (int(box.bottomRight.x), int(box.bottomRight.y)), color, thickness)
 
     def drawFrameID(self, frameID):
         self.drawTextInBox(Box(Point(0, 0), Point(80, 50)), frameID)
