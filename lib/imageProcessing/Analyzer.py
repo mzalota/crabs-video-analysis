@@ -26,8 +26,9 @@ class Analyzer:
     def getBrightnessRatio(self):
         return self.__estimateBrighntess(self.__image)
 
-    def getCameraHeight(self, mtx, redDots):
-        pass
+    def getCameraHeight(self, mtx, RedDot1, RedDot2):
+        height_parameter = mtx[0,0] *0.2 / ((RedDot1.x - RedDot2.x)**2 + (RedDot1.y - RedDot2.y)**2)**0.5
+
 
     ########################## HAZE ESTIMATION ##############################
     # https://www.mdpi.com/2073-4433/13/5/710
