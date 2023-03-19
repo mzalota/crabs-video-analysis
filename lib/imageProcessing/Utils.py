@@ -39,8 +39,8 @@ class ImageEnhancer:
         res = cv2.cvtColor(imgHLS, cv2.COLOR_HLS2BGR)
         return res
 
-    @staticmethod
-    def undistortImage(img, mtx, dist, crop=False):
+    # @staticmethod
+    def undistortImage(self, img, mtx, dist, crop=False):
         h, w = img.shape[:2]
         newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
         ret = cv2.undistort(img, mtx, dist, None, newcameramtx)

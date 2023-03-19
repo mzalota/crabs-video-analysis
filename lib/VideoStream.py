@@ -2,12 +2,11 @@ import psutil
 import cv2
 import pylru
 import os
-import glob
 import numpy as np
 
 # import Image
+from lib.Camera import Camera
 from lib.Image import Image
-from lib.imageProcessing.Utils import ImageEnhancer
 
 
 class VideoStreamException(Exception):
@@ -16,16 +15,14 @@ class VideoStreamException(Exception):
 #List of all properties available for video stream
 #https://docs.opencv.org/3.4/d4/d15/group__videoio__flags__base.html#gaeb8dd9c89c10a5c63c139bf7c4f5704d
 
-class VideoStream:
+
+class VideoStream():
     FRAMES_PER_SECOND = 25
 
     def __init__(self, videoFilepath):
         self._vidcap = cv2.VideoCapture(videoFilepath)
         self.__imagesCache = pylru.lrucache(4) #set the size of cache to be 10 images large
-        self.__mtx = np.load(glob.glob('resources/CAMERA/*mtx.npy')[0])
-        self.__dst = np.load(glob.glob('resources/CAMERA/*dst.npy')[0])
         self.__is_undistorted = True
-        self.__is_cropped = True
 
         print("cv2 version", cv2.__version__)
         print ("num_of_frames", self.num_of_frames())
@@ -71,7 +68,7 @@ class VideoStream:
             raise VideoStreamException(errorMessage)
         if self.__is_undistorted:
             # image = self.undistortImage(image, crop=cropped)
-            image = ImageEnhancer.undistortImage(image, self.__mtx, self.__dst, crop=self.__is_cropped)
+            image = Camera().undistortImage(image)
             # Uncomment if need to show raw image
             show_img = cv2.resize(image, (720, 576))
             cv2.imshow('Debug', show_img)
