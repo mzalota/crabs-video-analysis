@@ -62,8 +62,6 @@ class ScientistUI:
         while True:
             print("processing frame ID", int(frame_id))
 
-            self.__videoStream.setUndistortDefault()  # Ensure default undistortion is applied
-
             try:
                 frame = Frame(frame_id, self.__videoStream)
             except Exception as error:
@@ -94,12 +92,11 @@ class ScientistUI:
 
             if user_input.is_command_rectify():
                 # For observation puropses only: shows how good rectification is
-                Rect = Rectificator(self.__videoStream, frame_id)
-                res_img = Rect.run()
+                Rect = Rectificator(self.__videoStream, frame_id, True)
+                res_img = Rect.generate_rectified_image()
                 if res_img is not None:
-                    res_img
                     rectified_window = ImageWindow(f'FRAME {frame_id} RECTIFIED', Point(600, 100))
-                    rectified_window.showWindowAndWaitForClick(res_img)
+                    rectified_window.showWindowAndWaitForClick(res_img.asNumpyArray())
                     rectified_window.closeWindow()
                 continue
 
@@ -171,7 +168,7 @@ class ScientistUI:
         imageFilePath = dirpath + "/" + imageFileName
 
         # save image without any marks on it
-        rawUncachedImage = Image(self.__videoStream.readFromVideoCapture(frame.getFrameID()))
+        rawUncachedImage = Image(self.__videoStream._read_image_raw(frame.getFrameID()))
         rawUncachedImage.drawFrameID(frame.getFrameID())
 
         print("Saving current frame to file: ", imageFilePath)

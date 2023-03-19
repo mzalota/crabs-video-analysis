@@ -9,7 +9,7 @@ from lib.VideoStream import VideoStream, VideoStreamException
 class VideoStreamMultiThreaded(VideoStream):
 
     @synchronized
-    def readFromVideoCapture(self, frameID):
+    def _read_image_raw(self, frameID):
         self._vidcap.set(cv2.CAP_PROP_POS_FRAMES, float(frameID))
         success, image = self._vidcap.read()
         if not success:
@@ -18,6 +18,6 @@ class VideoStreamMultiThreaded(VideoStream):
         return image
 
     @synchronized
-    def readImageObj(self, frameID):
+    def read_image_obj(self, frameID):
         # type: () -> Image
-        return Image(self.readImage(frameID))
+        return Image(self.read_image(frameID))
