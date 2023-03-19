@@ -25,7 +25,7 @@ if folderStruct is None:
 
     folderStruct = FolderStructure(rootDir, videoFileName)
 
-StreamToLogger(folderStruct.getLogFilepath())
+# StreamToLogger(folderStruct.getLogFilepath())
 print("Starting markCrabs script")
 
 timer = MyTimer("Starting MarkCrabs")

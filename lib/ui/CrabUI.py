@@ -46,7 +46,7 @@ class CrabUI:
 
     def __crabImageOnFrame(self, frameID):
 
-        frameImage = self.__videoStream.readImageObj(frameID)
+        frameImage = self.__videoStream.read_image_obj(frameID)
 
         box_around_crab_on_that_frame = self.__crabFeature.getCoordinateInFrame(frameID).boxAroundPoint(self.__boxSize)
         crabImage = frameImage.subImage(box_around_crab_on_that_frame)

@@ -300,6 +300,10 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         mmPerPixel = self.__getValueFromDF("mm_per_pixel", frame_id)
         return Frame.FRAME_WIDTH*float(mmPerPixel)
 
+    def haze(self, frame_id):
+        # type: (int) -> float
+        return self.__getValueFromDF("mm_per_pixel", frame_id)
+        # return self.__getValueFromDF("haze", frame_id)
 
     def getYCoordMMOrigin(self, frame_id):
         # type: (int) -> float

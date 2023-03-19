@@ -26,7 +26,7 @@ class RedDotsUI:
     def showUI(self, frameID, gapSize = None):
 
         while True:
-            image = self.__videoStream.readImageObj(frameID)
+            image = self.__videoStream.read_image_obj(frameID)
             self.__updateZoomBox(image)
             zoomImage = image.subImage(self.__getZoomBox())
             zoomImage.drawFrameID(frameID)

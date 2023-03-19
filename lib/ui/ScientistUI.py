@@ -10,6 +10,7 @@ from lib.Frame import Frame
 from lib.ImageWindow import ImageWindow
 from lib.ImagesCollage import ImagesCollage
 from lib.data.RedDotsData import RedDotsData
+from lib.imageProcessing.Rectificator import Rectificator
 
 import traceback
 from lib.FrameDecorators import FrameDecoFactory
@@ -19,12 +20,15 @@ from lib.ui.UserInput import UserInput
 from lib.data.SeeFloor import SeeFloor
 from lib.ui.RedDotsUI import RedDotsUI
 
+from lib.common import Point
+
 
 class ScientistUI:
-    __badFramesJump = 50 # how many frames to mark as bad when user presses B key
+    __badFramesJump = 50  # how many frames to mark as bad when user presses B key
     CONTRAST_UP = (2, 10)
     CONTRAST_NORMAL = (1, 0)
     CONTRAST_DOWN = (0.7, -10)
+    CONTRAST_EQ = (-1000, -1000)
 
     SHARPNESS_NORMAL = "normal"
     SHARPNESS_UP = "up"
@@ -52,17 +56,16 @@ class ScientistUI:
         self.__markersData = MarkersData(folderStruct)
         self.__marker_id = "0"
 
-
     def processVideo(self):
 
         frame_id = self.__seeFloor.minFrameID()
         while True:
-            print ("processing frame ID", int(frame_id))
+            print("processing frame ID", int(frame_id))
 
             try:
                 frame = Frame(frame_id, self.__videoStream)
             except Exception as error:
-                print ("Failed to read next frame from video: ",frame_id )
+                print("Failed to read next frame from video: ", frame_id)
                 print(repr(error))
                 traceback.print_exc()
                 break
@@ -72,11 +75,11 @@ class ScientistUI:
             keyPressed = self.showFrame(frame)
             user_input = UserInput(keyPressed)
 
-            print ("keyPressed", keyPressed)
+            print("keyPressed", keyPressed)
 
             if user_input.is_marker_key():
                 self.__marker_id = user_input.marker_id()
-                print ("Using Marker #", self.__marker_id)
+                print("Using Marker #", self.__marker_id)
                 continue
 
             if user_input.is_command_quit():
@@ -85,6 +88,16 @@ class ScientistUI:
 
             if user_input.is_command_save_image():
                 self.__saveFrameImageToFile(frame)
+                continue
+
+            if user_input.is_command_rectify():
+                # For observation puropses only: shows how good rectification is
+                Rect = Rectificator(self.__videoStream, frame_id, True)
+                res_img = Rect.generate_rectified_image()
+                if res_img is not None:
+                    rectified_window = ImageWindow(f'FRAME {frame_id} RECTIFIED', Point(600, 100))
+                    rectified_window.showWindowAndWaitForClick(res_img.asNumpyArray())
+                    rectified_window.closeWindow()
                 continue
 
             if user_input.is_command_zoom():
@@ -105,13 +118,13 @@ class ScientistUI:
                 continue
 
             if user_input.is_command_undo():
-                #TODO: only allow removing of marks added in this session, not earlier sessions
+                # TODO: only allow removing of marks added in this session, not earlier sessions
                 self.__remove_last_mark()
                 continue
 
             if user_input.is_key_esc():
-                #user wants to cancel marking drift adjustment
-                print ("manual drift coordinate FINISHED ")
+                # user wants to cancel marking drift adjustment
+                print("manual drift coordinate FINISHED ")
                 self.__markingDrift = False
                 continue
 
@@ -128,19 +141,18 @@ class ScientistUI:
             if user_input.is_command_bad_frame():
                 self.__mark_as_bad_frame(frame_id)
 
-
             new_frame_id = self.__determine_next_frame_id(frame_id, keyPressed)
 
             if keyPressed == ImageWindow.KEY_RIGHT_MOUSE_CLICK_EVENT:
                 markedPoint = self.__imageWin.featureCoordiate
                 if self.__markingDrift == True:
-                    print ("manual drift coordinate2 ", str(markedPoint))
+                    print("manual drift coordinate2 ", str(markedPoint))
                     self.__markingDrift = False
                     manualDrifts = DriftManualData.createFromFile(self.__folderStruct)
                     manualDrifts.add_manual_drift(self.__driftFrame1, self.__driftPoint1, frame_id, markedPoint)
                     manualDrifts.save_to_file()
                 else:
-                    print ("manual drift coordinate1 ", str(markedPoint))
+                    print("manual drift coordinate1 ", str(markedPoint))
                     self.__markingDrift = True
                     self.__driftFrame1 = frame_id
                     self.__driftPoint1 = markedPoint
@@ -150,13 +162,13 @@ class ScientistUI:
     def __saveFrameImageToFile(self, frame):
         print("Pressed S (save image) button")
 
-        #construct filepath where image will be saved
+        # construct filepath where image will be saved
         dirpath = self.__folderStruct.getSavedFramesDirpath()
         imageFileName = frame.constructFilename()
         imageFilePath = dirpath + "/" + imageFileName
 
-        #save image without any marks on it
-        rawUncachedImage = Image(self.__videoStream.readFromVideoCapture(frame.getFrameID()))
+        # save image without any marks on it
+        rawUncachedImage = Image(self.__videoStream._read_image_raw(frame.getFrameID()))
         rawUncachedImage.drawFrameID(frame.getFrameID())
 
         print("Saving current frame to file: ", imageFilePath)
@@ -194,16 +206,20 @@ class ScientistUI:
         self.__markersData.save_to_file()
 
     def __change_contrast(self):
-        print ("detected press C")
+        print("detected press C")
         if self.__contrastLevel == self.CONTRAST_NORMAL:
             self.__contrastLevel = self.CONTRAST_UP
         elif self.__contrastLevel == self.CONTRAST_UP:
             self.__contrastLevel = self.CONTRAST_DOWN
+        # elif self.__contrastLevel == self.CONTRAST_DOWN:
+        #     self.__contrastLevel = self.CONTRAST_NORMAL
         elif self.__contrastLevel == self.CONTRAST_DOWN:
+            self.__contrastLevel = self.CONTRAST_EQ
+        elif self.__contrastLevel == self.CONTRAST_EQ:
             self.__contrastLevel = self.CONTRAST_NORMAL
 
     def __change_sharpness(self):
-        print ("detected press F")
+        print("detected press F")
         if self.__sharpnessLevel == self.SHARPNESS_NORMAL:
             self.__sharpnessLevel = self.SHARPNESS_UP
         elif self.__sharpnessLevel == self.SHARPNESS_UP:
@@ -216,14 +232,15 @@ class ScientistUI:
 
         markCrabsTimer = MyTimer("ScientistUI.showFrame()")
 
-        frameImagesFactory = FrameDecoFactory(self.__seeFloor, self.__badFramesData, self.__crabData, self.__markersData, self.__videoStream)
+        frameImagesFactory = FrameDecoFactory(self.__seeFloor, self.__badFramesData, self.__crabData,
+                                              self.__markersData, self.__videoStream)
 
         if self.__zoom:
-            collage = ImagesCollage( frameImagesFactory, self.__seeFloorNoBadBlocks)
+            collage = ImagesCollage(frameImagesFactory, self.__seeFloorNoBadBlocks)
             imageToShow = collage.constructCollage(frame, frame.frame_height() / 2)
         else:
             imageToShow = self.__constructFrameImage(frameImagesFactory, frame)
-            #if self.__markingDrift == True:
+            # if self.__markingDrift == True:
             #    imageToShow.drawCrossVertical(self.__driftPoint1, size=12)
 
         imageToShow = self.__adjustImageFocus(imageToShow)
@@ -232,7 +249,7 @@ class ScientistUI:
         markCrabsTimer.lap("imageToShow")
         keyPressed = self.__imageWin.showWindowAndWaitForClick(imageToShow.asNumpyArray())
 
-        #print ("keyPressed:", keyPressed)#, chr(keyPressed))
+        # print ("keyPressed:", keyPressed)#, chr(keyPressed))
         return keyPressed
 
     def __adjustImageBrightness(self, imageToShow):
@@ -241,6 +258,10 @@ class ScientistUI:
             imageToShow = imageToShow.changeBrightness(self.CONTRAST_DOWN[0], self.CONTRAST_DOWN[1])
         if self.__contrastLevel == self.CONTRAST_UP:
             imageToShow = imageToShow.changeBrightness(self.CONTRAST_UP[0], self.CONTRAST_UP[1])
+        if self.__contrastLevel == self.CONTRAST_NORMAL:
+            imageToShow = imageToShow.changeBrightness(self.CONTRAST_NORMAL[0], self.CONTRAST_NORMAL[1])
+        if self.__contrastLevel == self.CONTRAST_EQ:
+            imageToShow = imageToShow.equalize()
         return imageToShow
 
     def __adjustImageFocus(self, imageToShow):
@@ -251,20 +272,21 @@ class ScientistUI:
             imageToShow = imageToShow.sharpen_more()
         return imageToShow
 
-
     def __constructFrameImage(self, frameImagesFactory, frameDeco):
         frameDeco = frameImagesFactory.getFrameDecoFrameID(frameDeco)
+        frameDeco = frameImagesFactory.getFrameDecoFocusHazeBrigtness(frameDeco)
         frameDeco = frameImagesFactory.getFrameDecoRedDots(frameDeco)
         frameDeco = frameImagesFactory.getFrameDecoMarkedCrabs(frameDeco)
         frameDeco = frameImagesFactory.getFrameDecoMarkers(frameDeco)
 
         if self.__markingDrift == True:
-
             frameDeco = frameImagesFactory.getFrameDecoAdjustDrift(frameDeco, self.__driftPoint1, self.__driftFrame1)
+
+
 
         return frameDeco.getImgObj().copy()
 
-    #TODO: Figure out why pressing Right button and then left button does not return you to the same frame ID
+    # TODO: Figure out why pressing Right button and then left button does not return you to the same frame ID
     def __determine_next_frame_id(self, frame_id, keyPressed):
         user_input = UserInput(keyPressed)
         if user_input.is_command_bad_frame():
@@ -272,7 +294,7 @@ class ScientistUI:
         else:
             new_frame_id = self.__process_navigation_key_press(frame_id, user_input)
             if new_frame_id is None:
-                print ("Ignoring the fact that user pressed button:", keyPressed)  # , chr(keyPressed))
+                print("Ignoring the fact that user pressed button:", keyPressed)  # , chr(keyPressed))
                 new_frame_id = frame_id
 
         if new_frame_id > self.__seeFloor.maxFrameID():
@@ -287,32 +309,32 @@ class ScientistUI:
 
         if user_input.is_large_step_forward():
             # scroll 500 frames forward
-            new_frame_id = frame_id+500
+            new_frame_id = frame_id + 500
             return new_frame_id
 
         if user_input.is_large_step_backward():
             # scroll 500 frames backward
-            new_frame_id = frame_id-500
+            new_frame_id = frame_id - 500
             return new_frame_id
 
         if user_input.is_small_step_forward():
             # scroll 7 frames forward
-            new_frame_id = frame_id+7
+            new_frame_id = frame_id + 7
             return new_frame_id
 
         if user_input.is_small_step_backward():
             # scroll 7 frames backward
-            new_frame_id = frame_id-7
+            new_frame_id = frame_id - 7
             return new_frame_id
 
         if user_input.is_key_arrow_down():
             # scroll 50 frames forward
-            new_frame_id = frame_id+50
+            new_frame_id = frame_id + 50
             return new_frame_id
 
         if user_input.is_key_arrow_up():
             # scroll 50 frames backward
-            new_frame_id = frame_id-50
+            new_frame_id = frame_id - 50
             return new_frame_id
 
         if user_input.is_key_end():
@@ -325,20 +347,20 @@ class ScientistUI:
 
         if user_input.is_next_seefloor_slice_command():
             # show next seefloor slices
-            #return self.__seeFloor.getNextFrame(frame_id)
+            # return self.__seeFloor.getNextFrame(frame_id)
             return self.__seeFloor.jumpToSeefloorSlice(frame_id, 1)
 
         if user_input.is_key_arrow_left():
             # show previous seefloor slices
-            #return self.__seeFloor.getPrevFrame(frame_id)
+            # return self.__seeFloor.getPrevFrame(frame_id)
             return self.__seeFloor.jumpToSeefloorSlice(frame_id, -1)
 
         if user_input.is_key_page_down():
-            #Jump 10 steps forward
+            # Jump 10 steps forward
             return self.__seeFloor.jumpToSeefloorSlice(frame_id, 10)
 
         if user_input.is_key_page_up():
-            #Jump 10 steps backward
+            # Jump 10 steps backward
             return self.__seeFloor.jumpToSeefloorSlice(frame_id, -10)
 
         return None
