@@ -5,50 +5,23 @@ from functools import partial
 import math
 
 ################ IMAGE ENHANCEMENT ###############################
+from lib.Image import Image
+
 
 class ImageEnhancer:
 
     def __init__(self):
         pass
 
-    @staticmethod
-    def scaleImage(image, scale_factor):
-        new_shape = (int(image.shape[1] * scale_factor), int(image.shape[0] * scale_factor))
-        return cv2.resize(image, new_shape)
 
-    @staticmethod
-    def eqHist(image, clache=True, gray_only=False):
-        """
-        Equalization of image, by default based on CLACHE method
-        """
-        if gray_only:
-            L = image
-        else:
-            imgHLS = cv2.cvtColor(image, cv2.COLOR_BGR2HLS)
-            L = imgHLS[:,:,1]
-        if clache:
-            clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-            equ = clahe.apply(L)
-        else:
-            equ = cv2.equalizeHist(L)
+    def scaleImage(self, image, scale_factor):
+        image = Image(image)
+        image.scale_by_factor(scale_factor)
+        return image.asNumpyArray()
 
-        if gray_only:
-            return equ
 
-        imgHLS[:,:,1] = equ
-        res = cv2.cvtColor(imgHLS, cv2.COLOR_HLS2BGR)
-        return res
 
-    # @staticmethod
-    def undistortImage(self, img, mtx, dist, crop=False):
-        h, w = img.shape[:2]
-        newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
-        ret = cv2.undistort(img, mtx, dist, None, newcameramtx)
-        if crop:
-            x, y, w1, h1 = roi
-            ret = ret[y:y+h1, x:x+w1]
-            ret = cv2.resize(ret, (w,h))
-        return ret
+
 
 ############# DETECTORS AND DESCRIPTORS #################
 
@@ -57,16 +30,16 @@ class PointDetector:
     def __init__(self):
         pass
 
-    @staticmethod
-    def detectKeypoints(image):
+
+    def detectKeypoints(self, image):
         gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
         detector = cv2.ORB_create()
         kps, descript = detector.detectAndCompute(gray, None)
         kps = np.float32([kp.pt for kp in kps])
         return (kps, descript)
 
-    @staticmethod
-    def matchKeypoints(des1, des2, ratio):
+
+    def matchKeypoints(self, des1, des2, ratio):
         # print('matchKeypoints')
         matcher = cv2.DescriptorMatcher_create('BruteForce')
         try:
@@ -83,8 +56,7 @@ class PointDetector:
         else:
             return None
 
-    @staticmethod
-    def getGoodKps(kpsA, kpsB, matches, status):
+    def getGoodKps(self, kpsA, kpsB, matches, status):
         """
         Filtes keypoints of matched images based on status"""
         pts1, pts2 = [], []
@@ -98,8 +70,8 @@ class PointDetector:
                 pts2.append(ptB)
         return np.array(pts1), np.array(pts2)
 
-    @staticmethod
-    def estimateInliers(matches, kpsA, kpsB, reprojThresh):
+
+    def estimateInliers(self, matches, kpsA, kpsB, reprojThresh):
         if matches is not None:
             ptsA = np.float32([kpsA[i] for i in matches[:,1]])
             ptsB = np.float32([kpsB[i] for i in matches[:,0]])
@@ -108,8 +80,8 @@ class PointDetector:
         else:
             return None
 
-    @staticmethod
-    def drawMatches(imageA, imageB, kpsA, kpsB, matches, status):
+
+    def drawMatches(self, imageA, imageB, kpsA, kpsB, matches, status):
         # initialize the output visualization image
         (hA, wA) = imageA.shape[:2]
         (hB, wB) = imageB.shape[:2]
@@ -128,3 +100,59 @@ class PointDetector:
         # return the visualization
         return vis
 
+    def getGoodKeypoints(self, image1: Image, image2: Image, lo_ratio=0.8, ransac_thresh=10):
+        image1 = image1.scale_by_factor(self.__scale_factor)
+        image1 = image1.equalize()
+        frame1 = image1.asNumpyArray()
+
+        height_frame1 = image1.height()
+        width_frame1 = image1.width()  # frame1.shape[:2]
+
+        kps1, ds1 = self.detectKeypoints(frame1)
+
+
+        image2 = image2.scale_by_factor(self.__scale_factor)
+        image2 = image2.equalize()
+        frame2 = image2.asNumpyArray()
+
+        kps2, ds2 = self.detectKeypoints(frame2)
+
+        matcher = self.matchKeypoints(ds1, ds2, lo_ratio)
+
+        ret = self.estimateInliers(matcher, kps1, kps2, ransac_thresh)
+        if ret is None:
+            return False
+
+        matches, H, status = ret
+
+        ptsA, ptsB = self.getGoodKps(kps1, kps2, matches, status)
+
+        sh_f = self.drawMatches(frame1, frame2, kps1, kps2, matches, status)
+        sh_f = cv2.resize(sh_f, (1024, 400))
+        shifted_frame = cv2.warpPerspective(frame2, H, (width_frame1, height_frame1))
+
+        # if ret is None:
+        #     print('None returned from matcher')
+        #     step += self.__frame_step_size
+        #     iteration += 1
+        #     continue
+
+        if self.__show_debug:
+            cv2.imshow("WARP", frame1)
+            cv2.waitKey(300)
+            cv2.imshow("WARP", shifted_frame)
+            cv2.waitKey(300)
+            cv2.imshow('Matches', sh_f)
+            cv2.waitKey(300)
+            cv2.destroyWindow('WARP')
+            cv2.destroyWindow('Matches')
+
+        self.__ptsA = ptsA
+        self.__ptsB = ptsB
+        return True
+
+    def points_A(self):
+        return self.__ptsA
+
+    def points_B(self):
+        return self.__ptsB

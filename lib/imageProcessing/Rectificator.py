@@ -1,4 +1,5 @@
-from lib.imageProcessing.Utils import PointDetector as PD
+from lib.Image import Image
+from lib.imageProcessing.Utils import PointDetector
 from lib.imageProcessing.Utils import ImageEnhancer as IE
 from lib.VideoStream import VideoStream
 import numpy as np
@@ -207,7 +208,7 @@ class Rectificator:
                                         ptsA.transpose(),
                                         ptsB.transpose())
 
-    def estimateAveragePlane(self, points3d):
+    def __estimateAveragePlane(self, points3d):
         calib_points = (points3d / points3d[-1, :]).transpose()
 
         _, _, v = np.linalg.svd(calib_points)
@@ -233,46 +234,25 @@ class Rectificator:
         self.__vs.setUndistorted(True)
 
         frame1 = self.__vs.readFromVideoCapture(self.__frameID)
-        frame1 = IE.scaleImage(frame1, self.__scale_factor)
-        frame1 = IE.eqHist(frame1)
-        
-        h,w = frame1.shape[:2]
-        kps1, ds1 = PD.detectKeypoints(frame1)
-        iteration = 0
 
+        iteration = 0
         while motion < self.__abs_motion_threshold and iteration < 20:
             step = self.estimateRectifyStepDirection(step)
 
             frame2_ID = self.__frameID + step
             frame2 = self.__vs.readFromVideoCapture(frame2_ID)
-            frame2 = IE.scaleImage(frame2, self.__scale_factor)
-            frame2 = IE.eqHist(frame2)
 
-            kps2, ds2 = PD.detectKeypoints(frame2)
-            matcher = PD.matchKeypoints(ds1, ds2, lo_ratio)
-            ret = PD.estimateInliers(matcher, kps1, kps2, ransac_thresh)
-
-            if ret is None:
+            pd = PointDetector()
+            ret = pd.getGoodKeypoints(Image(frame1), Image(frame2))
+            if not ret :
                 print('None returned from matcher')
                 step += self.__frame_step_size
                 iteration += 1
                 continue
-            matches, H, status = ret
 
-            if self.__show_debug:
-                sh_f = PD.drawMatches(frame1, frame2, kps1, kps2, matches, status)
-                sh_f = cv2.resize(sh_f, (1024, 400))
-                shifted_frame = cv2.warpPerspective(frame2, H, (w,h))
-                cv2.imshow("WARP", frame1)
-                cv2.waitKey(300)
-                cv2.imshow("WARP",shifted_frame)
-                cv2.waitKey(300)
-                cv2.imshow('Matches', sh_f)
-                cv2.waitKey(300)
-                cv2.destroyWindow('WARP')
-                cv2.destroyWindow('Matches')
+            ptsA = pd.points_A()
+            ptsB = pd.points_B()
 
-            ptsA, ptsB = PD.getGoodKps(kps1, kps2, matches, status)
             motion = self.calculateAbsoluteMotion(ptsA, ptsB)
             print(f'Motion between frame {self.__frameID} and {frame2_ID} is {motion}')
             step += self.__frame_step_size
@@ -283,19 +263,15 @@ class Rectificator:
 
         # Calculate translation vector
         try:
-            # We assume no rotation between frames, only translation
-            rotation = np.identity(3)
-            translation = self.computeTranslationVector(ptsA, ptsB)
+            image_to_rectify = self.__image_to_rectify
+
+            plane_normal, res_img = self.rectifyImage(image_to_rectify, ptsA, ptsB)
+
+            res_img = IE.scaleImage(res_img, 0.25)
+
         except(TypeError, np.linalg.LinAlgError):
             print('Unable to rectify current frame: can not estimate translation vector')
             return None
-
-        # Triangulate points and calculate plane
-        points3D = self.triangulateMatchedPoints(ptsA, ptsB, rotation, translation)
-        plane_normal = self.estimateAveragePlane(points3D)
-        rot_mtx = self.rotMatrixFromNormal(*plane_normal)
-        res_img = self.rotateImagePlane(self.__image_to_rectify, rot_mtx)
-        res_img = IE.scaleImage(res_img, 0.25)
 
         if self.__show_debug:
             cv2.imshow('Rectified', res_img)
@@ -303,6 +279,51 @@ class Rectificator:
             cv2.destroyWindow('Rectified')
 
         return res_img, plane_normal
+
+    def rectifyImage(self, image_to_rectify, ptsA, ptsB):
+        # We assume no rotation between frames, only translation
+        rotation = np.identity(3)
+        translation = self.computeTranslationVector(ptsA, ptsB)
+        # Triangulate points and calculate plane
+        points3D = self.triangulateMatchedPoints(ptsA, ptsB, rotation, translation)
+        plane_normal = self.__estimateAveragePlane(points3D)
+        rot_mtx = self.rotMatrixFromNormal(*plane_normal)
+        res_img = self.rotateImagePlane(image_to_rectify, rot_mtx)
+        return plane_normal, res_img
+
+    def getGoodKeypoints1(self, frame1, frame2, lo_ratio=0.8, ransac_thresh=10):
+        image = Image(frame1)
+        image = image.scale_by_factor(self.__scale_factor)
+        image = image.equalize()
+        frame1 = image.asNumpyArray()
+        hight_frame1 = image.height()
+        width_frame1 = image.width()  # frame1.shape[:2]
+        kps1, ds1 = PointDetector.detectKeypoints(frame1)
+        frame2 = IE.scaleImage(frame2, self.__scale_factor)
+        frame2 = IE.eqHist(frame2)
+        kps2, ds2 = PointDetector.detectKeypoints(frame2)
+        matcher = PointDetector.matchKeypoints(ds1, ds2, lo_ratio)
+        ret = PointDetector.estimateInliers(matcher, kps1, kps2, ransac_thresh)
+        matches, H, status = ret
+        ptsA, ptsB = PointDetector.getGoodKps(kps1, kps2, matches, status)
+        sh_f = PointDetector.drawMatches(frame1, frame2, kps1, kps2, matches, status)
+        sh_f = cv2.resize(sh_f, (1024, 400))
+        shifted_frame = cv2.warpPerspective(frame2, H, (width_frame1, hight_frame1))
+        # if ret is None:
+        #     print('None returned from matcher')
+        #     step += self.__frame_step_size
+        #     iteration += 1
+        #     continue
+        if self.__show_debug:
+            cv2.imshow("WARP", frame1)
+            cv2.waitKey(300)
+            cv2.imshow("WARP", shifted_frame)
+            cv2.waitKey(300)
+            cv2.imshow('Matches', sh_f)
+            cv2.waitKey(300)
+            cv2.destroyWindow('WARP')
+            cv2.destroyWindow('Matches')
+        return ptsA, ptsB
 
 
 
