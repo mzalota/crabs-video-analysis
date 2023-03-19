@@ -1,10 +1,6 @@
 import glob
-
 import cv2
 import numpy as np
-
-from lib.imageProcessing.Utils import ImageEnhancer
-
 
 class Camera:
     def __init__(self):
@@ -21,3 +17,9 @@ class Camera:
             ret = ret[y:y + h1, x:x + w1]
             ret = cv2.resize(ret, (w, h))
         return ret
+
+    def getCalibrationMatrix(self):
+        return self.__mtx
+
+    def getDistortionCoefficients(self):
+        return self.__dst

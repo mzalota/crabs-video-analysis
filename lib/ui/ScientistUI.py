@@ -95,9 +95,9 @@ class ScientistUI:
             if user_input.is_command_rectify():
                 # For observation puropses only: shows how good rectification is
                 Rect = Rectificator(self.__videoStream, frame_id)
-                ret = Rect.run()
-                if ret is not None:
-                    res_img, normal = ret
+                res_img = Rect.run()
+                if res_img is not None:
+                    res_img
                     rectified_window = ImageWindow(f'FRAME {frame_id} RECTIFIED', Point(600, 100))
                     rectified_window.showWindowAndWaitForClick(res_img)
                     rectified_window.closeWindow()

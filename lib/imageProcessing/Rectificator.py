@@ -1,9 +1,11 @@
-from lib.Image import Image
-from lib.imageProcessing.Utils import PointDetector
-from lib.imageProcessing.Utils import ImageEnhancer as IE
-from lib.VideoStream import VideoStream
-import numpy as np
 import cv2
+import numpy as np
+
+from lib.Camera import Camera
+from lib.Image import Image
+from lib.VideoStream import VideoStream
+from lib.imageProcessing.PointDetector import PointDetector
+
 
 class Rectificator:
 
@@ -12,8 +14,10 @@ class Rectificator:
         self.__frameID = frameID
         self.__vs.setUndistortDefault() # Ensure that frame is undistorted and cropped
         self.__image_to_rectify = self.__vs.readFromVideoCapture(frameID)
-        self.__mtx = self.__vs.getCalibrationMatrix()
-        self.__dst = self.__vs.getDistortionCoefficients()
+        # self.__mtx = self.__vs.getCalibrationMatrix()
+        camera = Camera()
+        self.__mtx = camera.getCalibrationMatrix()
+        self.__dst = camera.getDistortionCoefficients()
         # By default scale 4K video dowm 4 times
         self.__scale_factor = 0.25
         self.__abs_motion_threshold = 50.0
@@ -21,13 +25,6 @@ class Rectificator:
         self.__frame_step_size = 2
         self.__show_debug = debug_mode
 
-    @staticmethod
-    def calculateAbsoluteMotion(ptsA, ptsB):
-        """
-        Function to help estimate, if there is enough motion between frames
-        to perform stereo 3d recostruction
-        """
-        return np.average(np.linalg.norm(ptsB - ptsA, axis=1))
 
     @staticmethod
     def rotMatrixFromNormal(a,b,c):
@@ -226,7 +223,7 @@ class Rectificator:
         return frame_step
         
 
-    def run(self, lo_ratio=0.8, ransac_thresh=10):
+    def run(self):
         print('Attempt to rectify current frame')
         motion = 0.0
         step = self.__init_frame_step
@@ -234,6 +231,9 @@ class Rectificator:
         self.__vs.setUndistorted(True)
 
         frame1 = self.__vs.readFromVideoCapture(self.__frameID)
+        image1 = Image(frame1)
+        image1 = image1.scale_by_factor(self.__scale_factor)
+        image1 = image1.equalize()
 
         iteration = 0
         while motion < self.__abs_motion_threshold and iteration < 20:
@@ -242,9 +242,13 @@ class Rectificator:
             frame2_ID = self.__frameID + step
             frame2 = self.__vs.readFromVideoCapture(frame2_ID)
 
-            pd = PointDetector()
-            ret = pd.getGoodKeypoints(Image(frame1), Image(frame2))
-            if not ret :
+            pd = PointDetector(self.__show_debug)
+            image2 = Image(frame2)
+            image2 = image2.scale_by_factor(self.__scale_factor)
+            image2 = image2.equalize()
+
+            ret = pd.calculate_keypoints(image1, image2)
+            if not ret:
                 print('None returned from matcher')
                 step += self.__frame_step_size
                 iteration += 1
@@ -253,7 +257,7 @@ class Rectificator:
             ptsA = pd.points_A()
             ptsB = pd.points_B()
 
-            motion = self.calculateAbsoluteMotion(ptsA, ptsB)
+            motion = pd.absolute_motion()
             print(f'Motion between frame {self.__frameID} and {frame2_ID} is {motion}')
             step += self.__frame_step_size
 
@@ -263,12 +267,8 @@ class Rectificator:
 
         # Calculate translation vector
         try:
-            image_to_rectify = self.__image_to_rectify
-
-            plane_normal, res_img = self.rectifyImage(image_to_rectify, ptsA, ptsB)
-
-            res_img = IE.scaleImage(res_img, 0.25)
-
+            res_img = self.rectifyImage(self.__image_to_rectify, ptsA, ptsB)
+            res_img = Image(res_img).scale_by_factor(0.25).asNumpyArray()
         except(TypeError, np.linalg.LinAlgError):
             print('Unable to rectify current frame: can not estimate translation vector')
             return None
@@ -278,7 +278,7 @@ class Rectificator:
             cv2.waitKey(2000)
             cv2.destroyWindow('Rectified')
 
-        return res_img, plane_normal
+        return res_img
 
     def rectifyImage(self, image_to_rectify, ptsA, ptsB):
         # We assume no rotation between frames, only translation
@@ -289,43 +289,7 @@ class Rectificator:
         plane_normal = self.__estimateAveragePlane(points3D)
         rot_mtx = self.rotMatrixFromNormal(*plane_normal)
         res_img = self.rotateImagePlane(image_to_rectify, rot_mtx)
-        return plane_normal, res_img
-
-    def getGoodKeypoints1(self, frame1, frame2, lo_ratio=0.8, ransac_thresh=10):
-        image = Image(frame1)
-        image = image.scale_by_factor(self.__scale_factor)
-        image = image.equalize()
-        frame1 = image.asNumpyArray()
-        hight_frame1 = image.height()
-        width_frame1 = image.width()  # frame1.shape[:2]
-        kps1, ds1 = PointDetector.detectKeypoints(frame1)
-        frame2 = IE.scaleImage(frame2, self.__scale_factor)
-        frame2 = IE.eqHist(frame2)
-        kps2, ds2 = PointDetector.detectKeypoints(frame2)
-        matcher = PointDetector.matchKeypoints(ds1, ds2, lo_ratio)
-        ret = PointDetector.estimateInliers(matcher, kps1, kps2, ransac_thresh)
-        matches, H, status = ret
-        ptsA, ptsB = PointDetector.getGoodKps(kps1, kps2, matches, status)
-        sh_f = PointDetector.drawMatches(frame1, frame2, kps1, kps2, matches, status)
-        sh_f = cv2.resize(sh_f, (1024, 400))
-        shifted_frame = cv2.warpPerspective(frame2, H, (width_frame1, hight_frame1))
-        # if ret is None:
-        #     print('None returned from matcher')
-        #     step += self.__frame_step_size
-        #     iteration += 1
-        #     continue
-        if self.__show_debug:
-            cv2.imshow("WARP", frame1)
-            cv2.waitKey(300)
-            cv2.imshow("WARP", shifted_frame)
-            cv2.waitKey(300)
-            cv2.imshow('Matches', sh_f)
-            cv2.waitKey(300)
-            cv2.destroyWindow('WARP')
-            cv2.destroyWindow('Matches')
-        return ptsA, ptsB
-
-
+        return res_img
 
         
             
