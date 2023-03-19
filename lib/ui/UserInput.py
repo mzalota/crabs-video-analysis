@@ -131,6 +131,14 @@ class UserInput():
         return False
 
 
+    def is_command_rectify(self):
+        if self.__key == ord("x"):
+            return True
+        if self.__key == ord("X"):
+            return True
+        return False
+
+
     def is_next_seefloor_slice_command(self):
         if self.is_key_arrow_right():
             return True

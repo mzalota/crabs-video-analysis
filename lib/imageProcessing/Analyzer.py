@@ -63,3 +63,4 @@ class Analyzer:
     def __estimateBrighntess(self, image):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         return np.mean(gray)
+

@@ -42,11 +42,11 @@ class Frame:
         return self.__videoStream
 
     def getImage(self):
-        return self.__videoStream.readImage(self.__frameID)
+        return self.__videoStream.read_image(self.__frameID)
 
     def getImgObj(self):
         # type: () -> Image
-        return Image(self.__videoStream.readImage(self.__frameID))
+        return Image(self.__videoStream.read_image(self.__frameID))
 
     def constructFilename(self):
         frameNumberString = str(self.__frameID).zfill(6)

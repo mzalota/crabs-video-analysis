@@ -1,16 +1,10 @@
+from __future__ import annotations
+
 import cv2
 import numpy as np
 
-
-#from pandas.compat.numpy import np
-#from common import Point, Box, Vector
-
-
-#from Frame import Frame
-#from lib.Frame import Frame
 from lib.FolderStructure import FolderStructure
 from lib.common import Point, Box, Vector
-
 
 class Image:
     def __init__(self, imageAsNumpyArray):
@@ -174,6 +168,10 @@ class Image:
                                 interpolation=cv2.INTER_CUBIC)
         return Image(newImageNP)
 
+    def scale_by_factor(self, scale_factor: float) -> Image:
+        new_shape = (int(self.width() * scale_factor), int(self.height() * scale_factor))
+        return Image(cv2.resize(self.asNumpyArray(), new_shape))
+
     def growByPaddingBottomAndRight(self, newWidth, newHeight):
         # type: (int, int) -> Image
         fillerWidth = newWidth - self.width()
@@ -196,6 +194,10 @@ class Image:
         # type: (float, float) -> Image
         adjusted = cv2.convertScaleAbs(self.asNumpyArray(), alpha=contrast, beta=brightness)
         return Image(adjusted)
+
+    def equalize(self):
+        equalized = self.__eqHist(self.asNumpyArray())
+        return Image(equalized)
 
     def sharpen(self):
         # image_sharp = self._sharp_mask(self.asNumpyArray(), amount=3.0)
@@ -222,3 +224,25 @@ class Image:
     def writeToFile(self, filepath):
         FolderStructure.createDirectoriesIfDontExist(filepath)
         cv2.imwrite(filepath, self.asNumpyArray())  # save frame as JPEG file
+
+    def __eqHist(self, image, clache=True, gray_only=False):
+        """
+        Equalization of image, by default based on CLACHE method
+        """
+        if gray_only:
+            L = image
+        else:
+            imgHLS = cv2.cvtColor(image, cv2.COLOR_BGR2HLS)
+            L = imgHLS[:,:,1]
+        if clache:
+            clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+            equ = clahe.apply(L)
+        else:
+            equ = cv2.equalizeHist(L)
+
+        if gray_only:
+            return equ
+
+        imgHLS[:,:,1] = equ
+        res = cv2.cvtColor(imgHLS, cv2.COLOR_HLS2BGR)
+        return res

@@ -51,6 +51,10 @@ class FrameDecoFactory:
         # type: (FrameDecorator) -> DecoFrameID
         return DecoFrameID(frameDeco, self.__seeFloorGeometry, self.__badFramesData)
 
+    def getFrameDecoFocusHazeBrigtness(self, frameDeco):
+        # type: (FrameDecorator) -> DecoFrameID
+        return DecoFocusHazeBrightness(frameDeco, self.__seeFloorGeometry)
+
     def getFrameDecoAdjustDrift(self, frameDeco, start_point, start_frame_id):
         # type: (FrameDecorator, Point) -> DecoAdjustDrift
         return DecoAdjustDrift(frameDeco, self.__seeFloorGeometry, start_point, start_frame_id)
@@ -295,3 +299,25 @@ class DecoFrameID(FrameDecorator):
         else:
             frame_name = int(frame_id)
         return frame_name
+
+
+class DecoFocusHazeBrightness(FrameDecorator):
+    def __init__(self, frameDeco, seeFloor):
+        # type: (FrameDecorator, SeeFloor, badFramesData) -> DecoFrameID
+        FrameDecorator.__init__(self, frameDeco)
+        self.__seeFloor = seeFloor
+
+    def getImgObj(self):
+        # type: () -> Image
+        imgObj = self.frameDeco.getImgObj()
+
+        text_to_show = self.__drawFrameID(self.getFrameID())
+
+        imgObj.drawTextInBox(Box(Point(100, 100), Point(200, 200)), text_to_show)
+        return imgObj
+
+    def __drawFrameID(self, frame_id):
+        # type: (int) -> str
+        value = str(self.__seeFloor.haze(frame_id))
+
+        return value+"-kuku-"
