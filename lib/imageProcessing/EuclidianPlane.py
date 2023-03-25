@@ -3,7 +3,7 @@ import numpy as np
 
 from lib.Camera import Camera
 from lib.Image import Image
-
+from lib.common import Point
 
 class EuclidianPlane:
     def __init__(self, ptsA, ptsB, scale_factor):
@@ -13,6 +13,9 @@ class EuclidianPlane:
 
         camera = Camera()
         self.__mtx = camera.getCalibrationMatrix()
+        self.__dst = camera.getDistortionCoefficients()
+
+        self.__plane_normal = None
 
     @staticmethod
     def __rotate_matrix_from_normal(a, b, c):
@@ -184,7 +187,31 @@ class EuclidianPlane:
         nomal_abs = np.sqrt(a*a + b*b + c*c)
         return np.float32([a/nomal_abs, b/nomal_abs, c/nomal_abs])
 
-    def rectify_image(self, image_to_rectify: Image) -> Image:
+    def __rectifyPoint(self, pt):
+        mtx = self.__mtx
+        normal = self.__plane_normal
+        R = self.__rotate_matrix_from_normal(*normal)
+        K = mtx.copy()
+        K_inv = np.vstack((np.linalg.inv(K), np.array([0,0,1])))
+        d = np.array([0,0,1]).transpose()
+        t = (d - R.dot(d)).reshape((3,1))
+        R1 = np.hstack((R, t))
+        matrix = K @ R1 @ K_inv
+        matrix = np.linalg.inv(matrix)
+        ptN = np.append(pt[0], 1.0)
+        ptNN = matrix @ ptN
+        recPt = (ptNN[0] / ptNN[-1], ptNN[1] / ptNN[-1])
+        return recPt
+
+    def __undistortPoint(self, point, width, height):
+        mtx = self.__mtx
+        dst = self.__dst
+        points = np.float32(np.array(point)[:, np.newaxis, :])
+        newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dst, (width, height), 1, (width, height))
+        undistorted_pts = cv2.undistortPoints((point), mtx, dst, P=newcameramtx)
+        return undistorted_pts[0]
+
+    def __compute_normal(self):
         ptsA = self.__ptsA
         ptsB = self.__ptsB
         # We assume no rotation between frames, only translation (hence rotation is just an identity matrix)
@@ -194,24 +221,27 @@ class EuclidianPlane:
         # Triangulate points and calculate plane
         points3D = self.__triangulate_matched_points(ptsA, ptsB, rotation, translation)
         plane_normal = self.__estimateAveragePlane(points3D)
+        self.__plane_normal = plane_normal
+        return plane_normal
+
+    def rectify_image(self, image_to_rectify: Image) -> Image:
+        if self.__plane_normal is None:
+            self.__compute_normal()
+        plane_normal = self.__plane_normal
         rot_mtx = self.__rotate_matrix_from_normal(*plane_normal)
         res_img = self.__rotate_image_plane(image_to_rectify, rot_mtx)
         return Image(res_img)
 
-    #Unused function
-    def __rectifyPoints(self, points, mtx, dst, normal):
-        R = self.__rotate_matrix_from_normal(*normal)
-        K = mtx.copy()
-        K_inv = np.vstack((np.linalg.inv(K), np.array([0,0,1])))
-        d = np.array([0,0,1]).transpose()
-        t = (d - R.dot(d)).reshape((3,1))
-        R1 = np.hstack((R, t))
-        matrix = K @ R1 @ K_inv
-        matrix = np.linalg.inv(matrix)
-        rec_pts = []
-        for pt in points:
-            ptN = np.append(pt[0], 1.0)
-            ptNN = matrix @ ptN
-            recPt = (ptNN[0] / ptNN[-1], ptNN[1] / ptNN[-1])
-            rec_pts.append(recPt)
-        return np.array(rec_pts)
+    def rectify_point(self, point_to_rectify: Point,  width, height) -> Point:
+        if self.__plane_normal is None:
+            self.__compute_normal()
+        plane_normal = self.__plane_normal
+        point = (point_to_rectify.x, point_to_rectify.y)
+        undist_point = self.__undistortPoint(point, width, height)
+        rec_point = self.__rectifyPoint(undist_point)
+        ret_point = Point(rec_point[0], rec_point[1])
+        return rec_point
+
+    def get_plane_normal(self):
+        return self.__plane_normal
+

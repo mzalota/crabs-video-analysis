@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 
 from lib.Image import Image
+from lib.common import Point
 from lib.VideoStream import VideoStream
 from lib.imageProcessing.EuclidianPlane import EuclidianPlane
 from lib.imageProcessing.PointDetector import PointDetector
@@ -11,6 +12,8 @@ class Rectificator():
 
     def __init__(self, video_stream: VideoStream, frameID, debug_mode=False):
         self.__vs = video_stream
+        self.__frame_height = self.__vs.frame_height()
+        self.__frame_width = self.__vs.frame_width()
         self.__frameID = frameID
         self.__show_debug = debug_mode
 
@@ -19,6 +22,8 @@ class Rectificator():
         self.__init_frame_step = 10
         self.__frame_step_size = 2
         self.__scale_factor = 0.25
+
+        self.__seafloor_plane = None
 
 
     def __estimate_rectify_step_direction(self, frame_step):
@@ -68,9 +73,10 @@ class Rectificator():
 
         # Calculate translation vector
         try:
-            plane = EuclidianPlane(ptsA, ptsB, self.__scale_factor)
-            res_img = plane.rectify_image(image_to_rectify)
+            self.__seafloor_plane = EuclidianPlane(ptsA, ptsB, self.__scale_factor)
+            res_img = self.__seafloor_plane.rectify_image(image_to_rectify)
             res_img = res_img.scale_by_factor(self.__scale_factor)
+
         except(TypeError, np.linalg.LinAlgError):
             print('Unable to rectify current frame: can not estimate translation vector')
             return None
@@ -82,5 +88,12 @@ class Rectificator():
 
         return res_img
 
-        
-            
+    def generate_rectified_point(self, point: Point) -> Point:
+        if self.__seafloor_plane is None:
+            print('No plane calculated')
+            return None
+        w = self.__frame_width
+        h = self.__frame_height
+        return self.__seafloor_plane.rectify_point(point, w, h)
+
+
