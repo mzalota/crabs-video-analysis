@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 
 from lib.Image import Image
+from lib.Camera import Camera
 from lib.common import Point
 from lib.VideoStream import VideoStream
 from lib.imageProcessing.EuclidianPlane import EuclidianPlane
@@ -23,19 +24,41 @@ class Rectificator():
         self.__frame_step_size = 2
         self.__scale_factor = 0.25
 
-        self.__seafloor_plane = None
+        camera = Camera()
+        self.__mtx = camera.getCalibrationMatrix()
+        self.__dst = camera.getDistortionCoefficients()
 
+        self.image_to_rectify = self.__vs.read_image_obj(self.__frameID)
+        self.__plane_normal = None
 
-    def __estimate_rectify_step_direction(self, frame_step):
-        # By default step is positive, but if the video is close to end, make it negative instead
-        if self.__frameID + frame_step > self.__vs.num_of_frames():
-            return -frame_step
-        return frame_step
-        
 
     def generate_rectified_image(self) -> Image:
+        image_to_rectify = self.image_to_rectify
+        if self.__plane_normal is None:
+            self.generate_normal()
+        plane_normal = self.__plane_normal
+        if plane_normal is None:
+            return None
+        rot_mtx = self.__rotate_matrix_from_normal(*plane_normal)
+        res_img = self.__rotate_image_plane(image_to_rectify, rot_mtx)
+        res_img = Image(res_img)
+        res_img = res_img.scale_by_factor(self.__scale_factor)
+        return res_img
+
+
+    def generate_rectified_point(self, point_to_rectify: Point) -> Point:
+        if self.__plane_normal is None:
+            self.generate_normal()
+        point = (point_to_rectify.x, point_to_rectify.y)
+        undist_point = self.__undistortPoint(point)
+        rec_point = self.__rectifyPoint(undist_point)
+        ret_point = Point(rec_point[0], rec_point[1])
+        return ret_point
+
+
+    def generate_normal(self) -> np.array:
         print('Attempt to rectify current frame')
-        image_to_rectify = self.__vs.read_image_obj(self.__frameID)
+        image_to_rectify = self.image_to_rectify
 
         motion = 0.0
         step = self.__init_frame_step
@@ -73,27 +96,122 @@ class Rectificator():
 
         # Calculate translation vector
         try:
-            self.__seafloor_plane = EuclidianPlane(ptsA, ptsB, self.__scale_factor)
-            res_img = self.__seafloor_plane.rectify_image(image_to_rectify)
-            res_img = res_img.scale_by_factor(self.__scale_factor)
+            seafloor_plane = EuclidianPlane(ptsA, ptsB, self.__scale_factor, self.__mtx)
+            plane_normal = seafloor_plane.compute_normal()
+            self.__plane_normal = plane_normal
 
         except(TypeError, np.linalg.LinAlgError):
             print('Unable to rectify current frame: can not estimate translation vector')
             return None
 
-        if self.__show_debug:
-            cv2.imshow('Rectified', res_img.asNumpyArray())
-            cv2.waitKey(2000)
-            cv2.destroyWindow('Rectified')
+        # if self.__show_debug:
+        #     cv2.imshow('Rectified', res_img.asNumpyArray())
+        #     cv2.waitKey(2000)
+        #     cv2.destroyWindow('Rectified')
 
-        return res_img
-
-    def generate_rectified_point(self, point: Point) -> Point:
-        if self.__seafloor_plane is None:
-            print('No plane calculated')
-            return None
-        w = self.__frame_width
-        h = self.__frame_height
-        return self.__seafloor_plane.rectify_point(point, w, h)
+        return plane_normal
 
 
+    def get_plane_normal(self):
+        return self.__plane_normal
+
+
+    def load_plane_normal(self, plane_normal: np.ndarray):
+        # Use this to provide previously calculated normal
+        if plane_normal.shape[0] != 3:
+            raise TypeError('Normal must contain 3 values')
+        self.__plane_normal = plane_normal
+
+
+    ##### IMAGE RECTIFICATOR FUNCS ######
+    def __estimate_rectify_step_direction(self, frame_step):
+        # By default step is positive, but if the video is close to end, make it negative instead
+        if self.__frameID + frame_step > self.__vs.num_of_frames():
+            return -frame_step
+        return frame_step
+
+
+    def __rotate_matrix_from_normal(self, a, b, c):
+        # a,b,c - coordinates of Z component of rotation
+        # Get Z component of rotation
+        len_Z = np.sqrt(a*a + b*b + c*c)
+        a = a / len_Z
+        b = b / len_Z
+        c = c / len_Z
+
+        Z = (a, b, c) if c > 0 else (-a, -b, -c)
+
+        # Get Y component of rotation from assumption
+        # that Y perpendicular to Z and x component of Y is zero
+        yy = np.sqrt(1 / (1 + b*b / (c*c)))
+        xy = 0.0
+        zy = -b * yy / c
+        Y = (xy, yy, zy)
+
+        # Get X component of rotation
+        X = np.cross(Y, Z)
+
+        ret = np.vstack((X,Y,Z)).transpose()
+
+        return ret
+
+    def __rotate_image_plane(self, image: Image, R):
+        """
+        Rotation of image plane based on formula
+        X' = RX - RD + D
+        where X = K_inv*(u,v,1)
+        (u', v', 1) = KX'
+        """
+        img = image.asNumpyArray()
+
+        K = self.__mtx
+
+        # Load intrinsic and invert it
+        K_inv = np.linalg.inv(K)
+
+        # Augmented inverse for further mtx multiplication
+        K_inv1 = np.vstack((K_inv, np.array([0,0,1])))
+
+        # Z distance constant, 1
+        d = np.array([0,0,1]).transpose()
+
+        # Calculate translation vector
+        t = (d - R.dot(d)).reshape((3,1))
+        R1 = np.hstack((R, t))
+
+        # Calc result homography
+        matrix = K @ R1 @ K_inv1
+
+        # Rotate image
+        tf_img = cv2.warpPerspective(img, np.linalg.inv(matrix), (img.shape[1], img.shape[0]))
+
+        # return transformed image
+        return cv2.normalize(tf_img, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
+
+
+    ##### POINT RECTIFICATOR FUNCS ######
+    def __rectifyPoint(self, pt):
+        mtx = self.__mtx
+        normal = self.__plane_normal
+        R = self.__rotate_matrix_from_normal(*normal)
+        K = mtx.copy()
+        K_inv = np.vstack((np.linalg.inv(K), np.array([0,0,1])))
+        d = np.array([0,0,1]).transpose()
+        t = (d - R.dot(d)).reshape((3,1))
+        R1 = np.hstack((R, t))
+        matrix = K @ R1 @ K_inv
+        matrix = np.linalg.inv(matrix)
+        ptN = np.append(pt[0], 1.0)
+        ptNN = matrix @ ptN
+        recPt = (ptNN[0] / ptNN[-1], ptNN[1] / ptNN[-1])
+        return recPt
+
+    def __undistortPoint(self, point):
+        points = np.float32(np.array([point])[:, np.newaxis, :])
+        mtx = self.__mtx
+        dst = self.__dst
+        width = self.__frame_width
+        height = self.__frame_height
+        newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dst, (width, height), 1, (width, height))
+        undistorted_pts = cv2.undistortPoints(points, mtx, dst, P=newcameramtx)
+        return undistorted_pts[0]
