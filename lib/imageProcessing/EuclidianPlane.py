@@ -1,43 +1,33 @@
 import cv2
 import numpy as np
 
-from lib.Camera import Camera
 from lib.Image import Image
+from lib.common import Point
 
 
 class EuclidianPlane:
-    def __init__(self, ptsA, ptsB, scale_factor):
+    def __init__(self, ptsA, ptsB, scale_factor, mtx):
         self.__ptsA = ptsA
         self.__ptsB = ptsB
         self.__scale_factor = scale_factor
+        self.__mtx = mtx
 
-        camera = Camera()
-        self.__mtx = camera.getCalibrationMatrix()
+        self.__plane_normal = None
 
-    @staticmethod
-    def __rotate_matrix_from_normal(a, b, c):
-        # a,b,c - coordinates of Z component of rotation
-        # Get Z component of rotation
-        len_Z = np.sqrt(a*a + b*b + c*c)
-        a = a / len_Z
-        b = b / len_Z
-        c = c / len_Z
 
-        Z = (a, b, c) if c > 0 else (-a, -b, -c)
+    def compute_normal(self):
+        ptsA = self.__ptsA
+        ptsB = self.__ptsB
+        # We assume no rotation between frames, only translation (hence rotation is just an identity matrix)
+        rotation = np.identity(3)
+        translation = self.__compute_translation_vector(ptsA, ptsB)
 
-        # Get Y component of rotation from assumption
-        # that Y perpendicular to Z and x component of Y is zero
-        yy = np.sqrt(1 / (1 + b*b / (c*c)))
-        xy = 0.0
-        zy = -b * yy / c
-        Y = (xy, yy, zy)
+        # Triangulate points and calculate plane
+        points3D = self.__triangulate_matched_points(ptsA, ptsB, rotation, translation)
+        plane_normal = self.__estimateAveragePlane(points3D)
+        self.__plane_normal = plane_normal
+        return plane_normal
 
-        # Get X component of rotation
-        X = np.cross(Y, Z)
-
-        ret = np.vstack((X,Y,Z)).transpose()
-
-        return ret
 
     def __compute_translation_vector(self, kpsA, kpsB):
         """
@@ -121,38 +111,6 @@ class EuclidianPlane:
 
         return np.float32([tx, ty, tz])
 
-    def __rotate_image_plane(self, image: Image, R):
-        """
-        Rotation of image plane based on formula
-        X' = RX - RD + D
-        where X = K_inv*(u,v,1)
-        (u', v', 1) = KX'
-        """
-        img = image.asNumpyArray()
-
-        K = self.__mtx
-
-        # Load intrinsic and invert it
-        K_inv = np.linalg.inv(K)
-
-        # Augmented inverse for further mtx multiplication
-        K_inv1 = np.vstack((K_inv, np.array([0,0,1])))
-
-        # Z distance constant, 1
-        d = np.array([0,0,1]).transpose()
-
-        # Calculate translation vector
-        t = (d - R.dot(d)).reshape((3,1))
-        R1 = np.hstack((R, t))
-
-        # Calc result homography
-        matrix = K @ R1 @ K_inv1
-
-        # Rotate image
-        tf_img = cv2.warpPerspective(img, np.linalg.inv(matrix), (img.shape[1], img.shape[0]))
-
-        # return transformed image
-        return cv2.normalize(tf_img, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
 
     def __triangulate_matched_points(self, ptsA, ptsB, R, T):
         """
@@ -173,6 +131,7 @@ class EuclidianPlane:
                                         ptsA.transpose(),
                                         ptsB.transpose())
 
+
     def __estimateAveragePlane(self, points3d):
         calib_points = (points3d / points3d[-1, :]).transpose()
 
@@ -183,35 +142,3 @@ class EuclidianPlane:
             a, b, c, d = [-element for element in (a,b,c,d)]
         nomal_abs = np.sqrt(a*a + b*b + c*c)
         return np.float32([a/nomal_abs, b/nomal_abs, c/nomal_abs])
-
-    def rectify_image(self, image_to_rectify: Image) -> Image:
-        ptsA = self.__ptsA
-        ptsB = self.__ptsB
-        # We assume no rotation between frames, only translation (hence rotation is just an identity matrix)
-        rotation = np.identity(3)
-        translation = self.__compute_translation_vector(ptsA, ptsB)
-
-        # Triangulate points and calculate plane
-        points3D = self.__triangulate_matched_points(ptsA, ptsB, rotation, translation)
-        plane_normal = self.__estimateAveragePlane(points3D)
-        rot_mtx = self.__rotate_matrix_from_normal(*plane_normal)
-        res_img = self.__rotate_image_plane(image_to_rectify, rot_mtx)
-        return Image(res_img)
-
-    #Unused function
-    def __rectifyPoints(self, points, mtx, dst, normal):
-        R = self.__rotate_matrix_from_normal(*normal)
-        K = mtx.copy()
-        K_inv = np.vstack((np.linalg.inv(K), np.array([0,0,1])))
-        d = np.array([0,0,1]).transpose()
-        t = (d - R.dot(d)).reshape((3,1))
-        R1 = np.hstack((R, t))
-        matrix = K @ R1 @ K_inv
-        matrix = np.linalg.inv(matrix)
-        rec_pts = []
-        for pt in points:
-            ptN = np.append(pt[0], 1.0)
-            ptNN = matrix @ ptN
-            recPt = (ptNN[0] / ptNN[-1], ptNN[1] / ptNN[-1])
-            rec_pts.append(recPt)
-        return np.array(rec_pts)
