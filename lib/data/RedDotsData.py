@@ -3,6 +3,7 @@ import math
 import pandas as pd
 import numpy
 
+from lib.Camera import Camera
 from lib.infra.Configurations import Configurations
 from lib.FolderStructure import FolderStructure
 from lib.VideoStream import VideoStream
@@ -137,6 +138,22 @@ class RedDotsData(PandasWrapper):
         dfResult = self.__rowForFrame(frameId)
         return dfResult["distance"].iloc[0]
 
+    def getCameraHeight(self, frame_id: int):
+        camera = Camera()
+        mtx = camera.getCalibrationMatrix()
+
+        print("mtx")
+        print(mtx)
+        print(mtx[0, 0])
+        print(mtx[0, 0])
+
+
+        red_dot1 = self.getRedDot1(frame_id)
+        red_dot2 = self.getRedDot2(frame_id)
+        distance_between_red_dots_meters = self.red_dots_separation_mm()/1000
+        height_parameter = mtx[0, 0] * distance_between_red_dots_meters / ((red_dot1.x - red_dot2.x) ** 2 + (red_dot1.y - red_dot2.y) ** 2) ** 0.5
+        return height_parameter
+
     def zoom_instantaneous(self, frame_id):
         # type: (int) -> float
         if frame_id <= self.__minFrameID():
@@ -201,9 +218,9 @@ class RedDotsData(PandasWrapper):
     def __recalculate_column_distance(self, df):
         df['distance'] = pow(pow(df["centerPoint_x_dot2"] - df["centerPoint_x_dot1"], 2) + pow(
             df["centerPoint_y_dot2"] - df["centerPoint_y_dot1"], 2), 0.5)  # .astype(int)
-        df[self.__COLNAME_mm_per_pixel] = self.__red_dots_separation() / df['distance']
+        df[self.__COLNAME_mm_per_pixel] = self.red_dots_separation_mm() / df['distance']
 
-    def __red_dots_separation(self):
+    def red_dots_separation_mm(self):
         configs = Configurations(self.__folderStruct)
         return configs.get_distance_between_red_dots()
 

@@ -1,9 +1,6 @@
 import cv2
 import numpy as np
 
-from lib.Image import Image
-from lib.common import Point
-
 
 class EuclidianPlane:
     def __init__(self, ptsA, ptsB, scale_factor, mtx):
@@ -12,29 +9,30 @@ class EuclidianPlane:
         self.__scale_factor = scale_factor
         self.__mtx = mtx
 
-        self.__plane_normal = None
-
-
     def compute_normal(self):
         ptsA = self.__ptsA
         ptsB = self.__ptsB
+
         # We assume no rotation between frames, only translation (hence rotation is just an identity matrix)
         rotation = np.identity(3)
-        translation = self.__compute_translation_vector(ptsA, ptsB)
+        translation = self.__compute_translation_vector()
 
         # Triangulate points and calculate plane
-        points3D = self.__triangulate_matched_points(ptsA, ptsB, rotation, translation)
+        points3D = self.__triangulate_matched_points(rotation, translation)
         plane_normal = self.__estimateAveragePlane(points3D)
-        self.__plane_normal = plane_normal
+
         return plane_normal
 
 
-    def __compute_translation_vector(self, kpsA, kpsB):
+    def __compute_translation_vector(self):
         """
         Calculation of translation vector of camera between two images,
         assuming camera tranlsates only, not rotates.
         Based on vanishing point
         """
+        kpsA = self.__ptsA
+        kpsB = self.__ptsB
+
         # Intrinsic parameters
         mtx = self.__mtx * self.__scale_factor
         mtx[-1, -1] = 1.0
@@ -112,10 +110,13 @@ class EuclidianPlane:
         return np.float32([tx, ty, tz])
 
 
-    def __triangulate_matched_points(self, ptsA, ptsB, R, T):
+    def __triangulate_matched_points(self, R, T):
         """
         Return: points in 3D estimated from 2 views
         """
+        ptsA = self.__ptsA
+        ptsB = self.__ptsB
+
         mtx = self.__mtx * self.__scale_factor
         mtx[-1, -1] = 1.0
         proj_mtx01 = np.zeros((3,4))

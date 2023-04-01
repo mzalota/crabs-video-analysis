@@ -1,5 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
+from lib.Camera import Camera
+from lib.imageProcessing.Analyzer import Analyzer
 from lib.ui.MarkersConfiguration import MarkersConfiguration
 from lib.data.BadFramesData import BadFramesData
 from lib.Frame import Frame
@@ -303,21 +305,42 @@ class DecoFrameID(FrameDecorator):
 
 class DecoFocusHazeBrightness(FrameDecorator):
     def __init__(self, frameDeco, seeFloor):
-        # type: (FrameDecorator, SeeFloor, badFramesData) -> DecoFrameID
+        # type: (FrameDecorator, SeeFloor) -> DecoFrameID
         FrameDecorator.__init__(self, frameDeco)
         self.__seeFloor = seeFloor
 
     def getImgObj(self):
         # type: () -> Image
         imgObj = self.frameDeco.getImgObj()
+        analyzer = Analyzer(imgObj)
+        hase_text = str(round(analyzer.getHazeRatio(), 1))
+        focus_text = str(round(analyzer.getFocusRatio(), 1))
+        brightness_text = str(round(analyzer.getBrightnessRatio(), 1))
 
-        text_to_show = self.__drawFrameID(self.getFrameID())
 
-        imgObj.drawTextInBox(Box(Point(100, 100), Point(200, 200)), text_to_show)
+        # red_dot_1 = self.__seeFloor.getRedDotsData().getRedDot1(self.getFrameID())
+        # red_dot_2 = self.__seeFloor.getRedDotsData().getRedDot2(self.getFrameID())
+        # self.__seeFloor.getRedDotsData().red_dots_separation_mm()
+        height = self.__seeFloor.getRedDotsData().getCameraHeight(self.getFrameID())
+        height_text = str(round(height, 2))+"m"
+
+        title_width = 180
+        top_left_point = Point(Frame.FRAME_WIDTH-140-title_width, 0)
+        text_box = Box(top_left_point, top_left_point.translate_by_xy(100, 100))
+
+        imgObj.drawTextInBox(text_box, "Hase:")
+        imgObj.drawTextInBox(text_box.translate_by_xy(title_width, 0), hase_text)
+
+        text_box = text_box.translate_by_xy(0, 50)
+        imgObj.drawTextInBox(text_box, "Focus:")
+        imgObj.drawTextInBox(text_box.translate_by_xy(title_width, 0), focus_text)
+
+        text_box = text_box.translate_by_xy(0, 50)
+        imgObj.drawTextInBox(text_box, "Brightness:")
+        imgObj.drawTextInBox(text_box.translate_by_xy(title_width, 0), brightness_text)
+
+        text_box = text_box.translate_by_xy(0, 50)
+        imgObj.drawTextInBox(text_box, "Height:")
+        imgObj.drawTextInBox(text_box.translate_by_xy(title_width, 0), height_text)
+
         return imgObj
-
-    def __drawFrameID(self, frame_id):
-        # type: (int) -> str
-        value = str(self.__seeFloor.haze(frame_id))
-
-        return value+"-kuku-"

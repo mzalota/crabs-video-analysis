@@ -11,7 +11,7 @@ from lib.imageProcessing.PointDetector import PointDetector
 
 class Rectificator():
 
-    def __init__(self, video_stream: VideoStream, frameID, debug_mode=False):
+    def __init__(self, video_stream: VideoStream, frameID: int, debug_mode=False):
         self.__vs = video_stream
         self.__frame_height = self.__vs.frame_height()
         self.__frame_width = self.__vs.frame_width()
@@ -28,17 +28,19 @@ class Rectificator():
         self.__mtx = camera.getCalibrationMatrix()
         self.__dst = camera.getDistortionCoefficients()
 
-        self.image_to_rectify = self.__vs.read_image_obj(self.__frameID)
+        self.__image_to_rectify = self.__vs.read_image_obj(self.__frameID)
         self.__plane_normal = None
 
 
     def generate_rectified_image(self) -> Image:
-        image_to_rectify = self.image_to_rectify
+        image_to_rectify = self.__image_to_rectify
         if self.__plane_normal is None:
-            self.generate_normal()
+            self.__generate_normal()
         plane_normal = self.__plane_normal
+
         if plane_normal is None:
             return None
+
         rot_mtx = self.__rotate_matrix_from_normal(*plane_normal)
         res_img = self.__rotate_image_plane(image_to_rectify, rot_mtx)
         res_img = Image(res_img)
@@ -48,7 +50,7 @@ class Rectificator():
 
     def generate_rectified_point(self, point_to_rectify: Point) -> Point:
         if self.__plane_normal is None:
-            self.generate_normal()
+            self.__generate_normal()
         point = (point_to_rectify.x, point_to_rectify.y)
         undist_point = self.__undistortPoint(point)
         rec_point = self.__rectifyPoint(undist_point)
@@ -56,9 +58,9 @@ class Rectificator():
         return ret_point
 
 
-    def generate_normal(self) -> np.array:
+    def __generate_normal(self) -> None:
         print('Attempt to rectify current frame')
-        image_to_rectify = self.image_to_rectify
+        image_to_rectify = self.__image_to_rectify
 
         motion = 0.0
         step = self.__init_frame_step
@@ -97,19 +99,11 @@ class Rectificator():
         # Calculate translation vector
         try:
             seafloor_plane = EuclidianPlane(ptsA, ptsB, self.__scale_factor, self.__mtx)
-            plane_normal = seafloor_plane.compute_normal()
-            self.__plane_normal = plane_normal
+            self.__plane_normal = seafloor_plane.compute_normal()
 
         except(TypeError, np.linalg.LinAlgError):
             print('Unable to rectify current frame: can not estimate translation vector')
             return None
-
-        # if self.__show_debug:
-        #     cv2.imshow('Rectified', res_img.asNumpyArray())
-        #     cv2.waitKey(2000)
-        #     cv2.destroyWindow('Rectified')
-
-        return plane_normal
 
 
     def get_plane_normal(self):

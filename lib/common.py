@@ -40,6 +40,9 @@ class Point:
         # type: (Vector) -> Point
         return Point(self.x + int(vector.x), int(self.y + vector.y))
 
+    def translate_by_xy(self, x: int, y: int):
+        return self.translateBy(Vector(x,y))
+
     def boxAroundPoint(self, boxSize):
         offset = int(boxSize / 2)
         return Box(Point(max(self.x - offset, 1), max(self.y - offset, 1)), Point(self.x + offset, self.y + offset))
@@ -156,10 +159,13 @@ class Box:
 
         return Box(Point(topLeftX, topLeftY), Point(bottomRightX, bottomRightY))
 
-    def translateBy(self, vector):
+    def translateBy(self, vector: Vector):
         newTopLeft = self.topLeft.translateBy(vector)
         newBottomRight = self.bottomRight.translateBy(vector)
         return Box(newTopLeft, newBottomRight)
+
+    def translate_by_xy(self, x: int, y: int):
+        return self.translateBy(Vector(x, y))
 
 
 def boxAroundBoxes(box1, box2):

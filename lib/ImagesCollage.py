@@ -1,7 +1,7 @@
 #from pandas.compat.numpy import np
 
 from lib.Frame import Frame
-from lib.FrameDecorators import FrameDecoFactory
+from lib.ui.FrameDecorators import FrameDecoFactory
 from lib.Image import Image
 
 

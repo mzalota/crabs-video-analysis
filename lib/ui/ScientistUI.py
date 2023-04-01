@@ -13,7 +13,7 @@ from lib.data.RedDotsData import RedDotsData
 from lib.imageProcessing.Rectificator import Rectificator
 
 import traceback
-from lib.FrameDecorators import FrameDecoFactory
+from lib.ui.FrameDecorators import FrameDecoFactory
 
 from lib.infra.MyTimer import MyTimer
 from lib.ui.UserInput import UserInput

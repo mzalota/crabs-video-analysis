@@ -1,34 +1,30 @@
-import numpy as np
 import cv2
-from matplotlib import pyplot as plt
-from lib.imageProcessing.Utils import ImageEnhancer as IE
+import numpy as np
 
-class Analyzer:  
+from lib.Image import Image
+from lib.common import Point
+
+
+class Analyzer:
     """
     A class for determining parameters of current frame: amount of haze, amount of Focus, average brightness.
     Takes 3 channel BGR image as an input.
     """
 
-    def __init__(self, image):
-        if len(image.shape) < 3:
-            raise ValueError("Image must be 3 channels")
-        self.__image = cv2.resize(image[:-100, :, :], (720,480))
-        self.__image = IE.eqHist(self.__image)
+    def __init__(self, image: Image):
+        tmpImg = cv2.resize(image.asNumpyArray()[:-100, :, :], (720, 480))
+        self.__image_equalized = Image(tmpImg).equalize().asNumpyArray()
 
     def getHazeRatio(self):
-        min_img = self.__getMinChannel(self.__image)
+        min_img = self.__getMinChannel(self.__image_equalized)
         dcp = self.__getDarkChannel(min_img)
         return self.__hazeCoefficient(dcp)
 
     def getFocusRatio(self):
-        return self.__variance_of_laplacian(self.__image)
+        return self.__variance_of_laplacian(self.__image_equalized)
 
     def getBrightnessRatio(self):
-        return self.__estimateBrighntess(self.__image)
-
-    def getCameraHeight(self, mtx, RedDot1, RedDot2):
-        height_parameter = mtx[0,0] *0.2 / ((RedDot1.x - RedDot2.x)**2 + (RedDot1.y - RedDot2.y)**2)**0.5
-
+        return self.__estimateBrighntess(self.__image_equalized)
 
     ########################## HAZE ESTIMATION ##############################
     # https://www.mdpi.com/2073-4433/13/5/710
@@ -38,8 +34,8 @@ class Analyzer:
     def __getDarkChannel(self, img, blockSize=55):
         if blockSize % 2 == 0 or blockSize < 3:
             print('blockSize is not odd or too small')
-            return None   
-        # Try with erode
+            return None
+            # Try with erode
         kernel = np.ones((35, 35), 'uint8')
         return cv2.erode(img, kernel, iterations=1)
 
@@ -63,4 +59,3 @@ class Analyzer:
     def __estimateBrighntess(self, image):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         return np.mean(gray)
-
