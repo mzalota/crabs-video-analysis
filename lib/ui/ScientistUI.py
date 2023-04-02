@@ -34,6 +34,10 @@ class ScientistUI:
     SHARPNESS_UP = "up"
     SHARPNESS_MORE = "more"
 
+    IMAGE_RAW = "raw"
+    IMAGE_UNDISTORTED = "undistorted"
+    IMAGE_RECTIFIED = "rectified"
+
     def __init__(self, imageWin, folderStruct, videoStream):
         # type: (ImageWindow, FolderStructure, VideoStream) -> ScientistUI
 
@@ -41,6 +45,8 @@ class ScientistUI:
         self.__markingDrift = False
         self.__contrastLevel = self.CONTRAST_NORMAL
         self.__sharpnessLevel = self.SHARPNESS_NORMAL
+        self.__image_fix = self.IMAGE_RAW
+
         self.__imageWin = imageWin
         self.__folderStruct = folderStruct
         self.__videoStream = videoStream
@@ -70,8 +76,6 @@ class ScientistUI:
                 traceback.print_exc()
                 break
 
-            # print ("image height: ", frame.getImgObj().height())
-            # print ("image width: ", frame.getImgObj().width())
             keyPressed = self.showFrame(frame)
             user_input = UserInput(keyPressed)
 
@@ -91,13 +95,15 @@ class ScientistUI:
                 continue
 
             if user_input.is_command_rectify():
+                self.__change_image_fix()
                 # For observation puropses only: shows how good rectification is
-                Rect = Rectificator(self.__videoStream, frame_id, True)
-                res_img = Rect.generate_rectified_image()
-                if res_img is not None:
-                    rectified_window = ImageWindow(f'FRAME {frame_id} RECTIFIED', Point(600, 100))
-                    rectified_window.showWindowAndWaitForClick(res_img.asNumpyArray())
-                    rectified_window.closeWindow()
+                if False:
+                    Rect = Rectificator(self.__videoStream, frame_id, True)
+                    res_img = Rect.generate_rectified_image()
+                    if res_img is not None:
+                        rectified_window = ImageWindow(f'FRAME {frame_id} RECTIFIED', Point(600, 100))
+                        rectified_window.showWindowAndWaitForClick(res_img.asNumpyArray())
+                        rectified_window.closeWindow()
                 continue
 
             if user_input.is_command_zoom():
@@ -227,8 +233,17 @@ class ScientistUI:
         elif self.__sharpnessLevel == self.SHARPNESS_MORE:
             self.__sharpnessLevel = self.SHARPNESS_NORMAL
 
-    def showFrame(self, frame):
-        # type: (Frame) -> String
+    def __change_image_fix(self):
+        print("detected press X")
+        if self.__image_fix == self.IMAGE_RAW:
+            self.__image_fix = self.IMAGE_UNDISTORTED
+        elif self.__image_fix == self.IMAGE_UNDISTORTED:
+            self.__image_fix = self.IMAGE_RECTIFIED
+        elif self.__image_fix == self.IMAGE_RECTIFIED:
+            self.__image_fix = self.IMAGE_RAW
+
+
+    def showFrame(self, frame: Frame) -> str:
 
         markCrabsTimer = MyTimer("ScientistUI.showFrame()")
 
@@ -272,7 +287,14 @@ class ScientistUI:
             imageToShow = imageToShow.sharpen_more()
         return imageToShow
 
-    def __constructFrameImage(self, frameImagesFactory, frameDeco):
+    def __constructFrameImage(self, frameImagesFactory, frame: Frame):
+        if self.__image_fix == self.IMAGE_RECTIFIED:
+            frameDeco = frameImagesFactory.getFrameDecoRectifiedImage(frame.getFrameID())
+        elif self.__image_fix == self.IMAGE_UNDISTORTED:
+            frameDeco = frameImagesFactory.getFrameDecoUndistortedImage(frame.getFrameID())
+        else:
+            frameDeco = frameImagesFactory.getFrameDecoRawImage(frame.getFrameID())
+
         frameDeco = frameImagesFactory.getFrameDecoFrameID(frameDeco)
         frameDeco = frameImagesFactory.getFrameDecoFocusHazeBrigtness(frameDeco)
         frameDeco = frameImagesFactory.getFrameDecoRedDots(frameDeco)
@@ -281,8 +303,6 @@ class ScientistUI:
 
         if self.__markingDrift == True:
             frameDeco = frameImagesFactory.getFrameDecoAdjustDrift(frameDeco, self.__driftPoint1, self.__driftFrame1)
-
-
 
         return frameDeco.getImgObj().copy()
 

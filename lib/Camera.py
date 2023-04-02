@@ -2,24 +2,26 @@ import glob
 import cv2
 import numpy as np
 
+from lib.Image import Image
 from lib.common import Point
 
 
 class Camera:
     def __init__(self):
         self.__mtx = np.load(glob.glob('resources/CAMERA/*mtx.npy')[0])
-        self.__is_cropped = True
+        self.__is_cropped = False
         self.__dst = np.load(glob.glob('resources/CAMERA/*dst.npy')[0])
 
-    def undistortImage(self, image):
-        h, w = image.shape[:2]
-        newcameramtx, roi = cv2.getOptimalNewCameraMatrix(self.__mtx, self.__dst, (w, h), 1, (w, h))
-        ret = cv2.undistort(image, self.__mtx, self.__dst, None, newcameramtx)
+    def undistort_image(self, image: Image) -> Image:
+        image_dimensions = (image.width(), image.height())
+
+        newcameramtx, roi = cv2.getOptimalNewCameraMatrix(self.__mtx, self.__dst, image_dimensions, 1, image_dimensions)
+        ret = cv2.undistort(image.asNumpyArray(), self.__mtx, self.__dst, None, newcameramtx)
         if self.__is_cropped:
             x, y, w1, h1 = roi
             ret = ret[y:y + h1, x:x + w1]
-            ret = cv2.resize(ret, (w, h))
-        return ret
+            ret = cv2.resize(ret, image_dimensions)
+        return Image(ret)
 
     def distance_to_object(self, size_of_object_in_pixels, metric_size_of_object):
         #depth is the length along z-axis of object's projection (if object is right at the center of image, then this is the distance from camera lens's center to this object)

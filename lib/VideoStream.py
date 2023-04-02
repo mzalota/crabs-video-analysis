@@ -49,6 +49,7 @@ class VideoStream():
         # type: (int) -> np
         if  frameID not in self.__imagesCache:
             # image is not in the cache. Read it from VideoCapture and save into cache
+            # image = self.read_image_undistorted(frameID).asNumpyArray()
             image = self._read_image_raw(frameID)
             self.__imagesCache[frameID] = image
 
@@ -60,15 +61,10 @@ class VideoStream():
 
     def read_image_undistorted(self, frameID: int) -> np:
         image = self._read_image_raw(frameID)
-        image = Camera().undistortImage(image)
-        # Uncomment if need to show raw image
-        show_img = cv2.resize(image, (720, 576))
-        cv2.imshow('Debug', show_img)
-        cv2.waitKey(10)
-
+        image = Camera().undistort_image(Image(image))
         return image
 
-    def _read_image_raw(self, frameID: int):
+    def _read_image_raw(self, frameID: int) -> np:
         self._vidcap.set(cv2.CAP_PROP_POS_FRAMES, float(frameID))
         success, image = self._vidcap.read()
         if not success:

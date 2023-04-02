@@ -95,7 +95,7 @@ class ImagesCollage:
         # type: (int, int) -> Image
         #timer = MyTimer("in ImagesCollage.__constructFrame")
 
-        frameDeco = self.__frameImagesFactory.getFrame(frameID)
+        frameDeco = self.__frameImagesFactory.getFrameDecoRawImage(frameID)
         frameDeco = self.__frameImagesFactory.getFrameDecoMarkedCrabs(frameDeco)
         frameDeco = self.__frameImagesFactory.getFrameDecoGridLines(frameDeco, referenceFrameID)
         frameDeco = self.__frameImagesFactory.getFrameDecoRedDots(frameDeco)

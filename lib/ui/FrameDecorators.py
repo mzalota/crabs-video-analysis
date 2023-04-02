@@ -1,7 +1,10 @@
+from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 
 from lib.Camera import Camera
+from lib.FrameId import FrameId
 from lib.imageProcessing.Analyzer import Analyzer
+from lib.imageProcessing.Rectificator import Rectificator
 from lib.ui.MarkersConfiguration import MarkersConfiguration
 from lib.data.BadFramesData import BadFramesData
 from lib.Frame import Frame
@@ -14,18 +17,24 @@ from lib.common import Point, Vector, Box
 
 class FrameDecoFactory:
 
-    def __init__(self, seeFloorGeometry, badFramesData, crabsData, markersData, videoStream):
-        # type: (SeeFloor, BadFramesData, VideoStream) -> FrameDecoFactory
+    def __init__(self, seeFloorGeometry: SeeFloor, badFramesData: BadFramesData, crabsData: CrabsData, markersData: MarkersData, videoStream: VideoStream) -> FrameDecoFactory:
         self.__videoStream = videoStream
         self.__seeFloorGeometry = seeFloorGeometry
         self.__badFramesData = badFramesData
         self.__crabsData = crabsData
         self.__markersData = markersData
 
-    def getFrame(self, frameID):
-        # type: (int) -> FrameDecorator
-        return Frame(frameID, self.__videoStream)
+    def getFrameDecoRawImage(self, frame_id: int) -> DecoRawImage:
+        # type: (FrameDecorator) -> DecoFrameID
+        return DecoRawImage(frame_id, self.__videoStream)
 
+    def getFrameDecoUndistortedImage(self, frame_id: int) -> DecoUndistortedImage:
+        return DecoUndistortedImage(frame_id, self.__videoStream)
+
+    def getFrameDecoRectifiedImage(self, frame_id: int) -> DecoRectifiedImage:
+        return DecoRectifiedImage(frame_id, self.__videoStream)
+
+    # ---
     def getFrameDecoGridLines(self, frameDeco, referenceFrameID):
         # type: (FrameDecorator, int) -> DecoGridLines
         frameID = frameDeco.getFrameID()
@@ -179,6 +188,37 @@ class DecoMarkersWithNumbers(DecoMarkersAbstract):
         bottomRightOfTextBox = topLeftOfTextBox.translateBy(Vector(boxWidth, boxHeight))
         textBox = Box(topLeftOfTextBox, bottomRightOfTextBox)
         return textBox
+
+class DecoRawImage(FrameDecorator):
+    def __init__(self, frame_id: int, videoStream: VideoStream) -> DecoRawImage:
+        FrameDecorator.__init__(self, Frame(frame_id, videoStream))
+        self.__videoStream = videoStream
+
+    def getImgObj(self):
+        # type: () -> Image
+        return self.__videoStream.read_image_obj(self.getFrameID())
+
+class DecoUndistortedImage(FrameDecorator):
+    def __init__(self, frame_id: int, videoStream: VideoStream) -> DecoUndistortedImage:
+        FrameDecorator.__init__(self, Frame(frame_id, videoStream))
+        self.__videoStream = videoStream
+
+    def getImgObj(self):
+        # type: () -> Image
+        return self.__videoStream.read_image_undistorted(self.getFrameID())
+
+class DecoRectifiedImage(FrameDecorator):
+    def __init__(self, frame_id: int, videoStream: VideoStream) -> DecoRectifiedImage:
+        FrameDecorator.__init__(self, Frame(frame_id, videoStream))
+        self.__videoStream = videoStream
+
+    def getImgObj(self):
+        # type: () -> Image
+        Rect = Rectificator(self.__videoStream, self.getFrameID(), True)
+        res_img = Rect.generate_rectified_image()
+        if res_img is None:
+            return self.__videoStream.read_image_obj(self.getFrameID())
+        return res_img
 
 
 class DecoMarkersWithSymbols(DecoMarkersAbstract):

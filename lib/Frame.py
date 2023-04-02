@@ -1,5 +1,7 @@
 #from pandas.compat.numpy import np
 import numpy as np
+
+from lib.FrameId import FrameId
 from lib.Image import Image
 
 class Frame:
