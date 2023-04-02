@@ -12,7 +12,6 @@ from lib.data.PandasWrapper import PandasWrapper
 from lib.common import Point
 from lib.data.RedDotsManualData import RedDotsManualData
 from lib.data.RedDotsRawData import RedDotsRawData
-from lib.infra.Defaults import Defaults
 
 
 class RedDotsData(PandasWrapper):
@@ -138,21 +137,21 @@ class RedDotsData(PandasWrapper):
         dfResult = self.__rowForFrame(frameId)
         return dfResult["distance"].iloc[0]
 
-    def getCameraHeight(self, frame_id: int):
+    def get_camera_height_mm(self, frame_id: int):
         camera = Camera()
-        mtx = camera.getCalibrationMatrix()
-
-        print("mtx")
-        print(mtx)
-        print(mtx[0, 0])
-        print(mtx[0, 0])
-
 
         red_dot1 = self.getRedDot1(frame_id)
         red_dot2 = self.getRedDot2(frame_id)
-        distance_between_red_dots_meters = self.red_dots_separation_mm()/1000
-        height_parameter = mtx[0, 0] * distance_between_red_dots_meters / ((red_dot1.x - red_dot2.x) ** 2 + (red_dot1.y - red_dot2.y) ** 2) ** 0.5
-        return height_parameter
+
+        distance_between_red_dots_px = self.__distance_px_between_red_dots(red_dot1, red_dot2)
+
+        depth_z_axis_to_seefloor_on_image = camera.distance_to_object(distance_between_red_dots_px,
+                                                                      self.red_dots_separation_mm())
+
+        return depth_z_axis_to_seefloor_on_image
+
+    def __distance_px_between_red_dots(self, red_dot1, red_dot2):
+        return ((red_dot1.x - red_dot2.x) ** 2 + (red_dot1.y - red_dot2.y) ** 2) ** 0.5
 
     def zoom_instantaneous(self, frame_id):
         # type: (int) -> float
