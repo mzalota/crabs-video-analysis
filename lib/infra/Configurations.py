@@ -5,12 +5,16 @@ from lib.infra.Defaults import Defaults
 
 
 class Configurations:
-    SECTION_DRIFTS = 'drifts'
-    SECTION_REDDOTS = 'reddots'
+    SECTION_GENERAL = 'general'
+    OPTION_DEBUG_UI = "debug_ui"
 
+    SECTION_DRIFTS = 'drifts'
     OPTION_DRIFTS_STEP_SIZE = 'drifts_step_size'
+
+    SECTION_REDDOTS = 'reddots'
     OPTION_DISTANCE_BETWEEN_REDDOTS = 'distance_between_reddots_millimeters'
     OPTION_MID_POINT_X_COORD_BETWEEN_REDDOTS = 'mid_point_x_coord_between_reddots'
+
 
     def __init__(self, folderStruct):
         # type: (FolderStructure) -> Configurations
@@ -30,6 +34,10 @@ class Configurations:
 
     def __set_default_values(self):
         parser = ConfigParser()
+
+        parser.add_section(self.SECTION_GENERAL)
+        parser.set(self.SECTION_GENERAL, self.OPTION_DEBUG_UI, str(False))
+
         parser.add_section(self.SECTION_DRIFTS)
         parser.set(self.SECTION_DRIFTS, self.OPTION_DRIFTS_STEP_SIZE, str(self.__default_drifts_step_size()))
 
@@ -54,6 +62,12 @@ class Configurations:
     def __default_red_dots_x_mid_point(self):
         return Defaults.DEFAULT_MID_POINT_X_COORD_BETWEEN_REDDOTS
 
+    def is_debug(self) -> bool:
+        has_value = self._has_value(self.SECTION_GENERAL, self.OPTION_DEBUG_UI)
+        if has_value:
+            return bool(self._get_value(self.SECTION_GENERAL, self.OPTION_DEBUG_UI))
+        else:
+            return False
 
     def get_drifts_step_size(self):
         # type: () -> int
@@ -82,11 +96,9 @@ class Configurations:
 
     def _has_value(self, sectionName, optionName):
         if not self.__parser.has_section(sectionName):
-            # print "No Section: "+sectionName
             return False
 
         if not self.__parser.has_option(sectionName, optionName):
-            # print "In Section '" + sectionName + "' there is no Option: "+optionName
             return False
 
         return True

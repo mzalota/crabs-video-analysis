@@ -8,6 +8,7 @@ from lib.data.GraphPlotter import GraphPlotter
 from lib.drifts.DriftManualData import DriftManualData
 
 from lib.data.PandasWrapper import PandasWrapper
+from lib.infra.Configurations import Configurations
 
 
 class DriftRawData(PandasWrapper):
@@ -21,6 +22,11 @@ class DriftRawData(PandasWrapper):
         self.__folderStruct = folderStruct
         filepath = folderStruct.getRawDriftsFilepath()
         self.__df = PandasWrapper.readDataFrameFromCSV(filepath)
+
+        configs = Configurations(folderStruct)
+        self.__generate_debug_graphs = configs.is_debug()
+
+        print(" value of var is XXXXX __generate_debug_graphs", self.__generate_debug_graphs)
 
     def getPandasDF(self):
         # type: () -> pd
@@ -61,71 +67,78 @@ class DriftRawData(PandasWrapper):
         df['median_new'] = df[yColumns_new].median(axis=1)
         df['median_orig'] = df[yColumns_orig].median(axis=1)
 
+        print (" value of var is SSSS", self.__generate_debug_graphs)
 
-        graphTitle = self.__folderStruct.getVideoFilename() + "_Maxim_averages_y"
-        xColumns = ["frameNumber"]
-        graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 3000)])
-        graphPlotter.saveGraphToFile(xColumns, ["average_new", "average_orig", "median_new", "median_orig"], graphTitle,
-                                     self.__folderStruct.getGraphRedDotsDistance() + "_drift_compare_avg_y.png")
+        if self.__generate_debug_graphs:
+            print ("entering here")
+            filepath_prefix=self.__folderStruct.getSubDirpath() + "graph_"
 
-        df['average_x_new'] = df[xColumns_new].mean(axis=1)
-        df['average_x_orig'] = df[xColumns_orig].mean(axis=1)
-        df['median_x_new'] = df[xColumns_new].median(axis=1)
-        df['median_x_orig'] = df[xColumns_orig].median(axis=1)
+            graphTitle = self.__folderStruct.getVideoFilename() + "_averages_y"
+            xColumns = ["frameNumber"]
+            graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 3000)])
+            graphPlotter.saveGraphToFile(xColumns, ["average_new", "average_orig", "median_new", "median_orig"], graphTitle,
+                                         filepath_prefix + "drift_compare_avg_y.png")
 
-        graphTitle = self.__folderStruct.getVideoFilename() + "_Maxim_averages_x"
-        xColumns = ["frameNumber"]
-        graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 3000)])
-        graphPlotter.saveGraphToFile(xColumns, ["average_x_new", "average_x_orig", "median_x_new", "median_x_orig"], graphTitle,
-                                     self.__folderStruct.getGraphRedDotsDistance() + "_drift_compare_avg_x.png")
+            df['average_x_new'] = df[xColumns_new].mean(axis=1)
+            df['average_x_orig'] = df[xColumns_orig].mean(axis=1)
+            df['median_x_new'] = df[xColumns_new].median(axis=1)
+            df['median_x_orig'] = df[xColumns_orig].median(axis=1)
 
-        graphTitle = self.__folderStruct.getVideoFilename() + "_Maxim_averages_x_new"
-        xColumns = ["frameNumber"]
-        graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 3000)])
-        graphPlotter.saveGraphToFile(xColumns, ["average_x_new"], graphTitle,
-                                     self.__folderStruct.getGraphRedDotsDistance() + "_drift_compare_avg_x_new.png")
+            graphTitle = self.__folderStruct.getVideoFilename() + "_averages_x"
+            xColumns = ["frameNumber"]
+            graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 3000)])
+            graphPlotter.saveGraphToFile(xColumns, ["average_x_new", "average_x_orig", "median_x_new", "median_x_orig"], graphTitle,
+                                         filepath_prefix + "drift_compare_avg_x.png")
 
-
-        graphTitle = self.__folderStruct.getVideoFilename() + "_Maxim_averages_x_orig"
-        xColumns = ["frameNumber"]
-        graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 3000)])
-        graphPlotter.saveGraphToFile(xColumns, ["average_x_orig"], graphTitle,
-                                     self.__folderStruct.getGraphRedDotsDistance() + "_drift_compare_avg_x_orig.png")
-
-        graphTitle = self.__folderStruct.getVideoFilename() + "_Maxim_median_x_new"
-        xColumns = ["frameNumber"]
-        graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 3000)])
-        graphPlotter.saveGraphToFile(xColumns, [ "median_x_new", "average_x_new"], graphTitle,
-                                     self.__folderStruct.getGraphRedDotsDistance() + "_drift_compare_median_x_new.png")
+            graphTitle = self.__folderStruct.getVideoFilename() + "_averages_x_new"
+            xColumns = ["frameNumber"]
+            graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 3000)])
+            graphPlotter.saveGraphToFile(xColumns, ["average_x_new"], graphTitle,
+                                         filepath_prefix + "drift_compare_avg_x_new.png")
 
 
-        graphTitle = self.__folderStruct.getVideoFilename() + "_Maxim_median_x_orig"
-        xColumns = ["frameNumber"]
-        graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 3000)])
-        graphPlotter.saveGraphToFile(xColumns, [ "median_x_orig", "average_x_orig"], graphTitle,
-                                     self.__folderStruct.getGraphRedDotsDistance() + "_drift_compare_median_x_orig.png")
+            graphTitle = self.__folderStruct.getVideoFilename() + "_averages_x_orig"
+            xColumns = ["frameNumber"]
+            graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 3000)])
+            graphPlotter.saveGraphToFile(xColumns, ["average_x_orig"], graphTitle,
+                                         filepath_prefix + "drift_compare_avg_x_orig.png")
 
-        #df.to_csv(self.__folderStruct.getGraphRedDotsAngle() + "merged.csv", sep='\t', index=False)
+            graphTitle = self.__folderStruct.getVideoFilename() + "_median_x_new"
+            xColumns = ["frameNumber"]
+            graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 3000)])
+            graphPlotter.saveGraphToFile(xColumns, [ "median_x_new", "average_x_new"], graphTitle,
+                                         filepath_prefix + "drift_compare_median_x_new.png")
 
-        self.__plot_graphs_for_debugging(df, xColumns_new, xColumns_orig)
+
+            graphTitle = self.__folderStruct.getVideoFilename() + "_median_x_orig"
+            xColumns = ["frameNumber"]
+            graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 3000)])
+            graphPlotter.saveGraphToFile(xColumns, [ "median_x_orig", "average_x_orig"], graphTitle,
+                                         filepath_prefix + "drift_compare_median_x_orig.png")
+
+            #df.to_csv(self.__folderStruct.getGraphRedDotsAngle() + "merged.csv", sep='\t', index=False)
+
+            self.__plot_graphs_for_debugging(df, xColumns_new, xColumns_orig)
 
         return df
 
     def __plot_graphs_for_debugging(self, df, yColumns_new, yColumns_orig):
-        graphTitle = self.__folderStruct.getVideoFilename() + "_Maxim_ScalingFactor_orig"
+        filepath_prefix = self.__folderStruct.getSubDirpath() + "graph_"
+        graphTitle = self.__folderStruct.getVideoFilename() + "_ScalingFactor_orig"
         xColumns = ["frameNumber"]
         graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 3000)])
         graphPlotter.saveGraphToFile(xColumns, yColumns_orig, graphTitle,
-                                     self.__folderStruct.getGraphRedDotsDistance() + "_drift_orig.png")
-        graphTitle = self.__folderStruct.getVideoFilename() + "_Maxim_ScalingFactor_new"
+                                     filepath_prefix + "drift_orig.png")
+
+        graphTitle = self.__folderStruct.getVideoFilename() + "_ScalingFactor_new"
         xColumns = ["frameNumber"]
         graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 3000)])
         graphPlotter.saveGraphToFile(xColumns, yColumns_new, graphTitle,
-                                     self.__folderStruct.getGraphRedDotsDistance() + "_drift_new.png")
+                                     filepath_prefix + "drift_new.png")
 
     def __plot_scaling_factor(self, factor):
-        filePath = self.__folderStruct.getGraphRedDotsAngle() + "_scalingFactor.png"
-        graphTitle = self.__folderStruct.getVideoFilename() + "_Maxim_ScalingFactor_1"
+        filePath = self.__folderStruct.getSubDirpath() + "graph_scalingFactor.png"
+        graphTitle = self.__folderStruct.getVideoFilename() + "_ScalingFactor_1"
         xColumns = ["frameNumber"]
         yColumns = ["scaling_factor"]
         #factor.to_csv(self.__folderStruct.getGraphRedDotsAngle() + "aaa.csv", sep='\t', index=False)
