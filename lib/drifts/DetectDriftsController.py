@@ -11,6 +11,7 @@ class DetectDriftsController:
     def __init__(self, folderStruct):
         self.__folderStruct = folderStruct
 
+
     def run(self):
         stepSize = self.step_size()
         print("using stepSize: " + str(stepSize))
@@ -33,7 +34,8 @@ class DetectDriftsController:
 
         print ("starting processing from frame", startFrameID)
 
-        velocityDetector = VelocityDetector()
+
+        velocityDetector = VelocityDetector(Configurations(folderStruct).is_debug())
         videoStream = VideoStream(folderStruct.getVideoFilepath())
         velocityDetector.runLoop(startFrameID, stepSize, logger, videoStream)
 

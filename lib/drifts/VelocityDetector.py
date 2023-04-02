@@ -12,15 +12,18 @@ from lib.VideoStream import VideoStreamException
 
 
 class VelocityDetector():
-    def __init__(self):
+    def __init__(self, is_debug = False):
         # type: () -> VelocityDetector
         self._prevFrame = None
         self._timer = MyTimer("VelocityDetector")
+        self.__is_debug = is_debug
 
     def runLoop(self, frameID, stepSize, logger, videoStream):
         self.__createFeatureMatchers(videoStream)
 
-        self.__ui_window = ImageWindow("mainWindow", Point(700, 200))
+        if self.__is_debug:
+            self.__ui_window = ImageWindow("mainWindow", Point(700, 200))
+
         success = True
         while success:
             try:
@@ -55,14 +58,16 @@ class VelocityDetector():
             print(driftsRow)
             logger.writeToFile(driftsRow)
 
-            #self.__show_ui_window(self._fm.values(), frame, driftVector)
+            if self.__is_debug:
+                self.__show_ui_window(self._fm.values(), frame, driftVector)
 
             frameID += stepSize
 
             if frameID > 99100:
                 break
 
-        self.__ui_window.closeWindow()
+        if self.__is_debug:
+            self.__ui_window.closeWindow()
 
     def __show_ui_window(self, feature_matchers, frame, driftVector):
         img = frame.getImgObj()
