@@ -27,7 +27,7 @@ if folderStruct is None:
 
     folderStruct = FolderStructure(rootDir, videoFileName)
 
-StreamToLogger(folderStruct.getLogFilepath())
+# StreamToLogger(folderStruct.getLogFilepath())
 print ("Starting Manually Improving RedDots")
 
 timer = MyTimer("Starting manuallyImproveRedDots")

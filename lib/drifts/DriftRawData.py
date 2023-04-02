@@ -67,10 +67,14 @@ class DriftRawData(PandasWrapper):
         df['median_new'] = df[yColumns_new].median(axis=1)
         df['median_orig'] = df[yColumns_orig].median(axis=1)
 
-        print (" value of var is SSSS", self.__generate_debug_graphs)
+        df['average_x_new'] = df[xColumns_new].mean(axis=1)
+        df['average_x_orig'] = df[xColumns_orig].mean(axis=1)
+        df['median_x_new'] = df[xColumns_new].median(axis=1)
+        df['median_x_orig'] = df[xColumns_orig].median(axis=1)
 
         if self.__generate_debug_graphs:
-            print ("entering here")
+            self.__plot_scaling_factor(factor)
+
             filepath_prefix=self.__folderStruct.getSubDirpath() + "graph_"
 
             graphTitle = self.__folderStruct.getVideoFilename() + "_averages_y"
@@ -78,11 +82,6 @@ class DriftRawData(PandasWrapper):
             graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 3000)])
             graphPlotter.saveGraphToFile(xColumns, ["average_new", "average_orig", "median_new", "median_orig"], graphTitle,
                                          filepath_prefix + "drift_compare_avg_y.png")
-
-            df['average_x_new'] = df[xColumns_new].mean(axis=1)
-            df['average_x_orig'] = df[xColumns_orig].mean(axis=1)
-            df['median_x_new'] = df[xColumns_new].median(axis=1)
-            df['median_x_orig'] = df[xColumns_orig].median(axis=1)
 
             graphTitle = self.__folderStruct.getVideoFilename() + "_averages_x"
             xColumns = ["frameNumber"]
@@ -175,8 +174,6 @@ class DriftRawData(PandasWrapper):
 
         #comment out next 5 lines to skip new logic of compensating each FeatureMatcher
         factor = redDotsData.scalingFactorColumn(driftsDetectionStep)
-        # just for debugging
-        self.__plot_scaling_factor(factor)
 
         df_comp = self._compensate_for_zoom(redDotsData, factor)
         df = pd.merge(df, df_comp[['average_new', "average_x_new", "frameNumber"]], on='frameNumber', how='left', suffixes=('_draft', '_reddot'))

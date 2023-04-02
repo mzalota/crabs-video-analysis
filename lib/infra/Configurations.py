@@ -64,10 +64,14 @@ class Configurations:
 
     def is_debug(self) -> bool:
         has_value = self._has_value(self.SECTION_GENERAL, self.OPTION_DEBUG_UI)
-        if has_value:
-            return bool(self._get_value(self.SECTION_GENERAL, self.OPTION_DEBUG_UI))
-        else:
+        if not has_value:
             return False
+
+        value = self._get_value(self.SECTION_GENERAL, self.OPTION_DEBUG_UI)
+        if value == "True":
+            return True
+
+        return False
 
     def get_drifts_step_size(self):
         # type: () -> int
