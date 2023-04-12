@@ -30,7 +30,7 @@ class VelocityDetector():
                 frame = Frame(frameID, videoStream)
                 self.detectVelocity(frame)
             except VideoStreamException as error:
-                if frameID > 300:
+                if frameID > 1000:
                     print ("no more frames to read from video ")
                     print(repr(error))
                     # traceback.print_exc()
@@ -245,8 +245,7 @@ class VelocityDetector():
         medianYDrift = numpy.median(driftY)
         return Vector(medianXDrift, medianYDrift)
 
-    def detectVelocity(self, frame):
-        # type: (Frame) -> None
+    def detectVelocity(self, frame: Frame):
         self._timer.lap("in detectVelocity() sequential start")
         self._drifts = list()
         for fm_id, fm in self._fm.items():

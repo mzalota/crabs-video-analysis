@@ -103,7 +103,7 @@ class SeeFloorSection:
         # type: () -> Image
         return self.getImageOnFrame(self.getMaxFrameID())
 
-    def getImageOnFrame(self,frameID):
+    def getImageOnFrame(self, frameID):
         # type: () -> Image
         if len(self.__frames)<1:
             return None

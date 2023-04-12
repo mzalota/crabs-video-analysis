@@ -25,18 +25,18 @@ class DetectDriftsController:
 
         logger = Logger.openInAppendMode(folderStruct.getRawDriftsFilepath())
 
+        velocityDetector = VelocityDetector(Configurations(folderStruct).is_debug())
+        videoStream = VideoStream(folderStruct.getVideoFilepath())
+
         rawDriftData = DriftRawData(folderStruct)
         maxFrameID = rawDriftData.maxFrameID()
         if maxFrameID > 1:
             startFrameID = maxFrameID + stepSize
         else:
-            startFrameID = 5  #5
+            startFrameID = videoStream.get_id_of_first_frame(stepSize)  #5
 
-        print ("starting processing from frame", startFrameID)
+        print("starting processing from frame", startFrameID)
 
-
-        velocityDetector = VelocityDetector(Configurations(folderStruct).is_debug())
-        videoStream = VideoStream(folderStruct.getVideoFilepath())
         velocityDetector.runLoop(startFrameID, stepSize, logger, videoStream)
 
         logger.closeFile()
