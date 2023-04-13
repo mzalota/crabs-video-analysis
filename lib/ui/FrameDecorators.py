@@ -3,6 +3,7 @@ from abc import ABCMeta, abstractmethod
 
 from lib.Camera import Camera
 from lib.FrameId import FrameId
+from lib.Image import Image
 from lib.imageProcessing.Analyzer import Analyzer
 from lib.imageProcessing.Rectificator import Rectificator
 from lib.ui.MarkersConfiguration import MarkersConfiguration
@@ -321,8 +322,7 @@ class DecoFrameID(FrameDecorator):
         self.__seeFloor = seeFloor
         self.__badFramesData = badFramesData
 
-    def getImgObj(self):
-        # type: () -> Image
+    def getImgObj(self) -> Image:
         imgObj = self.frameDeco.getImgObj()
 
         frame_name = self.__drawFrameID(self.getFrameID())
@@ -360,7 +360,7 @@ class DecoFocusHazeBrightness(FrameDecorator):
         height_text = str(round(height_mm/1000, 2))+"m"
 
         title_width = 180
-        top_left_point = Point(Frame.FRAME_WIDTH-140-title_width, 0)
+        top_left_point = Point(imgObj.width()-140-title_width, 0)
         text_box = Box(top_left_point, top_left_point.translate_by_xy(100, 100))
 
         imgObj.drawTextInBox(text_box, "Hase:")
