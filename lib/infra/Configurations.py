@@ -87,12 +87,14 @@ class Configurations:
         else:
             return self.__default_distance_reddots()
 
-    def get_red_dots_x_mid_point(self):
+    def get_red_dots_x_mid_point(self) -> int:
         # type: () -> int
         if self._has_value(self.SECTION_REDDOTS, self.OPTION_MID_POINT_X_COORD_BETWEEN_REDDOTS):
-            return int(self._get_value(self.SECTION_REDDOTS, self.OPTION_MID_POINT_X_COORD_BETWEEN_REDDOTS))
+            point = int(self._get_value(self.SECTION_REDDOTS, self.OPTION_MID_POINT_X_COORD_BETWEEN_REDDOTS))
         else:
-            return self.__default_red_dots_x_mid_point()
+            point = self.__default_red_dots_x_mid_point()
+
+        return point
 
 
     def _get_value(self, sectionName, optionName):

@@ -1,18 +1,18 @@
+from __future__ import annotations
+
 import cv2
 
 from lib.Frame import Frame
 from lib.Image import Image
-from lib.infra.Configurations import Configurations
 from lib.reddots.RedDot import RedDot
 from lib.common import Point, Box
 
 
 class RedDotsDetector:
-    def __init__(self, frame, configs):
-        # type: (Frame, Configurations) -> RedDotsDetector
-        self.__initial_x_coord_midpoint = configs.get_red_dots_x_mid_point()
-        self.__initialDistanceForRedBoxSearchArea = configs.get_distance_between_red_dots()
+    def __init__(self, frame: Frame) -> RedDotsDetector:
         self.__frame = frame
+        self.__initial_x_coord_midpoint = frame.frame_width()/2
+        self.__initial_y_coord_midpoint = frame.frame_height()/2
         self.__redDot1 = None
         self.__redDot2 = None
 
@@ -45,30 +45,15 @@ class RedDotsDetector:
         self.__redDot1 = RedDot(imageObj, self.__initial_search_area1())
         self.__redDot2 = RedDot(imageObj, self.__initial_search_area2())
 
-    def __getImage(self):
+    def __getImage(self) -> Image:
         return self.__frame.getImgObj()
 
-    def __distanceBetweenRedPoints(self):
-        if self.__redDot1.dotWasDetected() and self.__redDot2.dotWasDetected():
-            result = int(self.__redDot1.boxAroundDot.distanceTo(self.__redDot2.boxAroundDot))
-        else:
-            result = int(self.__initialDistanceForRedBoxSearchArea)
+    def __initial_search_area1(self) -> Box:
+        x = self.__initial_x_coord_midpoint
+        y = self.__initial_y_coord_midpoint
+        return Box(Point(x - 400, y), Point(x, y + 400))
 
-        print ("__distanceBetweenRedPoints is "+str(result))
-        return result
-
-    def __initial_search_area1(self):
-        # type: () -> Box
-        if (self.__frame.is_high_resolution() ):
-            box = Box(Point(self.__initial_x_coord_midpoint - 400, 1000), Point(self.__initial_x_coord_midpoint, 1400))
-        else:
-            box = Box(Point(600, 300), Point(900, 600))
-        return box
-
-    def __initial_search_area2(self):
-        # type: () -> Box
-        if (self.__frame.is_high_resolution()):
-            box = Box(Point(self.__initial_x_coord_midpoint, 1000), Point(self.__initial_x_coord_midpoint + 400, 1400))
-        else:
-            box = Box(Point(900, 300), Point(1400, 800))
-        return box
+    def __initial_search_area2(self) -> Box:
+        x = self.__initial_x_coord_midpoint
+        y = self.__initial_y_coord_midpoint
+        return Box(Point(x, y), Point(x + 400, y + 400))

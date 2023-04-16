@@ -32,6 +32,7 @@ configs = Configurations(folderStruct)
 
 controller = DetectRedDotsController(folderStruct)
 if configs.is_debug():
+    print("is Debugging")
     controller.run_with_debug_UI()
 else:
     controller.run()

@@ -54,21 +54,17 @@ class DetectRedDotsController:
                 break
             # videoStream.printMemoryUsage()
 
-        # cv2.destroyAllWindows()
-
     def __detect_red_dots_on_frame(self, frame, frame_id):
-        vf = RedDotsDetector(frame, self.__configs)
+        vf = RedDotsDetector(frame)
         vf.isolateRedDots()
         self.__add_dots_info_for_saving(frame_id, vf.getRedDot1(), vf.getRedDot2())
         self.__update_debug_UI(frame_id, vf)
 
     def __add_dots_info_for_saving(self, frame_id, redDot1, redDot2):
         # type: (int, RedDotsDetector) -> object
-        # redDot1 = vf.getRedDot1()
         if redDot1.dotWasDetected():
             self.__rdRaw.addRedDot1(frame_id, redDot1)
 
-        # redDot2 = vf.getRedDot2()
         if redDot2.dotWasDetected():
             self.__rdRaw.addRedDot2(frame_id, redDot2)
 
