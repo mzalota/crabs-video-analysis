@@ -48,15 +48,11 @@ class Rectificator():
         return res_img
 
 
-    def generate_rectified_point(self, point_to_rectify: Point) -> Point:
+    def rectify_point(self, point_to_rectify: Point) -> Point:
         if self.__plane_normal is None:
             self.__generate_normal()
-        point = (point_to_rectify.x, point_to_rectify.y)
-        undist_point = self.__undistortPoint(point)
-        rec_point = self.__rectifyPoint(undist_point)
-        ret_point = Point(rec_point[0], rec_point[1])
-        return ret_point
 
+        return self.__rectifyPoint(point_to_rectify)
 
     def __generate_normal(self) -> None:
         print('Attempt to rectify current frame')
@@ -184,7 +180,7 @@ class Rectificator():
 
 
     ##### POINT RECTIFICATOR FUNCS ######
-    def __rectifyPoint(self, pt):
+    def __rectifyPoint(self, point: Point) -> Point:
         mtx = self.__mtx
         normal = self.__plane_normal
         R = self.__rotate_matrix_from_normal(*normal)
@@ -195,17 +191,9 @@ class Rectificator():
         R1 = np.hstack((R, t))
         matrix = K @ R1 @ K_inv
         matrix = np.linalg.inv(matrix)
-        ptN = np.append(pt[0], 1.0)
+        ptN = np.append(point.x, 1.0)
         ptNN = matrix @ ptN
         recPt = (ptNN[0] / ptNN[-1], ptNN[1] / ptNN[-1])
-        return recPt
 
-    def __undistortPoint(self, point):
-        points = np.float32(np.array([point])[:, np.newaxis, :])
-        mtx = self.__mtx
-        dst = self.__dst
-        width = self.__frame_width
-        height = self.__frame_height
-        newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dst, (width, height), 1, (width, height))
-        undistorted_pts = cv2.undistortPoints(points, mtx, dst, P=newcameramtx)
-        return undistorted_pts[0]
+        return Point(recPt[0], recPt[1])
+

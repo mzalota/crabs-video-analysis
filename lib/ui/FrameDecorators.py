@@ -150,8 +150,11 @@ class DecoMarkersAbstract(FrameDecorator):
 
             orig_location = Point(marker['locationX'], marker['locationY'])
             location = self.__seefloorGeometry.translatePointCoordinate(orig_location, frame_number, frame_id)
-
             self._drawMarkerOnImage(mainImage, marker_id, location)
+
+            # camera = Camera()
+            # location3 = camera.undistort_point(location,mainImage.width(), mainImage.height())
+            # self._drawMarkerOnImage(mainImage, marker_id+"a", location3)
 
         # timer.lap("Number of markers" + str(len(markers)))
 
@@ -208,6 +211,7 @@ class DecoUndistortedImage(FrameDecorator):
         # type: () -> Image
         return self.__videoStream.read_image_undistorted(self.getFrameID())
 
+
 class DecoRectifiedImage(FrameDecorator):
     def __init__(self, frame_id: int, videoStream: VideoStream) -> DecoRectifiedImage:
         FrameDecorator.__init__(self, Frame(frame_id, videoStream))
@@ -220,24 +224,6 @@ class DecoRectifiedImage(FrameDecorator):
         if res_img is None:
             return self.__videoStream.read_image_obj(self.getFrameID())
         return res_img
-
-
-class DecoMarkersWithSymbols(DecoMarkersAbstract):
-
-    def _drawMarkerOnImage(self, mainImage, marker_id, location):
-        if not str(marker_id).isdigit():
-            mainImage.drawCross(location, color=MarkersConfiguration.COLOR_RED)
-            return
-
-        config = MarkersConfiguration()
-        color = config.color_for_marker(int(marker_id))
-        if int(marker_id) % 2 == 0:
-            # even markers are crosses
-            mainImage.drawCross(location, color=color)
-        else:
-            # odd markers are squares
-            box = Box(location.translateBy(Vector(-9, -9)), location.translateBy(Vector(9, 9)))
-            mainImage.drawBoxOnImage(box, color=color, thickness=4)
 
 
 class DecoMarkedCrabs(FrameDecorator):
@@ -310,7 +296,13 @@ class DecoRedDots(FrameDecorator):
         imgObj.drawCross(redDot1,5, color=(0, 0, 255))
 
         redDot2 = self.__redDotsData.getRedDot2(self.getFrameID())
-        imgObj.drawCross(redDot2,5, color=(0, 0, 255))
+        imgObj.drawCross(redDot2, 5, color=(0, 0, 255))
+
+        # camera = Camera()
+        # redDot1_undistorted = camera.undistort_point(redDot1, imgObj.width(), imgObj.height())
+        # redDot2_undistorted = camera.undistort_point(redDot2, imgObj.width(), imgObj.height())
+        # imgObj.drawCross(redDot1_undistorted, 5, color=(0, 0, 255))
+        # imgObj.drawCross(redDot2_undistorted, 5, color=(0, 0, 255))
 
         return imgObj
 

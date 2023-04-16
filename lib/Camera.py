@@ -9,19 +9,28 @@ from lib.common import Point
 class Camera:
     def __init__(self):
         self.__mtx = np.load(glob.glob('resources/CAMERA/*mtx.npy')[0])
-        self.__is_cropped = False
         self.__dst = np.load(glob.glob('resources/CAMERA/*dst.npy')[0])
 
-    def undistort_image(self, image: Image) -> Image:
+    def undistort_image(self, image: Image, crop_image=False) -> Image:
         image_dimensions = (image.width(), image.height())
 
         newcameramtx, roi = cv2.getOptimalNewCameraMatrix(self.__mtx, self.__dst, image_dimensions, 1, image_dimensions)
         ret = cv2.undistort(image.asNumpyArray(), self.__mtx, self.__dst, None, newcameramtx)
-        if self.__is_cropped:
+        if crop_image:
             x, y, w1, h1 = roi
             ret = ret[y:y + h1, x:x + w1]
             ret = cv2.resize(ret, image_dimensions)
         return Image(ret)
+
+    def undistort_point(self, point: Point, frame_width: int, frame_height: int) -> Point:
+        image_size = ((frame_width), (frame_height))
+        newcameramtx, roi = cv2.getOptimalNewCameraMatrix(self.__mtx, self.__dst, image_size, 1, image_size)
+
+        points = np.float32(np.array([(point.x, point.y)])[:, np.newaxis, :])
+        undistorted_pts = cv2.undistortPoints(points, self.__mtx, self.__dst, P=newcameramtx)
+
+        undistorted_point = Point(int(undistorted_pts[0][0][0]), int(undistorted_pts[0][0][1]))
+        return undistorted_point
 
     def distance_to_object(self, size_of_object_in_pixels, metric_size_of_object):
         #depth is the length along z-axis of object's projection (if object is right at the center of image, then this is the distance from camera lens's center to this object)
