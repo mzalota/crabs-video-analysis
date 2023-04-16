@@ -214,8 +214,9 @@ class DecoRectifiedImage(FrameDecorator):
     def getImgObj(self):
         # type: () -> Image
         Rect = Rectificator(self.__videoStream, self.getFrameID(), True)
-        res_img = Rect.generate_rectified_image()
+        res_img = Rect.generate_rectified_image(self.frameDeco.getImgObj())
         if res_img is None:
+            print("Rectification Did not Work")
             return self.__videoStream.read_image_obj(self.getFrameID())
         return res_img
 

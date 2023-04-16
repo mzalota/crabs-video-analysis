@@ -10,9 +10,6 @@ class EuclidianPlane:
         self.__mtx = mtx
 
     def compute_normal(self):
-        ptsA = self.__ptsA
-        ptsB = self.__ptsB
-
         # We assume no rotation between frames, only translation (hence rotation is just an identity matrix)
         rotation = np.identity(3)
         translation = self.__compute_translation_vector()

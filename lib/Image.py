@@ -169,8 +169,7 @@ class Image:
         return Image(newImageNP)
 
     def scale_by_factor(self, scale_factor: float) -> Image:
-        new_shape = (int(self.width() * scale_factor), int(self.height() * scale_factor))
-        return Image(cv2.resize(self.asNumpyArray(), new_shape))
+        return self.scaleImage(int(self.height() * scale_factor), int(self.width() * scale_factor))
 
     def growByPaddingBottomAndRight(self, newWidth, newHeight):
         # type: (int, int) -> Image

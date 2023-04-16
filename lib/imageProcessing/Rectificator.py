@@ -28,14 +28,13 @@ class Rectificator():
         self.__mtx = camera.getCalibrationMatrix()
         self.__dst = camera.getDistortionCoefficients()
 
-        self.__image_to_rectify = self.__vs.read_image_obj(self.__frameID)
+        # self.__image_to_rectify = self.__vs.read_image_obj(self.__frameID)
         self.__plane_normal = None
 
 
-    def generate_rectified_image(self) -> Image:
-        image_to_rectify = self.__image_to_rectify
+    def generate_rectified_image(self, image_to_rectify: Image) -> Image:
         if self.__plane_normal is None:
-            self.__generate_normal()
+            self.__generate_normal(image_to_rectify)
         plane_normal = self.__plane_normal
 
         if plane_normal is None:
@@ -44,19 +43,19 @@ class Rectificator():
         rot_mtx = self.__rotate_matrix_from_normal(*plane_normal)
         res_img = self.__rotate_image_plane(image_to_rectify, rot_mtx)
         res_img = Image(res_img)
-        res_img = res_img.scale_by_factor(self.__scale_factor)
+        # res_img = res_img.scale_by_factor(self.__scale_factor)
         return res_img
 
 
-    def rectify_point(self, point_to_rectify: Point) -> Point:
+    def rectify_point(self, image_to_rectify: Image, point_to_rectify: Point) -> Point:
         if self.__plane_normal is None:
-            self.__generate_normal()
+            self.__generate_normal(image_to_rectify)
 
         return self.__rectifyPoint(point_to_rectify)
 
-    def __generate_normal(self) -> None:
+    def __generate_normal(self, image_to_rectify: Image) -> None:
         print('Attempt to rectify current frame')
-        image_to_rectify = self.__image_to_rectify
+        # image_to_rectify = self.__image_to_rectify
 
         motion = 0.0
         step = self.__init_frame_step
@@ -172,11 +171,14 @@ class Rectificator():
         # Calc result homography
         matrix = K @ R1 @ K_inv1
 
+        # to try to avoid cropping read https://stackoverflow.com/questions/13063201/how-to-show-the-whole-image-when-using-opencv-warpperspective
+
         # Rotate image
         tf_img = cv2.warpPerspective(img, np.linalg.inv(matrix), (img.shape[1], img.shape[0]))
 
         # return transformed image
-        return cv2.normalize(tf_img, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
+        normalized = cv2.normalize(tf_img, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
+        return normalized
 
 
     ##### POINT RECTIFICATOR FUNCS ######
