@@ -4,6 +4,7 @@ from abc import ABCMeta, abstractmethod
 from lib.Camera import Camera
 from lib.FrameId import FrameId
 from lib.Image import Image
+from lib.data import RedDotsData
 from lib.imageProcessing.Analyzer import Analyzer
 from lib.imageProcessing.Rectificator import Rectificator
 from lib.ui.MarkersConfiguration import MarkersConfiguration
@@ -47,28 +48,22 @@ class FrameDecoFactory:
         gridMidPoint = self.__seeFloorGeometry.getRedDotsData().midPoint(referenceFrameID)
         return self.__seeFloorGeometry.translatePointCoordinate(gridMidPoint, referenceFrameID, frameID)
 
-    def getFrameDecoRedDots(self, frameDeco):
-        # type: (FrameDecorator) -> DecoRedDots
+    def getFrameDecoRedDots(self, frameDeco: FrameDecorator) -> DecoRedDots:
         return DecoRedDots(frameDeco, self.__seeFloorGeometry.getRedDotsData())
 
-    def getFrameDecoMarkedCrabs(self, frameDeco):
-        # type: (FrameDecorator) -> DecoMarkedCrabs
+    def getFrameDecoMarkedCrabs(self, frameDeco: FrameDecorator) -> DecoMarkedCrabs:
         return DecoMarkedCrabs(frameDeco, self.__seeFloorGeometry, self.__crabsData)
 
-    def getFrameDecoMarkers(self, frameDeco):
-        # type: (FrameDecorator) -> DecoMarkersAbstract
+    def getFrameDecoMarkers(self, frameDeco: FrameDecorator) -> DecoMarkersWithNumbers:
         return DecoMarkersWithNumbers(frameDeco, self.__seeFloorGeometry, self.__markersData)
 
-    def getFrameDecoFrameID(self, frameDeco):
-        # type: (FrameDecorator) -> DecoFrameID
+    def getFrameDecoFrameID(self, frameDeco: FrameDecorator) -> DecoFrameID:
         return DecoFrameID(frameDeco, self.__seeFloorGeometry, self.__badFramesData)
 
-    def getFrameDecoFocusHazeBrigtness(self, frameDeco):
-        # type: (FrameDecorator) -> DecoFrameID
+    def getFrameDecoFocusHazeBrigtness(self, frameDeco: FrameDecorator) -> DecoFocusHazeBrightness:
         return DecoFocusHazeBrightness(frameDeco, self.__seeFloorGeometry)
 
-    def getFrameDecoAdjustDrift(self, frameDeco, start_point, start_frame_id):
-        # type: (FrameDecorator, Point) -> DecoAdjustDrift
+    def getFrameDecoAdjustDrift(self, frameDeco: FrameDecorator, start_point: Point, start_frame_id: int) -> DecoAdjustDrift:
         return DecoAdjustDrift(frameDeco, self.__seeFloorGeometry, start_point, start_frame_id)
 
 
@@ -117,14 +112,15 @@ class DecoGridLines(FrameDecorator):
         imgObj.drawLine(verticalTop, verticalBottom, thickness=3, color=(255, 255, 0))
         imgObj.drawLine(horisontalLeft, horisontalRight, thickness=3, color=(255, 255, 0))
 
-class DecoMarkersAbstract(FrameDecorator):
-    __metaclass__ = ABCMeta
+class DecoMarkersWithNumbers(FrameDecorator):
+    # __metaclass__ = ABCMeta
 
     def __init__(self, frameDeco, seefloorGeometry, markersData):
         # type: (FrameDecorator, SeeFloor, MarkersData) -> DecoMarkers
         FrameDecorator.__init__(self, frameDeco)
         self.__seefloorGeometry = seefloorGeometry
         self.__markersData = markersData
+        self.__is_undistorted = False
 
     def getImgObj(self):
         # type: () -> Image
@@ -132,9 +128,8 @@ class DecoMarkersAbstract(FrameDecorator):
         self.__paintMarkersOnImage(imgObj, self.getFrameID())
         return imgObj
 
-    @abstractmethod
-    def _drawMarkerOnImage(self, mainImage, marker_id, location):
-        pass
+    def draw_undistorted(self):
+        self.__is_undistorted = True
 
     def __paintMarkersOnImage(self, mainImage, frame_id):
         #timer = MyTimer("MarkersOnFrame")
@@ -150,11 +145,12 @@ class DecoMarkersAbstract(FrameDecorator):
 
             orig_location = Point(marker['locationX'], marker['locationY'])
             location = self.__seefloorGeometry.translatePointCoordinate(orig_location, frame_number, frame_id)
-            self._drawMarkerOnImage(mainImage, marker_id, location)
 
-            # camera = Camera()
-            # location3 = camera.undistort_point(location,mainImage.width(), mainImage.height())
-            # self._drawMarkerOnImage(mainImage, marker_id+"a", location3)
+            if self.__is_undistorted:
+                camera = Camera()
+                location = camera.undistort_point(location, mainImage.width(), mainImage.height())
+
+            self._drawMarkerOnImage(mainImage, marker_id, location)
 
         # timer.lap("Number of markers" + str(len(markers)))
 
@@ -165,8 +161,6 @@ class DecoMarkersAbstract(FrameDecorator):
         print("__markersOnFrame: frame_id",frame_id, "prev_frame_id", prev_frame_id, "next_frame_id", next_frame_id)
         return self.__markersData.marksBetweenFrames(prev_frame_id, next_frame_id)
 
-
-class DecoMarkersWithNumbers(DecoMarkersAbstract):
 
     def _drawMarkerOnImage(self, mainImage, marker_id, location):
         textBox = self.__determineLocationOfTextBox(location)
@@ -233,6 +227,10 @@ class DecoMarkedCrabs(FrameDecorator):
         FrameDecorator.__init__(self, frameDeco)
         self.__seefloorGeometry = seefloorGeometry
         self.__crabsData = crabsData
+        self.__is_undistorted = False
+
+    def draw_undistorted(self):
+        self.__is_undistorted = True
 
     def getImgObj(self):
         # type: () -> Image
@@ -240,21 +238,21 @@ class DecoMarkedCrabs(FrameDecorator):
         self.__markCrabsOnImage(imgObj, self.getFrameID())
         return imgObj
 
-    def __markCrabsOnImage(self, mainImage, frame_id):
+    def __markCrabsOnImage(self, mainImage: Image, frame_id: int):
         #timer = MyTimer("crabsOnFrame")
         markedCrabs = self.__crabsOnFrame(frame_id)
         #timer.lap("frame_number: " + str(frame_id))
         for markedCrab in markedCrabs:
-
-            #print ('markedCrab', markedCrab)
             frame_number = markedCrab['frameNumber']
-
             crabLocationOrig = Point(markedCrab['crabLocationX'], markedCrab['crabLocationY'])
 
-            crabLocation2 = self.__seefloorGeometry.translatePointCoordinate(crabLocationOrig, frame_number,frame_id)
-            mainImage.drawCross(crabLocation2, color=(255, 0, 0))
+            location = self.__seefloorGeometry.translatePointCoordinate(crabLocationOrig, frame_number,frame_id)
+            if self.__is_undistorted:
+                camera = Camera()
+                location = camera.undistort_point(location, mainImage.width(), mainImage.height())
 
-            #print("crabLocation Old", str(crabLocation), "new", str(crabLocation2), "orig", str(crabLocationOrig))
+            mainImage.drawCross(location, color=(255, 0, 0))
+
         #timer.lap("Number of crabs" + str(len(markedCrabs)))
 
     def __crabsOnFrame(self, frame_id):
@@ -283,29 +281,30 @@ class DecoAdjustDrift(FrameDecorator):
         return imgObj
 
 class DecoRedDots(FrameDecorator):
-    def __init__(self, frameDeco, redDotsData):
-        # type: (FrameDecorator, RedDotsData) -> DecoRedDots
+    def __init__(self, frameDeco: FrameDecorator, redDotsData: RedDotsData) -> DecoRedDots:
         FrameDecorator.__init__(self, frameDeco)
         self.__redDotsData = redDotsData
+        self.__is_undistorted = False
+
+    def draw_undistorted(self):
+        self.__is_undistorted = True
 
     def getImgObj(self):
         # type: () -> Image
         imgObj = self.frameDeco.getImgObj()
 
         redDot1 = self.__redDotsData.getRedDot1(self.getFrameID())
-        imgObj.drawCross(redDot1,5, color=(0, 0, 255))
-
         redDot2 = self.__redDotsData.getRedDot2(self.getFrameID())
+
+        if self.__is_undistorted:
+            camera = Camera()
+            redDot1 = camera.undistort_point(redDot1, imgObj.width(), imgObj.height())
+            redDot2 = camera.undistort_point(redDot2, imgObj.width(), imgObj.height())
+
+        imgObj.drawCross(redDot1,5, color=(0, 0, 255))
         imgObj.drawCross(redDot2, 5, color=(0, 0, 255))
 
-        # camera = Camera()
-        # redDot1_undistorted = camera.undistort_point(redDot1, imgObj.width(), imgObj.height())
-        # redDot2_undistorted = camera.undistort_point(redDot2, imgObj.width(), imgObj.height())
-        # imgObj.drawCross(redDot1_undistorted, 5, color=(0, 0, 255))
-        # imgObj.drawCross(redDot2_undistorted, 5, color=(0, 0, 255))
-
         return imgObj
-
 
 class DecoFrameID(FrameDecorator):
     def __init__(self, frameDeco, seeFloor, badFramesData):

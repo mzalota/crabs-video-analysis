@@ -295,11 +295,17 @@ class ScientistUI:
         else:
             frameDeco = frameImagesFactory.getFrameDecoRawImage(frame.getFrameID())
 
+
+        frameDecoRedDots = frameImagesFactory.getFrameDecoRedDots(frameDeco)
+        frameDecoMarkedCrabs = frameImagesFactory.getFrameDecoMarkedCrabs(frameDecoRedDots)
+        frameDecoMarkers = frameImagesFactory.getFrameDecoMarkers(frameDecoMarkedCrabs)
+        if self.__image_fix == self.IMAGE_UNDISTORTED:
+            frameDecoRedDots.draw_undistorted()
+            frameDecoMarkedCrabs.draw_undistorted()
+            frameDecoMarkers.draw_undistorted()
+
+        frameDeco = frameImagesFactory.getFrameDecoFocusHazeBrigtness(frameDecoMarkers)
         frameDeco = frameImagesFactory.getFrameDecoFrameID(frameDeco)
-        frameDeco = frameImagesFactory.getFrameDecoFocusHazeBrigtness(frameDeco)
-        frameDeco = frameImagesFactory.getFrameDecoRedDots(frameDeco)
-        frameDeco = frameImagesFactory.getFrameDecoMarkedCrabs(frameDeco)
-        frameDeco = frameImagesFactory.getFrameDecoMarkers(frameDeco)
 
         if self.__markingDrift == True:
             frameDeco = frameImagesFactory.getFrameDecoAdjustDrift(frameDeco, self.__driftPoint1, self.__driftFrame1)
