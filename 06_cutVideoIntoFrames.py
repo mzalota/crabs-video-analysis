@@ -46,7 +46,7 @@ framesStitcher.saveFramesToFile(frameIDs, folderStruct.getFramesDirpath())
 loggerFramesCSV = Logger.openInOverwriteMode(folderStruct.getFramesFilepath())
 framesStitcher.saveFramesToCSVFile(frameIDs, loggerFramesCSV)
 
-crabsData = CrabsData(folderStruct)
+crabsData = CrabsData.createFromFolderStruct(folderStruct)
 lst = crabsData.allFramesWithCrabs()
 framesStitcher.saveFramesToFile(lst, folderStruct.getCrabFramesDirpath())
 

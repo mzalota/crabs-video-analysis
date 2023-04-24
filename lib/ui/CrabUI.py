@@ -1,14 +1,24 @@
+from lib.FolderStructure import FolderStructure
+from lib.VideoStream import VideoStream
+from lib.data import SeeFloorNoBadBlocks
 from lib.data.CrabsData import CrabsData
 from lib.Feature import Feature
 from lib.ImageWindow import ImageWindow
 from lib.common import Box, Point, Vector
+from lib.data.model.Crab import Crab
 
 
 class CrabUI:
-    def __init__(self, crabsData, videoStream, seeFloor, frameID, crabPoint):
-        # type: (CrabsData, VideoStream, SeeFloorNoBadBlocks, int, Point) -> CrabUI
+    def __init__(self,
+                 crabsData: CrabsData,
+                 videoStream: VideoStream,
+                 seeFloor: SeeFloorNoBadBlocks,
+                 folderStruct: FolderStructure,
+                 frameID: int,
+                 crabPoint: Point):
         self.__videoStream = videoStream
         self.__crabsData = crabsData
+        self.__folderStruct = folderStruct
         self.__boxSize = 300
         self.__crabFeature = Feature(seeFloor, frameID, crabPoint, self.__boxSize)
 
@@ -40,9 +50,12 @@ class CrabUI:
     def __save_to_file(self):
         crabOnFrameID = self.getFrameIDOfCrab()
         crabBox = self.getCrabLocation()
+        crab = Crab(crabOnFrameID, crabBox.topLeft, crabBox.bottomRight)
 
-        appended_row = self.__crabsData.add_crab_entry(crabOnFrameID, crabBox)
-        print ("writing crab to file", appended_row)
+        appended_row = self.__crabsData.add_crab_entry(crab)
+        print("writing crab to file", appended_row)
+
+        self.__crabsData.save_file(self.__folderStruct)
 
     def __crabImageOnFrame(self, frameID):
 
@@ -55,7 +68,7 @@ class CrabUI:
         crabImage.drawFrameID(frameID)
         return crabImage
 
-    def getCrabLocation(self):
+    def getCrabLocation(self) -> Box:
         if self.__user_clicked_in_right_half():
             xOffset = -self.__boxSize
         else:
@@ -117,7 +130,7 @@ class CrabUI:
         else:
             return False
 
-    def __crabCoordinatesOnItsFrame(self, frameID, offsetOfCrabImageOnCrabWindow):
+    def __crabCoordinatesOnItsFrame(self, frameID, offsetOfCrabImageOnCrabWindow) -> Box:
 
         boxAroundCrabOnItsFrame = self.__crabFeature.getCoordinateInFrame(frameID).boxAroundPoint(self.__boxSize)
         lineNormalizedTo0x0 = self.__line_marked_by_user.translateBy(offsetOfCrabImageOnCrabWindow)

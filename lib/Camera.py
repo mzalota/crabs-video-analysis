@@ -1,4 +1,6 @@
 import glob
+from os import getcwd
+
 import cv2
 import numpy as np
 
@@ -8,8 +10,20 @@ from lib.common import Point
 
 class Camera:
     def __init__(self):
-        self.__mtx = np.load(glob.glob('resources/CAMERA/*mtx.npy')[0])
-        self.__dst = np.load(glob.glob('resources/CAMERA/*dst.npy')[0])
+        mtx_glob = glob.glob('resources/CAMERA/*mtx.npy')
+        self.__mtx = np.load(mtx_glob[0])
+
+        #print("self.__mtx is ", self.__mtx)
+        # self.__mtx is
+        # [[2.34308081e+03 0.00000000e+00 1.56529667e+03]
+        #  [0.00000000e+00 2.34541467e+03 9.68545150e+02]
+        #  [0.00000000e+00 0.00000000e+00 1.00000000e+00]]
+
+        dst_glob = glob.glob('resources/CAMERA/*dst.npy')
+        self.__dst = np.load(dst_glob[0])
+        #print("self.__dst is ", self.__dst)
+        #self.__dst is  [[-0.30592777  0.2554346  -0.00322515 -0.00050018 -0.1366279 ]]
+
 
     def undistort_image(self, image: Image, crop_image=False) -> Image:
         image_dimensions = (image.width(), image.height())

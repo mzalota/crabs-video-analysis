@@ -57,7 +57,7 @@ class ScientistUI:
         self.__seeFloor = SeeFloor.createFromFolderStruct(folderStruct)
         self.__seeFloorNoBadBlocks = SeeFloorNoBadBlocks.createFromFolderStruct(folderStruct)
 
-        self.__crabData = CrabsData(self.__folderStruct)
+        self.__crabData = CrabsData.createFromFolderStruct(self.__folderStruct)
         self.__redDotsUI = RedDotsUI(self.__videoStream)
         self.__markersData = MarkersData(folderStruct)
         self.__marker_id = "0"
@@ -196,7 +196,7 @@ class ScientistUI:
 
     def __show_crab_ui(self, frame_id):
         crabPoint = self.__imageWin.featureCoordiate
-        crabUI = CrabUI(self.__crabData, self.__videoStream, self.__seeFloorNoBadBlocks, frame_id, crabPoint)
+        crabUI = CrabUI(self.__crabData, self.__videoStream, self.__seeFloorNoBadBlocks, self.__folderStruct, frame_id, crabPoint)
         crabUI.showCrabWindow()
 
     def __show_red_dot_ui(self, frame_id):

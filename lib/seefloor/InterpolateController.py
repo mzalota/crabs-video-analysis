@@ -44,7 +44,7 @@ class InterpolateController:
         sf.saveToFile()
 
         print ("regenerating crabs_on_seefloor")
-        crabs = CrabsData(self.__folderStruct)
+        crabs = CrabsData.createFromFolderStruct(self.__folderStruct)
         crabs_on_seefloor_df = crabs.generate_crabs_on_seefloor(sf)
         crabs_on_seefloor_df.save_file_csv(self.__folderStruct.getCrabsOnSeefloorFilepath())
 

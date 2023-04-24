@@ -1,8 +1,12 @@
+from __future__ import annotations
+
 import pandas as pd
 from datetime import datetime
 from lib.FolderStructure import FolderStructure
+from lib.common import Point
 from lib.data.PandasWrapper import PandasWrapper
 from lib.data.SeeFloor import SeeFloor
+from lib.data.model import Crab
 from lib.infra.DataframeWrapper import DataframeWrapper
 
 
@@ -19,47 +23,49 @@ class CrabsData(PandasWrapper):
     __COLNAME_crabCoordinatePoint = "crabCoordinatePoint"
     __COLNAME_cranbCoordinateBox = "cranbCoordinateBox"
 
-    def __init__(self, folderStruct):
-        # type: (FolderStructure) -> CrabsData
-        self.__folderStruct = folderStruct
-        column_names = [self.__COLNAME_dir,
-                        self.__COLNAME_filename,
-                        self.__COLNAME_frameNumber,
-                        self.__COLNAME_createdOn,
-                        self.__COLNAME_crabNumber,
-                        self.__COLNAME_crabWidthPixels,
-                        self.__COLNAME_crabLocationX,
-                        self.__COLNAME_crabLocationY,
-                        self.__COLNAME_crabCoordinatePoint,
-                        self.__COLNAME_cranbCoordinateBox]
+    @staticmethod
+    def _column_names():
+        return [CrabsData.__COLNAME_dir,
+                CrabsData.__COLNAME_filename,
+                CrabsData.__COLNAME_frameNumber,
+                CrabsData.__COLNAME_createdOn,
+                CrabsData.__COLNAME_crabNumber,
+                CrabsData.__COLNAME_crabWidthPixels,
+                CrabsData.__COLNAME_crabLocationX,
+                CrabsData.__COLNAME_crabLocationY,
+                CrabsData.__COLNAME_crabCoordinatePoint,
+                CrabsData.__COLNAME_cranbCoordinateBox]
 
-        self.__load_dataframe(column_names)
+    def __init__(self, df: pd.DataFrame) -> CrabsData:
+        self.__crabsDF = df
 
-    def __load_dataframe(self,column_names):
-        filepath = self.__folderStruct.getCrabsFilepath()
+    @staticmethod
+    def createEmpty():
+        df = pd.DataFrame(columns=(CrabsData._column_names()))
+        return CrabsData(df)
 
-        if self.__folderStruct.fileExists(filepath):
+    @staticmethod
+    def createFromFolderStruct(folderStruct: FolderStructure) -> CrabsData:
+        filepath = folderStruct.getCrabsFilepath()
+        if not folderStruct.fileExists(filepath):
+            return CrabsData.createEmpty()
 
-            #TODO: find good test cases and then refactor this line into PandasWrapper without breaking anything
-            self.__crabsDF = pd.read_csv(filepath, delimiter="\t", na_values="(null)", header=None, names=column_names)
-            #self.__crabsDF = self.readDataFrameFromCSV(filepath, column_names)
+        #TODO: find good test cases and then refactor this line into PandasWrapper (readDataFrameFromCSV()) without breaking anything
+        crabDF = pd.read_csv(filepath, delimiter="\t", na_values="(null)", header=None, names=(CrabsData._column_names()))
 
-            self.__drop_header_row()
-        else:
-            self.__crabsDF = pd.DataFrame(columns=column_names)
-
-    def __drop_header_row(self):
-        if (self.__crabsDF.iloc[0][0] == 'dir'):
+        # drop Header Row
+        if (crabDF.iloc[0][0] == 'dir'):
             #we know its a header row because text in first row in first column is "dir"
-            self.__crabsDF = self.__crabsDF[1:] #.reset_index(drop=True)
-        else:
-            #first row is not header. Leave it
-            pass
+            crabDF = crabDF[1:]  #.reset_index(drop=True)
 
-    def add_crab_entry(self, frame_number, crabCoordinate):
-        framesDir = self.__folderStruct.getVideoFilepath()
+        return CrabsData(crabDF)
 
-        row_to_append = {self.__COLNAME_dir: framesDir,
+
+    # def add_crab_entry(self, frame_number: int, crabCoordinate: Point, folderStruct: FolderStructure):
+    def add_crab_entry(self, crab: Crab):
+        frame_number = crab.getFrameID()
+        crabCoordinate = crab.getBox()
+        row_to_append = {self.__COLNAME_dir: "blabla.framesDir",
                          self.__COLNAME_filename: "blabla.filename",
                          self.__COLNAME_frameNumber: str(int(frame_number)),
                          self.__COLNAME_createdOn: datetime.now().strftime('%Y-%m-%d_%H:%M:%S'),
@@ -71,15 +77,12 @@ class CrabsData(PandasWrapper):
                          self.__COLNAME_cranbCoordinateBox: str(crabCoordinate)
                          }
 
-        # self.__crabsDF = self.__crabsDF.append(row_to_append, ignore_index=True)
         self.__crabsDF = DataframeWrapper.append_to_df(self.__crabsDF, row_to_append)
-        self.__saveAsCSV()
-
         return row_to_append
 
-    def __saveAsCSV(self):
+    def save_file(self, folderStruct: FolderStructure):
         dfObj = DataframeWrapper(self.__crabsDF)
-        dfObj.save_file_csv(self.__folderStruct.getCrabsFilepath())
+        dfObj.save_file_csv(folderStruct.getCrabsFilepath())
 
     def getCount(self):
         return len(self.__crabsDF.index)
@@ -155,3 +158,5 @@ class CrabsData(PandasWrapper):
         result['seefloor_coord_y_mm'] = y_coord_mm
         result['seefloor_coord_x_mm'] = x_coord_mm
         return result
+
+
