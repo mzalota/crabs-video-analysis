@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+from typing import List, Dict
+
 import pandas as pd
 from datetime import datetime
 from lib.FolderStructure import FolderStructure
-from lib.common import Point
+from lib.common import Point, Box
 from lib.data.PandasWrapper import PandasWrapper
 from lib.data.SeeFloor import SeeFloor
-from lib.data.model import Crab
+from lib.data.model.Crab import Crab
 from lib.infra.DataframeWrapper import DataframeWrapper
 
 
@@ -91,7 +93,7 @@ class CrabsData(PandasWrapper):
         # type: () -> pd.DataFrame
         return self.__crabsDF
 
-    def allFramesWithCrabs(self):
+    def allFramesWithCrabs(self) -> List[int]:
         # type: () -> list(int)
         crabsDF = self.getPandasDF()
         frames = crabsDF[self.__COLNAME_frameNumber].astype(int)
@@ -117,19 +119,27 @@ class CrabsData(PandasWrapper):
         # {'crabLocationX': 101, 'crabLocationY': 420, 'frameNumber': 10530}]
         return tmpDF[["frameNumber", "crabLocationY", "crabLocationX"]].reset_index(drop=True).to_dict("records")
 
-    def generate_crabs_on_seefloor(self, sf):
+    def generate_crabs_on_seefloor(self, sf: SeeFloor):
         # type: (SeeFloor) -> DataframeWrapper
-        seed_df = self.getPandasDF()[["frameNumber", "crabWidthPixels", "crabLocationX", "crabLocationY"]]
+        seed_df = self.getPandasDF()[["frameNumber", "crabWidthPixels", "crabLocationX", "crabLocationY", "cranbCoordinateBox"]]
 
         result_rows = list()
         for markedCrab in DataframeWrapper(seed_df).to_dict():
-            new_row = self.__build_new_crab_row(markedCrab, sf)
+            crabBox = Box.from_string(markedCrab['cranbCoordinateBox'])
+            print("crabBox", crabBox)
+            left = crabBox.topLeft
+
+            frame_id = markedCrab['frameNumber']
+            right = crabBox.bottomRight
+            print("left", left, "right", right, "frame_id", frame_id)
+            crab = Crab(frame_id, left, right)
+
+            new_row = self.__build_new_crab_row(markedCrab, sf, crab)
             result_rows.append(new_row)
 
         return DataframeWrapper(pd.DataFrame(result_rows))
 
-    def __build_new_crab_row(self, markedCrab, sf):
-        # type: (Dict, SeeFloor) -> DataframeWrapper
+    def __build_new_crab_row(self, markedCrab: Dict, sf: SeeFloor, crab: Crab):
         result = dict()
         frame_id = int(markedCrab['frameNumber'])
         print("frame_id", frame_id)
@@ -157,6 +167,7 @@ class CrabsData(PandasWrapper):
         result['frame_coord_y_px'] = frame_coord_y_px
         result['seefloor_coord_y_mm'] = y_coord_mm
         result['seefloor_coord_x_mm'] = x_coord_mm
+        result['width_px_undist'] = crab.width_px_undistorted()
         return result
 
 

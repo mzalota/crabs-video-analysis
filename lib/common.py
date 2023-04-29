@@ -1,16 +1,34 @@
-# from collections import namedtuple
+from __future__ import annotations
 
 import math
 import numpy
-
 
 class Point:
     def __init__(self, x, y):
         self.x = x
         self.y = y
 
+    @staticmethod
+    def from_string(point_as_string):
+        if point_as_string[0] != "(":
+            return
+
+        if point_as_string[-1] != ")":
+            return
+
+        # remove enclosing ( and )
+        point_nobrackets = point_as_string[1:-1]
+        coordinates = point_nobrackets.split(",")
+
+        if len(coordinates) != 2:
+            return
+
+        return Point(int(coordinates[0]), int(coordinates[1]))
+
     def __str__(self):
         return "(" + str(self.x) + "," + str(self.y) + ")"
+
+
 
     def calculateMidpoint(self, point2):
         # type: (Point) -> Point
@@ -123,12 +141,55 @@ class Box:
         self.topLeft = topLeft
 
     @staticmethod
-    def createUsingDimesions(x_width, y_height):
-        # type: (int, int) -> Box
-        return Box(Point(0, 0), Point(x_width, y_height))
+    def from_string(box_as_string: str) -> Box:
+        if box_as_string[0] != "[":
+            return
+
+        if box_as_string[-1] != "]":
+            return
+
+        # remove enclosing [ and ]
+        two_points = box_as_string[1:-1]
+        points = two_points.split(":")
+        if len(points) != 2:
+            return
+
+        point1 = Point.from_string(points[0])
+        point2 = Point.from_string(points[1])
+
+        if not point1:
+            return
+
+        if not point2:
+            return
+
+
+        return Box(point1, point2)
+
+    @staticmethod
+    def __ddd( points_0):
+        if points_0[0] != "(":
+            return
+
+        if points_0[-1] != ")":
+            return
+
+        # remove enclosing ( and )
+        point1_nobrackets = points_0[1:-1]
+        coordinates = point1_nobrackets.split(",")
+        if len(coordinates) != 2:
+            return
+
+        return Point(int(coordinates[0]), int(coordinates[1]))
+
 
     def __str__(self):
         return "[" + str(self.topLeft) + ":" + str(self.bottomRight) + "]"
+
+    @staticmethod
+    def createUsingDimesions(x_width, y_height):
+        # type: (int, int) -> Box
+        return Box(Point(0, 0), Point(x_width, y_height))
 
     def width(self):
         return self.bottomRight.x - self.topLeft.x
@@ -166,6 +227,7 @@ class Box:
 
     def translate_by_xy(self, x: int, y: int):
         return self.translateBy(Vector(x, y))
+
 
 
 def boxAroundBoxes(box1, box2):
