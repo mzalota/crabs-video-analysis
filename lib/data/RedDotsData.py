@@ -171,6 +171,19 @@ class RedDotsData(PandasWrapper):
         dfResult = self.__rowForFrame(frameId)
         return dfResult["mm_per_pixel"].iloc[0]
 
+    def mm_per_pixel_undistorted(self, frameId : int) -> float:
+        # type: (int) -> float
+        # self.getRedDot1()
+        distance_between_dots_px = self.distance_px_undistorted(frameId)
+        return self.red_dots_separation_mm()/distance_between_dots_px
+
+    def distance_px_undistorted(self, frame_id: int) -> int:
+        camera = Camera.create_camera_4k()
+        red_dot1_undistorted = camera.undistort_poinnnnt(self.getRedDot1(frame_id))
+        red_dot2_undistorted = camera.undistort_poinnnnt(self.getRedDot2(frame_id))
+        distance_between_dots_px = red_dot1_undistorted.distanceTo(red_dot2_undistorted)
+        return distance_between_dots_px
+
     def __rowForFrame(self, frameId):
         df = self.getPandasDF()
         dfResult = df.loc[df[RedDotsData.COLNAME_frameNumber] == frameId]

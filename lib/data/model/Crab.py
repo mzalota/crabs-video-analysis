@@ -12,8 +12,11 @@ class Crab:
     def getBox(self) -> Box:
         return Box(self.__side1, self.__side2)
 
-    def getFrameID(self) -> int:
+    def frame_id(self) -> int:
         return self.__frame_id
+
+    def center(self) -> Point:
+        return self.getBox().centerPoint()
 
     def width_px(self) -> float:
         return self.getBox().diagonal()

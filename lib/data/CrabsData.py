@@ -65,7 +65,7 @@ class CrabsData(PandasWrapper):
 
     # def add_crab_entry(self, frame_number: int, crabCoordinate: Point, folderStruct: FolderStructure):
     def add_crab_entry(self, crab: Crab):
-        frame_number = crab.getFrameID()
+        frame_number = crab.frame_id()
         crabCoordinate = crab.getBox()
         row_to_append = {self.__COLNAME_dir: "blabla.framesDir",
                          self.__COLNAME_filename: "blabla.filename",
@@ -126,13 +126,8 @@ class CrabsData(PandasWrapper):
         result_rows = list()
         for markedCrab in DataframeWrapper(seed_df).to_dict():
             crabBox = Box.from_string(markedCrab['cranbCoordinateBox'])
-            print("crabBox", crabBox)
-            left = crabBox.topLeft
-
             frame_id = markedCrab['frameNumber']
-            right = crabBox.bottomRight
-            print("left", left, "right", right, "frame_id", frame_id)
-            crab = Crab(frame_id, left, right)
+            crab = Crab(frame_id, crabBox.topLeft, crabBox.bottomRight)
 
             new_row = self.__build_new_crab_row(markedCrab, sf, crab)
             result_rows.append(new_row)
@@ -141,16 +136,19 @@ class CrabsData(PandasWrapper):
 
     def __build_new_crab_row(self, markedCrab: Dict, sf: SeeFloor, crab: Crab):
         result = dict()
-        frame_id = int(markedCrab['frameNumber'])
+        frame_id = int(crab.frame_id()) # int(markedCrab['frameNumber'])
+        crab_width_px = crab.width_px() #float(markedCrab['crabWidthPixels'])
+        mm_per_pixel = sf.mm_per_pixel(frame_id) #sf.getRedDotsData().getMMPerPixel(frame_id)
+        frame_coord_x_px = crab.center().x #int(markedCrab['crabLocationX'])
+        frame_coord_y_px = crab.center().y # int(markedCrab['crabLocationY'])
+
         print("frame_id", frame_id)
-        crab_width_px = float(markedCrab['crabWidthPixels'])
-        print("crab_width_px", crab_width_px)
-        mm_per_pixel = sf.getRedDotsData().getMMPerPixel(frame_id)
         print("mm_per_pixel", mm_per_pixel)
-        frame_coord_x_px = int(markedCrab['crabLocationX'])
-        frame_coord_y_px = int(markedCrab['crabLocationY'])
+        print("crab_width_px", crab_width_px)
         print("frame_coord_x_px", frame_coord_x_px)
         print("frame_coord_y_px", frame_coord_y_px)
+
+        mm_per_pixel_undistorted = sf.getRedDotsData().mm_per_pixel_undistorted(frame_id)
 
         frame_coord_y_mm = frame_coord_y_px * mm_per_pixel
         y_coord_mm = sf.getYCoordMMOrigin(frame_id) + frame_coord_y_mm
@@ -161,6 +159,8 @@ class CrabsData(PandasWrapper):
 
         result['frameNumber'] = frame_id
         result['mm_per_px'] = mm_per_pixel
+        result['mm_per_px_undistored'] = mm_per_pixel_undistorted
+        # result['ratio_distance'] = mm_per_pixel_undistorted/mm_per_pixel
         result['width_px'] = crab_width_px
         result['width_mm'] = crab_width_px * mm_per_pixel
         result['frame_coord_x_px'] = frame_coord_x_px
@@ -168,6 +168,9 @@ class CrabsData(PandasWrapper):
         result['seefloor_coord_y_mm'] = y_coord_mm
         result['seefloor_coord_x_mm'] = x_coord_mm
         result['width_px_undist'] = crab.width_px_undistorted()
+        result['width_mm_undist'] = mm_per_pixel_undistorted * crab.width_px_undistorted()
+        # result['ratio_width'] = result['width_mm_undist'] / result['width_px_undist']
+
         return result
 
 

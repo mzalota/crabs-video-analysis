@@ -165,7 +165,7 @@ class ScientistUI:
 
             frame_id = new_frame_id
 
-    def __saveFrameImageToFile(self, frame):
+    def __saveFrameImageToFile(self, frame : Frame):
         print("Pressed S (save image) button")
 
         # construct filepath where image will be saved

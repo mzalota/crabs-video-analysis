@@ -50,8 +50,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         # type: () -> DriftData
         return self.__driftData
 
-    def getRedDotsData(self):
-        # type: () -> RedDotsData
+    def getRedDotsData(self) -> RedDotsData:
         return self.__redDotsData
 
     def maxFrameID(self):
@@ -239,20 +238,13 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         if frame_id <= self.minFrameID():
             return 1
 
-        # if !hasattr(self, '__mm_per_pixel_dict'):
-        if self.__mm_per_pixel_dict is None:
-            #Lazy loading of cache
-            # key is frame_id, value is mm_per_pixel
-            self.__mm_per_pixel_dict = self.__df.set_index(self.__COLNAME_frameNumber)["mm_per_pixel"].to_dict()
-
         # scale_this = self.__getValueFromDF("mm_per_pixel", frame_id)
         # scale_prev = self.__getValueFromDF("mm_per_pixel", frame_id-1)
-        scale_this = self.__mm_per_pixel_dict[frame_id]
-        scale_prev = self.__mm_per_pixel_dict[frame_id-1]
+        scale_this = self.mm_per_pixel(frame_id)
+        scale_prev = self.mm_per_pixel(frame_id - 1) #self.__mm_per_pixel_dict[frame_id-1]
 
         change = scale_this / scale_prev
         return change
-
 
     def get_y_drift_px(self, fromFrameID, toFrameID):
         # type: (int, int) -> float
@@ -278,6 +270,19 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         df = self.__getPandasDF()
         return df['frameNumber'][df['frameNumber'] == frame_id].index.tolist()[0]
 
+    def __mm_per_pixel_fast(self, frame_id: int) -> float:
+        # if !hasattr(self, '__mm_per_pixel_dict'):
+        if self.__mm_per_pixel_dict is None:
+            # Lazy loading of cache
+            # key is frame_id, value is mm_per_pixel
+            self.__mm_per_pixel_dict = self.__df.set_index(self.__COLNAME_frameNumber)["mm_per_pixel"].to_dict()
+
+        return self.__mm_per_pixel_dict[frame_id]
+
+    def mm_per_pixel(self, frame_id):
+        # return self.__getValueFromDF("mm_per_pixel", frame_id)
+        return self.__mm_per_pixel_fast(frame_id)
+
     def getXDriftMM(self, fromFrameID, toFrameID):
         # type: (int, int) -> float
         startXCoordMM = self.getXCoordMMOrigin(fromFrameID)
@@ -292,18 +297,13 @@ class SeeFloorNoBadBlocks(PandasWrapper):
 
     def heightMM(self,frame_id):
         # type: (int) -> float
-        mmPerPixel = self.__getValueFromDF("mm_per_pixel", frame_id)
+        mmPerPixel = self.mm_per_pixel(frame_id)
         return Frame.FRAME_HEIGHT*float(mmPerPixel)
 
     def widthMM(self,frame_id):
         # type: (int) -> float
-        mmPerPixel = self.__getValueFromDF("mm_per_pixel", frame_id)
+        mmPerPixel = self.mm_per_pixel(frame_id)
         return Frame.FRAME_WIDTH*float(mmPerPixel)
-
-    def haze(self, frame_id):
-        # type: (int) -> float
-        return self.__getValueFromDF("mm_per_pixel", frame_id)
-        # return self.__getValueFromDF("haze", frame_id)
 
     def getYCoordMMOrigin(self, frame_id):
         # type: (int) -> float

@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import glob
-from os import getcwd
+#from os import getcwd
 
 import cv2
 import numpy as np
 
+from lib.Frame import Frame
 from lib.Image import Image
 from lib.common import Point
 
@@ -24,6 +27,25 @@ class Camera:
         #print("self.__dst is ", self.__dst)
         #self.__dst is  [[-0.30592777  0.2554346  -0.00322515 -0.00050018 -0.1366279 ]]
 
+    @staticmethod
+    def create_camera_4k() -> Camera:
+        camera = Camera()
+        #TODO: is this correct frame width and height?
+        camera.__frame_width = Frame._FRAME_WIDTH_HIGH_RES
+        camera.__frame_height = Frame._FRAME_HEIGHT_HIGH_RES
+        return camera
+
+    @staticmethod
+    def create_camera_HD() -> Camera:
+        camera = Camera()
+        #TODO: is this correct frame width and height?
+        camera.__frame_width = Frame._FRAME_WIDTH_LOW_RES
+        camera.__frame_height = Frame._FRAME_HEIGHT_LOW_RES
+        return camera
+
+
+    def undistort_poinnnnt(self, point: Point):
+        return self.undistort_point(point, self.__frame_width, self.__frame_height)
 
     def undistort_image(self, image: Image, crop_image=False) -> Image:
         image_dimensions = (image.width(), image.height())

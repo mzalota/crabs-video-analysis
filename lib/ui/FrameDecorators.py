@@ -35,8 +35,7 @@ class FrameDecoFactory:
         return DecoRectifiedImage(frame_id, self.__videoStream)
 
     # ---
-    def getFrameDecoGridLines(self, frameDeco, referenceFrameID):
-        # type: (FrameDecorator, int) -> DecoGridLines
+    def getFrameDecoGridLines(self, frameDeco : FrameDecorator, referenceFrameID : int) -> DecoGridLines:
         frameID = frameDeco.getFrameID()
 
         centerPointForGrid = self.__centerPointForGrid(frameID, referenceFrameID)
