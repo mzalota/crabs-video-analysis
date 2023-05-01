@@ -5,11 +5,11 @@ from typing import List, Dict
 import pandas as pd
 from datetime import datetime
 from lib.FolderStructure import FolderStructure
-from lib.common import Point, Box
+from lib.common import Box
 from lib.data.PandasWrapper import PandasWrapper
 from lib.data.SeeFloor import SeeFloor
-from lib.data.model.Crab import Crab
 from lib.infra.DataframeWrapper import DataframeWrapper
+from lib.model.Crab import Crab
 
 
 class CrabsData(PandasWrapper):
@@ -86,81 +86,87 @@ class CrabsData(PandasWrapper):
         dfObj = DataframeWrapper(self.__crabsDF)
         dfObj.save_file_csv(folderStruct.getCrabsFilepath())
 
-    def getCount(self):
+    def getCount(self) -> int:
         return len(self.__crabsDF.index)
 
-    def getPandasDF(self):
-        # type: () -> pd.DataFrame
+    def __get_pandas_df(self) -> pd.DataFrame:
         return self.__crabsDF
 
-    def allFramesWithCrabs(self) -> List[int]:
+    def frames_with_crabs(self) -> List[int]:
         # type: () -> list(int)
-        crabsDF = self.getPandasDF()
+        crabsDF = self.__get_pandas_df()
         frames = crabsDF[self.__COLNAME_frameNumber].astype(int)
         cleanFrames = frames.drop_duplicates().sort_values()
         return cleanFrames.values.tolist()
 
-    def crabsBetweenFrames(self, lower_frame_id, upper_frame_id):
-        # type: (int, int) -> dict
 
+    def crabs_between_frames(self, lower_frame_id: int, upper_frame_id: int) -> List[Crab]:
         crabsDF = self.__crabsDF
         crabsDF["frameNumber"] = pd.to_numeric(crabsDF["frameNumber"], errors='coerce')
         crabsDF["frameNumber"] = crabsDF["frameNumber"].astype('int64')
-        crabsDF["crabLocationX"] = crabsDF["crabLocationX"].astype('int64')
-        crabsDF["crabLocationY"] = crabsDF["crabLocationY"].astype('int64')
-        crabsDF["crabWidthPixels"] = pd.to_numeric(crabsDF["crabWidthPixels"], errors='coerce')
+        crabsDF["cranbCoordinateBox"] = crabsDF["cranbCoordinateBox"]
 
         tmpDF = crabsDF[(crabsDF['frameNumber'] <= upper_frame_id) & (crabsDF['frameNumber'] >= lower_frame_id)]
         #print ("count in tmpDF", len(tmpDF.index),len(self.__crabsDF))
+
+        # crabs_list_of_dict = tmpDF[["frameNumber", "cranbCoordinateBox"]].reset_index(drop=True).to_dict("records")
+        crabs_list_of_dict = DataframeWrapper(tmpDF).to_dict()
 
         #example of the output
         #[{'crabLocationX': 221, 'crabLocationY': 368, 'frameNumber': 10026},
         # {'crabLocationX': 865, 'crabLocationY': 304, 'frameNumber': 10243},
         # {'crabLocationX': 101, 'crabLocationY': 420, 'frameNumber': 10530}]
-        return tmpDF[["frameNumber", "crabLocationY", "crabLocationX"]].reset_index(drop=True).to_dict("records")
+
+        results = list()
+        for row in crabs_list_of_dict:
+            frame_id = row["frameNumber"]
+            crabBox = Box.from_string(row['cranbCoordinateBox'])
+            crab = Crab(frame_id, crabBox.topLeft, crabBox.bottomRight)
+            results.append(crab)
+
+        return results
+
 
     def generate_crabs_on_seefloor(self, sf: SeeFloor):
         # type: (SeeFloor) -> DataframeWrapper
-        seed_df = self.getPandasDF()[["frameNumber", "crabWidthPixels", "crabLocationX", "crabLocationY", "cranbCoordinateBox"]]
+        seed_df = self.__get_pandas_df()[["frameNumber", "crabWidthPixels", "crabLocationX", "crabLocationY", "cranbCoordinateBox"]]
 
         result_rows = list()
         for markedCrab in DataframeWrapper(seed_df).to_dict():
             crabBox = Box.from_string(markedCrab['cranbCoordinateBox'])
             frame_id = markedCrab['frameNumber']
             crab = Crab(frame_id, crabBox.topLeft, crabBox.bottomRight)
-
-            new_row = self.__build_new_crab_row(markedCrab, sf, crab)
+            new_row = self.__build_new_crab_row(sf, crab)
             result_rows.append(new_row)
 
         return DataframeWrapper(pd.DataFrame(result_rows))
 
-    def __build_new_crab_row(self, markedCrab: Dict, sf: SeeFloor, crab: Crab):
-        result = dict()
-        frame_id = int(crab.frame_id()) # int(markedCrab['frameNumber'])
-        crab_width_px = crab.width_px() #float(markedCrab['crabWidthPixels'])
-        mm_per_pixel = sf.mm_per_pixel(frame_id) #sf.getRedDotsData().getMMPerPixel(frame_id)
-        frame_coord_x_px = crab.center().x #int(markedCrab['crabLocationX'])
-        frame_coord_y_px = crab.center().y # int(markedCrab['crabLocationY'])
+    def __build_new_crab_row(self, sf: SeeFloor, crab: Crab):
+        frame_id = int(crab.frame_id())
+        crab_width_px = crab.width_px()
+        frame_coord_x_px = crab.center().x
+        frame_coord_y_px = crab.center().y
 
         print("frame_id", frame_id)
-        print("mm_per_pixel", mm_per_pixel)
         print("crab_width_px", crab_width_px)
         print("frame_coord_x_px", frame_coord_x_px)
         print("frame_coord_y_px", frame_coord_y_px)
 
         mm_per_pixel_undistorted = sf.getRedDotsData().mm_per_pixel_undistorted(frame_id)
 
+        mm_per_pixel = sf.mm_per_pixel(frame_id)
         frame_coord_y_mm = frame_coord_y_px * mm_per_pixel
         y_coord_mm = sf.getYCoordMMOrigin(frame_id) + frame_coord_y_mm
         frame_coord_x_mm = frame_coord_x_px * mm_per_pixel
         x_coord_mm = sf.getXCoordMMOrigin(frame_id) + frame_coord_x_mm
+        print("mm_per_pixel", mm_per_pixel)
         print("y_coord_mm", y_coord_mm)
         print("x_coord_mm", x_coord_mm)
 
+        result = dict()
         result['frameNumber'] = frame_id
         result['mm_per_px'] = mm_per_pixel
         result['mm_per_px_undistored'] = mm_per_pixel_undistorted
-        # result['ratio_distance'] = mm_per_pixel_undistorted/mm_per_pixel
         result['width_px'] = crab_width_px
         result['width_mm'] = crab_width_px * mm_per_pixel
         result['frame_coord_x_px'] = frame_coord_x_px
@@ -169,6 +175,8 @@ class CrabsData(PandasWrapper):
         result['seefloor_coord_x_mm'] = x_coord_mm
         result['width_px_undist'] = crab.width_px_undistorted()
         result['width_mm_undist'] = mm_per_pixel_undistorted * crab.width_px_undistorted()
+
+        # result['ratio_distance'] = mm_per_pixel_undistorted/mm_per_pixel
         # result['ratio_width'] = result['width_mm_undist'] / result['width_px_undist']
 
         return result

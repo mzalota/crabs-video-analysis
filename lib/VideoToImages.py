@@ -55,14 +55,6 @@ class VideoToImages:
             print('Caught this error: ' + repr(error))
             traceback.print_exc()
 
-
-    #def __crabsOnFrame(self, frame_id):
-    #    # type: (int) -> dict
-    #    prev_frame_id = self.__seefloorGeometry.getPrevFrameMM(frame_id)
-    #    next_frame_id = self.__seefloorGeometry.getNextFrameMM(frame_id)
-    #    markedCrabs = self.__crabsData.crabsBetweenFrames(prev_frame_id, next_frame_id)
-    #    return markedCrabs
-
     def saveFramesToFile(self, lst, dirpath):
         # type: (list(int), str) -> None
         line_count = 0

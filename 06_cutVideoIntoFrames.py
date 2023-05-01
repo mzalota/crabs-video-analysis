@@ -54,7 +54,7 @@ loggerFramesCSV = Logger.openInOverwriteMode(folderStruct.getFramesFilepath())
 framesStitcher.saveFramesToCSVFile(frameIDs, loggerFramesCSV)
 
 crabsData = CrabsData.createFromFolderStruct(folderStruct)
-lst = crabsData.allFramesWithCrabs()
+lst = crabsData.frames_with_crabs()
 framesStitcher.saveFramesToFile(lst, folderStruct.getCrabFramesDirpath())
 
 print ("Done cutting video into frames")

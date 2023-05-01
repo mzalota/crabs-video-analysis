@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import List
+
 from lib.Camera import Camera
 from lib.Frame import Frame
 from lib.Image import Image
@@ -12,6 +14,7 @@ from lib.data.MarkersData import MarkersData
 from lib.data.SeeFloor import SeeFloor
 from lib.imageProcessing.Analyzer import Analyzer
 from lib.imageProcessing.Rectificator import Rectificator
+from lib.model.Crab import Crab
 from lib.ui.MarkersConfiguration import MarkersConfiguration
 
 
@@ -236,28 +239,27 @@ class DecoMarkedCrabs(FrameDecorator):
         self.__markCrabsOnImage(imgObj, self.getFrameID())
         return imgObj
 
-    def __markCrabsOnImage(self, mainImage: Image, frame_id: int):
+    def __markCrabsOnImage(self, mainImage: Image, frame_id_image: int):
         #timer = MyTimer("crabsOnFrame")
-        markedCrabs = self.__crabsOnFrame(frame_id)
-        #timer.lap("frame_number: " + str(frame_id))
-        for markedCrab in markedCrabs:
-            frame_number = markedCrab['frameNumber']
-            crabLocationOrig = Point(markedCrab['crabLocationX'], markedCrab['crabLocationY'])
+        markedCrabs = self.__crabs_visible_on_frame(frame_id_image)
 
-            location = self.__seefloorGeometry.translatePointCoordinate(crabLocationOrig, frame_number,frame_id)
+        for markedCrab in markedCrabs:
+            frame_id_crab_orig = markedCrab.frame_id()
+            crabLocationOrig = markedCrab.center()
+
+            crab_location_image = self.__seefloorGeometry.translatePointCoordinate(crabLocationOrig, frame_id_crab_orig, frame_id_image)
             if self.__is_undistorted:
                 camera = Camera.create()
-                location = camera.undistort_point(location)
+                crab_location_image = camera.undistort_point(crab_location_image)
 
-            mainImage.drawCross(location, color=(255, 0, 0))
+            mainImage.drawCross(crab_location_image, color=(255, 0, 0))
 
         #timer.lap("Number of crabs" + str(len(markedCrabs)))
 
-    def __crabsOnFrame(self, frame_id):
-        # type: (int) -> dict
+    def __crabs_visible_on_frame(self, frame_id: int) -> List[Crab]:
         prev_frame_id = self.__seefloorGeometry.getPrevFrameMM(frame_id)
         next_frame_id = self.__seefloorGeometry.getNextFrameMM(frame_id)
-        markedCrabs = self.__crabsData.crabsBetweenFrames(prev_frame_id, next_frame_id)
+        markedCrabs = self.__crabsData.crabs_between_frames(prev_frame_id, next_frame_id)
         return markedCrabs
 
 

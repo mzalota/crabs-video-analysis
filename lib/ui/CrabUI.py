@@ -5,7 +5,7 @@ from lib.data.CrabsData import CrabsData
 from lib.Feature import Feature
 from lib.ImageWindow import ImageWindow
 from lib.common import Box, Point, Vector
-from lib.data.model.Crab import Crab
+from lib.model.Crab import Crab
 
 
 class CrabUI:
@@ -48,8 +48,8 @@ class CrabUI:
         #self.findViewsOfTheSameCrab(boxAroundCrab, thisFrameID)
 
     def __save_to_file(self):
-        crabOnFrameID = self.getFrameIDOfCrab()
-        crabBox = self.getCrabLocation()
+        crabOnFrameID = self.__getFrameIDOfCrab()
+        crabBox = self.__getCrabLocation()
         crab = Crab(crabOnFrameID, crabBox.topLeft, crabBox.bottomRight)
 
         appended_row = self.__crabsData.add_crab_entry(crab)
@@ -68,7 +68,7 @@ class CrabUI:
         crabImage.drawFrameID(frameID)
         return crabImage
 
-    def getCrabLocation(self) -> Box:
+    def __getCrabLocation(self) -> Box:
         if self.__user_clicked_in_right_half():
             xOffset = -self.__boxSize
         else:
@@ -80,9 +80,9 @@ class CrabUI:
             yOffset = 0
 
         offsetOfCrabImageFrom0x0 = Vector(xOffset, yOffset)
-        return self.__crabCoordinatesOnItsFrame(self.getFrameIDOfCrab(), offsetOfCrabImageFrom0x0)
+        return self.__crabCoordinatesOnItsFrame(self.__getFrameIDOfCrab(), offsetOfCrabImageFrom0x0)
 
-    def getFrameIDOfCrab(self):
+    def __getFrameIDOfCrab(self):
         if self.__user_clicked_in_right_half() and self.__user_clicked_in_bottom_half():
             # user marked crab is on "imageThis", which is the bottom right image
             return self.__crabFeature.getInitFrameID()

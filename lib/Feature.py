@@ -118,7 +118,8 @@ class Feature:
                 self.__lastFrameID = self.__seeFloor.maxFrameID()
                 break
 
-            newPoint = self.getCoordinateInFrame(nextFrameID)
+            newPoint = self.__seeFloor.translatePointCoordinate(self.__location, self.__frameID, nextFrameID)
+
             # print("drift:", frameID, str(crabPoint), nextFrameID, str(newPoint), str(drift), visibleBoxArea.area(), str(visibleBoxArea))
             if (newPoint.x <= 0 or newPoint.y <= 0):
                 #print("drift:",  nextFrameID, str(newPoint))
@@ -196,8 +197,7 @@ class Feature:
         #timer.lap()
         return visibleBoxArea
 
-    def getCoordinateInFrame(self, frameID):
-        # type: (String) -> Point
+    def getCoordinateInFrame(self, frameID: int) -> Point:
         newPoint = self.__seeFloor.translatePointCoordinate(self.__location, self.__frameID, frameID)
         return newPoint
 

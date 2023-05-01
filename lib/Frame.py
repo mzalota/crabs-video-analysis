@@ -23,35 +23,22 @@ class Frame:
             return True
         return False
 
-    def frame_height(self):
-        # type: () -> int
+    def frame_height(self) -> int:
         return self.__videoStream.frame_height()
 
-    def frame_width(self):
-        # type: () -> int
+    def frame_width(self) -> int:
         return self.__videoStream.frame_width()
 
-    def getFrameID(self):
+    def getFrameID(self) -> int:
         return self.__frameID
 
-    def getVideoStream(self):
-        return self.__videoStream
+    # def getImage(self):
+    #     return self.__videoStream.read_image(self.__frameID)
 
-    def getImage(self):
-        return self.__videoStream.read_image(self.__frameID)
-
-    def getImgObj(self):
-        # type: () -> Image
+    def getImgObj(self) -> Image:
         return Image(self.__videoStream.read_image(self.__frameID))
 
     def constructFilename(self):
         frameNumberString = str(self.__frameID).zfill(6)
         imageFileName = "frame" + frameNumberString + ".jpg"
         return imageFileName
-
-    @staticmethod
-    def deconstructFilename(filename):
-        #returns FrameID that was embeded in the filename
-        return int(filename[5:11])
-
-

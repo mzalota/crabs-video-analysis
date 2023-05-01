@@ -230,19 +230,17 @@ class SeeFloorNoBadBlocks(PandasWrapper):
 
         return result
 
-    def get_drift_instantaneous(self, frame_id):
+    def __get_drift_instantaneous(self, frame_id):
         # type: (int) -> Vector
         drift_x = self.__getValueFromDF(self.__COLNAME_driftX, frame_id)
         drift_y = self.__getValueFromDF(self.__COLNAME_driftY, frame_id)
         return Vector(drift_x, drift_y)
 
-    def zoom_instantaneous(self, frame_id):
+    def __zoom_instantaneous(self, frame_id):
         # type: (int) -> float
         if frame_id <= self.minFrameID():
             return 1
 
-        # scale_this = self.__getValueFromDF("mm_per_pixel", frame_id)
-        # scale_prev = self.__getValueFromDF("mm_per_pixel", frame_id-1)
         scale_this = self.mm_per_pixel(frame_id)
         scale_prev = self.mm_per_pixel(frame_id - 1) #self.__mm_per_pixel_dict[frame_id-1]
 
@@ -380,32 +378,29 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         return self.jumpToSeefloorSlice(frame_id, 1)
 
     #translates the point stepwise for each frame between orig and target.
-    def translatePointCoordinate(self, pointLocation, origFrameID, targetFrameID):
-        # type: (Point, int,int) -> Point
+    def translatePointCoordinate(self, pointLocation: Point, origFrameID: int, targetFrameID: int) -> Point:
         point_location_new = pointLocation
         timer = MyTimer("start translatePointCoordinate")
         individual_frames = FrameId.sequence_of_frames(origFrameID, targetFrameID)
         for idx in range(1, len(individual_frames)):
             to_frame_id = individual_frames[idx]
-            frame_physics = self.get_frame_physics(to_frame_id)
+            frame_physics = self.__get_frame_physics(to_frame_id)
             if targetFrameID < origFrameID:
                 result = frame_physics.translate_backward(point_location_new)
             else:
                 result = frame_physics.translate_forward(point_location_new)
             point_location_new = result
-        timer.lap("end translatePointCoordinate "+str(pointLocation)+" loops:"+ str(len(individual_frames))+ ", orig frameId: "+str(origFrameID)+ ", target frameId: "+str(targetFrameID) )
+        timer.lap("end translatePointCoordinate "+str(pointLocation)+" loops:"+ str(len(individual_frames))+ ", orig frameId: "+str(origFrameID)+ ", target frameId: "+str(targetFrameID) + " new loc:"+str(point_location_new) )
 
         return point_location_new
 
-    def get_frame_physics(self, to_frame_id):
-        # type: (int) -> FramePhysics
+    def __get_frame_physics(self, to_frame_id: int) -> FramePhysics:
         scale = self.getRedDotsData().getMMPerPixel(to_frame_id)
-        drift = self.get_drift_instantaneous(to_frame_id)
-        zoom = self.zoom_instantaneous(to_frame_id)
+        drift = self.__get_drift_instantaneous(to_frame_id)
+        zoom = self.__zoom_instantaneous(to_frame_id)
         return FramePhysics(to_frame_id, scale, drift, zoom)
 
     def saveGraphSeefloorY(self):
-        # filePath = self.__folderStruct.getSubDirpath()+"/graph_y.png"#self.__folderStruct.getRedDotsGraphAngle()
         filePath = self.__folderStruct.getGraphSeefloorAdvancementY()
         graphTitle = self.__folderStruct.getVideoFilename()+ " seefloor advancement along Y (vertical/forward) axis (mm)"
         xColumn = ["frameNumber", "seconds"]
