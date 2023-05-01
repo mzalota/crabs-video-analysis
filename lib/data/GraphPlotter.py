@@ -12,7 +12,9 @@ class GraphPlotter:
 
         # add all y columns to the graph
         for i in range (0, len(yColumns)):
-            ax.plot(self.__df[xColumns[0]], self.__df[yColumns[i]])
+            column_name = yColumns[i]
+            plot = ax.plot(self.__df[xColumns[0]], self.__df[column_name])
+            plot[0].set_label(column_name)
 
         ax.grid(which='major', axis='both', linestyle='--')  # specify grid lines
 
