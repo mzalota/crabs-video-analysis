@@ -54,12 +54,14 @@ class Point:
         dist = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
         return dist
 
-    def translateBy(self, vector):
-        # type: (Vector) -> Point
-        return Point(self.x + int(vector.x), int(self.y + vector.y))
+    def translateBy(self, vector: Vector) -> Point:
+        return Point(int(self.x + vector.x), int(self.y + vector.y))
+
+    def translate_by_float(self, vector: Vector) -> Point:
+        return Point(self.x + vector.x, self.y + vector.y)
 
     def translate_by_xy(self, x: int, y: int):
-        return self.translateBy(Vector(x,y))
+        return self.translateBy(Vector(x, y))
 
     def boxAroundPoint(self, boxSize):
         offset = int(boxSize / 2)
@@ -95,8 +97,7 @@ class Vector:
             drift_pixels.append(drift.length())
         return numpy.median(drift_pixels)
 
-    def invert(self):
-        # type: () -> Vector
+    def invert(self) -> Vector:
         return Vector((-1) * self.x, (-1) * self.y)
 
     def isZeroVector(self):

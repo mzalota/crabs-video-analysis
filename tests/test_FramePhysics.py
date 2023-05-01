@@ -1,5 +1,7 @@
+from os import getcwd, chdir
 from unittest import TestCase
 
+from lib.Camera import Camera
 from lib.Frame import Frame
 from lib.FramePhysics import FramePhysics
 from lib.common import Vector, Point
@@ -8,6 +10,17 @@ from lib.data.SeeFloorNoBadBlocks import SeeFloorNoBadBlocks
 
 class TestFramePhysics(TestCase):
     _center_point = Point(Frame._FRAME_WIDTH_HIGH_RES / 2, Frame._FRAME_HEIGHT_HIGH_RES / 2)
+
+    def setUp(self):
+        #set current working directory to be not in "tests" subfolder, but one level above together with resource
+        #Otherwise Camera() class does not find  _mtx.py file
+        self.__filepath = getcwd()
+        chdir('../')
+        Camera.initialize_4k()
+
+    def tearDown(self) -> None:
+        #reset current working directory to be
+        chdir(self.__filepath)
 
     def test_adjust_zoom_location_depth_not_changed(self):
         #setup
@@ -56,3 +69,37 @@ class TestFramePhysics(TestCase):
         #assert
         self.assertEqual((Frame._FRAME_WIDTH_HIGH_RES / 2) - 33, result.x) #X dimention oved in by 33, instead of 66
         self.assertEqual((Frame._FRAME_HEIGHT_HIGH_RES / 2) - 33, result.y) #Y dimention moved in by 33, instead of 66
+
+
+    def test_change_than_reverse(self):
+        #setup
+        scale = 0.5480785130693868
+        zoom = 0.9997025696116583
+        physics = FramePhysics(100, scale, Vector(3, 11), zoom)
+        point = Point(1000, 1000)
+
+        #exercise
+        point_forward = physics.translate_forward(point)
+        point_back = physics.translate_backward(point_forward)
+
+        #assert
+        self.assertAlmostEqual(point_back.x, point.x, 2)
+        self.assertAlmostEqual(point_back.y, point.y, 2)
+
+    def test_change_than_reverse2(self):
+        #setup
+        scale = 0.7405656263087846
+        zoom = 1.0071198209766583
+        physics = FramePhysics(100, scale, Vector(-0.9365915776278864, 5.538252792970677), zoom)
+        point = Point(1000, 1000)
+
+        #exercise
+        point_forward = physics.translate_forward(point)
+        point_back = physics.translate_backward(point_forward)
+
+        #assert
+
+        self.assertAlmostEqual(point_back.x, point.x, 1)
+        self.assertAlmostEqual(point_back.y, point.y, 1)
+
+        self.assertAlmostEqual(point_forward.y, 1005.668, 2)

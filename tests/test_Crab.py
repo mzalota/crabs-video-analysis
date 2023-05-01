@@ -5,7 +5,7 @@ from unittest import TestCase
 from lib.Camera import Camera
 from lib.common import Point
 from lib.data.CrabsData import CrabsData
-from lib.model import Crab
+from lib.model.Crab import Crab
 
 
 class TestCrab(TestCase):
