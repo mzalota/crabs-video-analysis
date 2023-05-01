@@ -18,15 +18,17 @@ class Camera:
         self.__frame_width = frame_width
         self.__frame_height = frame_height
 
-        if frame_width == Frame._FRAME_WIDTH_LOW_RES:
-            print("Loading Full_HD_Kara_Sea Camera matrices")
-            self.__read_matrices("Full_HD_Kara_Sea")
-        else:
+        if Frame.is_high_resolution(frame_width):
             print("Loading 4k Camera matrices")
             self.__read_matrices("4K")
+        else:
+            print("Loading Full_HD_Kara_Sea Camera matrices")
+            self.__read_matrices("Full_HD_Kara_Sea")
 
     def __read_matrices(self, subdir: str):
-        mtx_glob = glob.glob('resources/CAMERA/'+subdir+'/*mtx.npy')
+        filename_mask_mtx = 'resources/CAMERA/' + subdir + '/*mtx.npy'
+        mtx_glob = glob.glob(filename_mask_mtx)
+        # print("mtx_glob", mtx_glob, "filename_mask_mtx", filename_mask_mtx)
         self.__mtx = np.load(mtx_glob[0])
 
         # print("self.__mtx is ", self.__mtx)
@@ -61,6 +63,23 @@ class Camera:
         print("Camera.initialize: width, height:", frame_width, frame_height)
 
         Camera.__instance = Camera(frame_width, frame_height)
+
+    @staticmethod
+    def initialize_4k() -> None:
+        Camera.__instance = Camera(Frame._FRAME_WIDTH_HIGH_RES, Frame._FRAME_HEIGHT_HIGH_RES)
+
+
+    def frame_height(self) -> int:
+        return self.__frame_height
+
+    def frame_width(self) -> int:
+        return self.__frame_width
+
+    def getCalibrationMatrix(self):
+        return self.__mtx
+
+    def getDistortionCoefficients(self):
+        return self.__dst
 
     def undistort_image(self, image: Image, crop_image=False) -> Image:
         image_dimensions = (image.width(), image.height())
@@ -105,9 +124,3 @@ class Camera:
         center_x = self.__mtx[0, 2]
         center_y = self.__mtx[1, 2]
         return Point(center_x, center_y)
-
-    def getCalibrationMatrix(self):
-        return self.__mtx
-
-    def getDistortionCoefficients(self):
-        return self.__dst

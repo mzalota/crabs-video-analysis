@@ -1,5 +1,6 @@
 import numpy
 
+from lib.Camera import Camera
 from lib.FrameId import FrameId
 from lib.FramePhysics import FramePhysics
 from lib.VideoStream import VideoStream
@@ -106,7 +107,8 @@ class SeeFloorNoBadBlocks(PandasWrapper):
             return self._max_frame_id()
 
         # we are in a good segment and not in its first frame.
-        pixels_to_jump = Frame.FRAME_HEIGHT * (-1)
+        pixels_to_jump = Camera.create().frame_height() * (-1)
+        # pixels_to_jump = Frame.FRAME_HEIGHT * (-1)
         new_frame_id = int(self._getNextFrame(pixels_to_jump, frame_id))
         return new_frame_id
 
@@ -119,7 +121,8 @@ class SeeFloorNoBadBlocks(PandasWrapper):
             return self._max_frame_id()
 
         # we are in a good segment and not in its last frame.
-        pixels_to_jump = Frame.FRAME_HEIGHT * fraction
+        pixels_to_jump = Camera.create().frame_height() * fraction
+        # pixels_to_jump = Frame.FRAME_HEIGHT * fraction
         new_frame_id = int(self._getNextFrame(pixels_to_jump, frame_id))
         return new_frame_id
 
@@ -298,12 +301,16 @@ class SeeFloorNoBadBlocks(PandasWrapper):
     def heightMM(self,frame_id):
         # type: (int) -> float
         mmPerPixel = self.mm_per_pixel(frame_id)
-        return Frame.FRAME_HEIGHT*float(mmPerPixel)
+        height_mm = Camera.create().frame_height() * float(mmPerPixel)
+        # height_mm = Frame.FRAME_HEIGHT * float(mmPerPixel)
+        return height_mm
 
     def widthMM(self,frame_id):
         # type: (int) -> float
         mmPerPixel = self.mm_per_pixel(frame_id)
-        return Frame.FRAME_WIDTH*float(mmPerPixel)
+        width_mm = Camera.create().frame_width() * float(mmPerPixel)
+        # width_mm = Frame.FRAME_WIDTH * float(mmPerPixel)
+        return width_mm
 
     def getYCoordMMOrigin(self, frame_id):
         # type: (int) -> float
@@ -356,9 +363,10 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         dfMerged["driftX_mm"] = dfMerged["driftX"] * dfMerged["mm_per_pixel"]
         dfMerged["driftY_sum_mm"] = dfMerged["driftY_mm"].cumsum()
         dfMerged["driftX_sum_mm"] = dfMerged["driftX_mm"].cumsum()
-        dfMerged["bottom_corner_mm"] = Frame.FRAME_HEIGHT * dfMerged["mm_per_pixel"] + dfMerged["driftY_sum_mm"]
-        # dfMerged["center_coord_y_mm"] = int(Frame.FRAME_HEIGHT/2) * dfMerged["mm_per_pixel"] + dfMerged["driftY_sum_mm"]
-        # dfMerged["center_coord_x_mm"] = int(Frame.FRAME_WIDTH/2) * dfMerged["mm_per_pixel"] + dfMerged["driftX_sum_mm"]
+
+        camera = Camera.create()
+        dfMerged["bottom_corner_mm"] = camera.frame_height() * dfMerged["mm_per_pixel"] + dfMerged["driftY_sum_mm"]
+        # dfMerged["bottom_corner_mm"] = Frame.FRAME_HEIGHT * dfMerged["mm_per_pixel"] + dfMerged["driftY_sum_mm"]
         dfMerged["seconds"] = dfMerged["frameNumber"]/VideoStream.FRAMES_PER_SECOND
         dfMerged = dfMerged.sort_values(by=['frameNumber'])
         return dfMerged
@@ -385,7 +393,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
             else:
                 result = frame_physics.translate_forward(point_location_new)
             point_location_new = result
-        timer.lap("end translatePointCoordinate loops:"+ str(len(individual_frames)) )
+        timer.lap("end translatePointCoordinate "+str(pointLocation)+" loops:"+ str(len(individual_frames))+ ", orig frameId: "+str(origFrameID)+ ", target frameId: "+str(targetFrameID) )
 
         return point_location_new
 

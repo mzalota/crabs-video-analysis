@@ -6,24 +6,20 @@ class Frame:
     #__frameID = None
     #__image = None
 
-    _FRAME_HEIGHT_LOW_RES = 1080
-    _FRAME_WIDTH_LOW_RES = 1920
+    __FRAME_HEIGHT_LOW_RES = 1080
+    __FRAME_WIDTH_LOW_RES = 1920
 
     _FRAME_HEIGHT_HIGH_RES = 2048
     _FRAME_WIDTH_HIGH_RES = 3072
-
-    FRAME_HEIGHT = _FRAME_HEIGHT_HIGH_RES
-    FRAME_WIDTH = _FRAME_WIDTH_HIGH_RES
 
     def __init__(self, frameNumber, videoStream):
         # type: (int, VideoStream) -> Frame
         self.__frameID = frameNumber
         self.__videoStream = videoStream
 
-    def is_high_resolution(self):
-        # type: () -> bool
-        # if Frame.FRAME_HEIGHT == Frame.__FRAME_HEIGHT_HIGH_RES:
-        if self.__videoStream.frame_height() >= Frame._FRAME_HEIGHT_HIGH_RES:
+    @staticmethod
+    def is_high_resolution(frame_height: int) -> bool:
+        if frame_height >= Frame._FRAME_HEIGHT_HIGH_RES:
             return True
         return False
 

@@ -19,7 +19,7 @@ class VelocityDetector():
         self.__is_debug = is_debug
 
     def runLoop(self, frameID, stepSize, logger, videoStream):
-        self.__createFeatureMatchers(videoStream)
+        self.__createFeatureMatchers(Frame.is_high_resolution(videoStream.frame_height()))
 
         if self.__is_debug:
             self.__ui_window = ImageWindow("mainWindow", Point(700, 200))
@@ -96,8 +96,7 @@ class VelocityDetector():
 
         self.__ui_window.showWindowAndWait(img.asNumpyArray())
 
-    def __createFeatureMatchers(self, videoStream):
-
+    def __createFeatureMatchers(self, is_high_resolution: bool):
 
         # __FRAME_HEIGHT_LOW_RES = 1080
         # __FRAME_WIDTH_LOW_RES = 1920
@@ -105,8 +104,7 @@ class VelocityDetector():
         # _FRAME_HEIGHT_HIGH_RES = 2048  # diff from low res is 968
         # __FRAME_WIDTH_HIGH_RES = 3072 # diff from low res is 1152
 
-        # TODO: Reuse Frame.is_high_resolution() function instead of reimplementing comparison here
-        if videoStream.frame_height() >= Frame._FRAME_HEIGHT_HIGH_RES:
+        if is_high_resolution:
             hi_res_hight_diff = 968
             hi_res_width_diff = 1152
         else:

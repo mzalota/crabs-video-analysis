@@ -2,6 +2,7 @@ import os
 from os import getcwd
 from unittest import TestCase
 
+from lib.Camera import Camera
 from lib.common import Point
 from lib.data.CrabsData import CrabsData
 from lib.data.model.Crab import Crab
@@ -13,6 +14,7 @@ class TestCrab(TestCase):
         #Otherwise Camera() class does not find  _mtx.py file
         self.__filepath = getcwd()
         os.chdir('../')
+        Camera.initialize_4k()
 
     def tearDown(self) -> None:
         #reset current working directory to be

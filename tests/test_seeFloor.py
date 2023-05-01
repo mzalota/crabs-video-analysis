@@ -1,6 +1,8 @@
+import os
 from unittest import TestCase
 import pandas as pd
 
+from lib.Camera import Camera
 from lib.Frame import Frame
 from lib.data.BadFramesData import BadFramesData
 from lib.data.DriftData import DriftData
@@ -11,9 +13,20 @@ from lib.infra.DataframeWrapper import DataframeWrapper
 
 class TestSeeFloor(TestCase):
 
+    def setUp(self):
+        #set current working directory to be not in "tests" subfolder, but one level above together with resource
+        #Otherwise Camera() class does not find  _mtx.py file
+        self.__filepath = os.getcwd()
+        os.chdir('../')
+        Camera.initialize_4k()
+
+    def tearDown(self) -> None:
+        #reset current working directory to be
+        os.chdir(self.__filepath)
+
     def test_jumpToSeefloorSlice_fractionalFrameWithoutBadBlocks(self):
         # Setup
-        pixels_in_frame = Frame.FRAME_HEIGHT
+        pixels_in_frame = Frame._FRAME_HEIGHT_HIGH_RES
         pixels_in_half_frame = int(pixels_in_frame/2)
 
         drifts_df = pd.DataFrame()
@@ -161,7 +174,7 @@ class TestSeeFloor(TestCase):
 
     def test_jumpToSeefloorSlice_multiSlice_goingUpward(self):
         # Setup
-        pixels_in_frame = Frame.FRAME_HEIGHT
+        pixels_in_frame = Frame._FRAME_HEIGHT_HIGH_RES
         pixels_in_half_frame = int(pixels_in_frame/2)
 
         drifts_df = pd.DataFrame()
@@ -275,7 +288,7 @@ class TestSeeFloor(TestCase):
 
     def test_jumpToSeefloorSlice_multiSlice_goingDownward(self):
         # Setup
-        pixels_in_frame = Frame.FRAME_HEIGHT
+        pixels_in_frame = Frame._FRAME_HEIGHT_HIGH_RES
         pixels_in_half_frame = int(pixels_in_frame/2)
 
         drifts_df = pd.DataFrame()
@@ -396,7 +409,7 @@ class TestSeeFloor(TestCase):
 
     def test_jumpToSeefloorSlice_badFramesEmpty(self):
         # Setup
-        pixels_in_frame = Frame.FRAME_HEIGHT
+        pixels_in_frame = Frame._FRAME_HEIGHT_HIGH_RES
         pixels_in_half_frame = int(pixels_in_frame / 2)
 
         drifts_df = pd.DataFrame()

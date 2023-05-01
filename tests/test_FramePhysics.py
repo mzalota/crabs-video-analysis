@@ -7,7 +7,7 @@ from lib.data.SeeFloorNoBadBlocks import SeeFloorNoBadBlocks
 
 
 class TestFramePhysics(TestCase):
-    _center_point = Point(Frame.FRAME_WIDTH / 2, Frame.FRAME_HEIGHT / 2)
+    _center_point = Point(Frame._FRAME_WIDTH_HIGH_RES / 2, Frame._FRAME_HEIGHT_HIGH_RES / 2)
 
     def test_adjust_zoom_location_depth_not_changed(self):
         #setup
@@ -18,8 +18,8 @@ class TestFramePhysics(TestCase):
         result = FramePhysics._adjust_location_for_depth_change_zoom(feature_location, depth_change)
 
         #assert
-        self.assertEqual(Frame.FRAME_WIDTH / 2, result.x)
-        self.assertEqual(Frame.FRAME_HEIGHT / 2, result.y)
+        self.assertEqual(Frame._FRAME_WIDTH_HIGH_RES / 2, result.x)
+        self.assertEqual(Frame._FRAME_HEIGHT_HIGH_RES / 2, result.y)
 
     def test_adjust_zoom_location__depth_doubled__center_point_stayed(self):
         #setup
@@ -30,8 +30,8 @@ class TestFramePhysics(TestCase):
         result = FramePhysics._adjust_location_for_depth_change_zoom(feature_location, depth_change)
 
         #assert
-        self.assertEqual(Frame.FRAME_WIDTH / 2, result.x)
-        self.assertEqual(Frame.FRAME_HEIGHT / 2, result.y)
+        self.assertEqual(Frame._FRAME_WIDTH_HIGH_RES / 2, result.x)
+        self.assertEqual(Frame._FRAME_HEIGHT_HIGH_RES / 2, result.y)
 
     def test_adjust_zoom_location__depth_halved__right_bottom_point_moved(self):
         #setup
@@ -42,8 +42,8 @@ class TestFramePhysics(TestCase):
         result = FramePhysics._adjust_location_for_depth_change_zoom(feature_location, depth_change)
 
         #assert
-        self.assertEqual((Frame.FRAME_WIDTH / 2) + 20, result.x ) #X dimention oved out by 20
-        self.assertEqual((Frame.FRAME_HEIGHT / 2) + 20, result.y ) #Y dimention moved out by 20
+        self.assertEqual((Frame._FRAME_WIDTH_HIGH_RES / 2) + 20, result.x) #X dimention oved out by 20
+        self.assertEqual((Frame._FRAME_HEIGHT_HIGH_RES / 2) + 20, result.y) #Y dimention moved out by 20
 
     def test_adjust_zoom_location__depth_doubled__left_upper_point_moved(self):
         #setup
@@ -54,5 +54,5 @@ class TestFramePhysics(TestCase):
         result = FramePhysics._adjust_location_for_depth_change_zoom(feature_location, depth_change)
 
         #assert
-        self.assertEqual((Frame.FRAME_WIDTH / 2) - 33, result.x ) #X dimention oved in by 33, instead of 66
-        self.assertEqual((Frame.FRAME_HEIGHT / 2) - 33, result.y ) #Y dimention moved in by 33, instead of 66
+        self.assertEqual((Frame._FRAME_WIDTH_HIGH_RES / 2) - 33, result.x) #X dimention oved in by 33, instead of 66
+        self.assertEqual((Frame._FRAME_HEIGHT_HIGH_RES / 2) - 33, result.y) #Y dimention moved in by 33, instead of 66

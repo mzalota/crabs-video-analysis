@@ -27,8 +27,7 @@ class FeatureMatcher:
         # type: (Frame) -> None
         self.__seeFloorSection = self.__detectSeeFloorSection(frame, self.__seeFloorSection)
 
-    def __detectSeeFloorSection(self, frame, section):
-        # type: (Frame, SeeFloorSection) -> SeeFloorSection
+    def __detectSeeFloorSection(self, frame: Frame, section: SeeFloorSection) -> SeeFloorSection:
         if section is None:
             return SeeFloorSection(frame, self.__startingBox)
 
@@ -36,7 +35,7 @@ class FeatureMatcher:
         if newTopLeftOfFeature is None:
             self.__resetReason = "NotDetected"
         else:
-            self.__resetReason = self.__is_feature_too_close_to_edge(newTopLeftOfFeature, frame.is_high_resolution())
+            self.__resetReason = self.__is_feature_too_close_to_edge(newTopLeftOfFeature, Frame.is_high_resolution(frame.frame_height()))
 
         if self.detectionWasReset():
             #create bew SeeFloorSection

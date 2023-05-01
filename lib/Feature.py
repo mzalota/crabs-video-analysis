@@ -1,5 +1,6 @@
 from math import ceil
 
+from lib.Camera import Camera
 from lib.Frame import Frame
 from lib.common import Point, Box
 
@@ -106,6 +107,10 @@ class Feature:
         nextFrameID = self.__frameID
         #timer = MyTimer("in Feature::__determineFirstAndLastFrameID")
 
+        camera = Camera.create()
+        frame_width = camera.frame_width()
+        frame_height = camera.frame_height()
+
         loop_counter =0
         while (True):
             nextFrameID = nextFrameID + 1
@@ -120,7 +125,7 @@ class Feature:
                 self.__lastFrameID = nextFrameID - 1
                 break
 
-            if (newPoint.x >= Frame.FRAME_WIDTH or newPoint.y >= Frame.FRAME_HEIGHT):
+            if (newPoint.x >= frame_width or newPoint.y >= frame_height):
                 #print("drift:",  nextFrameID, str(newPoint))
                 self.__lastFrameID = nextFrameID - 1
                 break
@@ -144,7 +149,7 @@ class Feature:
                 self.__firstFrameID = nextFrameID + 1
                 break
 
-            if (newPoint.x >= Frame.FRAME_WIDTH or newPoint.y >= Frame.FRAME_HEIGHT):
+            if (newPoint.x >= frame_width or newPoint.y >= frame_height):
                 #print("drift:",  nextFrameID, str(newPoint))
                 self.__firstFrameID = nextFrameID + 1
                 break
@@ -182,7 +187,10 @@ class Feature:
         newPoint = self.getCoordinateInFrame(nextFrameID)
         #timer.lap("calling Drift Data")
         topleft = Point(max(newPoint.x - offset, 0), max(newPoint.y - offset, 0))
-        bottomRight = Point(min(newPoint.x + offset, Frame.FRAME_WIDTH), min(newPoint.y + offset, Frame.FRAME_HEIGHT))
+
+        camera = Camera.create()
+        bottomRight = Point(min(newPoint.x + offset, camera.frame_width()), min(newPoint.y + offset, camera.frame_height()))
+        # bottomRight = Point(min(newPoint.x + offset, Frame.FRAME_WIDTH), min(newPoint.y + offset, Frame.FRAME_HEIGHT))
         visibleBoxArea = Box(topleft, bottomRight)
 
         #timer.lap()

@@ -1,7 +1,7 @@
 import numpy
 import pandas as pd
 #import statistics as statistics
-
+from lib.Camera import Camera
 from lib.FolderStructure import FolderStructure
 from lib.Frame import Frame
 from lib.data.GraphPlotter import GraphPlotter
@@ -151,7 +151,10 @@ class DriftRawData(PandasWrapper):
         column_name_y_orig = "fm_" + num + "_drift_y"
         column_name_y_new = "fm_" + num + "_drift_y_new"
 
-        df["compensation"] = (df[column_name_y_bottom] - int(Frame.FRAME_HEIGHT/2)) * df["scaling_factor"]
+        camera = Camera.create()
+
+        df["compensation"] = (df[column_name_y_bottom] - int(camera.frame_height() /2)) * df["scaling_factor"]
+        # df["compensation"] = (df[column_name_y_bottom] - int(Frame.FRAME_HEIGHT/2)) * df["scaling_factor"]
         df[column_name_y_new] = df[column_name_y_orig] + df["compensation"]
 
         # set to NaN values where FeatureMatcher was reset (value in Result column = FAILED
@@ -162,7 +165,8 @@ class DriftRawData(PandasWrapper):
         column_name_x_orig = "fm_" + num + "_drift_x"
         column_name_x_new = "fm_" + num + "_drift_x_new"
 
-        df["compensation"] = (df[column_name_x_bottom] - int(Frame.FRAME_WIDTH/2)) * df["scaling_factor"]
+        df["compensation"] = (df[column_name_x_bottom] - int(camera.frame_width()/2)) * df["scaling_factor"]
+        # df["compensation"] = (df[column_name_x_bottom] - int(Frame.FRAME_WIDTH/2)) * df["scaling_factor"]
         df[column_name_x_new] = df[column_name_x_orig] + df["compensation"]
 
         # set to NaN values where FeatureMatcher was reset (value in Result column = FAILED

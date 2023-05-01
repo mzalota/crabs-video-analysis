@@ -1,3 +1,4 @@
+from lib.Camera import Camera
 from lib.Frame import Frame
 from lib.common import Point
 
@@ -32,14 +33,17 @@ class FramePhysics:
         return point_after_depth_scaling
 
     @staticmethod
-    def _adjust_location_for_depth_change_zoom(point, scaling_factor):
-        # type: (Point, float) -> Point
-        mid_frame_width = Frame.FRAME_WIDTH / 2
+    def _adjust_location_for_depth_change_zoom(point: Point, scaling_factor: float) -> Point:
+        create = Camera.create()
+
+        mid_frame_width = create.frame_width() / 2
+        # mid_frame_width = Frame.FRAME_WIDTH / 2
         x_offset_from_middle_old = point.x - mid_frame_width
         x_offset_from_middle_new = x_offset_from_middle_old / scaling_factor
         new_x = mid_frame_width + x_offset_from_middle_new
 
-        mid_frame_height = Frame.FRAME_HEIGHT / 2
+        mid_frame_height = create.frame_height() / 2
+        # mid_frame_height = Frame.FRAME_HEIGHT / 2
         y_offset_from_middle_old = point.y - mid_frame_height
         y_offset_from_middle_new = y_offset_from_middle_old / scaling_factor
         new_y = mid_frame_height + y_offset_from_middle_new
