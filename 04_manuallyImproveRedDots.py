@@ -1,6 +1,8 @@
 import sys
 
+from lib.Camera import Camera
 from lib.CommandLineLauncher import CommandLineLauncher
+from lib.infra.Configurations import Configurations
 from lib.infra.MyTimer import MyTimer
 from lib.ui.FileOpenUI import FileOpenUI
 from lib.ui.StreamToLogger import StreamToLogger
@@ -30,9 +32,13 @@ if folderStruct is None:
 # StreamToLogger(folderStruct.getLogFilepath())
 print ("Starting Manually Improving RedDots")
 
-timer = MyTimer("Starting manuallyImproveRedDots")
+#Create _config.txt file if it does not exist
+configs = Configurations(folderStruct)
+
 videoStream = VideoStream(folderStruct.getVideoFilepath())
-timer.lap("Initialized VideoStream")
+Camera.initialize(videoStream)
+
+timer = MyTimer("Starting manuallyImproveRedDots")
 
 redDotsData = RedDotsData.createFromFolderStruct(folderStruct)
 timer.lap("Initialized redDotsData")

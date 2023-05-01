@@ -12,40 +12,55 @@ from lib.common import Point
 
 
 class Camera:
-    def __init__(self):
-        mtx_glob = glob.glob('resources/CAMERA/*mtx.npy')
+    __instance = None
+
+    def __init__(self, frame_width: int, frame_height: int):
+        self.__frame_width = frame_width
+        self.__frame_height = frame_height
+
+        if frame_width == Frame._FRAME_WIDTH_LOW_RES:
+            print("Loading Full_HD_Kara_Sea Camera matrices")
+            self.__read_matrices("Full_HD_Kara_Sea")
+        else:
+            print("Loading 4k Camera matrices")
+            self.__read_matrices("4K")
+
+    def __read_matrices(self, subdir: str):
+        mtx_glob = glob.glob('resources/CAMERA/'+subdir+'/*mtx.npy')
         self.__mtx = np.load(mtx_glob[0])
 
-        #print("self.__mtx is ", self.__mtx)
-        # self.__mtx is
+        # print("self.__mtx is ", self.__mtx)
+        # self.__mtx for 4K camera is
         # [[2.34308081e+03 0.00000000e+00 1.56529667e+03]
         #  [0.00000000e+00 2.34541467e+03 9.68545150e+02]
         #  [0.00000000e+00 0.00000000e+00 1.00000000e+00]]
 
-        dst_glob = glob.glob('resources/CAMERA/*dst.npy')
+        # self.__mtx for Full_HD_Kara_Sea camera is
+        # [[1.37975571e+03 0.00000000e+00 9.72820171e+02]
+        #  [0.00000000e+00 1.37404560e+03 5.96419357e+02]
+        #  [0.00000000e+00 0.00000000e+00 1.00000000e+00]]
+
+
+        dst_glob = glob.glob('resources/CAMERA/'+subdir+'/*dst.npy')
         self.__dst = np.load(dst_glob[0])
-        #print("self.__dst is ", self.__dst)
-        #self.__dst is  [[-0.30592777  0.2554346  -0.00322515 -0.00050018 -0.1366279 ]]
+
+        # print("self.__dst is ", self.__dst)
+        # self.__dst  for 4K camera is:
+        # [[-0.30592777  0.2554346  -0.00322515 -0.00050018 -0.1366279 ]]
+        # self.__dst  for Full_HD_Kara_Sea camera is:
+        # [[-0.30329438  0.20865141 - 0.00037175 - 0.00374731 - 0.08253806]]
 
     @staticmethod
-    def create_camera_4k() -> Camera:
-        camera = Camera()
-        #TODO: is this correct frame width and height?
-        camera.__frame_width = Frame._FRAME_WIDTH_HIGH_RES
-        camera.__frame_height = Frame._FRAME_HEIGHT_HIGH_RES
-        return camera
+    def create() -> Camera:
+        return Camera.__instance
 
     @staticmethod
-    def create_camera_HD() -> Camera:
-        camera = Camera()
-        #TODO: is this correct frame width and height?
-        camera.__frame_width = Frame._FRAME_WIDTH_LOW_RES
-        camera.__frame_height = Frame._FRAME_HEIGHT_LOW_RES
-        return camera
+    def initialize(video_stream) -> None:
+        frame_width = video_stream.frame_width()
+        frame_height = video_stream.frame_height()
+        print("Camera.initialize: width, height:", frame_width, frame_height)
 
-
-    def undistort_poinnnnt(self, point: Point):
-        return self.undistort_point(point, self.__frame_width, self.__frame_height)
+        Camera.__instance = Camera(frame_width, frame_height)
 
     def undistort_image(self, image: Image, crop_image=False) -> Image:
         image_dimensions = (image.width(), image.height())
@@ -58,15 +73,18 @@ class Camera:
             ret = cv2.resize(ret, image_dimensions)
         return Image(ret)
 
-    def undistort_point(self, point: Point, frame_width: int, frame_height: int) -> Point:
-        image_size = ((frame_width), (frame_height))
-        newcameramtx, roi = cv2.getOptimalNewCameraMatrix(self.__mtx, self.__dst, image_size, 1, image_size)
+    def undistort_point(self, point: Point):
+        image_size = ((self.__frame_width), (self.__frame_height))
+        return self.__undistort_point_internal(point, image_size, self.__mtx, self.__dst)
+
+    def __undistort_point_internal(self, point, image_size, mtx, dst):
+
+        newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dst, image_size, 1, image_size)
 
         points = np.float32(np.array([(point.x, point.y)])[:, np.newaxis, :])
-        undistorted_pts = cv2.undistortPoints(points, self.__mtx, self.__dst, P=newcameramtx)
+        undistorted_pts = cv2.undistortPoints(points, mtx, dst, P=newcameramtx)
 
-        undistorted_point = Point(int(undistorted_pts[0][0][0]), int(undistorted_pts[0][0][1]))
-        return undistorted_point
+        return Point(int(undistorted_pts[0][0][0]), int(undistorted_pts[0][0][1]))
 
     def distance_to_object(self, size_of_object_in_pixels, metric_size_of_object):
         #depth is the length along z-axis of object's projection (if object is right at the center of image, then this is the distance from camera lens's center to this object)

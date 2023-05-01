@@ -138,7 +138,7 @@ class RedDotsData(PandasWrapper):
         return dfResult["distance"].iloc[0]
 
     def get_camera_height_mm(self, frame_id: int):
-        camera = Camera()
+        camera = Camera.create()
 
         red_dot1 = self.getRedDot1(frame_id)
         red_dot2 = self.getRedDot2(frame_id)
@@ -178,9 +178,9 @@ class RedDotsData(PandasWrapper):
         return self.red_dots_separation_mm()/distance_between_dots_px
 
     def distance_px_undistorted(self, frame_id: int) -> int:
-        camera = Camera.create_camera_4k()
-        red_dot1_undistorted = camera.undistort_poinnnnt(self.getRedDot1(frame_id))
-        red_dot2_undistorted = camera.undistort_poinnnnt(self.getRedDot2(frame_id))
+        camera = Camera.create()
+        red_dot1_undistorted = camera.undistort_point(self.getRedDot1(frame_id))
+        red_dot2_undistorted = camera.undistort_point(self.getRedDot2(frame_id))
         distance_between_dots_px = red_dot1_undistorted.distanceTo(red_dot2_undistorted)
         return distance_between_dots_px
 

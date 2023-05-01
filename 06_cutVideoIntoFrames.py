@@ -1,7 +1,9 @@
 import sys
 
+from lib.Camera import Camera
 from lib.CommandLineLauncher import CommandLineLauncher
 from lib.FolderStructure import FolderStructure
+from lib.infra.Configurations import Configurations
 from lib.ui.FileOpenUI import FileOpenUI
 from lib.ui.StreamToLogger import StreamToLogger
 from lib.VideoToImages import VideoToImages
@@ -28,6 +30,11 @@ if folderStruct is None:
 
 # StreamToLogger(folderStruct.getLogFilepath())
 print ("Starting to cut video into frames")
+
+#Create _config.txt file if it does not exist
+configs = Configurations(folderStruct)
+
+Camera.initialize(VideoStream(folderStruct.getVideoFilepath()))
 
 interpolator = InterpolateController(folderStruct)
 interpolator.regenerateSeefloor()

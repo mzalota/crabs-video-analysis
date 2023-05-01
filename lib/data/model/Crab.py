@@ -22,9 +22,9 @@ class Crab:
         return self.getBox().diagonal()
 
     def width_px_undistorted(self) -> float:
-        camera = Camera()
-        point_undistorted_1 = camera.undistort_point(self.__side1, Frame.FRAME_WIDTH, Frame.FRAME_HEIGHT)
-        point_undistorted_2 = camera.undistort_point(self.__side2, Frame.FRAME_WIDTH, Frame.FRAME_HEIGHT)
+        camera = Camera.create()
+        point_undistorted_1 = camera.undistort_point(self.__side1)
+        point_undistorted_2 = camera.undistort_point(self.__side2)
 
         return Box(point_undistorted_1, point_undistorted_2).diagonal()
 

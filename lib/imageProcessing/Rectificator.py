@@ -24,7 +24,7 @@ class Rectificator():
         self.__frame_step_size = 2
         self.__scale_factor = 0.25
 
-        camera = Camera()
+        camera = Camera.create()
         self.__mtx = camera.getCalibrationMatrix()
         self.__dst = camera.getDistortionCoefficients()
 

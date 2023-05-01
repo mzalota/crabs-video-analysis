@@ -9,7 +9,7 @@ class RedDots:
         self.__red_dot2 = red_dot2
 
     def mm_per_pixel_undistorted(self) -> int:
-        camera = Camera()
-        redDot1 = camera.undistort_point(self.__red_dot1, imgObj.width(), imgObj.height())
-        redDot2 = camera.undistort_point(self.__red_dot2, imgObj.width(), imgObj.height())
+        camera = Camera.create()
+        redDot1 = camera.undistort_point(self.__red_dot1)
+        redDot2 = camera.undistort_point(self.__red_dot2)
         return redDot1.distanceTo(redDot2)

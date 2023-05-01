@@ -61,7 +61,7 @@ class VideoStream():
 
     def read_image_undistorted(self, frameID: int) -> np:
         image = self._read_image_raw(frameID)
-        image = Camera().undistort_image(Image(image))
+        image = Camera.create().undistort_image(Image(image))
         return image
 
     def _read_image_raw(self, frameID: int) -> np:

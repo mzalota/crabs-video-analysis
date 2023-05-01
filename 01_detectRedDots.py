@@ -1,5 +1,7 @@
 import sys
 
+from lib.Camera import Camera
+from lib.VideoStream import VideoStream
 from lib.reddots.DetectRedDotsController import DetectRedDotsController
 from lib.CommandLineLauncher import CommandLineLauncher
 from lib.FolderStructure import FolderStructure
@@ -29,6 +31,8 @@ print("Starting to detect RedDots")
 
 # Create _config.txt file if it does not exist
 configs = Configurations(folderStruct)
+
+Camera.initialize(VideoStream(folderStruct.getVideoFilepath()))
 
 controller = DetectRedDotsController(folderStruct)
 if configs.is_debug():

@@ -144,8 +144,8 @@ class DecoMarkersWithNumbers(FrameDecorator):
             location = self.__seefloorGeometry.translatePointCoordinate(orig_location, frame_number, frame_id)
 
             if self.__is_undistorted:
-                camera = Camera()
-                location = camera.undistort_point(location, mainImage.width(), mainImage.height())
+                camera = Camera.create()
+                location = camera.undistort_point(location)
 
             self._drawMarkerOnImage(mainImage, marker_id, location)
 
@@ -246,8 +246,8 @@ class DecoMarkedCrabs(FrameDecorator):
 
             location = self.__seefloorGeometry.translatePointCoordinate(crabLocationOrig, frame_number,frame_id)
             if self.__is_undistorted:
-                camera = Camera()
-                location = camera.undistort_point(location, mainImage.width(), mainImage.height())
+                camera = Camera.create()
+                location = camera.undistort_point(location)
 
             mainImage.drawCross(location, color=(255, 0, 0))
 
@@ -295,9 +295,9 @@ class DecoRedDots(FrameDecorator):
         redDot2 = self.__redDotsData.getRedDot2(self.getFrameID())
 
         if self.__is_undistorted:
-            camera = Camera()
-            redDot1 = camera.undistort_point(redDot1, imgObj.width(), imgObj.height())
-            redDot2 = camera.undistort_point(redDot2, imgObj.width(), imgObj.height())
+            camera = Camera.create()
+            redDot1 = camera.undistort_point(redDot1)
+            redDot2 = camera.undistort_point(redDot2)
 
         imgObj.drawCross(redDot1,5, color=(0, 0, 255))
         imgObj.drawCross(redDot2, 5, color=(0, 0, 255))

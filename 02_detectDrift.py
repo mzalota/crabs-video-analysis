@@ -1,6 +1,8 @@
 import sys
 
+from lib.Camera import Camera
 from lib.CommandLineLauncher import CommandLineLauncher
+from lib.VideoStream import VideoStream
 from lib.drifts.DetectDriftsController import DetectDriftsController
 from lib.FolderStructure import FolderStructure
 from lib.ui.FileOpenUI import FileOpenUI
@@ -27,6 +29,8 @@ print ("Starting DetectDrift")
 
 #Create _config.txt file if it does not exist
 configs = Configurations(folderStruct)
+
+Camera.initialize(VideoStream(folderStruct.getVideoFilepath()))
 
 controller = DetectDriftsController(folderStruct)
 controller.run()

@@ -1,6 +1,8 @@
 import sys
 
+from lib.Camera import Camera
 from lib.CommandLineLauncher import CommandLineLauncher
+from lib.VideoStream import VideoStream
 from lib.infra.MyTimer import MyTimer
 from lib.ui.FileOpenUI import FileOpenUI
 from lib.ui.StreamToLogger import StreamToLogger
@@ -27,6 +29,9 @@ print("Starting to Generate Graphs")
 
 #Create _config.txt file if it does not exist
 configs = Configurations(folderStruct)
+
+Camera.initialize(VideoStream(folderStruct.getVideoFilepath()))
+
 
 timer = MyTimer("InterpolateController")
 

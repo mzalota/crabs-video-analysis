@@ -1,11 +1,13 @@
 import sys
 import cv2
 
+from lib.Camera import Camera
 from lib.CommandLineLauncher import CommandLineLauncher
 from lib.FolderStructure import FolderStructure
 from lib.ImageWindow import ImageWindow
 from lib.VideoStream import VideoStream
 from lib.common import Point
+from lib.infra.Configurations import Configurations
 from lib.infra.MyTimer import MyTimer
 from lib.seefloor.InterpolateController import InterpolateController
 from lib.ui.FileOpenUI import FileOpenUI
@@ -29,10 +31,13 @@ if folderStruct is None:
 # StreamToLogger(folderStruct.getLogFilepath())
 print("Starting markCrabs script")
 
+#Create _config.txt file if it does not exist
+configs = Configurations(folderStruct)
+
 timer = MyTimer("Starting MarkCrabs")
 
 videoStream = VideoStream(folderStruct.getVideoFilepath())
-timer.lap("Initialized VideoStream")
+Camera.initialize(videoStream)
 
 interpolator = InterpolateController(folderStruct)
 interpolator.regenerateSeefloor()

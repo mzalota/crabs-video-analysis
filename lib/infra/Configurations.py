@@ -1,6 +1,8 @@
 from configparser import ConfigParser
 
+from lib.Camera import Camera
 from lib.FolderStructure import FolderStructure
+from lib.VideoStream import VideoStream
 from lib.infra.Defaults import Defaults
 
 
@@ -16,8 +18,7 @@ class Configurations:
     OPTION_MID_POINT_X_COORD_BETWEEN_REDDOTS = 'mid_point_x_coord_between_reddots'
 
 
-    def __init__(self, folderStruct):
-        # type: (FolderStructure) -> Configurations
+    def __init__(self, folderStruct: FolderStructure):
 
         filepath = folderStruct.getConfigFilepath()
         if not folderStruct.fileExists(filepath):
