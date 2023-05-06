@@ -12,6 +12,7 @@ from lib.data.PandasWrapper import PandasWrapper
 from lib.common import Point
 from lib.data.RedDotsManualData import RedDotsManualData
 from lib.data.RedDotsRawData import RedDotsRawData
+from lib.infra.DataframeWrapper import DataframeWrapper
 
 
 class RedDotsData(PandasWrapper):
@@ -39,6 +40,7 @@ class RedDotsData(PandasWrapper):
         # type: (FolderStructure, RedDotsManualData) -> RedDotsData
         self.__folderStruct = folderStruct
         self.__redDotsManual = redDotsManual
+        self.__df_as_dict = None
 
     @staticmethod
     def createFromFolderStruct(folderStruct):
@@ -166,10 +168,30 @@ class RedDotsData(PandasWrapper):
         scalingFactor = distanceRef / distanceToScale
         return scalingFactor
 
+
     def getMMPerPixel(self, frameId):
         # type: (int) -> float
-        dfResult = self.__rowForFrame(frameId)
-        return dfResult["mm_per_pixel"].iloc[0]
+        self.__initialize_dict()
+        result = self.__df_as_dict[frameId]["mm_per_pixel"]
+
+        #old slower way to fetch record
+        # dfResult = self.__rowForFrame(frameId)
+        # result2 = dfResult["mm_per_pixel"].iloc[0]
+        # print("getMMPerPixel results: "+str(result)+ " _ "+str(result2))
+
+        return result
+
+    def __initialize_dict(self):
+        if self.__df_as_dict is not None:
+            return
+
+        list_of_rows = DataframeWrapper(self.getPandasDF()).to_dict()
+        records_by_frame_id = dict()
+        for row in list_of_rows:
+            frame_id_of_row = row[self.COLNAME_frameNumber]
+            records_by_frame_id[frame_id_of_row] = row
+
+        self.__df_as_dict = records_by_frame_id
 
     def mm_per_pixel_undistorted(self, frameId : int) -> float:
         # type: (int) -> float
@@ -194,6 +216,7 @@ class RedDotsData(PandasWrapper):
         filepath = self.__folderStruct.getRedDotsInterpolatedFilepath()
         interpolatedDF.to_csv(filepath, sep='\t', index=False)
         self.__interpolatedDF = interpolatedDF
+        self.__df_as_dict = None # clear the cache of the DF. it will be need to be regenerated next time
 
     def __generateIntepolatedDF(self, minVal, maxVal):
         df = self.__add_rows_for_every_frame(minVal, maxVal)

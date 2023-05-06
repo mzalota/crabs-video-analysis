@@ -1,3 +1,5 @@
+from typing import List
+
 import pandas as pd
 
 class DataframeWrapper:
@@ -22,6 +24,14 @@ class DataframeWrapper:
     # [{'crabLocationX': 221, 'crabLocationY': 368, 'frameNumber': 10026},
     # {'crabLocationX': 865, 'crabLocationY': 304, 'frameNumber': 10243},
     # {'crabLocationX': 101, 'crabLocationY': 420, 'frameNumber': 10530}]
-    def to_dict(self):
+    def to_dict(self) -> List:
         return self.__df.to_dict("records")
 
+    def as_records_dict(self, frame_id_column_name: str):
+        list_of_rows = self.to_dict()
+        records_by_frame_id = dict()
+        for row in list_of_rows:
+            frame_id_of_row = row[frame_id_column_name]
+            records_by_frame_id[frame_id_of_row] = row
+
+        return records_by_frame_id

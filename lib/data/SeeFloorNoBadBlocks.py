@@ -14,6 +14,7 @@ from lib.FolderStructure import FolderStructure
 import pandas as pd
 
 from lib.common import Vector, Point
+from lib.infra.DataframeWrapper import DataframeWrapper
 from lib.infra.MyTimer import MyTimer
 
 
@@ -29,6 +30,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         self.__redDotsData = redDotsData
         self.__df = df
         self.__folderStruct = folderStruct
+        self.__df_as_dict = None
         #self.__crabsData = CrabsData(self.__folderStruct)
 
     @staticmethod
@@ -300,14 +302,12 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         # type: (int) -> float
         mmPerPixel = self.mm_per_pixel(frame_id)
         height_mm = Camera.create().frame_height() * float(mmPerPixel)
-        # height_mm = Frame.FRAME_HEIGHT * float(mmPerPixel)
         return height_mm
 
     def widthMM(self,frame_id):
         # type: (int) -> float
         mmPerPixel = self.mm_per_pixel(frame_id)
         width_mm = Camera.create().frame_width() * float(mmPerPixel)
-        # width_mm = Frame.FRAME_WIDTH * float(mmPerPixel)
         return width_mm
 
     def getYCoordMMOrigin(self, frame_id):
@@ -321,6 +321,10 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         return float(retValue)
 
     def __getValueFromDF(self, columnName, frame_id):
+        self.__initialize_cache()
+        return self.__df_as_dict[frame_id][columnName]
+
+    def __getValueFromDF_usingDF(self, columnName, frame_id):
         df = self.__getPandasDF()
         if df is None:
             return 0
@@ -338,6 +342,13 @@ class SeeFloorNoBadBlocks(PandasWrapper):
 
         return vals[0]
 
+    def __initialize_cache(self):
+        if self.__df_as_dict is not None:
+            # cache is already initialized
+            return
+        self.__df_as_dict = DataframeWrapper(self.__getPandasDF()).as_records_dict("frameNumber")
+
+
     def refreshItself(self):
         self.__driftData = DriftData.createFromFolderStruct(self.__folderStruct)
         self.__redDotsData = RedDotsData.createFromFolderStruct(self.__folderStruct)
@@ -347,6 +358,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         filepath = self.__folderStruct.getSeefloorFilepath()
         self.__df = self.__interpolate()
         self.__df.to_csv(filepath, sep='\t', index=False)
+        self.__df_as_dict = None #clear out the cache because Pandas Dataframe _df has changed. the Cache will be regenerated when it is ccessed next
 
     def __interpolate(self):
         dfDrifts = self.getDriftData().getDF()
@@ -380,7 +392,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
     #translates the point stepwise for each frame between orig and target.
     def translatePointCoordinate(self, pointLocation: Point, origFrameID: int, targetFrameID: int) -> Point:
         point_location_new = pointLocation
-        timer = MyTimer("start translatePointCoordinate")
+        # timer = MyTimer("start translatePointCoordinate")
         individual_frames = FrameId.sequence_of_frames(origFrameID, targetFrameID)
         for idx in range(1, len(individual_frames)):
             to_frame_id = individual_frames[idx]
@@ -392,7 +404,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
                 frame_physics = self.__get_frame_physics(to_frame_id)
                 result = frame_physics.translate_forward(point_location_new)
             point_location_new = result
-        timer.lap("end translatePointCoordinate "+str(pointLocation)+" loops:"+ str(len(individual_frames))+ ", orig frameId: "+str(origFrameID)+ ", target frameId: "+str(targetFrameID) + " new loc:"+str(point_location_new) )
+        # timer.lap("end translatePointCoordinate "+str(pointLocation)+" loops:"+ str(len(individual_frames))+ ", orig frameId: "+str(origFrameID)+ ", target frameId: "+str(targetFrameID) + " new loc:"+str(point_location_new) )
 
         return Point(int(round(point_location_new.x, 0)), int(round(point_location_new.y, 0)))
 
@@ -400,6 +412,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         scale = self.getRedDotsData().getMMPerPixel(to_frame_id)
         drift = self.__get_drift_instantaneous(to_frame_id)
         zoom = self.__zoom_instantaneous(to_frame_id)
+
         #print("In __get_frame_physics: scale", scale, "drift", drift, "zoom", zoom)
         return FramePhysics(to_frame_id, scale, drift, zoom)
 
