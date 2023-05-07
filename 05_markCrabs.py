@@ -49,7 +49,7 @@ timer.lap("Initialized ImageWindow")
 scientistUI = ScientistUI(imageWin, folderStruct, videoStream)
 timer.lap("Initialized ScientistUI")
 
-# Uncomment two lines below to get a nice summary which function uses the most time during excecution
+# Uncomment two lines below to get a nice summary which function uses the most time during execution
 # import cProfile
 # cProfile.run('scientistUI.processVideo()')
 

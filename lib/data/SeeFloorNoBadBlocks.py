@@ -1,21 +1,18 @@
 import numpy
+import pandas as pd
 
 from lib.Camera import Camera
+from lib.FolderStructure import FolderStructure
 from lib.FrameId import FrameId
 from lib.FramePhysics import FramePhysics
 from lib.VideoStream import VideoStream
+from lib.common import Vector, Point
 from lib.data.BadFramesData import BadFramesData
 from lib.data.DriftData import DriftData
-from lib.Frame import Frame
 from lib.data.GraphPlotter import GraphPlotter
 from lib.data.PandasWrapper import PandasWrapper
 from lib.data.RedDotsData import RedDotsData
-from lib.FolderStructure import FolderStructure
-import pandas as pd
-
-from lib.common import Vector, Point
 from lib.infra.DataframeWrapper import DataframeWrapper
-from lib.infra.MyTimer import MyTimer
 
 
 class SeeFloorNoBadBlocks(PandasWrapper):
@@ -110,7 +107,6 @@ class SeeFloorNoBadBlocks(PandasWrapper):
 
         # we are in a good segment and not in its first frame.
         pixels_to_jump = Camera.create().frame_height() * (-1)
-        # pixels_to_jump = Frame.FRAME_HEIGHT * (-1)
         new_frame_id = int(self._getNextFrame(pixels_to_jump, frame_id))
         return new_frame_id
 
@@ -124,7 +120,6 @@ class SeeFloorNoBadBlocks(PandasWrapper):
 
         # we are in a good segment and not in its last frame.
         pixels_to_jump = Camera.create().frame_height() * fraction
-        # pixels_to_jump = Frame.FRAME_HEIGHT * fraction
         new_frame_id = int(self._getNextFrame(pixels_to_jump, frame_id))
         return new_frame_id
 
@@ -203,11 +198,6 @@ class SeeFloorNoBadBlocks(PandasWrapper):
 
         if fromFrameID == toFrameID:
             return Vector(0, 0)
-
-        # driftX = self.getXDriftPixels(fromFrameID, toFrameID)
-        # driftY = self.getYDriftPixels(fromFrameID, toFrameID)
-        # result = Vector(driftX, driftY)
-        # return result
 
         result_new = Vector(self.get_x_drift_px(fromFrameID, toFrameID), self.get_y_drift_px(fromFrameID, toFrameID))
         #print("__driftBetweenFramesPixels orig "+str(result), " new: ", str(result_new))
@@ -398,7 +388,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
             to_frame_id = individual_frames[idx]
             # frame_physics = self.__get_frame_physics(to_frame_id)
             if targetFrameID < origFrameID:
-                frame_physics = self.__get_frame_physics(to_frame_id-1)
+                frame_physics = self.__get_frame_physics(to_frame_id)
                 result = frame_physics.translate_backward(point_location_new)
             else:
                 frame_physics = self.__get_frame_physics(to_frame_id)
@@ -426,7 +416,6 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         graphPlotter.saveGraphToFile(xColumn, yColumns, graphTitle, filePath)
 
     def saveGraphSeefloorX(self):
-        # filePath = self.__folderStruct.getSubDirpath()+"/graph_x.png"#self.__folderStruct.getRedDotsGraphAngle()
         filePath = self.__folderStruct.getGraphSeefloorAdvancementX()
         graphTitle = self.__folderStruct.getVideoFilename()+ " seefloor advancement along X (horizontal/sideways) axis (mm)"
         xColumn = ["frameNumber", "seconds"]
@@ -436,7 +425,6 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         graphPlotter.saveGraphToFile(xColumn, yColumns, graphTitle, filePath)
 
     def saveGraphSeefloorXY(self):
-        # filePath = self.__folderStruct.getSubDirpath()+"/graph_xy.png"#self.__folderStruct.getRedDotsGraphAngle()
         filePath = self.__folderStruct.getGraphSeefloorPathXY()
         graphTitle = self.__folderStruct.getVideoFilename()+ " seefloor advancement X and Y axis (mm)"
         xColumn = "driftX_sum_mm"

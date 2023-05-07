@@ -52,15 +52,21 @@ class DriftRawData(PandasWrapper):
         for feature_matcher_idx in range(0, 9):
             column_name_y_new = "fm_"+str(feature_matcher_idx)+"_drift_y_new"
             yColumns_new.append(column_name_y_new)
+            df = self.__clear_out_outliers(df, column_name_y_new)
 
             column_name_y_orig = "fm_" + str(feature_matcher_idx) + "_drift_y"
             yColumns_orig.append(column_name_y_orig)
+            df = self.__clear_out_outliers(df, column_name_y_orig)
 
             column_name_x_new = "fm_" + str(feature_matcher_idx) + "_drift_x_new"
             xColumns_new.append(column_name_x_new)
+            df = self.__clear_out_outliers(df, column_name_x_new)
 
             column_name_x_orig = "fm_" + str(feature_matcher_idx) + "_drift_x"
             xColumns_orig.append(column_name_x_orig)
+            df = self.__clear_out_outliers(df, column_name_x_orig)
+
+        df = df.interpolate(limit_direction='both')
 
         df['average_new'] = df[yColumns_new].mean(axis=1)
         df['average_orig'] = df[yColumns_orig].mean(axis=1)
@@ -121,19 +127,27 @@ class DriftRawData(PandasWrapper):
 
         return df
 
-    def __plot_graphs_for_debugging(self, df, yColumns_new, yColumns_orig):
-        filepath_prefix = self.__folderStruct.getSubDirpath() + "graph_"
-        graphTitle = self.__folderStruct.getVideoFilename() + "_ScalingFactor_orig"
-        xColumns = ["frameNumber"]
-        graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 3000)])
-        graphPlotter.saveGraphToFile(xColumns, yColumns_orig, graphTitle,
-                                     filepath_prefix + "drift_orig.png")
+    def __clear_out_outliers(self, df, column_name, quantile : float = 0.99):
+        outlier_up_value = df[column_name].quantile(quantile)
+        # print("column " + column_name +", 99th quantile: " + str(outlier_up_value))
+        df.loc[df[column_name] > outlier_up_value, [column_name]] = numpy.nan
 
-        graphTitle = self.__folderStruct.getVideoFilename() + "_ScalingFactor_new"
-        xColumns = ["frameNumber"]
-        graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 3000)])
-        graphPlotter.saveGraphToFile(xColumns, yColumns_new, graphTitle,
-                                     filepath_prefix + "drift_new.png")
+        outlier_down_value = df[column_name].quantile(1- quantile)
+        # print("column " + column_name +", 01th quantile: " + str(outlier_down_value))
+        df.loc[df[column_name] < outlier_down_value, [column_name]] = numpy.nan
+        return df
+
+    def __plot_graphs_for_debugging(self, df, yColumns_new, yColumns_orig):
+        x_axis_column = ["frameNumber"]
+        filepath_prefix = self.__folderStruct.getSubDirpath() + "graph_"
+
+        graphTitle = self.__folderStruct.getVideoFilename() + "_FrameMatcher_Drifts_orig"
+        graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 2000) & (df['frameNumber'] < 3000)])
+        graphPlotter.saveGraphToFile(x_axis_column, yColumns_orig, graphTitle, filepath_prefix + "drift_orig.png")
+
+        graphTitle = self.__folderStruct.getVideoFilename() + "__FrameMatcher_Drifts_new"
+        graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 2000) & (df['frameNumber'] < 3000)])
+        graphPlotter.saveGraphToFile(x_axis_column, yColumns_new, graphTitle, filepath_prefix + "drift_new.png")
 
     def __plot_scaling_factor(self, factor):
         filePath = self.__folderStruct.getSubDirpath() + "graph_scalingFactor.png"
@@ -166,7 +180,6 @@ class DriftRawData(PandasWrapper):
         column_name_x_new = "fm_" + num + "_drift_x_new"
 
         df["compensation"] = (df[column_name_x_bottom] - int(camera.frame_width()/2)) * df["scaling_factor"]
-        # df["compensation"] = (df[column_name_x_bottom] - int(Frame.FRAME_WIDTH/2)) * df["scaling_factor"]
         df[column_name_x_new] = df[column_name_x_orig] + df["compensation"]
 
         # set to NaN values where FeatureMatcher was reset (value in Result column = FAILED
