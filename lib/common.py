@@ -44,8 +44,7 @@ class Point:
 
         return Point(xMid, yMid)
 
-    def distanceTo(self, otherPoint):
-        # type: (Point) -> decimal
+    def distanceTo(self, otherPoint: Point) -> float:
         x1 = self.x
         y1 = self.y
         x2 = otherPoint.x

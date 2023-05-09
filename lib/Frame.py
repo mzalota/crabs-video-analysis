@@ -32,9 +32,6 @@ class Frame:
     def getFrameID(self) -> int:
         return self.__frameID
 
-    # def getImage(self):
-    #     return self.__videoStream.read_image(self.__frameID)
-
     def getImgObj(self) -> Image:
         return Image(self.__videoStream.read_image(self.__frameID))
 

@@ -1,13 +1,13 @@
 import numpy
 import pandas as pd
-#import statistics as statistics
+
+# import statistics as statistics
 from lib.Camera import Camera
 from lib.FolderStructure import FolderStructure
-from lib.Frame import Frame
 from lib.data.GraphPlotter import GraphPlotter
-from lib.drifts.DriftManualData import DriftManualData
-
 from lib.data.PandasWrapper import PandasWrapper
+from lib.data.RedDotsData import RedDotsData
+from lib.drifts.DriftManualData import DriftManualData
 from lib.infra.Configurations import Configurations
 
 
@@ -168,7 +168,6 @@ class DriftRawData(PandasWrapper):
         camera = Camera.create()
 
         df["compensation"] = (df[column_name_y_bottom] - int(camera.frame_height() /2)) * df["scaling_factor"]
-        # df["compensation"] = (df[column_name_y_bottom] - int(Frame.FRAME_HEIGHT/2)) * df["scaling_factor"]
         df[column_name_y_new] = df[column_name_y_orig] + df["compensation"]
 
         # set to NaN values where FeatureMatcher was reset (value in Result column = FAILED
@@ -176,6 +175,7 @@ class DriftRawData(PandasWrapper):
 
         #X drifts
         column_name_x_bottom = "fm_" + num + "_bottom_x"
+        column_name_x_bottom = "fm_" + num + "_bottom_y"
         column_name_x_orig = "fm_" + num + "_drift_x"
         column_name_x_new = "fm_" + num + "_drift_x_new"
 
@@ -185,8 +185,7 @@ class DriftRawData(PandasWrapper):
         # set to NaN values where FeatureMatcher was reset (value in Result column = FAILED
         df.loc[df['fm_' + num + '_result'] == "FAILED", [column_name_y_orig, column_name_y_new, column_name_x_orig, column_name_x_new]] = numpy.nan
 
-    def interpolate(self, manualDrifts, redDotsData, driftsDetectionStep):
-        # type: (DriftManualData, int) -> pd.DataFrame
+    def interpolate(self, manualDrifts: DriftManualData, redDotsData: RedDotsData, driftsDetectionStep: int) -> pd.DataFrame:
         df = self.__df.copy()
 
         #comment out next 5 lines to skip new logic of compensating each FeatureMatcher

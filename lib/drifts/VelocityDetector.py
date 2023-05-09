@@ -113,7 +113,7 @@ class VelocityDetector():
 
         self._fm = dict()
         # Boxes on the left side
-        self._fm[0] = FeatureMatcher(Box(Point(200, 50), Point(200 + 600, 50 + 400)))  # left top
+        self._fm[0] = FeatureMatcher(Box(Point(200, 100), Point(200 + 600, 100 + 400)))  # left top
         self._fm[1] = FeatureMatcher(Box(Point(300, 400 + hi_res_hight_diff / 2), Point(300 + 200,
                                                                                           400 + hi_res_hight_diff / 2 + 350)))  # left middle, taller one
         self._fm[2] = FeatureMatcher(Box(Point(200, 650 + hi_res_hight_diff / 2), Point(200 + 300,
@@ -121,13 +121,11 @@ class VelocityDetector():
 
         # Boxes in the middle
         self._fm[3] = FeatureMatcher(Box(Point(700 + hi_res_width_diff / 2, 600 + hi_res_hight_diff / 2),
-                                           Point(700 + hi_res_width_diff / 2 + 400,
-                                                 600 + hi_res_hight_diff / 2 + 300)))  # center over red dots
-        self._fm[4] = FeatureMatcher(Box(Point(800 + hi_res_width_diff / 2, 50),
-                                           Point(800 + hi_res_width_diff / 2 + 300, 50 + 200)))  # middle top
+                      Point(700 + hi_res_width_diff / 2 + 400, 600 + hi_res_hight_diff / 2 + 200)))  # center over red dots
+
+        self._fm[4] = FeatureMatcher(Box(Point(800 + hi_res_width_diff / 2, 100), Point(800 + hi_res_width_diff / 2 + 300, 100 + 200)))  # middle top
         self._fm[5] = FeatureMatcher(Box(Point(800 + hi_res_width_diff, 300 + hi_res_hight_diff),
-                                           Point(800 + hi_res_width_diff + 300,
-                                                 300 + hi_res_hight_diff + 200)))  # between center box and "right middle" box
+                        Point(800 + hi_res_width_diff + 300,  300 + hi_res_hight_diff + 100)))  # between center box and "right middle" box
 
         # boxes on the right side
         self._fm[6] = FeatureMatcher(Box(Point(1250 + hi_res_width_diff, 650 + hi_res_hight_diff / 2),

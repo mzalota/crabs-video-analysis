@@ -338,7 +338,6 @@ class SeeFloorNoBadBlocks(PandasWrapper):
             return
         self.__df_as_dict = DataframeWrapper(self.__getPandasDF()).as_records_dict("frameNumber")
 
-
     def refreshItself(self):
         self.__driftData = DriftData.createFromFolderStruct(self.__folderStruct)
         self.__redDotsData = RedDotsData.createFromFolderStruct(self.__folderStruct)
@@ -366,7 +365,6 @@ class SeeFloorNoBadBlocks(PandasWrapper):
 
         camera = Camera.create()
         dfMerged["bottom_corner_mm"] = camera.frame_height() * dfMerged["mm_per_pixel"] + dfMerged["driftY_sum_mm"]
-        # dfMerged["bottom_corner_mm"] = Frame.FRAME_HEIGHT * dfMerged["mm_per_pixel"] + dfMerged["driftY_sum_mm"]
         dfMerged["seconds"] = dfMerged["frameNumber"]/VideoStream.FRAMES_PER_SECOND
         dfMerged = dfMerged.sort_values(by=['frameNumber'])
         return dfMerged

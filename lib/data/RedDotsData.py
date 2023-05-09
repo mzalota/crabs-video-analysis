@@ -13,6 +13,7 @@ from lib.common import Point
 from lib.data.RedDotsManualData import RedDotsManualData
 from lib.data.RedDotsRawData import RedDotsRawData
 from lib.infra.DataframeWrapper import DataframeWrapper
+from lib.model.RedDots import RedDots
 
 
 class RedDotsData(PandasWrapper):
@@ -140,20 +141,15 @@ class RedDotsData(PandasWrapper):
         return dfResult["distance"].iloc[0]
 
     def get_camera_height_mm(self, frame_id: int):
-        camera = Camera.create()
 
         red_dot1 = self.getRedDot1(frame_id)
         red_dot2 = self.getRedDot2(frame_id)
+        dots = RedDots(red_dot1, red_dot2)
 
-        distance_between_red_dots_px = self.__distance_px_between_red_dots(red_dot1, red_dot2)
-
-        depth_z_axis_to_seefloor_on_image = camera.distance_to_object(distance_between_red_dots_px,
+        camera = Camera.create()
+        depth_z_axis_to_seefloor_on_image = camera.distance_to_object(dots.distance(),
                                                                       self.red_dots_separation_mm())
-
         return depth_z_axis_to_seefloor_on_image
-
-    def __distance_px_between_red_dots(self, red_dot1, red_dot2):
-        return ((red_dot1.x - red_dot2.x) ** 2 + (red_dot1.y - red_dot2.y) ** 2) ** 0.5
 
     def zoom_instantaneous(self, frame_id):
         # type: (int) -> float
@@ -230,6 +226,7 @@ class RedDotsData(PandasWrapper):
         self.__clearOutliersBasedOnDistance(df)
         df = self.__interpolate_values(df)
         self.__calculateDerivedValues(df)
+        df = self.__recalculate_distance_undistorted(df)
         return df
 
     def __add_rows_for_every_frame(self, minVal, maxVal):
@@ -245,15 +242,43 @@ class RedDotsData(PandasWrapper):
         df = df.combine_first(everyFrame).reset_index()
         return df
 
-    def __calculateDerivedValues(self, df):
+    def __calculateDerivedValues(self, df: pd.DataFrame):
         self.__recalculate_column_distance(df)
         self.__recalculate_column_angle(df)
         df[self.__COLNAME_seconds] = df[self.COLNAME_frameNumber]/VideoStream.FRAMES_PER_SECOND
 
-    def __recalculate_column_distance(self, df):
-        df['distance'] = pow(pow(df["centerPoint_x_dot2"] - df["centerPoint_x_dot1"], 2) + pow(
-            df["centerPoint_y_dot2"] - df["centerPoint_y_dot1"], 2), 0.5)  # .astype(int)
-        df[self.__COLNAME_mm_per_pixel] = self.red_dots_separation_mm() / df['distance']
+
+    def __recalculate_column_distance(self, df: pd.DataFrame):
+        df[self.__COLNAME_distance] = pow(pow(df["centerPoint_x_dot2"] - df["centerPoint_x_dot1"], 2) + pow(df["centerPoint_y_dot2"] - df["centerPoint_y_dot1"], 2), 0.5)  # .astype(int)
+        df[self.__COLNAME_mm_per_pixel] = self.red_dots_separation_mm() / df[self.__COLNAME_distance]
+
+    def __recalculate_distance_undistorted(self, df: pd.DataFrame):
+        points = DataframeWrapper(df).as_records_dict("frameNumber")
+        camera = Camera.create()
+        distance_undistorted = list()
+        for frame_id in points:
+            point_x_dot_1 = points[frame_id]["centerPoint_x_dot1"]
+            point_y_dot_1 = points[frame_id]["centerPoint_y_dot1"]
+            point_x_dot_2 = points[frame_id]["centerPoint_x_dot2"]
+            point_y_dot_2 = points[frame_id]["centerPoint_y_dot2"]
+
+            point_1 = Point(point_x_dot_1, point_y_dot_1)
+            point_2 = Point(point_x_dot_2, point_y_dot_2)
+
+            point_1_undistorted = camera.undistort_point(point_1)
+            point_2_undistorted = camera.undistort_point(point_2)
+            distance_undistorted.append((frame_id, point_1_undistorted.distanceTo(point_2_undistorted),point_1.distanceTo(point_2)))
+        # print ("distance_undistorted", distance_undistorted)
+        df_new_column = pd.DataFrame.from_records(distance_undistorted,
+                                                  columns=['frameNumber', 'distance_px_undistort', "distance_px"])
+        # df["distance_px_undistort"] = df_new_column
+        print(DataframeWrapper(df_new_column).to_dict())
+        print(df_new_column)
+        print("that was df_new_column")
+        df = pd.merge(df, df_new_column, on='frameNumber', how='left', suffixes=('_dot1', '_dot2'))
+        print(df)
+        print("that was df after merge")
+        return df
 
     def red_dots_separation_mm(self):
         configs = Configurations(self.__folderStruct)
@@ -265,7 +290,7 @@ class RedDotsData(PandasWrapper):
         angle_in_radians = numpy.arctan(yLength_df / xLength_df)*(-1)
         df[self.__COLNAME_angle] = angle_in_radians / math.pi * 90
 
-    def __interpolate_values(self, df):
+    def __interpolate_values(self, df) -> pd.DataFrame:
         df = df.interpolate(limit_direction='both')
 
         df.loc[pd.isna(df["origin_dot1"]), ["origin_dot1"]] = self.VALUE_ORIGIN_interpolate
