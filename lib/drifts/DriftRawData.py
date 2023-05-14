@@ -9,6 +9,7 @@ from lib.data.PandasWrapper import PandasWrapper
 from lib.data.RedDotsData import RedDotsData
 from lib.drifts.DriftManualData import DriftManualData
 from lib.infra.Configurations import Configurations
+from lib.infra.DataframeWrapper import DataframeWrapper
 
 
 class DriftRawData(PandasWrapper):
@@ -36,8 +37,7 @@ class DriftRawData(PandasWrapper):
         # type: () -> int
         return len(self.__df.index)
 
-    def _compensate_for_zoom(self, redDotsData, factor):
-        # type: (RedDotsData, pd.DataFrame) -> void
+    def _compensate_for_zoom(self, factor: pd.DataFrame) -> pd.DataFrame:
 
         df = self.__df.copy()
         df = pd.merge(df, factor, on='frameNumber', how='left', suffixes=('_draft', '_reddot'))
@@ -51,21 +51,29 @@ class DriftRawData(PandasWrapper):
         xColumns_orig = list()
         for feature_matcher_idx in range(0, 9):
             column_name_y_new = "fm_"+str(feature_matcher_idx)+"_drift_y_new"
-            yColumns_new.append(column_name_y_new)
-            df = self.__clear_out_outliers(df, column_name_y_new)
-
-            column_name_y_orig = "fm_" + str(feature_matcher_idx) + "_drift_y"
-            yColumns_orig.append(column_name_y_orig)
-            df = self.__clear_out_outliers(df, column_name_y_orig)
-
             column_name_x_new = "fm_" + str(feature_matcher_idx) + "_drift_x_new"
-            xColumns_new.append(column_name_x_new)
-            df = self.__clear_out_outliers(df, column_name_x_new)
-
+            column_name_y_orig = "fm_" + str(feature_matcher_idx) + "_drift_y"
             column_name_x_orig = "fm_" + str(feature_matcher_idx) + "_drift_x"
-            xColumns_orig.append(column_name_x_orig)
-            df = self.__clear_out_outliers(df, column_name_x_orig)
 
+            yColumns_new.append(column_name_y_new)
+            yColumns_orig.append(column_name_y_orig)
+            xColumns_new.append(column_name_x_new)
+            xColumns_orig.append(column_name_x_orig)
+
+        dframe = DataframeWrapper(df)
+        for col_name in yColumns_new:
+            dframe.remove_outliers_quantile(col_name)
+
+        for col_name in xColumns_new:
+            dframe.remove_outliers_quantile(col_name)
+
+        for col_name in yColumns_orig:
+            dframe.remove_outliers_quantile(col_name)
+
+        for col_name in xColumns_orig:
+            dframe.remove_outliers_quantile(col_name)
+
+        df = dframe.pandas_df()
         df = df.interpolate(limit_direction='both')
 
         df['average_new'] = df[yColumns_new].mean(axis=1)
@@ -127,16 +135,6 @@ class DriftRawData(PandasWrapper):
 
         return df
 
-    def __clear_out_outliers(self, df, column_name, quantile : float = 0.99):
-        outlier_up_value = df[column_name].quantile(quantile)
-        # print("column " + column_name +", 99th quantile: " + str(outlier_up_value))
-        df.loc[df[column_name] > outlier_up_value, [column_name]] = numpy.nan
-
-        outlier_down_value = df[column_name].quantile(1- quantile)
-        # print("column " + column_name +", 01th quantile: " + str(outlier_down_value))
-        df.loc[df[column_name] < outlier_down_value, [column_name]] = numpy.nan
-        return df
-
     def __plot_graphs_for_debugging(self, df, yColumns_new, yColumns_orig):
         x_axis_column = ["frameNumber"]
         filepath_prefix = self.__folderStruct.getSubDirpath() + "graph_"
@@ -150,32 +148,30 @@ class DriftRawData(PandasWrapper):
         graphPlotter.saveGraphToFile(x_axis_column, yColumns_new, graphTitle, filepath_prefix + "drift_new.png")
 
     def __plot_scaling_factor(self, factor):
+        print(factor)
         filePath = self.__folderStruct.getSubDirpath() + "graph_scalingFactor.png"
         graphTitle = self.__folderStruct.getVideoFilename() + "_ScalingFactor_1"
         xColumns = ["frameNumber"]
-        yColumns = ["scaling_factor"]
+        yColumns = ["scaling_factor", "scaling_factor_undistorted"]
         #factor.to_csv(self.__folderStruct.getGraphRedDotsAngle() + "aaa.csv", sep='\t', index=False)
-        graphPlotter = GraphPlotter(factor)
+        # graphPlotter = GraphPlotter(factor)
+        graphPlotter = GraphPlotter(factor.loc[(factor['frameNumber'] > 2000) & (factor['frameNumber'] < 2400)])
         graphPlotter.saveGraphToFile(xColumns, yColumns, graphTitle, filePath)
 
     def __generate_new_drift(self, df, num):
         num = str(num)
+        camera = Camera.create()
 
+        # Y drifts
         column_name_y_bottom = "fm_" + num + "_bottom_y"
         column_name_y_orig = "fm_" + num + "_drift_y"
         column_name_y_new = "fm_" + num + "_drift_y_new"
 
-        camera = Camera.create()
-
-        df["compensation"] = (df[column_name_y_bottom] - int(camera.frame_height() /2)) * df["scaling_factor"]
+        df["compensation"] = (df[column_name_y_bottom] - int(camera.frame_height()/2)) * df["scaling_factor"]
         df[column_name_y_new] = df[column_name_y_orig] + df["compensation"]
 
-        # set to NaN values where FeatureMatcher was reset (value in Result column = FAILED
-        df.loc[df['fm_' + num + '_result'] == "FAILED", ['fm_' + num + '_drift_y', 'fm_' + num + '_drift_y_new']] = numpy.nan
-
-        #X drifts
+        # X drifts
         column_name_x_bottom = "fm_" + num + "_bottom_x"
-        column_name_x_bottom = "fm_" + num + "_bottom_y"
         column_name_x_orig = "fm_" + num + "_drift_x"
         column_name_x_new = "fm_" + num + "_drift_x_new"
 
@@ -190,8 +186,10 @@ class DriftRawData(PandasWrapper):
 
         #comment out next 5 lines to skip new logic of compensating each FeatureMatcher
         factor = redDotsData.scalingFactorColumn(driftsDetectionStep)
+        #factor = redDotsData.scalingFactorColumn_undiestoreted(driftsDetectionStep)
 
-        df_comp = self._compensate_for_zoom(redDotsData, factor)
+
+        df_comp = self._compensate_for_zoom(factor)
         df = pd.merge(df, df_comp[['average_new', "average_x_new", "frameNumber"]], on='frameNumber', how='left', suffixes=('_draft', '_reddot'))
         df["driftY"] = df['average_new']
         df["driftX"] = df['average_x_new']
@@ -213,6 +211,7 @@ class DriftRawData(PandasWrapper):
 
         df = manualDrifts.overwrite_values(df)
         df = df.interpolate(limit_direction='both')
+
         #set drifts in the first row to zero.
         self.setValuesInFirstRowToZeros(df)
         return df

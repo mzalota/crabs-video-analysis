@@ -82,8 +82,9 @@ class RedDotsData(PandasWrapper):
         # type: (int) -> pd.DataFrame
 
         df = self.getPandasDF()
-        dist_diff = df[self.__COLNAME_distance] - df[self.__COLNAME_distance].shift(periods=-1)
-        scaling_factor_single_step = dist_diff/df[self.__COLNAME_distance]
+        distance_column_name = self.__COLNAME_distance
+        dist_diff = df[distance_column_name] - df[distance_column_name].shift(periods=-1)
+        scaling_factor_single_step = dist_diff/df[distance_column_name]
 
         result = scaling_factor_single_step+0
         for increment in range(1, driftsDetectionStep):
@@ -91,8 +92,18 @@ class RedDotsData(PandasWrapper):
             result = result + prev
         df["scaling_factor"] = result
 
-        return df[[self.COLNAME_frameNumber, "scaling_factor"]]
 
+        distance_column_name = "distance_px_undistort"
+        dist_diff = df[distance_column_name] - df[distance_column_name].shift(periods=-1)
+        scaling_factor_single_step = dist_diff/df[distance_column_name]
+
+        result = scaling_factor_single_step+0
+        for increment in range(1, driftsDetectionStep):
+            prev = scaling_factor_single_step.shift(periods=-increment)
+            result = result + prev
+        df["scaling_factor_undistorted"] = result
+
+        return df[[self.COLNAME_frameNumber, "scaling_factor", "scaling_factor_undistorted"]]
 
     def saveGraphOfAngle(self):
         filePath = self.__folderStruct.getGraphRedDotsAngle()
@@ -144,7 +155,7 @@ class RedDotsData(PandasWrapper):
 
         red_dot1 = self.getRedDot1(frame_id)
         red_dot2 = self.getRedDot2(frame_id)
-        dots = RedDots(red_dot1, red_dot2)
+        dots = RedDots(frame_id, red_dot1, red_dot2)
 
         camera = Camera.create()
         depth_z_axis_to_seefloor_on_image = camera.distance_to_object(dots.distance(),
@@ -181,7 +192,7 @@ class RedDotsData(PandasWrapper):
         if self.__df_as_dict is not None:
             return
 
-        list_of_rows = DataframeWrapper(self.getPandasDF()).to_dict()
+        list_of_rows = DataframeWrapper(self.getPandasDF()).to_list()
         records_by_frame_id = dict()
         for row in list_of_rows:
             frame_id_of_row = row[self.COLNAME_frameNumber]
@@ -268,16 +279,11 @@ class RedDotsData(PandasWrapper):
             point_1_undistorted = camera.undistort_point(point_1)
             point_2_undistorted = camera.undistort_point(point_2)
             distance_undistorted.append((frame_id, point_1_undistorted.distanceTo(point_2_undistorted),point_1.distanceTo(point_2)))
-        # print ("distance_undistorted", distance_undistorted)
+
         df_new_column = pd.DataFrame.from_records(distance_undistorted,
                                                   columns=['frameNumber', 'distance_px_undistort', "distance_px"])
-        # df["distance_px_undistort"] = df_new_column
-        print(DataframeWrapper(df_new_column).to_dict())
-        print(df_new_column)
-        print("that was df_new_column")
+
         df = pd.merge(df, df_new_column, on='frameNumber', how='left', suffixes=('_dot1', '_dot2'))
-        print(df)
-        print("that was df after merge")
         return df
 
     def red_dots_separation_mm(self):
