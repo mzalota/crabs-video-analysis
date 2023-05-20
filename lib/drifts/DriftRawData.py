@@ -84,48 +84,41 @@ class DriftRawData(PandasWrapper):
         df['average_x_orig'] = df[xColumns_orig].mean(axis=1)
 
         if self.__generate_debug_graphs:
-            self.__plot_scaling_factor(factor)
+            frame_id_from = 10400
+            fream_id_to = 11000
 
-            filepath_prefix=self.__folderStruct.getSubDirpath() + "graph_"
+            x_axis_column = ["frameNumber"]
+            filepath_prefix = self.__folderStruct.getSubDirpath() + "graph_debug_"
+            title_prefix = self.__folderStruct.getVideoFilename()
 
-            graphTitle = self.__folderStruct.getVideoFilename() + "_averages_y"
-            xColumns = ["frameNumber"]
-            graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 3000)])
-            graphPlotter.saveGraphToFile(xColumns, ["average_y_new", "average_y_orig"], graphTitle,
+            graph_title = title_prefix + "_scaling_factor"
+            plotter = GraphPlotter(factor.loc[(factor['frameNumber'] > frame_id_from) & (factor['frameNumber'] < fream_id_to)])
+            plotter.saveGraphToFile(x_axis_column, ["scaling_factor", "scaling_factor_undistorted"], graph_title,
+                                    filepath_prefix + "scaling_factor.png")
+
+
+            df_to_plot = df.loc[(df['frameNumber'] > frame_id_from) & (df['frameNumber'] < fream_id_to)]
+
+            graph_title = title_prefix + "_averages_y"
+            graphPlotter = GraphPlotter(df_to_plot)
+            graphPlotter.saveGraphToFile(x_axis_column, ["average_y_new", "average_y_orig"], graph_title,
                                          filepath_prefix + "drift_compare_avg_y.png")
 
-            graphTitle = self.__folderStruct.getVideoFilename() + "_averages_x"
-            xColumns = ["frameNumber"]
-            graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 3000)])
-            graphPlotter.saveGraphToFile(xColumns, ["average_x_new", "average_x_orig"], graphTitle,
+            graph_title = title_prefix + "_averages_x"
+            graphPlotter = GraphPlotter(df_to_plot)
+            graphPlotter.saveGraphToFile(x_axis_column, ["average_x_new", "average_x_orig"], graph_title,
                                          filepath_prefix + "drift_compare_avg_x.png")
 
 
-            #df.to_csv(self.__folderStruct.getGraphRedDotsAngle() + "merged.csv", sep='\t', index=False)
+            graph_title = title_prefix + "_FrameMatcher_Drifts_orig"
+            graph_plotter = GraphPlotter(df_to_plot)
+            graph_plotter.saveGraphToFile(x_axis_column, xColumns_orig, graph_title, filepath_prefix + "drift_orig.png")
 
-            self.__plot_graphs_for_debugging(df, xColumns_new, xColumns_orig)
+            graph_title = title_prefix + "__FrameMatcher_Drifts_new"
+            graph_plotter = GraphPlotter(df_to_plot)
+            graph_plotter.saveGraphToFile(x_axis_column, xColumns_new, graph_title, filepath_prefix + "drift_new.png")
 
         return df
-
-    def __plot_graphs_for_debugging(self, df, yColumns_new, yColumns_orig):
-        x_axis_column = ["frameNumber"]
-        filepath_prefix = self.__folderStruct.getSubDirpath() + "graph_"
-
-        graphTitle = self.__folderStruct.getVideoFilename() + "_FrameMatcher_Drifts_orig"
-        graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 4000) & (df['frameNumber'] < 4400)])
-        graphPlotter.saveGraphToFile(x_axis_column, yColumns_orig, graphTitle, filepath_prefix + "drift_orig.png")
-
-        graphTitle = self.__folderStruct.getVideoFilename() + "__FrameMatcher_Drifts_new"
-        graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 4000) & (df['frameNumber'] < 4400)])
-        graphPlotter.saveGraphToFile(x_axis_column, yColumns_new, graphTitle, filepath_prefix + "drift_new.png")
-
-    def __plot_scaling_factor(self, factor):
-        filePath = self.__folderStruct.getSubDirpath() + "graph_scalingFactor.png"
-        graphTitle = self.__folderStruct.getVideoFilename() + "_ScalingFactor_1"
-        xColumns = ["frameNumber"]
-        yColumns = ["scaling_factor", "scaling_factor_undistorted"]
-        graphPlotter = GraphPlotter(factor.loc[(factor['frameNumber'] > 4000) & (factor['frameNumber'] < 4400)])
-        graphPlotter.saveGraphToFile(xColumns, yColumns, graphTitle, filePath)
 
     def __generate_new_drift(self, df, num):
         num = str(num)
@@ -137,9 +130,10 @@ class DriftRawData(PandasWrapper):
         column_name_y_orig = "fm_" + num + "_drift_y"
         column_name_y_new = "fm_" + num + "_drift_y_new"
 
-        compensation_y = (df[column_name_y_top] + (df[column_name_y_top] - df[column_name_y_bottom])/2 - camera.frame_height()/2) * df["scaling_factor"]
-        # compensation_y = ( df[column_name_y_bottom] - camera.frame_height()/2) * df["scaling_factor_undistorted"]
-        df[column_name_y_new] = df[column_name_y_orig] + compensation_y
+        center_y = df[column_name_y_top] + (df[column_name_y_bottom] - df[column_name_y_top]) / 2
+        zoom_compensation_y = (center_y - camera.frame_height() / 2) * df["scaling_factor"] #scaling_factor scaling_factor_undistorted
+        # zoom_compensation_y = ( df[column_name_y_bottom] - camera.frame_height()/2) * df["scaling_factor_undistorted"]
+        df[column_name_y_new] = df[column_name_y_orig] + zoom_compensation_y
         # df[column_name_y_new] = df[column_name_y_orig]
 
         # X drifts
@@ -148,10 +142,9 @@ class DriftRawData(PandasWrapper):
         column_name_x_orig = "fm_" + num + "_drift_x"
         column_name_x_new = "fm_" + num + "_drift_x_new"
 
-        compensation_x = (df[column_name_x_top] + (df[column_name_x_top] - df[column_name_x_bottom])/2 - camera.frame_width()/2) * df["scaling_factor"]
-        # x_pixels_from_center = (df[column_name_x_bottom] - camera.frame_width() / 2)
-        # compensation_x = x_pixels_from_center * df["scaling_factor_undistorted"]
-        df[column_name_x_new] = df[column_name_x_orig] + compensation_x
+        center_x = df[column_name_x_top] + (df[column_name_x_bottom] - df[column_name_x_top]) / 2
+        zoom_compensation_x = (center_x - camera.frame_width() / 2) * df["scaling_factor"] #scaling_factor scaling_factor_undistorted
+        df[column_name_x_new] = df[column_name_x_orig] + zoom_compensation_x
         # df[column_name_x_new] = df[column_name_x_orig]
 
         # set to NaN values where FeatureMatcher was reset (value in Result column = FAILED

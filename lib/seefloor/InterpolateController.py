@@ -39,9 +39,6 @@ class InterpolateController:
         drifts.setDF(drifts_interpolated_df)
         drifts.saveToFile(self.__folderStruct.getDriftsFilepath())
 
-        #configs = Configurations(self.__folderStruct)
-        #if configs.is_debug():
-
         print("regenerating SeeFloor")
         sf = SeeFloor.createFromFolderStruct(self.__folderStruct)
         sf.saveToFile()
@@ -54,8 +51,7 @@ class InterpolateController:
     def regenerateGraphs(self):
         print ("drawing graphs for RedDots")
         rdd = RedDotsData.createFromFolderStruct(self.__folderStruct)
-        rdd.saveGraphOfAngle()
-        rdd.saveGraphOfDistance()
+        rdd.saveGraphs(10400, 11000)
 
         print ("drawing graphs for SeeFloor")
         sf = SeeFloor.createFromFolderStruct(self.__folderStruct)

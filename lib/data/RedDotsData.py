@@ -105,24 +105,21 @@ class RedDotsData(PandasWrapper):
 
         return df[[self.COLNAME_frameNumber, "scaling_factor", "scaling_factor_undistorted", "dist_diff", "dist_diff_undistorted"]]
 
-    def saveGraphOfAngle(self):
+
+    def saveGraphs(self, frame_id_from: int = 0, frame_id_to: int = 123456):
+        df = self.getPandasDF()
+        df_to_plot = df.loc[(df['frameNumber'] > frame_id_from) & (df['frameNumber'] < frame_id_to)]
+        xColumns = [self.COLNAME_frameNumber, self.__COLNAME_seconds]
+
         filePath = self.__folderStruct.getGraphRedDotsAngle()
         graphTitle = self.__folderStruct.getVideoFilename()+ " Red Dots Angle (degrees)"
-        xColumns = [self.COLNAME_frameNumber, self.__COLNAME_seconds]
-        yColumns = [self.__COLNAME_angle]
+        graphPlotter = GraphPlotter(df_to_plot)
+        graphPlotter.saveGraphToFile(xColumns, [self.__COLNAME_angle], graphTitle, filePath)
 
-        graphPlotter = GraphPlotter(self.getPandasDF())
-        graphPlotter.saveGraphToFile(xColumns, yColumns, graphTitle, filePath)
-
-    def saveGraphOfDistance(self):
         filePath = self.__folderStruct.getGraphRedDotsDistance()
         graphTitle = self.__folderStruct.getVideoFilename()+ " Red Dots Distance (pixels)"
-        xColumns = [self.COLNAME_frameNumber, self.__COLNAME_seconds]
-        yColumns = [self.__COLNAME_distance]
-
-        df = self.getPandasDF()
-        graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 4000) & (df['frameNumber'] < 4400)])
-        graphPlotter.saveGraphToFile(xColumns, yColumns, graphTitle, filePath)
+        graphPlotter = GraphPlotter(df_to_plot)
+        graphPlotter.saveGraphToFile(xColumns, [self.__COLNAME_distance], graphTitle, filePath)
 
     def getCount(self):
         # type: () -> int
