@@ -141,11 +141,11 @@ class DriftRawData(PandasWrapper):
         filepath_prefix = self.__folderStruct.getSubDirpath() + "graph_"
 
         graphTitle = self.__folderStruct.getVideoFilename() + "_FrameMatcher_Drifts_orig"
-        graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 2000) & (df['frameNumber'] < 3000)])
+        graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 4000) & (df['frameNumber'] < 4400)])
         graphPlotter.saveGraphToFile(x_axis_column, yColumns_orig, graphTitle, filepath_prefix + "drift_orig.png")
 
         graphTitle = self.__folderStruct.getVideoFilename() + "__FrameMatcher_Drifts_new"
-        graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 2000) & (df['frameNumber'] < 3000)])
+        graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 4000) & (df['frameNumber'] < 4400)])
         graphPlotter.saveGraphToFile(x_axis_column, yColumns_new, graphTitle, filepath_prefix + "drift_new.png")
 
     def __plot_scaling_factor(self, factor):
@@ -153,7 +153,7 @@ class DriftRawData(PandasWrapper):
         graphTitle = self.__folderStruct.getVideoFilename() + "_ScalingFactor_1"
         xColumns = ["frameNumber"]
         yColumns = ["scaling_factor", "scaling_factor_undistorted"]
-        graphPlotter = GraphPlotter(factor.loc[(factor['frameNumber'] > 2000) & (factor['frameNumber'] < 2400)])
+        graphPlotter = GraphPlotter(factor.loc[(factor['frameNumber'] > 4000) & (factor['frameNumber'] < 4400)])
         graphPlotter.saveGraphToFile(xColumns, yColumns, graphTitle, filePath)
 
     def __generate_new_drift(self, df, num):
@@ -166,8 +166,8 @@ class DriftRawData(PandasWrapper):
         column_name_y_orig = "fm_" + num + "_drift_y"
         column_name_y_new = "fm_" + num + "_drift_y_new"
 
-        #compensation_y = (df[column_name_y_top] + (df[column_name_y_top] - df[column_name_y_bottom])/2 - camera.frame_height()/2) * df["scaling_factor"]
-        compensation_y = ( df[column_name_y_bottom] - camera.frame_height()/2) * df["scaling_factor"]
+        compensation_y = (df[column_name_y_top] + (df[column_name_y_top] - df[column_name_y_bottom])/2 - camera.frame_height()/2) * df["scaling_factor"]
+        # compensation_y = ( df[column_name_y_bottom] - camera.frame_height()/2) * df["scaling_factor_undistorted"]
         df[column_name_y_new] = df[column_name_y_orig] + compensation_y
         # df[column_name_y_new] = df[column_name_y_orig]
 
@@ -177,9 +177,9 @@ class DriftRawData(PandasWrapper):
         column_name_x_orig = "fm_" + num + "_drift_x"
         column_name_x_new = "fm_" + num + "_drift_x_new"
 
-        # compensation_x = (df[column_name_x_top] + (df[column_name_x_top] - df[column_name_x_bottom])/2 - camera.frame_width()/2) * df["scaling_factor"]
-        x_pixels_from_center = (df[column_name_x_bottom] - camera.frame_width() / 2)
-        compensation_x = x_pixels_from_center * df["scaling_factor"]
+        compensation_x = (df[column_name_x_top] + (df[column_name_x_top] - df[column_name_x_bottom])/2 - camera.frame_width()/2) * df["scaling_factor"]
+        # x_pixels_from_center = (df[column_name_x_bottom] - camera.frame_width() / 2)
+        # compensation_x = x_pixels_from_center * df["scaling_factor_undistorted"]
         df[column_name_x_new] = df[column_name_x_orig] + compensation_x
         # df[column_name_x_new] = df[column_name_x_orig]
 
@@ -214,6 +214,13 @@ class DriftRawData(PandasWrapper):
 
         df = self.__replace_with_NaN_if_very_diff_to_neighbors(df, "driftY", driftsDetectionStep)
         df = self.__interpolateToHaveEveryFrame(df)
+
+        # since drifts were created using undistorted image, we need to increase drifts for raw/distored images
+        camera = Camera.create()
+        distortion_coeff = camera.distortion_at_center()
+        df["driftX"] = df["driftX"] / distortion_coeff
+        df["driftY"] = df["driftY"] / distortion_coeff
+        df["average_new"] = df["average_new"] / distortion_coeff
 
         df = manualDrifts.overwrite_values(df)
         df = df.interpolate(limit_direction='both')

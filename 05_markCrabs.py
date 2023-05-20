@@ -22,9 +22,12 @@ if folderStruct is None:
     # videoFileName = "R_20200916_194953_20200916_195355"
     # videoFileName = "R_20200916_202543_20200916_202941"
 
-    show_file_select = FileOpenUI()
-    rootDir = show_file_select.root_dir()
-    videoFileName = show_file_select.filename()
+    rootDir = "C:/data/AnjutkaVideo/2019/c6259"
+    videoFileName = "V3"
+
+    # show_file_select = FileOpenUI()
+    # rootDir = show_file_select.root_dir()
+    # videoFileName = show_file_select.filename()
 
     folderStruct = FolderStructure(rootDir, videoFileName)
 

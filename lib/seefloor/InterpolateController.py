@@ -1,6 +1,6 @@
 from lib.FolderStructure import FolderStructure
 from lib.data.CrabsData import CrabsData
-from lib.data.DriftData import DriftData
+from lib.data.DriftInterpolatedData import DriftInterpolatedData
 from lib.drifts.DriftManualData import DriftManualData
 from lib.drifts.DriftRawData import DriftRawData
 from lib.data.RedDotsData import RedDotsData
@@ -33,13 +33,16 @@ class InterpolateController:
         print ("regenerating/interpolating Drafts")
         manualDrifts = DriftManualData.createFromFile(self.__folderStruct)
 
-        df = rawDrifts.interpolate(manualDrifts, rdd, driftsStepSize)
+        drifts_interpolated_df = rawDrifts.interpolate(manualDrifts, rdd, driftsStepSize)
 
-        drifts = DriftData.createFromFolderStruct(self.__folderStruct)
-        drifts.setDF(df)
+        drifts = DriftInterpolatedData.createFromFolderStruct(self.__folderStruct)
+        drifts.setDF(drifts_interpolated_df)
         drifts.saveToFile(self.__folderStruct.getDriftsFilepath())
 
-        print ("regenerating SeeFloor")
+        #configs = Configurations(self.__folderStruct)
+        #if configs.is_debug():
+
+        print("regenerating SeeFloor")
         sf = SeeFloor.createFromFolderStruct(self.__folderStruct)
         sf.saveToFile()
 

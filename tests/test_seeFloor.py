@@ -5,7 +5,7 @@ import pandas as pd
 from lib.Camera import Camera
 from lib.Frame import Frame
 from lib.data.BadFramesData import BadFramesData
-from lib.data.DriftData import DriftData
+from lib.data.DriftInterpolatedData import DriftInterpolatedData
 from lib.VideoToImages import VideoToImages
 from lib.data.SeeFloor import SeeFloor
 from lib.infra.DataframeWrapper import DataframeWrapper
@@ -37,7 +37,7 @@ class TestSeeFloor(TestCase):
         drifts_df = self.__append_to_drifts_df(drifts_df, 500, 0, pixels_in_half_frame)
         drifts_df = self.__append_to_drifts_df(drifts_df, 600, 0, pixels_in_half_frame)
         drifts_df = self.__append_to_drifts_df(drifts_df, 700, 0, pixels_in_half_frame)
-        driftData = DriftData(drifts_df)
+        driftData = DriftInterpolatedData(drifts_df)
 
 
         badframesData = BadFramesData(None,None)
@@ -62,7 +62,7 @@ class TestSeeFloor(TestCase):
         drifts_df = self.__append_to_drifts_df(drifts_df, 95, 0, 16)
         drifts_df = self.__append_to_drifts_df(drifts_df, 100, 0, 16)
         drifts_df = self.__append_to_drifts_df(drifts_df, 98, 0, 16)
-        driftData = DriftData(drifts_df)
+        driftData = DriftInterpolatedData(drifts_df)
 
 
         badframesData = BadFramesData(None,None)
@@ -82,7 +82,7 @@ class TestSeeFloor(TestCase):
         drifts_df = self.__append_to_drifts_df(drifts_df, 95, 0, 16)
         drifts_df = self.__append_to_drifts_df(drifts_df, 100, 0, 16)
         drifts_df = self.__append_to_drifts_df(drifts_df, 98, 0, 16)
-        driftData = DriftData(drifts_df)
+        driftData = DriftInterpolatedData(drifts_df)
 
         badframes_df = pd.DataFrame()
         badframes_df = self.__append_to_badframes_df(badframes_df, 99, 101)
@@ -109,7 +109,7 @@ class TestSeeFloor(TestCase):
         drifts_df = self.__append_to_drifts_df(drifts_df, 98, 0, 16)
         drifts_df = self.__append_to_drifts_df(drifts_df, 104, 0, 16)
         drifts_df = self.__append_to_drifts_df(drifts_df, 107, 0, 16)
-        driftData = DriftData(drifts_df)
+        driftData = DriftInterpolatedData(drifts_df)
 
         badframes_df = pd.DataFrame()
         badframes_df = self.__append_to_badframes_df(badframes_df, 99, 101)
@@ -185,7 +185,7 @@ class TestSeeFloor(TestCase):
         drifts_df = self.__append_to_drifts_df(drifts_df, 500, 0, pixels_in_half_frame)
         drifts_df = self.__append_to_drifts_df(drifts_df, 600, 0, pixels_in_half_frame)
         drifts_df = self.__append_to_drifts_df(drifts_df, 700, 0, pixels_in_half_frame)
-        driftData = DriftData(drifts_df)
+        driftData = DriftInterpolatedData(drifts_df)
 
         badframes_df = pd.DataFrame()
         badframes_df = self.__append_to_badframes_df(badframes_df, 90, 149)
@@ -299,7 +299,7 @@ class TestSeeFloor(TestCase):
         drifts_df = self.__append_to_drifts_df(drifts_df, 500, 0, pixels_in_half_frame)
         drifts_df = self.__append_to_drifts_df(drifts_df, 600, 0, pixels_in_half_frame)
         drifts_df = self.__append_to_drifts_df(drifts_df, 700, 0, pixels_in_half_frame)
-        driftData = DriftData(drifts_df)
+        driftData = DriftInterpolatedData(drifts_df)
 
         badframes_df = pd.DataFrame()
         badframes_df = self.__append_to_badframes_df(badframes_df, 90, 149)
@@ -421,7 +421,7 @@ class TestSeeFloor(TestCase):
         drifts_df = self.__append_to_drifts_df(drifts_df, 600, 0, pixels_in_half_frame)
         drifts_df = self.__append_to_drifts_df(drifts_df, 700, 0, pixels_in_half_frame)
         drifts_df = self.__append_to_drifts_df(drifts_df, 800, 0, pixels_in_half_frame)
-        driftData = DriftData(drifts_df)
+        driftData = DriftInterpolatedData(drifts_df)
 
         #badframes_df = pd.DataFrame()
         badframes_df = BadFramesData.create_empty_df()

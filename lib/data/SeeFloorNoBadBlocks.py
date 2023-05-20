@@ -8,7 +8,7 @@ from lib.FramePhysics import FramePhysics
 from lib.VideoStream import VideoStream
 from lib.common import Vector, Point
 from lib.data.BadFramesData import BadFramesData
-from lib.data.DriftData import DriftData
+from lib.data.DriftInterpolatedData import DriftInterpolatedData
 from lib.data.GraphPlotter import GraphPlotter
 from lib.data.PandasWrapper import PandasWrapper
 from lib.data.RedDotsData import RedDotsData
@@ -21,7 +21,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
     __COLNAME_frameNumber = 'frameNumber'
 
     def __init__(self, driftsData, redDotsData, folderStruct = None,  df = None):
-        # type: (DriftData, BadFramesData, RedDotsData, FolderStructure) -> SeeFloorNoBadBlocks
+        # type: (DriftInterpolatedData, BadFramesData, RedDotsData, FolderStructure) -> SeeFloorNoBadBlocks
         self.__mm_per_pixel_dict = None
         self.__driftData = driftsData
         self.__redDotsData = redDotsData
@@ -34,7 +34,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
     def createFromFolderStruct(folderStruct):
         # type: (FolderStructure) -> SeeFloorNoBadBlocks
 
-        driftsData = DriftData.createFromFolderStruct(folderStruct)
+        driftsData = DriftInterpolatedData.createFromFolderStruct(folderStruct)
         redDotsData = RedDotsData.createFromFolderStruct(folderStruct)
 
         filepath = folderStruct.getSeefloorFilepath()
@@ -47,7 +47,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         return newObj
 
     def getDriftData(self):
-        # type: () -> DriftData
+        # type: () -> DriftInterpolatedData
         return self.__driftData
 
     def getRedDotsData(self) -> RedDotsData:
@@ -273,7 +273,6 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         return result
 
     def mm_per_pixel(self, frame_id):
-        # return self.__getValueFromDF("mm_per_pixel", frame_id)
         return self.__mm_per_pixel_fast(frame_id)
 
     def getXDriftMM(self, fromFrameID, toFrameID):
@@ -339,7 +338,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         self.__df_as_dict = DataframeWrapper(self.__getPandasDF()).as_records_dict("frameNumber")
 
     def refreshItself(self):
-        self.__driftData = DriftData.createFromFolderStruct(self.__folderStruct)
+        self.__driftData = DriftInterpolatedData.createFromFolderStruct(self.__folderStruct)
         self.__redDotsData = RedDotsData.createFromFolderStruct(self.__folderStruct)
         self.saveToFile()
 

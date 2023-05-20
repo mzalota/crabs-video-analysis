@@ -10,6 +10,7 @@ from lib.Frame import Frame
 from lib.Image import Image
 from lib.common import Point
 
+#https://learnopencv.com/understanding-lens-distortion/
 
 class Camera:
     __instance = None
@@ -50,7 +51,7 @@ class Camera:
         # self.__dst  for 4K camera is:
         # [[-0.30592777  0.2554346  -0.00322515 -0.00050018 -0.1366279 ]]
         # self.__dst  for Full_HD_Kara_Sea camera is:
-        # [[-0.30329438  0.20865141 - 0.00037175 - 0.00374731 - 0.08253806]]
+        # [[-0.30329438  0.20865141 -0.00037175 -0.00374731 -0.08253806]]
 
     @staticmethod
     def create() -> Camera:
@@ -74,6 +75,18 @@ class Camera:
 
     def frame_width(self) -> int:
         return self.__frame_width
+
+    def distortion_at_center(self) -> float:
+        point_away_1 = self.get_optical_center().translate_by_xy(0, -20)
+        point_away_2 = self.get_optical_center().translate_by_xy(0, 20)
+        distance_distorted = point_away_1.distanceTo(point_away_2)
+
+        point_away_1_undistorted = self.undistort_point(point_away_1)
+        point_away_2_undistorted = self.undistort_point(point_away_2)
+        distance_non_distorted = point_away_1_undistorted.distanceTo(point_away_2_undistorted)
+
+        distortion_coeff = distance_non_distorted / distance_distorted
+        return distortion_coeff
 
     def getCalibrationMatrix(self):
         return self.__mtx

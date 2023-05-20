@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from lib.data.DriftData import DriftData
+from lib.data.DriftInterpolatedData import DriftInterpolatedData
 import pandas as pd
 
 from lib.infra.DataframeWrapper import DataframeWrapper
@@ -15,7 +15,7 @@ class TestDriftData(TestCase):
         df = DataframeWrapper.append_to_df(df, {'frameNumber': int(100), 'driftY': 16, 'driftX': 0})
 
         # Exercise
-        driftData = DriftData(df)
+        driftData = DriftInterpolatedData(df)
         result = driftData._yPixelsBetweenFrames(50, 99)
 
         # Assert
@@ -28,7 +28,7 @@ class TestDriftData(TestCase):
         df = DataframeWrapper.append_to_df(df, {'frameNumber': int(100), 'driftY': 16, 'driftX': 0})
 
         # Exercise
-        driftData = DriftData(df)
+        driftData = DriftInterpolatedData(df)
         result = driftData._yPixelsBetweenFrames(107, 99)
 
         # Assert
@@ -41,7 +41,7 @@ class TestDriftData(TestCase):
         df = DataframeWrapper.append_to_df(df, {'frameNumber': int(100), 'driftY': 16, 'driftX': 0})
 
         # Exercise
-        driftData = DriftData(df)
+        driftData = DriftInterpolatedData(df)
         result = driftData._yPixelsBetweenFrames(99, 105)
 
         # Assert
@@ -54,7 +54,7 @@ class TestDriftData(TestCase):
         df = DataframeWrapper.append_to_df(df, {'frameNumber': int(100), 'driftY': 16, 'driftX': 0})
 
         # Exercise
-        driftData = DriftData(df)
+        driftData = DriftInterpolatedData(df)
         result = driftData._yPixelsBetweenFrames(50, 60)
 
         # Assert
@@ -67,7 +67,7 @@ class TestDriftData(TestCase):
         df = DataframeWrapper.append_to_df(df, {'frameNumber': int(100), 'driftY': 16, 'driftX': 0})
 
         # Exercise
-        driftData = DriftData(df)
+        driftData = DriftInterpolatedData(df)
         result = driftData._yPixelsBetweenFrames(100, 50)
 
         # Assert
@@ -81,7 +81,7 @@ class TestDriftData(TestCase):
         df = DataframeWrapper.append_to_df(df, {'frameNumber': int(102), 'driftY': 16, 'driftX': 0})
 
         # Exercise
-        driftData = DriftData(df)
+        driftData = DriftInterpolatedData(df)
         result = driftData._yPixelsBetweenFrames(100, 100)
 
         # Assert
@@ -95,7 +95,7 @@ class TestDriftData(TestCase):
         df = DataframeWrapper.append_to_df(df, {'frameNumber': int(104), 'driftY': 16, 'driftX': 0})
 
         # Exercise
-        driftData = DriftData(df)
+        driftData = DriftInterpolatedData(df)
         result = driftData._yPixelsBetweenFrames(101, 103)
 
         # Assert
@@ -110,7 +110,7 @@ class TestDriftData(TestCase):
         df = DataframeWrapper.append_to_df(df, {'frameNumber': int(102), 'driftY': 11, 'driftX': 0})
 
         # Exercise
-        driftData = DriftData(df)
+        driftData = DriftInterpolatedData(df)
         result = driftData._yPixelsBetweenFrames(100, 102)
 
         # Assert
@@ -127,7 +127,7 @@ class TestDriftData(TestCase):
         df = DataframeWrapper.append_to_df(df,{'frameNumber': int(106), 'driftY': 17, 'driftX': 0})
 
         # Exercise
-        driftData = DriftData(df)
+        driftData = DriftInterpolatedData(df)
         result = driftData._yPixelsBetweenFrames(100, 106)
 
         # Assert
@@ -143,7 +143,7 @@ class TestDriftData(TestCase):
         df = DataframeWrapper.append_to_df(df, {'frameNumber': int(106), 'driftY': 17, 'driftX': 0})
 
         # Exercise
-        driftData = DriftData(df)
+        driftData = DriftInterpolatedData(df)
         result = driftData._yPixelsBetweenFrames(106, 100)
 
         # Assert
@@ -157,7 +157,7 @@ class TestDriftData(TestCase):
         df = DataframeWrapper.append_to_df(df, {'frameNumber': int(102), 'driftY': 16, 'driftX': 0})
 
         # Exercise
-        driftData = DriftData(df)
+        driftData = DriftInterpolatedData(df)
         result = driftData._yPixelsBetweenFrames(101, 101)
 
         # Assert
@@ -172,7 +172,7 @@ class TestDriftData(TestCase):
         df = DataframeWrapper.append_to_df(df, {'frameNumber': int(105), 'driftY': 25, 'driftX': 0}) #drift-per-frame = 5
 
         # Exercise
-        driftData = DriftData(df)
+        driftData = DriftInterpolatedData(df)
         resultTwoFramesStep = driftData._yPixelsBetweenFrames(98, 100)
         resultThreeFramesStep = driftData._yPixelsBetweenFrames(97, 100)
 
@@ -194,7 +194,7 @@ class TestDriftData(TestCase):
         #df.count()
 
         # Exercise
-        driftData = DriftData(df)
+        driftData = DriftInterpolatedData(df)
         resultTwoFramesStep = driftData._yPixelsBetweenFrames(95, 97)
         resultThreeFramesStep = driftData._yPixelsBetweenFrames(95, 98)
 
@@ -215,7 +215,7 @@ class TestDriftData(TestCase):
         df = DataframeWrapper.append_to_df(df,{'frameNumber': int(110), 'driftY': 35, 'driftX': 0}) #drift-per-frame = 2
 
         # Exercise
-        driftData = DriftData(df)
+        driftData = DriftInterpolatedData(df)
         resultTwoFramesStep = driftData._yPixelsBetweenFrames(97, 107)
 
         # Assert
@@ -231,7 +231,7 @@ class TestDriftData(TestCase):
         df = DataframeWrapper.append_to_df(df, {'frameNumber': int(110), 'driftY': 6, 'driftX': 0}) #drift-per-frame = 2
 
         # Exercise
-        driftData = DriftData(df)
+        driftData = DriftInterpolatedData(df)
         resultTwoFramesStep = driftData._yPixelsBetweenFrames(98, 108)
 
         # Assert

@@ -78,9 +78,7 @@ class RedDotsData(PandasWrapper):
                 self.__interpolatedDF = PandasWrapper.empty_df()
             return self.__interpolatedDF
 
-    def scalingFactorColumn(self, driftsDetectionStep = 1):
-        # type: (int) -> pd.DataFrame
-
+    def scalingFactorColumn(self, driftsDetectionStep: int = 1) -> pd.DataFrame:
         df = self.getPandasDF()
         distance_column_name = self.__COLNAME_distance
         dist_diff = df[distance_column_name] - df[distance_column_name].shift(periods=-1)
@@ -104,7 +102,6 @@ class RedDotsData(PandasWrapper):
             result = result + prev
         df["scaling_factor_undistorted"] = result
         df["dist_diff_undistorted"] = dist_diff
-
 
         return df[[self.COLNAME_frameNumber, "scaling_factor", "scaling_factor_undistorted", "dist_diff", "dist_diff_undistorted"]]
 
