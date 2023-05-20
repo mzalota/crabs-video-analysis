@@ -77,15 +77,11 @@ class DriftRawData(PandasWrapper):
         df = dframe.pandas_df()
         df = df.interpolate(limit_direction='both')
 
-        df['average_new'] = df[yColumns_new].mean(axis=1)
-        df['average_orig'] = df[yColumns_orig].mean(axis=1)
-        df['median_new'] = df[yColumns_new].median(axis=1)
-        df['median_orig'] = df[yColumns_orig].median(axis=1)
+        df['average_y_new'] = df[yColumns_new].mean(axis=1)
+        df['average_y_orig'] = df[yColumns_orig].mean(axis=1)
 
         df['average_x_new'] = df[xColumns_new].mean(axis=1)
         df['average_x_orig'] = df[xColumns_orig].mean(axis=1)
-        df['median_x_new'] = df[xColumns_new].median(axis=1)
-        df['median_x_orig'] = df[xColumns_orig].median(axis=1)
 
         if self.__generate_debug_graphs:
             self.__plot_scaling_factor(factor)
@@ -95,40 +91,15 @@ class DriftRawData(PandasWrapper):
             graphTitle = self.__folderStruct.getVideoFilename() + "_averages_y"
             xColumns = ["frameNumber"]
             graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 3000)])
-            graphPlotter.saveGraphToFile(xColumns, ["average_new", "average_orig", "median_new", "median_orig"], graphTitle,
+            graphPlotter.saveGraphToFile(xColumns, ["average_y_new", "average_y_orig"], graphTitle,
                                          filepath_prefix + "drift_compare_avg_y.png")
 
             graphTitle = self.__folderStruct.getVideoFilename() + "_averages_x"
             xColumns = ["frameNumber"]
             graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 3000)])
-            graphPlotter.saveGraphToFile(xColumns, ["average_x_new", "average_x_orig", "median_x_new", "median_x_orig"], graphTitle,
+            graphPlotter.saveGraphToFile(xColumns, ["average_x_new", "average_x_orig"], graphTitle,
                                          filepath_prefix + "drift_compare_avg_x.png")
 
-            graphTitle = self.__folderStruct.getVideoFilename() + "_averages_x_new"
-            xColumns = ["frameNumber"]
-            graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 3000)])
-            graphPlotter.saveGraphToFile(xColumns, ["average_x_new"], graphTitle,
-                                         filepath_prefix + "drift_compare_avg_x_new.png")
-
-
-            graphTitle = self.__folderStruct.getVideoFilename() + "_averages_x_orig"
-            xColumns = ["frameNumber"]
-            graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 3000)])
-            graphPlotter.saveGraphToFile(xColumns, ["average_x_orig"], graphTitle,
-                                         filepath_prefix + "drift_compare_avg_x_orig.png")
-
-            graphTitle = self.__folderStruct.getVideoFilename() + "_median_x_new"
-            xColumns = ["frameNumber"]
-            graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 3000)])
-            graphPlotter.saveGraphToFile(xColumns, [ "median_x_new", "average_x_new"], graphTitle,
-                                         filepath_prefix + "drift_compare_median_x_new.png")
-
-
-            graphTitle = self.__folderStruct.getVideoFilename() + "_median_x_orig"
-            xColumns = ["frameNumber"]
-            graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 3000)])
-            graphPlotter.saveGraphToFile(xColumns, [ "median_x_orig", "average_x_orig"], graphTitle,
-                                         filepath_prefix + "drift_compare_median_x_orig.png")
 
             #df.to_csv(self.__folderStruct.getGraphRedDotsAngle() + "merged.csv", sep='\t', index=False)
 
@@ -196,10 +167,9 @@ class DriftRawData(PandasWrapper):
 
 
         df_comp = self._compensate_for_zoom(factor)
-        df = pd.merge(df, df_comp[['average_new', "average_x_new", "frameNumber"]], on='frameNumber', how='left', suffixes=('_draft', '_reddot'))
-        df["driftY"] = df['average_new']
+        df = pd.merge(df, df_comp[['average_y_new', "average_x_new", "frameNumber"]], on='frameNumber', how='left', suffixes=('_draft', '_reddot'))
+        df["driftY"] = df['average_y_new']
         df["driftX"] = df['average_x_new']
-
 
         df = self._replaceInvalidValuesWithNaN(df, driftsDetectionStep)
 
@@ -207,9 +177,8 @@ class DriftRawData(PandasWrapper):
         # What if detectDrift step is not 2, but 3 or if it is mixed?
         df["driftX"] = df["driftX"] / driftsDetectionStep
         df["driftY"] = df["driftY"] / driftsDetectionStep
-        df["average_new"] = df["average_new"] / driftsDetectionStep
 
-        df = df[[self.__COLNAME_frameNumber, self.__COLNAME_driftX, self.__COLNAME_driftY, 'average_new']] #, 'average_new'
+        df = df[[self.__COLNAME_frameNumber, self.__COLNAME_driftX, self.__COLNAME_driftY]]
         df = df.interpolate(limit_direction='both')
 
         df = self.__replace_with_NaN_if_very_diff_to_neighbors(df, "driftY", driftsDetectionStep)
@@ -220,7 +189,6 @@ class DriftRawData(PandasWrapper):
         distortion_coeff = camera.distortion_at_center()
         df["driftX"] = df["driftX"] / distortion_coeff
         df["driftY"] = df["driftY"] / distortion_coeff
-        df["average_new"] = df["average_new"] / distortion_coeff
 
         df = manualDrifts.overwrite_values(df)
         df = df.interpolate(limit_direction='both')

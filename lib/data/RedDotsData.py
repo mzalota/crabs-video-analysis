@@ -120,7 +120,8 @@ class RedDotsData(PandasWrapper):
         xColumns = [self.COLNAME_frameNumber, self.__COLNAME_seconds]
         yColumns = [self.__COLNAME_distance]
 
-        graphPlotter = GraphPlotter(self.getPandasDF())
+        df = self.getPandasDF()
+        graphPlotter = GraphPlotter(df.loc[(df['frameNumber'] > 4000) & (df['frameNumber'] < 4400)])
         graphPlotter.saveGraphToFile(xColumns, yColumns, graphTitle, filePath)
 
     def getCount(self):
