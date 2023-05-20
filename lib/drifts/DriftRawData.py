@@ -37,29 +37,121 @@ class DriftRawData(PandasWrapper):
         # type: () -> int
         return len(self.__df.index)
 
-    def _compensate_for_zoom(self, factor: pd.DataFrame) -> pd.DataFrame:
+    def __save_graphs_drifts_raw(self, df_param, frame_id_from: int, fream_id_to: int = 123456):
 
-        df = self.__df.copy()
-        df = pd.merge(df, factor, on='frameNumber', how='left', suffixes=('_draft', '_reddot'))
+        df = df_param.copy()
 
-        # print(factor)
-        for feature_matcher_idx in range(0, 9):
-            self.__generate_new_drift(df, feature_matcher_idx)
+        xColumns_orig = list()
+        yColumns_orig = list()
+        for num in range(0, 9):
+            column_drift_y = "fm_" + str(num) + "_drift_y"
+            column_drift_x = "fm_" + str(num) + "_drift_x"
+            yColumns_orig.append(column_drift_y)
+            xColumns_orig.append(column_drift_x)
+
+            column_result = 'fm_' + str(num) + '_result'
+            df.loc[df[column_result] == "FAILED", [column_drift_y, column_drift_x, "driftX", "driftY"]] = numpy.nan
+
+
+        dframe = DataframeWrapper(df)
+        for col_name in yColumns_orig:
+            dframe.remove_outliers_quantile(col_name)
+
+        for col_name in xColumns_orig:
+            dframe.remove_outliers_quantile(col_name)
+
+        dframe.remove_outliers_quantile("driftX")
+        dframe.remove_outliers_quantile("driftY")
+
+        df = dframe.pandas_df()
+
+        #after removing values in rows with result="FAILED", now fill them out with interpolated values
+        df = df.interpolate(limit_direction='both')
+
+        df['average_y_orig'] = df[yColumns_orig].mean(axis=1)
+        df['average_x_orig'] = df[xColumns_orig].mean(axis=1)
+
+        # --- now Plot graphs and save them to PNG files
+        x_axis_column = ["frameNumber"]
+        filepath_prefix = self.__folderStruct.getSubDirpath() + "graph_debug_"
+        title_prefix = self.__folderStruct.getVideoFilename()
+
+        df_to_plot = df.loc[(df['frameNumber'] > frame_id_from) & (df['frameNumber'] < fream_id_to)]
+
+        graph_title = title_prefix + "_FrameMatcher_Drifts_X_raw"
+        graph_plotter = GraphPlotter(df_to_plot)
+        graph_plotter.saveGraphToFile(x_axis_column, xColumns_orig, graph_title, filepath_prefix + "drift_x_raw.png")
+
+        graph_title = title_prefix + "_FrameMatcher_Drifts_Y_raw"
+        graph_plotter = GraphPlotter(df_to_plot)
+        graph_plotter.saveGraphToFile(x_axis_column, yColumns_orig, graph_title, filepath_prefix + "drift_y_raw.png")
+
+        graph_title = title_prefix + "_median_drifts_x_y"
+        graphPlotter = GraphPlotter(df_to_plot)
+        graphPlotter.saveGraphToFile(x_axis_column, ["driftY", "driftX", "average_y_orig", "average_x_orig"], graph_title,
+                                     filepath_prefix + "drifts_px_raw.png")
+
+        return df
+
+    def __save_graphs_drifts_zoom_compensated(self, df, frame_id_from: int, fream_id_to: int = 123456):
 
         yColumns_new = list()
-        yColumns_orig = list()
         xColumns_new = list()
-        xColumns_orig = list()
         for feature_matcher_idx in range(0, 9):
             column_name_y_new = "fm_"+str(feature_matcher_idx)+"_drift_y_new"
             column_name_x_new = "fm_" + str(feature_matcher_idx) + "_drift_x_new"
-            column_name_y_orig = "fm_" + str(feature_matcher_idx) + "_drift_y"
-            column_name_x_orig = "fm_" + str(feature_matcher_idx) + "_drift_x"
-
             yColumns_new.append(column_name_y_new)
-            yColumns_orig.append(column_name_y_orig)
             xColumns_new.append(column_name_x_new)
-            xColumns_orig.append(column_name_x_orig)
+
+        #get rid of outliers in dr
+        dframe = DataframeWrapper(df)
+        dframe.remove_outliers_quantile("driftX")
+        dframe.remove_outliers_quantile("driftY")
+        df = dframe.pandas_df()
+        df = df.interpolate(limit_direction='both')
+
+        x_axis_column = ["frameNumber"]
+        filepath_prefix = self.__folderStruct.getSubDirpath() + "graph_debug_"
+        title_prefix = self.__folderStruct.getVideoFilename()
+
+        df_to_plot = df.loc[(df['frameNumber'] > frame_id_from) & (df['frameNumber'] < fream_id_to)]
+
+        graph_title = title_prefix + "_averages_y"
+        graphPlotter = GraphPlotter(df_to_plot)
+        graphPlotter.saveGraphToFile(x_axis_column, ["average_y_new", "driftY"], graph_title,
+                                     filepath_prefix + "drift_compare_avg_y.png")
+
+        graph_title = title_prefix + "_averages_x"
+        graphPlotter = GraphPlotter(df_to_plot)
+        graphPlotter.saveGraphToFile(x_axis_column, ["average_x_new", "driftX"], graph_title,
+                                     filepath_prefix + "drift_compare_avg_x.png")
+
+        graph_title = title_prefix + "__FrameMatcher_Drifts_new"
+        graph_plotter = GraphPlotter(df_to_plot)
+        graph_plotter.saveGraphToFile(x_axis_column, xColumns_new, graph_title, filepath_prefix + "drift_new.png")
+
+
+
+    def _compensate_for_zoom(self, zoom_factor: pd.DataFrame) -> pd.DataFrame:
+
+        df = self.__df.copy()
+        df = pd.merge(df, zoom_factor, on='frameNumber', how='left', suffixes=('_draft', '_reddot'))
+
+        for feature_matcher_idx in range(0, 9):
+            self.__compensate_drift_for_zoom_y(df, feature_matcher_idx)
+
+        for feature_matcher_idx in range(0, 9):
+            self.__compensate_drift_for_zoom_x(df, feature_matcher_idx)
+
+
+        yColumns_new = list()
+        xColumns_new = list()
+        for feature_matcher_idx in range(0, 9):
+            column_name_y_new = "fm_"+str(feature_matcher_idx)+"_drift_y_new"
+            column_name_x_new = "fm_" + str(feature_matcher_idx) + "_drift_x_new"
+            yColumns_new.append(column_name_y_new)
+            xColumns_new.append(column_name_x_new)
+
 
         dframe = DataframeWrapper(df)
         for col_name in yColumns_new:
@@ -68,98 +160,71 @@ class DriftRawData(PandasWrapper):
         for col_name in xColumns_new:
             dframe.remove_outliers_quantile(col_name)
 
-        for col_name in yColumns_orig:
-            dframe.remove_outliers_quantile(col_name)
-
-        for col_name in xColumns_orig:
-            dframe.remove_outliers_quantile(col_name)
-
         df = dframe.pandas_df()
         df = df.interpolate(limit_direction='both')
 
         df['average_y_new'] = df[yColumns_new].mean(axis=1)
-        df['average_y_orig'] = df[yColumns_orig].mean(axis=1)
-
         df['average_x_new'] = df[xColumns_new].mean(axis=1)
-        df['average_x_orig'] = df[xColumns_orig].mean(axis=1)
-
-        if self.__generate_debug_graphs:
-            frame_id_from = 10400
-            fream_id_to = 11000
-
-            x_axis_column = ["frameNumber"]
-            filepath_prefix = self.__folderStruct.getSubDirpath() + "graph_debug_"
-            title_prefix = self.__folderStruct.getVideoFilename()
-
-            graph_title = title_prefix + "_scaling_factor"
-            plotter = GraphPlotter(factor.loc[(factor['frameNumber'] > frame_id_from) & (factor['frameNumber'] < fream_id_to)])
-            plotter.saveGraphToFile(x_axis_column, ["scaling_factor", "scaling_factor_undistorted"], graph_title,
-                                    filepath_prefix + "scaling_factor.png")
-
-
-            df_to_plot = df.loc[(df['frameNumber'] > frame_id_from) & (df['frameNumber'] < fream_id_to)]
-
-            graph_title = title_prefix + "_averages_y"
-            graphPlotter = GraphPlotter(df_to_plot)
-            graphPlotter.saveGraphToFile(x_axis_column, ["average_y_new", "average_y_orig"], graph_title,
-                                         filepath_prefix + "drift_compare_avg_y.png")
-
-            graph_title = title_prefix + "_averages_x"
-            graphPlotter = GraphPlotter(df_to_plot)
-            graphPlotter.saveGraphToFile(x_axis_column, ["average_x_new", "average_x_orig"], graph_title,
-                                         filepath_prefix + "drift_compare_avg_x.png")
-
-
-            graph_title = title_prefix + "_FrameMatcher_Drifts_orig"
-            graph_plotter = GraphPlotter(df_to_plot)
-            graph_plotter.saveGraphToFile(x_axis_column, xColumns_orig, graph_title, filepath_prefix + "drift_orig.png")
-
-            graph_title = title_prefix + "__FrameMatcher_Drifts_new"
-            graph_plotter = GraphPlotter(df_to_plot)
-            graph_plotter.saveGraphToFile(x_axis_column, xColumns_new, graph_title, filepath_prefix + "drift_new.png")
 
         return df
 
-    def __generate_new_drift(self, df, num):
+    def __compensate_drift_for_zoom_y(self, df, num):
         num = str(num)
         camera = Camera.create()
 
         # Y drifts
         column_name_y_top = "fm_" + num + "_top_y"
         column_name_y_bottom = "fm_" + num + "_bottom_y"
-        column_name_y_orig = "fm_" + num + "_drift_y"
-        column_name_y_new = "fm_" + num + "_drift_y_new"
+        column_name_y_raw = "fm_" + num + "_drift_y"
+        column_name_y_drift_de_zoomed = "fm_" + num + "_drift_y_new"
 
         center_y = df[column_name_y_top] + (df[column_name_y_bottom] - df[column_name_y_top]) / 2
-        zoom_compensation_y = (center_y - camera.frame_height() / 2) * df["scaling_factor"] #scaling_factor scaling_factor_undistorted
-        # zoom_compensation_y = ( df[column_name_y_bottom] - camera.frame_height()/2) * df["scaling_factor_undistorted"]
-        df[column_name_y_new] = df[column_name_y_orig] + zoom_compensation_y
-        # df[column_name_y_new] = df[column_name_y_orig]
+        drift_y_due_to_zoom = (center_y - camera.frame_height() / 2) * df["scaling_factor"] #scaling_factor scaling_factor_undistorted
+        df[column_name_y_drift_de_zoomed] = df[column_name_y_raw] + drift_y_due_to_zoom
+
+        # set to NaN values where FeatureMatcher was reset (value in Result column = FAILED)
+        df.loc[df['fm_' + num + '_result'] == "FAILED", [column_name_y_raw, column_name_y_drift_de_zoomed]] = numpy.nan
+
+
+    def __compensate_drift_for_zoom_x(self, df, num):
+        num = str(num)
+        camera = Camera.create()
+        frame_center_x_coord = camera.frame_width() / 2
 
         # X drifts
         column_name_x_top = "fm_" + num + "_top_x"
         column_name_x_bottom = "fm_" + num + "_bottom_x"
-        column_name_x_orig = "fm_" + num + "_drift_x"
-        column_name_x_new = "fm_" + num + "_drift_x_new"
+        column_name_x_drift_raw = "fm_" + num + "_drift_x"
+        column_name_x_drift_de_zoomed = "fm_" + num + "_drift_x_new"
 
-        center_x = df[column_name_x_top] + (df[column_name_x_bottom] - df[column_name_x_top]) / 2
-        zoom_compensation_x = (center_x - camera.frame_width() / 2) * df["scaling_factor"] #scaling_factor scaling_factor_undistorted
-        df[column_name_x_new] = df[column_name_x_orig] + zoom_compensation_x
-        # df[column_name_x_new] = df[column_name_x_orig]
+        fm_center_x_coord = df[column_name_x_top] + (df[column_name_x_bottom] - df[column_name_x_top]) / 2
+        fm_distance_to_image_center = (fm_center_x_coord - frame_center_x_coord)
 
-        # set to NaN values where FeatureMatcher was reset (value in Result column = FAILED
-        df.loc[df['fm_' + num + '_result'] == "FAILED", [column_name_y_orig, column_name_y_new, column_name_x_orig, column_name_x_new]] = numpy.nan
+        #If the seefloor does not move at all, but there is only zoom in/out than the FrameMatcher will register X-drift equal to "drift_due_to_zoom"
+        drift_due_to_zoom = fm_distance_to_image_center * df["scaling_factor"] #scaling_factor scaling_factor_undistorted
+
+        df[column_name_x_drift_de_zoomed] = df[column_name_x_drift_raw] + drift_due_to_zoom
+
+        # set to NaN values where FeatureMatcher was reset (value in Result column = FAILED)
+        df.loc[df['fm_' + num + '_result'] == "FAILED", [column_name_x_drift_raw, column_name_x_drift_de_zoomed]] = numpy.nan
 
 
     def interpolate(self, manualDrifts: DriftManualData, redDotsData: RedDotsData, driftsDetectionStep: int) -> pd.DataFrame:
         df = self.__df.copy()
 
         #comment out next 5 lines to skip new logic of compensating each FeatureMatcher
-        factor = redDotsData.scalingFactorColumn(driftsDetectionStep)
-        #factor = redDotsData.scalingFactorColumn_undiestoreted(driftsDetectionStep)
+        zoom_factor = redDotsData.scalingFactorColumn(driftsDetectionStep)
 
 
-        df_comp = self._compensate_for_zoom(factor)
+        #zoom_factor = redDotsData.scalingFactorColumn_undiestoreted(driftsDetectionStep)
+
+        df_comp = self._compensate_for_zoom(zoom_factor)
+
+        if self.__generate_debug_graphs:
+            self.__save_graphs_drifts_raw(self.__df, 20400, 21000)
+            self.__save_graphs_drifts_zoom_compensated(df_comp, 20400, 21000)
+            redDotsData._save_graph_zoom_factor(driftsDetectionStep, 20400, 21000)
+
         df = pd.merge(df, df_comp[['average_y_new', "average_x_new", "frameNumber"]], on='frameNumber', how='left', suffixes=('_draft', '_reddot'))
         df["driftY"] = df['average_y_new']
         df["driftX"] = df['average_x_new']

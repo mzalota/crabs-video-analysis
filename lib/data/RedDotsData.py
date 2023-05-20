@@ -103,8 +103,25 @@ class RedDotsData(PandasWrapper):
         df["scaling_factor_undistorted"] = result
         df["dist_diff_undistorted"] = dist_diff
 
-        return df[[self.COLNAME_frameNumber, "scaling_factor", "scaling_factor_undistorted", "dist_diff", "dist_diff_undistorted"]]
+        result_df = df[[self.COLNAME_frameNumber, "scaling_factor", "scaling_factor_undistorted", "dist_diff", "dist_diff_undistorted"]]
+        return result_df
 
+    def _save_graph_zoom_factor(self, driftsDetectionStep: int = 1, frame_id_from: int = 0, fream_id_to: int = 123456):
+
+        df = self.scalingFactorColumn(driftsDetectionStep)
+
+        x_axis_column = ["frameNumber"]
+        filepath_prefix = self.__folderStruct.getSubDirpath() + "graph_debug_"
+        title_prefix = self.__folderStruct.getVideoFilename()
+
+        graph_title = title_prefix + "_scaling_factor"
+        df_to_plot = df.loc[(df['frameNumber'] > frame_id_from) & (df['frameNumber'] < fream_id_to)]
+
+        plotter = GraphPlotter(df_to_plot)
+        plotter.saveGraphToFile(x_axis_column, ["scaling_factor", "scaling_factor_undistorted"], graph_title,
+                                filepath_prefix + "zoom_factor.png")
+
+        return df
 
     def saveGraphs(self, frame_id_from: int = 0, frame_id_to: int = 123456):
         df = self.getPandasDF()
