@@ -27,7 +27,7 @@ class DetectRedDotsController:
         self.run()
 
     def __loop_thru_all_frames(self):
-        stepSize = 1 #5
+        stepSize = 5
         frame_id = self.__videoStream.get_id_of_first_frame(stepSize)
         while True:
             self.__loop_count += 1

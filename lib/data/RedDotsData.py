@@ -91,6 +91,7 @@ class RedDotsData(PandasWrapper):
             prev = scaling_factor_single_step.shift(periods=-increment)
             result = result + prev
         df["scaling_factor"] = result
+        df["dist_diff"] = dist_diff
 
 
         distance_column_name = "distance_px_undistort"
@@ -102,8 +103,10 @@ class RedDotsData(PandasWrapper):
             prev = scaling_factor_single_step.shift(periods=-increment)
             result = result + prev
         df["scaling_factor_undistorted"] = result
+        df["dist_diff_undistorted"] = dist_diff
 
-        return df[[self.COLNAME_frameNumber, "scaling_factor", "scaling_factor_undistorted"]]
+
+        return df[[self.COLNAME_frameNumber, "scaling_factor", "scaling_factor_undistorted", "dist_diff", "dist_diff_undistorted"]]
 
     def saveGraphOfAngle(self):
         filePath = self.__folderStruct.getGraphRedDotsAngle()
@@ -266,7 +269,7 @@ class RedDotsData(PandasWrapper):
     def __recalculate_distance_undistorted(self, df: pd.DataFrame):
         points = DataframeWrapper(df).as_records_dict("frameNumber")
         camera = Camera.create()
-        distance_undistorted = list()
+        result_dict = list()
         for frame_id in points:
             point_x_dot_1 = points[frame_id]["centerPoint_x_dot1"]
             point_y_dot_1 = points[frame_id]["centerPoint_y_dot1"]
@@ -278,9 +281,11 @@ class RedDotsData(PandasWrapper):
 
             point_1_undistorted = camera.undistort_point(point_1)
             point_2_undistorted = camera.undistort_point(point_2)
-            distance_undistorted.append((frame_id, point_1_undistorted.distanceTo(point_2_undistorted),point_1.distanceTo(point_2)))
+            distance_raw = point_1.distanceTo(point_2)
+            distance_undistorted = point_1_undistorted.distanceTo(point_2_undistorted)
+            result_dict.append((frame_id, distance_undistorted, distance_raw))
 
-        df_new_column = pd.DataFrame.from_records(distance_undistorted,
+        df_new_column = pd.DataFrame.from_records(result_dict,
                                                   columns=['frameNumber', 'distance_px_undistort', "distance_px"])
 
         df = pd.merge(df, df_new_column, on='frameNumber', how='left', suffixes=('_dot1', '_dot2'))

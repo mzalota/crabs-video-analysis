@@ -297,6 +297,8 @@ class VelocityDetector():
                 driftsRow.append(box.topLeft.y)
                 driftsRow.append(box.bottomRight.x)
                 driftsRow.append(box.bottomRight.y)
+                # driftsRow.append(box.centerPoint().x)
+                # driftsRow.append(box.centerPoint().y)
                 if section.drift_was_detected():
                     driftsRow.append("DETECTED")
                     driftsRow.append(drift.x)

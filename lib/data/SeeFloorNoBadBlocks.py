@@ -264,16 +264,12 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         return df['frameNumber'][df['frameNumber'] == frame_id].index.tolist()[0]
 
     def __mm_per_pixel_fast(self, frame_id: int) -> float:
-        # if !hasattr(self, '__mm_per_pixel_dict'):
         if self.__mm_per_pixel_dict is None:
             # Lazy loading of cache
             # key is frame_id, value is mm_per_pixel
-            # self.__mm_per_pixel_dict = self.__df.set_index(self.__COLNAME_frameNumber)["mm_per_pixel"].to_dict()
             self.__mm_per_pixel_dict = DataframeWrapper(self.__df).as_records_dict(self.__COLNAME_frameNumber)
-            print("__mm_per_pixel_fast", self.__mm_per_pixel_fast)
 
         result = self.__mm_per_pixel_dict[frame_id]["mm_per_pixel"]
-        print("SeeFloorNoBadBlocks __mm_per_pixel_fast "+str(result))
         return result
 
     def mm_per_pixel(self, frame_id):

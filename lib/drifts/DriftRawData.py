@@ -42,6 +42,7 @@ class DriftRawData(PandasWrapper):
         df = self.__df.copy()
         df = pd.merge(df, factor, on='frameNumber', how='left', suffixes=('_draft', '_reddot'))
 
+        # print(factor)
         for feature_matcher_idx in range(0, 9):
             self.__generate_new_drift(df, feature_matcher_idx)
 
@@ -148,13 +149,10 @@ class DriftRawData(PandasWrapper):
         graphPlotter.saveGraphToFile(x_axis_column, yColumns_new, graphTitle, filepath_prefix + "drift_new.png")
 
     def __plot_scaling_factor(self, factor):
-        print(factor)
         filePath = self.__folderStruct.getSubDirpath() + "graph_scalingFactor.png"
         graphTitle = self.__folderStruct.getVideoFilename() + "_ScalingFactor_1"
         xColumns = ["frameNumber"]
         yColumns = ["scaling_factor", "scaling_factor_undistorted"]
-        #factor.to_csv(self.__folderStruct.getGraphRedDotsAngle() + "aaa.csv", sep='\t', index=False)
-        # graphPlotter = GraphPlotter(factor)
         graphPlotter = GraphPlotter(factor.loc[(factor['frameNumber'] > 2000) & (factor['frameNumber'] < 2400)])
         graphPlotter.saveGraphToFile(xColumns, yColumns, graphTitle, filePath)
 
@@ -163,23 +161,31 @@ class DriftRawData(PandasWrapper):
         camera = Camera.create()
 
         # Y drifts
+        column_name_y_top = "fm_" + num + "_top_y"
         column_name_y_bottom = "fm_" + num + "_bottom_y"
         column_name_y_orig = "fm_" + num + "_drift_y"
         column_name_y_new = "fm_" + num + "_drift_y_new"
 
-        df["compensation"] = (df[column_name_y_bottom] - int(camera.frame_height()/2)) * df["scaling_factor"]
-        df[column_name_y_new] = df[column_name_y_orig] + df["compensation"]
+        #compensation_y = (df[column_name_y_top] + (df[column_name_y_top] - df[column_name_y_bottom])/2 - camera.frame_height()/2) * df["scaling_factor"]
+        compensation_y = ( df[column_name_y_bottom] - camera.frame_height()/2) * df["scaling_factor"]
+        df[column_name_y_new] = df[column_name_y_orig] + compensation_y
+        # df[column_name_y_new] = df[column_name_y_orig]
 
         # X drifts
+        column_name_x_top = "fm_" + num + "_top_x"
         column_name_x_bottom = "fm_" + num + "_bottom_x"
         column_name_x_orig = "fm_" + num + "_drift_x"
         column_name_x_new = "fm_" + num + "_drift_x_new"
 
-        df["compensation"] = (df[column_name_x_bottom] - int(camera.frame_width()/2)) * df["scaling_factor"]
-        df[column_name_x_new] = df[column_name_x_orig] + df["compensation"]
+        # compensation_x = (df[column_name_x_top] + (df[column_name_x_top] - df[column_name_x_bottom])/2 - camera.frame_width()/2) * df["scaling_factor"]
+        x_pixels_from_center = (df[column_name_x_bottom] - camera.frame_width() / 2)
+        compensation_x = x_pixels_from_center * df["scaling_factor"]
+        df[column_name_x_new] = df[column_name_x_orig] + compensation_x
+        # df[column_name_x_new] = df[column_name_x_orig]
 
         # set to NaN values where FeatureMatcher was reset (value in Result column = FAILED
         df.loc[df['fm_' + num + '_result'] == "FAILED", [column_name_y_orig, column_name_y_new, column_name_x_orig, column_name_x_new]] = numpy.nan
+
 
     def interpolate(self, manualDrifts: DriftManualData, redDotsData: RedDotsData, driftsDetectionStep: int) -> pd.DataFrame:
         df = self.__df.copy()
