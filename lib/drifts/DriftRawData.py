@@ -137,19 +137,29 @@ class DriftRawData(PandasWrapper):
         df = self.__df.copy()
         df = pd.merge(df, zoom_factor, on='frameNumber', how='left', suffixes=('_draft', '_reddot'))
 
+        factor = df["scaling_factor"]  # scaling_factor scaling_factor_undistorted
+        yColumns_new = list()
         for feature_matcher_idx in range(0, 9):
-            self.__compensate_drift_for_zoom_y(df, feature_matcher_idx)
+            num = str(feature_matcher_idx)
+            column_name_y_raw = "fm_" + num + "_drift_y"
+
+            df.loc[df['fm_' + num + '_result'] == "FAILED", [column_name_y_raw]] = numpy.nan
+
+            drift_y_dezoomed = self.__drift_y_dezoomed(df, num, factor)
+
+            column_name_y_new = ("fm_" + num + "_drift_y_new")
+            yColumns_new.append(column_name_y_new)
+            df[column_name_y_new] = drift_y_dezoomed
+
+
 
         for feature_matcher_idx in range(0, 9):
             self.__compensate_drift_for_zoom_x(df, feature_matcher_idx)
 
 
-        yColumns_new = list()
         xColumns_new = list()
         for feature_matcher_idx in range(0, 9):
-            column_name_y_new = "fm_"+str(feature_matcher_idx)+"_drift_y_new"
             column_name_x_new = "fm_" + str(feature_matcher_idx) + "_drift_x_new"
-            yColumns_new.append(column_name_y_new)
             xColumns_new.append(column_name_x_new)
 
 
@@ -168,23 +178,35 @@ class DriftRawData(PandasWrapper):
 
         return df
 
-    def __compensate_drift_for_zoom_y(self, df, num):
-        num = str(num)
-        camera = Camera.create()
+    # def __compensate_drift_for_zoom_y(self, df, num):
+    #     num = str(num)
+    #
+    #     # Y drifts
+    #     column_name_y_raw = "fm_" + num + "_drift_y"
+    #     df.loc[df['fm_' + num + '_result'] == "FAILED", [column_name_y_raw]] = numpy.nan
+    #     column_name_y_drift_de_zoomed = "fm_" + num + "_drift_y_new"
+    #     zoom_factor = df["scaling_factor"] # scaling_factor scaling_factor_undistorted
+    #
+    #     drift_y_dezoomed = self.__drift_y_dezoomed(df, num, zoom_factor)
+    #
+    #     df[column_name_y_drift_de_zoomed] = drift_y_dezoomed
+    #
+    #     # set to NaN values where FeatureMatcher was reset (value in Result column = FAILED)
+    #     return df[column_name_y_drift_de_zoomed]
 
-        # Y drifts
-        column_name_y_top = "fm_" + num + "_top_y"
-        column_name_y_bottom = "fm_" + num + "_bottom_y"
+    def __drift_y_dezoomed(self, df, num, zoom_factor):
+        center_y = self.__fm_center_y(df, num)
         column_name_y_raw = "fm_" + num + "_drift_y"
-        column_name_y_drift_de_zoomed = "fm_" + num + "_drift_y_new"
+        camera = Camera.create()
+        drift_y_due_to_zoom = (center_y - camera.frame_height() / 2) * zoom_factor
+        drift_y_dezoomed = df[column_name_y_raw] + drift_y_due_to_zoom
+        return drift_y_dezoomed
 
-        center_y = df[column_name_y_top] + (df[column_name_y_bottom] - df[column_name_y_top]) / 2
-        drift_y_due_to_zoom = (center_y - camera.frame_height() / 2) * df["scaling_factor"] #scaling_factor scaling_factor_undistorted
-        df[column_name_y_drift_de_zoomed] = df[column_name_y_raw] + drift_y_due_to_zoom
-
-        # set to NaN values where FeatureMatcher was reset (value in Result column = FAILED)
-        df.loc[df['fm_' + num + '_result'] == "FAILED", [column_name_y_raw, column_name_y_drift_de_zoomed]] = numpy.nan
-
+    def __fm_center_y(self, df: pd.DataFrame, num: str) -> pd.DataFrame:
+        y_coord_top = df[("fm_" + str(num) + "_top_y")]
+        y_coord_bottom = df[("fm_" + str(num) + "_bottom_y")]
+        y_coord_center = y_coord_top + (y_coord_bottom - y_coord_top) / 2
+        return y_coord_center
 
     def __compensate_drift_for_zoom_x(self, df, num):
         num = str(num)
