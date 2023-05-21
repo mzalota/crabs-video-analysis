@@ -7,6 +7,7 @@ from lib.VideoStream import VideoStream
 from lib.infra.Configurations import Configurations
 from lib.infra.MyTimer import MyTimer
 from lib.seefloor.InterpolateController import InterpolateController
+from lib.ui.FileOpenUI import FileOpenUI
 
 print ("Launched Generate Graphs script")
 

@@ -1,7 +1,9 @@
 import math
 
+import numpy as np
 import pandas as pd
 import numpy
+from scipy.fft import fft
 
 from lib.Camera import Camera
 from lib.infra.Configurations import Configurations
@@ -14,6 +16,11 @@ from lib.data.RedDotsManualData import RedDotsManualData
 from lib.data.RedDotsRawData import RedDotsRawData
 from lib.infra.DataframeWrapper import DataframeWrapper
 from lib.model.RedDots import RedDots
+
+from matplotlib.pyplot import figure
+import matplotlib.pyplot as plt
+from scipy.signal import butter, lfilter
+
 
 
 class RedDotsData(PandasWrapper):
@@ -104,7 +111,90 @@ class RedDotsData(PandasWrapper):
         df["dist_diff_undistorted"] = dist_diff
 
         result_df = df[[self.COLNAME_frameNumber, "scaling_factor", "scaling_factor_undistorted", "dist_diff", "dist_diff_undistorted"]]
+
+        np_distance = df[self.__COLNAME_distance].to_numpy()
+
+        # N = SAMPLE_RATE * DURATION
+        # yf = fft(normalized_tone)
+        # xf = fftfreq(N, 1 / SAMPLE_RATE)
+        # plt.plot(xf, np.abs(yf))
+        # plt.show()
+        # plt.savefig(filePath, format='png', dpi=300)
+
+        print("df aaaa", df)
+
+
+        print("np_distance", np_distance)
+        self.__plotFourierGraph(np_distance, "Title_distance")
+        self.save_plot_as_png("c:/tmp/maxim_distance.png",np_distance[8000:10000])
+
+        after_filter = self.bandpass_filter(np_distance, 1, 0.5, 25)
+        print("after_filter", after_filter)
+        self.save_plot_as_png("c:/tmp/maxim_distance_after_filter.png", after_filter[8000:10000])
+
+        self.__plotFourierGraph(after_filter, "Title_after_filter")
+
+        center_x = df["centerPoint_x_dot1"].to_numpy()
+        center_x_after_filter = self.bandpass_filter(center_x, 1, 0.5, 25)
+        print("centerPoint_x_dot1", center_x)
+        self.__plotFourierGraph(center_x, "Title_centerPoint_x_dot1")
+        self.save_plot_as_png("c:/tmp/maxim_center_x.png", center_x[8000:10000])
+        self.save_plot_as_png("c:/tmp/maxim_center_x_after_filter.png", center_x_after_filter[8000:10000])
+
+
+
+
         return result_df
+
+    def __plotFourierGraph(self, np_array_to_plot: np, title: str):
+        # np.fft.fft
+        # fig, axs = plt.subplots(ncols=3, nrows=4, figsize=(12, 18))
+        fig, axs = plt.subplots(ncols=1, nrows=1, figsize=(12, 18))
+        fs = 25  #int(44100/4)
+        N = np_array_to_plot.shape[0]  # 17680 #1e5
+        time = np.arange(N) / fs
+
+        freqs = np.fft.fftfreq(time.size, 1/fs)
+        idx = np.argsort(freqs)
+        ps = np.abs(np.fft.fft(np_array_to_plot))**2
+
+        plt.xscale("symlog")
+        plt.yscale("symlog")
+        # plt.grid(which='minor', axis='both', linestyle='--')
+        plt.grid(which='major', axis='both', linestyle='--')
+        plt.xlim(left=1)
+        plt.xlim(right=20)
+        plt.plot(freqs[idx], ps[idx])
+        plt.title(title)
+        # plt.title('Power spectrum (np.fft.fft)')
+
+        plt.savefig("c:/tmp/maximFFT_"+title+".png", format='png', dpi=300)
+        plt.close('all')
+        print("In __plotFourierGraph !!!!!!!!!!!!!!!!!!!!!!!!!!!")
+
+
+
+    def save_plot_as_png(self, filepath_image: str, nparr:np):
+        figure(num=None, figsize=(30, 6), facecolor='w', edgecolor='k')
+        plt.plot(nparr)
+        plt.gca().grid(which='major', axis='both', linestyle='--', )  # specify grid lines
+        plt.savefig(filepath_image, format='png', dpi=300)
+
+    def bandpass_filter(self, data: np, lowcut: int, highcut: int, fs:int , order:int = 6) -> np:
+        b, a = self.__butter_bandpass(lowcut, highcut, fs, order=order)
+        y = lfilter(b, a, data)
+        return y
+
+    def __butter_bandpass(self, lowcut, highcut, fs, order=6):
+        nyq = 0.5 * fs
+        low = lowcut / nyq
+        high = highcut / nyq
+
+        # b, a = butter(order, [low, high], btype='band')
+
+        b, a = butter(order, high, 'low')
+        # b, a = butter(order, highcut, 'low', analog=True)
+        return b, a
 
     def _save_graph_zoom_factor(self, driftsDetectionStep: int = 1, frame_id_from: int = 0, fream_id_to: int = 123456):
 

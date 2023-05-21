@@ -37,7 +37,7 @@ class DriftRawData(PandasWrapper):
         # type: () -> int
         return len(self.__df.index)
 
-    def __save_graphs_drifts_raw(self, df_param, frame_id_from: int, fream_id_to: int = 123456):
+    def __save_graphs_drifts_raw(self, df_param, frame_id_from: int = 0, fream_id_to: int = 123456):
 
         df = df_param.copy()
 
@@ -93,7 +93,7 @@ class DriftRawData(PandasWrapper):
 
         return df
 
-    def __save_graphs_drifts_zoom_compensated(self, df, frame_id_from: int, fream_id_to: int = 123456):
+    def __save_graphs_drifts_zoom_compensated(self, df, frame_id_from: int = 0, fream_id_to: int = 123456):
 
         yColumns_new = list()
         xColumns_new = list()
@@ -229,9 +229,9 @@ class DriftRawData(PandasWrapper):
         df_comp = self._compensate_for_zoom(zoom_factor)
 
         if self.__generate_debug_graphs:
-            self.__save_graphs_drifts_raw(self.__df, 20400, 21000)
-            self.__save_graphs_drifts_zoom_compensated(df_comp, 20400, 21000)
-            redDotsData._save_graph_zoom_factor(driftsDetectionStep, 20400, 21000)
+            self.__save_graphs_drifts_raw(self.__df) #, 20400, 21000)
+            self.__save_graphs_drifts_zoom_compensated(df_comp) #, 20400, 21000)
+            redDotsData._save_graph_zoom_factor(driftsDetectionStep) #, 20400, 21000)
 
         df = pd.merge(df, df_comp[['average_y_new', "average_x_new", "frameNumber"]], on='frameNumber', how='left', suffixes=('_draft', '_reddot'))
         df["driftY"] = df['average_y_new']
