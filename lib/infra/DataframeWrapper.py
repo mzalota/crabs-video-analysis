@@ -49,3 +49,9 @@ class DataframeWrapper:
 
         outlier_down_value = self.__df[column_name].quantile(1 - quantile)
         self.__df.loc[self.__df[column_name] < outlier_down_value, [column_name]] = numpy.nan
+
+    def df_print_head(self, num_of_rows=200):
+        pd.set_option('display.max_columns', None)
+        pd.set_option('display.max_rows', None)
+        pd.set_option('expand_frame_repr', False)
+        print(self.__df.head(num_of_rows))

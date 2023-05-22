@@ -3,6 +3,7 @@ import math
 import numpy as np
 import pandas as pd
 import numpy
+from scipy import signal
 from scipy.fft import fft
 
 from lib.Camera import Camera
@@ -87,7 +88,11 @@ class RedDotsData(PandasWrapper):
 
     def scalingFactorColumn(self, driftsDetectionStep: int = 1) -> pd.DataFrame:
         df = self.getPandasDF()
-        distance_column_name = self.__COLNAME_distance
+
+        df = self.__smooth_distance_value(df, driftsDetectionStep)
+        #distance_column_name = self.__COLNAME_distance
+        distance_column_name = "distance_smooth"
+
         dist_diff = df[distance_column_name] - df[distance_column_name].shift(periods=-1)
         scaling_factor_single_step = dist_diff/df[distance_column_name]
 
@@ -98,57 +103,111 @@ class RedDotsData(PandasWrapper):
         df["scaling_factor"] = result
         df["dist_diff"] = dist_diff
 
-
         distance_column_name = "distance_px_undistort"
         dist_diff = df[distance_column_name] - df[distance_column_name].shift(periods=-1)
-        scaling_factor_single_step = dist_diff/df[distance_column_name]
-
-        result = scaling_factor_single_step+0
+        scaling_factor_single_step = dist_diff / df[distance_column_name]
+        result = scaling_factor_single_step + 0
         for increment in range(1, driftsDetectionStep):
             prev = scaling_factor_single_step.shift(periods=-increment)
             result = result + prev
         df["scaling_factor_undistorted"] = result
         df["dist_diff_undistorted"] = dist_diff
-
-        result_df = df[[self.COLNAME_frameNumber, "scaling_factor", "scaling_factor_undistorted", "dist_diff", "dist_diff_undistorted"]]
-
-        np_distance = df[self.__COLNAME_distance].to_numpy()
-
-        # N = SAMPLE_RATE * DURATION
-        # yf = fft(normalized_tone)
-        # xf = fftfreq(N, 1 / SAMPLE_RATE)
-        # plt.plot(xf, np.abs(yf))
-        # plt.show()
-        # plt.savefig(filePath, format='png', dpi=300)
-
-        print("df aaaa", df)
-
-
-        print("np_distance", np_distance)
-        self.__plotFourierGraph(np_distance, "Title_distance")
-        self.save_plot_as_png("c:/tmp/maxim_distance.png",np_distance[8000:10000])
-
-        after_filter = self.bandpass_filter(np_distance, 1, 0.5, 25)
-        print("after_filter", after_filter)
-        self.save_plot_as_png("c:/tmp/maxim_distance_after_filter.png", after_filter[8000:10000])
-
-        self.__plotFourierGraph(after_filter, "Title_after_filter")
-
-        center_x = df["centerPoint_x_dot1"].to_numpy()
-        center_x_after_filter = self.bandpass_filter(center_x, 1, 0.5, 25)
-        print("centerPoint_x_dot1", center_x)
-        self.__plotFourierGraph(center_x, "Title_centerPoint_x_dot1")
-        self.save_plot_as_png("c:/tmp/maxim_center_x.png", center_x[8000:10000])
-        self.save_plot_as_png("c:/tmp/maxim_center_x_after_filter.png", center_x_after_filter[8000:10000])
-
-
-
+        result_df = df[[self.COLNAME_frameNumber, "scaling_factor", "scaling_factor_undistorted", "dist_diff",
+                        "dist_diff_undistorted"]]
 
         return result_df
 
-    def __plotFourierGraph(self, np_array_to_plot: np, title: str):
+    def __smooth_distance_value(self, df, driftsDetectionStep):
+
+        # orig_np = df[self.COLNAME_frameNumber].to_numpy()
+        dist_freq1 = self.__draw_fft_lowpass(df, self.__COLNAME_distance, 0.1)
+        # self._corr = self.correlate_two_numpy_arrays(dist_freq1, orig_np)
+        # self.save_plot_numpy_as_png("c:/tmp/maxim_corr.png", self._corr)
+        # print("offset_of_peak_from_center", self.offset_of_peak_from_center())
+        dataset = pd.DataFrame()
+        dataset['distance_streight'] = dist_freq1.reshape(-1)
+        dataset['distance_streight'] = dataset['distance_streight'].astype(int)
+        dataset['distance_shift1'] = dataset['distance_streight'].shift(-170)
+
+
+        dist_freq2 = self.__draw_fft_lowpass(df, self.__COLNAME_distance, 0.4)
+        dataset['distance_streight2'] = dist_freq2.reshape(-1)
+        dataset['distance_streight2'] = dataset['distance_streight2'].astype(int)
+        dataset['distance_shift2'] = dataset['distance_streight2'].shift(
+            -41)  # this is much better than distance_streight
+
+        newDF = pd.concat([dataset, df], axis=1)
+        # print("newDF", newDF)
+        wrapper = DataframeWrapper(newDF[["frameNumber", "distance", "distance_streight", "distance_streight2",
+                                          "distance_shift1", "distance_shift2"]])
+        wrapper.df_print_head(100)
+        df_to_plot = newDF.loc[(newDF['frameNumber'] > 10000) & (newDF['frameNumber'] < 11000)]
+        GraphPlotter(df_to_plot).saveGraphToFile(["frameNumber"], ["distance", "distance_shift1", "distance_shift2"],
+                                                 "Distance Fourier", "c:/tmp/maxim_dataframe.png")
+
+        #self.__draw_fft_lowpass(df, "centerPoint_x_dot1")
+        #self.__draw_fft_lowpass(df, "angle")
+
+        newDF['distance_smooth'] = newDF['distance_streight2']
+
+        return newDF
+
+    def argmax(self) -> int:
+        return np.argmax(self._corr)
+
+    def argmin(self) -> int:
+        return np.argmin(self._corr)
+
+    def max_correlation(self) ->float:
+        return np.max(self._corr)
+
+    def min_correlation(self)->float:
+        return np.min(self._corr)
+
+    def location_of_peak(self) -> int:
+        if self.__min_corr_is_better_than_max():
+            return self.argmin()
+        else:
+            return self.argmax()
+
+    def location_of_center(self) -> int:
+        return int(self.length() / 2)
+
+    def offset_of_peak_from_center(self) -> int:
+        return self.location_of_peak() - self.location_of_center()
+
+    def __min_corr_is_better_than_max(self):
+        if abs(self.min_correlation()) > self.max_correlation():
+            return True
+        else:
+            return False
+
+    def length(self) -> int:
+        return len(self._corr)
+
+    def correlate_two_numpy_arrays(self, signal_to_search: np, snippet: np) -> np:
+        # values input nparrays are expected to be of type float. If they are integers, correlation produces wierd results
+        signal_to_search_float = signal_to_search.astype(float)
+        snippet_float = snippet.astype(float)
+
+        # MemoryAllocation problem described here: https://github.com/scipy/scipy/issues/5986
+        return signal.correlate(signal_to_search_float, snippet_float, mode='same') / (sum(signal_to_search) * sum(snippet))
+        # return signal.correlate(signal_to_search_float, snippet_float, mode='valid') / (sum(signal_to_search) * sum(snippet))
+        # return signal.correlate(signal_to_search_float, snippet_float, mode='full') / (sum(signal_to_search) * sum(snippet))
+
+
+    def __draw_fft_lowpass(self, df, column_name, cutoff_freq=0.1):
+        orig_np = df[column_name].to_numpy()
+        lowpass_np = self.bandpass_filter(orig_np, 1, cutoff_freq, 25)
+        print(column_name, orig_np)
+        png_filepath = "c:/tmp/maximFFT_" + column_name + ".png"
+        self.__plotFourierGraph(orig_np, column_name, png_filepath)
+        self.save_plot_numpy_as_png("c:/tmp/maxim_" + column_name + ".png", orig_np[8000:10000])
+        self.save_plot_numpy_as_png("c:/tmp/maxim_" + column_name + "_after_filter.png", lowpass_np[8000:10000])
+        return lowpass_np
+
+    def __plotFourierGraph(self, np_array_to_plot: np, title: str, png_filepath: str):
         # np.fft.fft
-        # fig, axs = plt.subplots(ncols=3, nrows=4, figsize=(12, 18))
         fig, axs = plt.subplots(ncols=1, nrows=1, figsize=(12, 18))
         fs = 25  #int(44100/4)
         N = np_array_to_plot.shape[0]  # 17680 #1e5
@@ -168,13 +227,13 @@ class RedDotsData(PandasWrapper):
         plt.title(title)
         # plt.title('Power spectrum (np.fft.fft)')
 
-        plt.savefig("c:/tmp/maximFFT_"+title+".png", format='png', dpi=300)
+
+        plt.savefig(png_filepath, format='png', dpi=300)
         plt.close('all')
-        print("In __plotFourierGraph !!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
 
 
-    def save_plot_as_png(self, filepath_image: str, nparr:np):
+    def save_plot_numpy_as_png(self, filepath_image: str, nparr:np):
         figure(num=None, figsize=(30, 6), facecolor='w', edgecolor='k')
         plt.plot(nparr)
         plt.gca().grid(which='major', axis='both', linestyle='--', )  # specify grid lines
