@@ -3,10 +3,9 @@ import math
 import numpy as np
 import pandas as pd
 import numpy
-from scipy import signal
-from scipy.fft import fft
 
 from lib.Camera import Camera
+from lib.data.Correlation import Correlation
 from lib.infra.Configurations import Configurations
 from lib.FolderStructure import FolderStructure
 from lib.VideoStream import VideoStream
@@ -21,7 +20,6 @@ from lib.model.RedDots import RedDots
 from matplotlib.pyplot import figure
 import matplotlib.pyplot as plt
 from scipy.signal import butter, lfilter
-
 
 
 class RedDotsData(PandasWrapper):
@@ -119,100 +117,53 @@ class RedDotsData(PandasWrapper):
 
     def __smooth_distance_value(self, df, driftsDetectionStep):
 
-        shifted = self.__smooth_using_fourier(df)
+        shifted = self.__smooth_using_fourier(df, 1)
         df['distance_shift1'] = shifted
 
-        dataset = pd.DataFrame()
+        shifted = self.__smooth_using_fourier(df, 0.4)
+        df['distance_shift2'] = shifted
+
+        shifted = self.__smooth_using_fourier(df, 0.7)
+        df['distance_shift3'] = shifted
 
 
-        dist_freq2 = self.__draw_fft_lowpass(df, self.__COLNAME_distance, 0.4)
-        dataset['distance_streight2'] = dist_freq2.reshape(-1)
-        dataset['distance_streight2'] = dataset['distance_streight2'].astype(int)
-        dataset['distance_shift2'] = dataset['distance_streight2'].shift(-37)  # this is much better than distance_streight
-
-        newDF = pd.concat([dataset, df], axis=1)
+        newDF = df # pd.concat([dataset, df], axis=1)
 
         # wrapper = DataframeWrapper(newDF[["frameNumber", "distance", "distance_streight", "distance_streight2", "distance_shift1", "distance_shift2"]])
         # wrapper.df_print_head(100)
 
         df_to_plot = newDF.loc[(newDF['frameNumber'] > 13000) & (newDF['frameNumber'] < 14000)]
-        GraphPlotter(df_to_plot).saveGraphToFile(["frameNumber"], ["distance", "distance_shift1", "distance_shift2"],
+        GraphPlotter(df_to_plot).saveGraphToFile(["frameNumber"], ["distance", "distance_shift1", "distance_shift2", "distance_shift3"],
                                                  "Distance Fourier", "c:/tmp/maxim_dataframe.png")
 
         #self.__draw_fft_lowpass(df, "centerPoint_x_dot1")
         #self.__draw_fft_lowpass(df, "angle")
 
-        newDF['distance_smooth'] = newDF['distance_streight2']
+        #TODO: Access which smoothing setting (which value of lowband pass: 1.0, 0.7 or 0.4 or other) is best by looking at variance of fm_N_drift_x_new
+
+        newDF['distance_smooth'] = newDF['distance_shift3']
 
         return newDF
 
     def __smooth_using_fourier(self, df, cutoff_freq=0.1):
 
         column_to_smooth = df[self.__COLNAME_distance]
-        dataset = pd.DataFrame()
         orig_np = column_to_smooth.to_numpy()
         dist_freq1 = self.bandpass_filter(orig_np, 1, cutoff_freq, 25)
-        self._corr = self.correlate_two_numpy_arrays(dist_freq1, orig_np)
+        corr = Correlation(dist_freq1, orig_np)
 
-        phase_shift = self.offset_of_peak_from_center()
+        phase_shift = corr.offset_of_peak_from_center()
+
+        dataset = pd.DataFrame()
+        dataset['distance_streight'] = dist_freq1.reshape(-1)
         shifted = dataset['distance_streight'].shift(-phase_shift)
 
         self.__draw_fft_lowpass(df, self.__COLNAME_distance, 0.1)
-        self.save_plot_numpy_as_png("c:/tmp/maxim_corr.png", self._corr)
+        self.save_plot_numpy_as_png("c:/tmp/maxim_corr.png", corr.corr_np())
         print("offset_of_peak_from_center", phase_shift)
-        dataset['distance_streight'] = dist_freq1.reshape(-1)
-        dataset['distance_streight'] = dataset['distance_streight'].astype(int)
+        #dataset['distance_streight'] = dataset['distance_streight'].astype(int)
 
         return shifted
-
-    def argmax(self) -> int:
-        return np.argmax(self._corr)
-
-    def argmin(self) -> int:
-        return np.argmin(self._corr)
-
-    def max_correlation(self) ->float:
-        return np.max(self._corr)
-
-    def min_correlation(self)->float:
-        return np.min(self._corr)
-
-    def location_of_peak(self) -> int:
-        if self.__min_corr_is_better_than_max():
-            return self.argmin()
-        else:
-            return self.argmax()
-
-    def location_of_center(self) -> int:
-        return int(self.length() / 2)
-
-    def offset_of_peak_from_center(self) -> int:
-        return self.location_of_peak() - self.location_of_center()
-
-    def __min_corr_is_better_than_max(self):
-        if abs(self.min_correlation()) > self.max_correlation():
-            return True
-        else:
-            return False
-
-    def length(self) -> int:
-        return len(self._corr)
-
-    def correlate_two_numpy_arrays(self, signal_to_search: np, snippet: np) -> np:
-        # values input nparrays are expected to be of type float. If they are integers, correlation produces wierd results
-        signal_to_search_float = signal_to_search.astype(float)
-        snippet_float = snippet.astype(float)
-
-        # MemoryAllocation problem described here: https://github.com/scipy/scipy/issues/5986
-        return signal.correlate(signal_to_search_float, snippet_float, mode='same') / (sum(signal_to_search) * sum(snippet))
-        # return signal.correlate(signal_to_search_float, snippet_float, mode='valid') / (sum(signal_to_search) * sum(snippet))
-        # return signal.correlate(signal_to_search_float, snippet_float, mode='full') / (sum(signal_to_search) * sum(snippet))
-
-
-    def __draw_fft_lowpass_new(self, df, column_to_smooth, cutoff_freq=0.1):
-
-        orig_np = column_to_smooth.to_numpy()
-        lowpass_np = self.bandpass_filter(orig_np, 1, cutoff_freq, 25)
 
     def __draw_fft_lowpass(self, df, column_name, cutoff_freq=0.1):
 
@@ -249,7 +200,6 @@ class RedDotsData(PandasWrapper):
 
         plt.savefig(png_filepath, format='png', dpi=300)
         plt.close('all')
-
 
 
     def save_plot_numpy_as_png(self, filepath_image: str, nparr:np):
