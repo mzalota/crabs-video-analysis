@@ -49,11 +49,11 @@ class InterpolateController:
         crabs_on_seefloor_df.save_file_csv(self.__folderStruct.getCrabsOnSeefloorFilepath())
 
     def regenerateGraphs(self):
-        print ("drawing graphs for RedDots")
+        print("drawing graphs for RedDots")
         rdd = RedDotsData.createFromFolderStruct(self.__folderStruct)
-        rdd.saveGraphs() #20400, 21000)
+        rdd.saveGraphs(13000, 14000)
 
-        print ("drawing graphs for SeeFloor")
+        print("drawing graphs for SeeFloor")
         sf = SeeFloor.createFromFolderStruct(self.__folderStruct)
         sf.saveGraphSeefloorY()
         sf.saveGraphSeefloorX()

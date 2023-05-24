@@ -119,29 +119,23 @@ class RedDotsData(PandasWrapper):
 
     def __smooth_distance_value(self, df, driftsDetectionStep):
 
-        # orig_np = df[self.COLNAME_frameNumber].to_numpy()
-        dist_freq1 = self.__draw_fft_lowpass(df, self.__COLNAME_distance, 0.1)
-        # self._corr = self.correlate_two_numpy_arrays(dist_freq1, orig_np)
-        # self.save_plot_numpy_as_png("c:/tmp/maxim_corr.png", self._corr)
-        # print("offset_of_peak_from_center", self.offset_of_peak_from_center())
+        shifted = self.__smooth_using_fourier(df)
+        df['distance_shift1'] = shifted
+
         dataset = pd.DataFrame()
-        dataset['distance_streight'] = dist_freq1.reshape(-1)
-        dataset['distance_streight'] = dataset['distance_streight'].astype(int)
-        dataset['distance_shift1'] = dataset['distance_streight'].shift(-170)
 
 
         dist_freq2 = self.__draw_fft_lowpass(df, self.__COLNAME_distance, 0.4)
         dataset['distance_streight2'] = dist_freq2.reshape(-1)
         dataset['distance_streight2'] = dataset['distance_streight2'].astype(int)
-        dataset['distance_shift2'] = dataset['distance_streight2'].shift(
-            -41)  # this is much better than distance_streight
+        dataset['distance_shift2'] = dataset['distance_streight2'].shift(-37)  # this is much better than distance_streight
 
         newDF = pd.concat([dataset, df], axis=1)
-        # print("newDF", newDF)
-        wrapper = DataframeWrapper(newDF[["frameNumber", "distance", "distance_streight", "distance_streight2",
-                                          "distance_shift1", "distance_shift2"]])
-        wrapper.df_print_head(100)
-        df_to_plot = newDF.loc[(newDF['frameNumber'] > 10000) & (newDF['frameNumber'] < 11000)]
+
+        # wrapper = DataframeWrapper(newDF[["frameNumber", "distance", "distance_streight", "distance_streight2", "distance_shift1", "distance_shift2"]])
+        # wrapper.df_print_head(100)
+
+        df_to_plot = newDF.loc[(newDF['frameNumber'] > 13000) & (newDF['frameNumber'] < 14000)]
         GraphPlotter(df_to_plot).saveGraphToFile(["frameNumber"], ["distance", "distance_shift1", "distance_shift2"],
                                                  "Distance Fourier", "c:/tmp/maxim_dataframe.png")
 
@@ -151,6 +145,25 @@ class RedDotsData(PandasWrapper):
         newDF['distance_smooth'] = newDF['distance_streight2']
 
         return newDF
+
+    def __smooth_using_fourier(self, df, cutoff_freq=0.1):
+
+        column_to_smooth = df[self.__COLNAME_distance]
+        dataset = pd.DataFrame()
+        orig_np = column_to_smooth.to_numpy()
+        dist_freq1 = self.bandpass_filter(orig_np, 1, cutoff_freq, 25)
+        self._corr = self.correlate_two_numpy_arrays(dist_freq1, orig_np)
+
+        phase_shift = self.offset_of_peak_from_center()
+        shifted = dataset['distance_streight'].shift(-phase_shift)
+
+        self.__draw_fft_lowpass(df, self.__COLNAME_distance, 0.1)
+        self.save_plot_numpy_as_png("c:/tmp/maxim_corr.png", self._corr)
+        print("offset_of_peak_from_center", phase_shift)
+        dataset['distance_streight'] = dist_freq1.reshape(-1)
+        dataset['distance_streight'] = dataset['distance_streight'].astype(int)
+
+        return shifted
 
     def argmax(self) -> int:
         return np.argmax(self._corr)
@@ -196,7 +209,13 @@ class RedDotsData(PandasWrapper):
         # return signal.correlate(signal_to_search_float, snippet_float, mode='full') / (sum(signal_to_search) * sum(snippet))
 
 
+    def __draw_fft_lowpass_new(self, df, column_to_smooth, cutoff_freq=0.1):
+
+        orig_np = column_to_smooth.to_numpy()
+        lowpass_np = self.bandpass_filter(orig_np, 1, cutoff_freq, 25)
+
     def __draw_fft_lowpass(self, df, column_name, cutoff_freq=0.1):
+
         orig_np = df[column_name].to_numpy()
         lowpass_np = self.bandpass_filter(orig_np, 1, cutoff_freq, 25)
         print(column_name, orig_np)
