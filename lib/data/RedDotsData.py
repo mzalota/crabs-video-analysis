@@ -1,11 +1,10 @@
 import math
 
-import numpy as np
 import pandas as pd
 import numpy
 
 from lib.Camera import Camera
-from lib.data.Correlation import Correlation
+from lib.data.FourierSmoothing import FourierSmoothing
 from lib.infra.Configurations import Configurations
 from lib.FolderStructure import FolderStructure
 from lib.VideoStream import VideoStream
@@ -16,10 +15,6 @@ from lib.data.RedDotsManualData import RedDotsManualData
 from lib.data.RedDotsRawData import RedDotsRawData
 from lib.infra.DataframeWrapper import DataframeWrapper
 from lib.model.RedDots import RedDots
-
-from matplotlib.pyplot import figure
-import matplotlib.pyplot as plt
-from scipy.signal import butter, lfilter
 
 
 class RedDotsData(PandasWrapper):
@@ -87,8 +82,7 @@ class RedDotsData(PandasWrapper):
     def scalingFactorColumn(self, driftsDetectionStep: int = 1) -> pd.DataFrame:
         df = self.getPandasDF()
 
-        df = self.__smooth_distance_value(df, driftsDetectionStep)
-        #distance_column_name = self.__COLNAME_distance
+        df = self.__smooth_distance_value(df)
         distance_column_name = "distance_smooth"
 
         dist_diff = df[distance_column_name] - df[distance_column_name].shift(periods=-1)
@@ -115,114 +109,25 @@ class RedDotsData(PandasWrapper):
 
         return result_df
 
-    def __smooth_distance_value(self, df, driftsDetectionStep):
+    def __smooth_distance_value(self, df):
 
-        shifted = self.__smooth_using_fourier(df, 1)
-        df['distance_shift1'] = shifted
+        distance_column = df[self.__COLNAME_distance]
+        shifted1 = FourierSmoothing().smooth_curve(distance_column, "distance_raw", 1)
+        shifted2 = FourierSmoothing().smooth_curve(distance_column, "distance_raw", 0.4)
+        shifted3 = FourierSmoothing().smooth_curve(distance_column, "distance_raw", 0.7)
 
-        shifted = self.__smooth_using_fourier(df, 0.4)
-        df['distance_shift2'] = shifted
-
-        shifted = self.__smooth_using_fourier(df, 0.7)
-        df['distance_shift3'] = shifted
-
-
-        newDF = df # pd.concat([dataset, df], axis=1)
-
-        # wrapper = DataframeWrapper(newDF[["frameNumber", "distance", "distance_streight", "distance_streight2", "distance_shift1", "distance_shift2"]])
-        # wrapper.df_print_head(100)
-
+        newDF =  df[["frameNumber", self.__COLNAME_distance]].copy()
+        newDF['distance_shift1'] = shifted1
+        newDF['distance_shift2'] = shifted2
+        newDF['distance_shift3'] = shifted3
         df_to_plot = newDF.loc[(newDF['frameNumber'] > 13000) & (newDF['frameNumber'] < 14000)]
         GraphPlotter(df_to_plot).saveGraphToFile(["frameNumber"], ["distance", "distance_shift1", "distance_shift2", "distance_shift3"],
                                                  "Distance Fourier", "c:/tmp/maxim_dataframe.png")
 
-        #self.__draw_fft_lowpass(df, "centerPoint_x_dot1")
-        #self.__draw_fft_lowpass(df, "angle")
-
         #TODO: Access which smoothing setting (which value of lowband pass: 1.0, 0.7 or 0.4 or other) is best by looking at variance of fm_N_drift_x_new
 
-        newDF['distance_smooth'] = newDF['distance_shift3']
-
-        return newDF
-
-    def __smooth_using_fourier(self, df, cutoff_freq=0.1):
-
-        column_to_smooth = df[self.__COLNAME_distance]
-        orig_np = column_to_smooth.to_numpy()
-        dist_freq1 = self.bandpass_filter(orig_np, 1, cutoff_freq, 25)
-        corr = Correlation(dist_freq1, orig_np)
-
-        phase_shift = corr.offset_of_peak_from_center()
-
-        dataset = pd.DataFrame()
-        dataset['distance_streight'] = dist_freq1.reshape(-1)
-        shifted = dataset['distance_streight'].shift(-phase_shift)
-
-        self.__draw_fft_lowpass(df, self.__COLNAME_distance, 0.1)
-        self.save_plot_numpy_as_png("c:/tmp/maxim_corr.png", corr.corr_np())
-        print("offset_of_peak_from_center", phase_shift)
-        #dataset['distance_streight'] = dataset['distance_streight'].astype(int)
-
-        return shifted
-
-    def __draw_fft_lowpass(self, df, column_name, cutoff_freq=0.1):
-
-        orig_np = df[column_name].to_numpy()
-        lowpass_np = self.bandpass_filter(orig_np, 1, cutoff_freq, 25)
-        print(column_name, orig_np)
-        png_filepath = "c:/tmp/maximFFT_" + column_name + ".png"
-        self.__plotFourierGraph(orig_np, column_name, png_filepath)
-        self.save_plot_numpy_as_png("c:/tmp/maxim_" + column_name + ".png", orig_np[8000:10000])
-        self.save_plot_numpy_as_png("c:/tmp/maxim_" + column_name + "_after_filter.png", lowpass_np[8000:10000])
-        return lowpass_np
-
-    def __plotFourierGraph(self, np_array_to_plot: np, title: str, png_filepath: str):
-        # np.fft.fft
-        fig, axs = plt.subplots(ncols=1, nrows=1, figsize=(12, 18))
-        fs = 25  #int(44100/4)
-        N = np_array_to_plot.shape[0]  # 17680 #1e5
-        time = np.arange(N) / fs
-
-        freqs = np.fft.fftfreq(time.size, 1/fs)
-        idx = np.argsort(freqs)
-        ps = np.abs(np.fft.fft(np_array_to_plot))**2
-
-        plt.xscale("symlog")
-        plt.yscale("symlog")
-        # plt.grid(which='minor', axis='both', linestyle='--')
-        plt.grid(which='major', axis='both', linestyle='--')
-        plt.xlim(left=1)
-        plt.xlim(right=20)
-        plt.plot(freqs[idx], ps[idx])
-        plt.title(title)
-        # plt.title('Power spectrum (np.fft.fft)')
-
-
-        plt.savefig(png_filepath, format='png', dpi=300)
-        plt.close('all')
-
-
-    def save_plot_numpy_as_png(self, filepath_image: str, nparr:np):
-        figure(num=None, figsize=(30, 6), facecolor='w', edgecolor='k')
-        plt.plot(nparr)
-        plt.gca().grid(which='major', axis='both', linestyle='--', )  # specify grid lines
-        plt.savefig(filepath_image, format='png', dpi=300)
-
-    def bandpass_filter(self, data: np, lowcut: int, highcut: int, fs:int , order:int = 6) -> np:
-        b, a = self.__butter_bandpass(lowcut, highcut, fs, order=order)
-        y = lfilter(b, a, data)
-        return y
-
-    def __butter_bandpass(self, lowcut, highcut, fs, order=6):
-        nyq = 0.5 * fs
-        low = lowcut / nyq
-        high = highcut / nyq
-
-        # b, a = butter(order, [low, high], btype='band')
-
-        b, a = butter(order, high, 'low')
-        # b, a = butter(order, highcut, 'low', analog=True)
-        return b, a
+        df['distance_smooth'] = shifted2
+        return df
 
     def _save_graph_zoom_factor(self, driftsDetectionStep: int = 1, frame_id_from: int = 0, fream_id_to: int = 123456):
 
