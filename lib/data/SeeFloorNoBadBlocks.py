@@ -6,7 +6,6 @@ from lib.FramePhysics import FramePhysics
 from lib.VideoStream import VideoStream
 from lib.data.BadFramesData import BadFramesData
 from lib.data.DriftData import DriftData
-from lib.Frame import Frame
 from lib.data.GraphPlotter import GraphPlotter
 from lib.data.PandasWrapper import PandasWrapper
 from lib.data.RedDotsData import RedDotsData
@@ -14,10 +13,11 @@ from lib.FolderStructure import FolderStructure
 import pandas as pd
 
 from lib.common import Vector, Point
+from lib.data.SeeFloorSlicer import SeeFloorSlicer
 from lib.infra.MyTimer import MyTimer
 
 
-class SeeFloorNoBadBlocks(PandasWrapper):
+class SeeFloorNoBadBlocks(SeeFloorSlicer):
     __COLNAME_driftX = 'driftX'
     __COLNAME_driftY = 'driftY'
     __COLNAME_frameNumber = 'frameNumber'
@@ -25,6 +25,8 @@ class SeeFloorNoBadBlocks(PandasWrapper):
     def __init__(self, driftsData, redDotsData, folderStruct = None,  df = None):
         # type: (DriftData, BadFramesData, RedDotsData, FolderStructure) -> SeeFloorNoBadBlocks
         self.__mm_per_pixel_dict = None
+        self.__drift_x_dict = None
+        self.__drift_y_dict = None
         self.__driftData = driftsData
         self.__redDotsData = redDotsData
         self.__df = df
@@ -62,31 +64,6 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         # type: () -> int
         return self._min_frame_id()
 
-    def jumpToSeefloorSlice(self, frame_id, frames_to_jump):
-        # type: (int, float) -> int
-        if frame_id < self._min_frame_id():
-            return int(self._min_frame_id())
-
-        if frame_id > self._max_frame_id():
-            return int(self._max_frame_id())
-
-        new_frame_id = frame_id
-        while frames_to_jump != 0:
-            if frames_to_jump > 0:
-
-                if frames_to_jump>0 and frames_to_jump<1:
-                    #its a fractional jump
-                    new_frame_id = int(self._jump_to_next_seefloor_slice(new_frame_id, frames_to_jump))
-                    frames_to_jump = 0
-                else:
-                    new_frame_id = int(self._jump_to_next_seefloor_slice(new_frame_id))
-                    frames_to_jump = frames_to_jump-1
-            if frames_to_jump < 0:
-                new_frame_id = int(self._jump_to_previous_seefloor_slice(new_frame_id))
-                frames_to_jump = frames_to_jump+1
-
-        return new_frame_id
-
     def _adjust_outofbound_values(self, frame_id):
         # type: (int) -> int
         if frame_id < self._min_frame_id():
@@ -96,35 +73,6 @@ class SeeFloorNoBadBlocks(PandasWrapper):
             return self._max_frame_id()
 
         return frame_id
-
-
-    def _jump_to_previous_seefloor_slice(self, frame_id):
-        # type: (int) -> int
-        if frame_id < self._min_frame_id():
-            return self._min_frame_id()
-
-        if frame_id > self._max_frame_id():
-            return self._max_frame_id()
-
-        # we are in a good segment and not in its first frame.
-        pixels_to_jump = Camera.create().frame_height() * (-1)
-        # pixels_to_jump = Frame.FRAME_HEIGHT * (-1)
-        new_frame_id = int(self._getNextFrame(pixels_to_jump, frame_id))
-        return new_frame_id
-
-    def _jump_to_next_seefloor_slice(self, frame_id, fraction=1):
-        # type: (int) -> int
-        if frame_id < self._min_frame_id():
-            return self._min_frame_id()
-
-        if frame_id > self._max_frame_id():
-            return self._max_frame_id()
-
-        # we are in a good segment and not in its last frame.
-        pixels_to_jump = Camera.create().frame_height() * fraction
-        # pixels_to_jump = Frame.FRAME_HEIGHT * fraction
-        new_frame_id = int(self._getNextFrame(pixels_to_jump, frame_id))
-        return new_frame_id
 
     def _min_frame_id(self):
         return self.getDriftData().minFrameID()
@@ -232,9 +180,28 @@ class SeeFloorNoBadBlocks(PandasWrapper):
 
     def __get_drift_instantaneous(self, frame_id):
         # type: (int) -> Vector
-        drift_x = self.__getValueFromDF(self.__COLNAME_driftX, frame_id)
-        drift_y = self.__getValueFromDF(self.__COLNAME_driftY, frame_id)
+        # drift_x = self.__getValueFromDF(self.__COLNAME_driftX, frame_id)
+        drift_x = self.__drift_x_fast(frame_id)
+        # drift_y = self.__getValueFromDF(self.__COLNAME_driftY, frame_id)
+        drift_y = self.__drift_y_fast(frame_id)
         return Vector(drift_x, drift_y)
+
+    def __drift_x_fast(self, frame_id: int) -> float:
+        if self.__drift_x_dict is None:
+            # Lazy loading of cache
+            # key is frame_id, value is mm_per_pixel
+            self.__drift_x_dict = self.__df.set_index(self.__COLNAME_frameNumber)[self.__COLNAME_driftX].to_dict()
+
+        return self.__drift_x_dict[frame_id]
+
+    def __drift_y_fast(self, frame_id: int) -> float:
+        if self.__drift_y_dict is None:
+            # Lazy loading of cache
+            # key is frame_id, value is mm_per_pixel
+            self.__drift_y_dict = self.__df.set_index(self.__COLNAME_frameNumber)[self.__COLNAME_driftY].to_dict()
+
+        return self.__drift_y_dict[frame_id]
+
 
     def __zoom_instantaneous(self, frame_id):
         # type: (int) -> float
@@ -296,7 +263,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         endYCoordMM = self.getYCoordMMOrigin(toFrameID)
         return endYCoordMM-startYCoordMM
 
-    def heightMM(self,frame_id):
+    def heightMM(self, frame_id):
         # type: (int) -> float
         mmPerPixel = self.mm_per_pixel(frame_id)
         height_mm = Camera.create().frame_height() * float(mmPerPixel)
@@ -369,18 +336,10 @@ class SeeFloorNoBadBlocks(PandasWrapper):
         dfMerged = dfMerged.sort_values(by=['frameNumber'])
         return dfMerged
 
-    def getPrevFrame(self, frame_id):
-        # type: (int) -> int
-        return self.jumpToSeefloorSlice(frame_id, -1)
-
-    def getNextFrame(self, frame_id):
-        # type: (int) -> int
-        return self.jumpToSeefloorSlice(frame_id, 1)
-
     #translates the point stepwise for each frame between orig and target.
     def translatePointCoordinate(self, pointLocation: Point, origFrameID: int, targetFrameID: int) -> Point:
         point_location_new = pointLocation
-        timer = MyTimer("start translatePointCoordinate")
+        timer = MyTimer("translatePointCoordinate")
         individual_frames = FrameId.sequence_of_frames(origFrameID, targetFrameID)
         for idx in range(1, len(individual_frames)):
             to_frame_id = individual_frames[idx]
@@ -392,7 +351,7 @@ class SeeFloorNoBadBlocks(PandasWrapper):
                 frame_physics = self.__get_frame_physics(to_frame_id)
                 result = frame_physics.translate_forward(point_location_new)
             point_location_new = result
-        timer.lap("end translatePointCoordinate "+str(pointLocation)+" loops:"+ str(len(individual_frames))+ ", orig frameId: "+str(origFrameID)+ ", target frameId: "+str(targetFrameID) + " new loc:"+str(point_location_new) )
+        timer.lap("end "+str(pointLocation)+" loops:"+ str(len(individual_frames))+ ", orig frameId: "+str(origFrameID)+ ", target frameId: "+str(targetFrameID) + " new loc:"+str(point_location_new) )
 
         return Point(int(round(point_location_new.x, 0)), int(round(point_location_new.y, 0)))
 
