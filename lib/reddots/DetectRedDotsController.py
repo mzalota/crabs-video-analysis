@@ -39,17 +39,14 @@ class DetectRedDotsController:
 
             try:
                 frame.getImgObj()
+                self.__detect_red_dots_on_frame(frame, frame_id)
             except VideoStreamException as error:
                 print("cannot read frame " + str(frame_id) + ", skipping to next")
                 print(repr(error))
-                frame_id += stepSize
-                continue
             except Exception as error:
                 print('Caught this error: ' + repr(error))
                 traceback.print_exc()
                 break
-
-            self.__detect_red_dots_on_frame(frame, frame_id)
 
             frame_id += stepSize
             if frame_id > self.__videoStream.num_of_frames():
