@@ -30,16 +30,10 @@ class VelocityDetector():
                 frame = Frame(frameID, videoStream)
                 self.detectVelocity(frame)
             except VideoStreamException as error:
-                if frameID > 1000:
-                    print ("no more frames to read from video ")
-                    print(repr(error))
-                    # traceback.print_exc()
-                    break
-                else:
-                    print("cannot read frame " + str(frameID) + ", skipping to next")
-                    frameID += stepSize
-                    continue
-
+                print("cannot read frame " + str(frameID) + ", skipping to next")
+                print(repr(error))
+                frameID += stepSize
+                continue
             except Exception as error:
                 print('Caught this error: ' + repr(error))
                 traceback.print_exc()

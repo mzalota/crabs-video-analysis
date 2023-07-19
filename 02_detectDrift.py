@@ -35,5 +35,6 @@ Camera.initialize(VideoStream(folderStruct.getVideoFilepath()))
 controller = DetectDriftsController(folderStruct)
 controller.run()
 
-print ("Done DetectDrift")
+print("Done DetectDrift")
+print("Dir: "+rootDir+", file "+videoFileName)
 

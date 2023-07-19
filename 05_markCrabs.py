@@ -59,3 +59,4 @@ scientistUI.processVideo()
 cv2.destroyAllWindows()
 
 timer.lap("Finished session")
+print("Dir: "+rootDir+", file "+videoFileName)

@@ -28,6 +28,7 @@ class VideoStream():
         print ("frame_height", self.frame_height())
         print ("frame_width", self.frame_width())
         print ("frames_per_second", self.frames_per_second())
+        print ("codec_code", self.codec_code())
 
     def num_of_frames(self):
         # type: () -> int
@@ -44,6 +45,15 @@ class VideoStream():
     def frames_per_second(self):
         # type: () -> int
         return int(self._vidcap.get(cv2.CAP_PROP_FPS))
+
+    def codec_code(self):
+        # type: () -> int
+        return int(self._vidcap.get(cv2.CAP_PROP_FOURCC))
+
+    def rectification(self):
+        # type: () -> int
+        return int(self._vidcap.get(cv2.CAP_PROP_RECTIFICATION))
+
 
     def read_image(self, frameID):
         # type: (int) -> np

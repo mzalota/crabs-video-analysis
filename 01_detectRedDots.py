@@ -41,4 +41,5 @@ if configs.is_debug():
 else:
     controller.run()
 
-print("Done detecting RedDots")
+print("Done detecting RedDots ")
+print("Dir: "+rootDir+", file "+videoFileName)

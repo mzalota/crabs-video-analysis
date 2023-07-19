@@ -58,3 +58,4 @@ lst = crabsData.frames_with_crabs()
 framesStitcher.saveFramesToFile(lst, folderStruct.getCrabFramesDirpath())
 
 print ("Done cutting video into frames")
+print("Dir: "+rootDir+", file "+videoFileName)

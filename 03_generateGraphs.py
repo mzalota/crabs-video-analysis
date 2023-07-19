@@ -43,4 +43,5 @@ timer.lap("Regenerated/reinterpolated Seefloor.csv")
 controller.regenerateGraphs()
 timer.lap("regenerated graphs")
 
-print ("Done generating graphs")
+print("Done generating graphs")
+print("Dir: "+rootDir+", file "+videoFileName)
