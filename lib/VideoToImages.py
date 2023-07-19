@@ -46,6 +46,7 @@ class VideoToImages:
 
             imageFileName = frame.constructFilename()
             imageFilePath = dirpath + "/" + imageFileName
+            imageFilePath = imageFilePath.encode('unicode_escape').decode() #Escape any Russian characters by converting to raw Unicode. Otherwise cv2 will not write them out.
 
             print ("writing frame image to file: " + imageFilePath)
             imgObj.writeToFile(imageFilePath)

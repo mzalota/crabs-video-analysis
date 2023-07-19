@@ -63,10 +63,10 @@ class SeeFloorSlicer(PandasWrapper):
         pixels_to_jump = Camera.create().frame_height() * fraction
         new_frame_id = int(self._getNextFrame(pixels_to_jump, frame_id))
 
-        timer = MyTimer("SeeFloorSlicer._get_next_frame_id()")
-        next_frame_id_new = self._get_next_frame_id(frame_id)
-        timer.lap()
-        print("new_frame_id: " + str(new_frame_id) + ", next_frame_id_new: " + str(next_frame_id_new) + " orig_frameId: " + str(frame_id) + ", fraction: " + str(fraction) + ", pixels_to_jump:" + str(pixels_to_jump))
+        # timer = MyTimer("SeeFloorSlicer._get_next_frame_id()")
+        # next_frame_id_new = self._get_next_frame_id(frame_id)
+        # timer.lap()
+        # print("new_frame_id: " + str(new_frame_id) + ", next_frame_id_new: " + str(next_frame_id_new) + " orig_frameId: " + str(frame_id) + ", fraction: " + str(fraction) + ", pixels_to_jump:" + str(pixels_to_jump))
         return new_frame_id
 
     def _get_next_frame_id(self, start_frame_id: int):

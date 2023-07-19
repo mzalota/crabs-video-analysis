@@ -189,7 +189,7 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
     def __drift_x_fast(self, frame_id: int) -> float:
         if self.__drift_x_dict is None:
             # Lazy loading of cache
-            # key is frame_id, value is mm_per_pixel
+            # key is frame_id, value is drift_x_
             self.__drift_x_dict = self.__df.set_index(self.__COLNAME_frameNumber)[self.__COLNAME_driftX].to_dict()
 
         return self.__drift_x_dict[frame_id]
@@ -197,7 +197,7 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
     def __drift_y_fast(self, frame_id: int) -> float:
         if self.__drift_y_dict is None:
             # Lazy loading of cache
-            # key is frame_id, value is mm_per_pixel
+            # key is frame_id, value is drift_y
             self.__drift_y_dict = self.__df.set_index(self.__COLNAME_frameNumber)[self.__COLNAME_driftY].to_dict()
 
         return self.__drift_y_dict[frame_id]
@@ -356,7 +356,8 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
         return Point(int(round(point_location_new.x, 0)), int(round(point_location_new.y, 0)))
 
     def __get_frame_physics(self, to_frame_id: int) -> FramePhysics:
-        scale = self.getRedDotsData().getMMPerPixel(to_frame_id)
+        # scale = self.getRedDotsData().getMMPerPixel(to_frame_id)
+        scale = self.mm_per_pixel(to_frame_id)
         drift = self.__get_drift_instantaneous(to_frame_id)
         zoom = self.__zoom_instantaneous(to_frame_id)
         #print("In __get_frame_physics: scale", scale, "drift", drift, "zoom", zoom)
