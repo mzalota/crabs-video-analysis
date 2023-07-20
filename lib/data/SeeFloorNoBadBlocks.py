@@ -351,7 +351,7 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
                 frame_physics = self.__get_frame_physics(to_frame_id)
                 result = frame_physics.translate_forward(point_location_new)
             point_location_new = result
-        timer.lap("end "+str(pointLocation)+" loops:"+ str(len(individual_frames))+ ", orig frameId: "+str(origFrameID)+ ", target frameId: "+str(targetFrameID) + " new loc:"+str(point_location_new) )
+        # timer.lap("end "+str(pointLocation)+" loops:"+ str(len(individual_frames))+ ", orig frameId: "+str(origFrameID)+ ", target frameId: "+str(targetFrameID) + " new loc:"+str(point_location_new) )
 
         return Point(int(round(point_location_new.x, 0)), int(round(point_location_new.y, 0)))
 
