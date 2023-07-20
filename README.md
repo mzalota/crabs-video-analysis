@@ -51,6 +51,8 @@ Image with graphs explaining geometry of video footage:
 _config.txt file holds overarching settings for this video file:
 + drifts_step_size - used in detectDrift algorithm to decide how many frames to jump between iterations. If video is moving fast, use values 2 or 3. If video is moving rather slow you can use value of 4 - 8. Using higher values will make algorithm faster, but may result in lower detection quality/fidelity. Default value is 2. 
 + distance_between_reddots_millimeters - defaults to 200mm
++ debug_ui - Should UI screen should be shown during execution of 01_detectRedDots and 02_detectDrift scrips. Default value is False
++ simple_slicer - Set to False if the seefloor is moving from up to down, but rather sideways or from down to up. Default value is True
 You can see example file: "video_sample_config.txt" next to this README file.
 
 #### Debugging files:

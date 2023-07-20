@@ -30,7 +30,7 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
         self.__driftData = driftsData
         self.__redDotsData = redDotsData
         self.__df = df
-        self.__folderStruct = folderStruct
+        self._folderStruct = folderStruct
         #self.__crabsData = CrabsData(self.__folderStruct)
 
     @staticmethod
@@ -306,12 +306,12 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
         return vals[0]
 
     def refreshItself(self):
-        self.__driftData = DriftData.createFromFolderStruct(self.__folderStruct)
-        self.__redDotsData = RedDotsData.createFromFolderStruct(self.__folderStruct)
+        self.__driftData = DriftData.createFromFolderStruct(self._folderStruct)
+        self.__redDotsData = RedDotsData.createFromFolderStruct(self._folderStruct)
         self.saveToFile()
 
     def saveToFile(self):
-        filepath = self.__folderStruct.getSeefloorFilepath()
+        filepath = self._folderStruct.getSeefloorFilepath()
         self.__df = self.__interpolate()
         self.__df.to_csv(filepath, sep='\t', index=False)
 
@@ -364,8 +364,8 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
         return FramePhysics(to_frame_id, scale, drift, zoom)
 
     def saveGraphSeefloorY(self):
-        filePath = self.__folderStruct.getGraphSeefloorAdvancementY()
-        graphTitle = self.__folderStruct.getVideoFilename()+ " seefloor advancement along Y (vertical/forward) axis (mm)"
+        filePath = self._folderStruct.getGraphSeefloorAdvancementY()
+        graphTitle = self._folderStruct.getVideoFilename() + " seefloor advancement along Y (vertical/forward) axis (mm)"
         xColumn = ["frameNumber", "seconds"]
         yColumns = ["driftY_sum_mm"]
 
@@ -374,8 +374,8 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
 
     def saveGraphSeefloorX(self):
         # filePath = self.__folderStruct.getSubDirpath()+"/graph_x.png"#self.__folderStruct.getRedDotsGraphAngle()
-        filePath = self.__folderStruct.getGraphSeefloorAdvancementX()
-        graphTitle = self.__folderStruct.getVideoFilename()+ " seefloor advancement along X (horizontal/sideways) axis (mm)"
+        filePath = self._folderStruct.getGraphSeefloorAdvancementX()
+        graphTitle = self._folderStruct.getVideoFilename() + " seefloor advancement along X (horizontal/sideways) axis (mm)"
         xColumn = ["frameNumber", "seconds"]
         yColumns = ["driftX_sum_mm"]
 
@@ -384,8 +384,8 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
 
     def saveGraphSeefloorXY(self):
         # filePath = self.__folderStruct.getSubDirpath()+"/graph_xy.png"#self.__folderStruct.getRedDotsGraphAngle()
-        filePath = self.__folderStruct.getGraphSeefloorPathXY()
-        graphTitle = self.__folderStruct.getVideoFilename()+ " seefloor advancement X and Y axis (mm)"
+        filePath = self._folderStruct.getGraphSeefloorPathXY()
+        graphTitle = self._folderStruct.getVideoFilename() + " seefloor advancement X and Y axis (mm)"
         xColumn = "driftX_sum_mm"
         yColumns = ["driftY_sum_mm"]
 
@@ -394,8 +394,8 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
 
     def saveGraphDriftsMillimeters(self):
         # filePath = self.__folderStruct.getSubDirpath()+"/graph_drifts.png"#self.__folderStruct.getRedDotsGraphAngle()
-        filePath = self.__folderStruct.getGraphDriftPerFrameMM()
-        graphTitle = self.__folderStruct.getVideoFilename()+ " drift (mm)"
+        filePath = self._folderStruct.getGraphDriftPerFrameMM()
+        graphTitle = self._folderStruct.getVideoFilename() + " drift (mm)"
         xColumn = ["frameNumber", "seconds"]
         yColumns = ["driftY_mm", "driftX_mm"] #"driftX", "driftY"
 
@@ -403,8 +403,8 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
         graphPlotter.saveGraphToFile(xColumn, yColumns, graphTitle, filePath)
 
     def saveGraphDriftsPixels(self):
-        filePath = self.__folderStruct.getGraphDriftPerFramePixels()
-        graphTitle = self.__folderStruct.getVideoFilename()+ " drift (pixels)"
+        filePath = self._folderStruct.getGraphDriftPerFramePixels()
+        graphTitle = self._folderStruct.getVideoFilename() + " drift (pixels)"
         xColumn = ["frameNumber", "seconds"]
         yColumns = ["driftY", "driftX"]
 

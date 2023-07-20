@@ -61,14 +61,15 @@ class SeeFloorSlicer(PandasWrapper):
             return self._max_frame_id()
 
         # we are in a good segment and not in its last frame.
-        if Configurations(self.__folderStruct).is_simple_slicer():
+        if Configurations(self._folderStruct).is_simple_slicer():
             pixels_to_jump = Camera.create().frame_height() * fraction
             new_frame_id = int(self._getNextFrame(pixels_to_jump, frame_id))
         else:
+            print("Starting to calculate next frame_id using precise but slow algorithm. Please wait a bit...")
             timer = MyTimer("SeeFloorSlicer._get_next_frame_id()")
             new_frame_id = self._get_next_frame_id(frame_id)
-            timer.lap()
-            print("next_frame_id_new: " + str(new_frame_id) + " orig_frameId: " + str(frame_id) + ", fraction: " + str(fraction))
+            timer.lap("finished calculating next_frame_id. next_frame_id_new: " + str(new_frame_id) + " orig_frameId: " + str(frame_id) + ", fraction: " + str(fraction))
+            # print("finished calculating netxt_frame_id. next_frame_id_new: " + str(new_frame_id) + " orig_frameId: " + str(frame_id) + ", fraction: " + str(fraction))
             # print("new_frame_id: " + str(new_frame_id) + ", next_frame_id_new: " + str(next_frame_id_new) + " orig_frameId: " + str(frame_id) + ", fraction: " + str(fraction) + ", pixels_to_jump:" + str(pixels_to_jump))
 
         return new_frame_id

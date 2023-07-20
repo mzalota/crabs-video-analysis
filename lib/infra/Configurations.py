@@ -1,8 +1,6 @@
 from configparser import ConfigParser
 
-from lib.Camera import Camera
 from lib.FolderStructure import FolderStructure
-from lib.VideoStream import VideoStream
 from lib.infra.Defaults import Defaults
 
 
@@ -16,7 +14,6 @@ class Configurations:
 
     SECTION_REDDOTS = 'reddots'
     OPTION_DISTANCE_BETWEEN_REDDOTS = 'distance_between_reddots_millimeters'
-    OPTION_MID_POINT_X_COORD_BETWEEN_REDDOTS = 'mid_point_x_coord_between_reddots'
 
 
     def __init__(self, folderStruct: FolderStructure):
@@ -45,7 +42,6 @@ class Configurations:
 
         parser.add_section(self.SECTION_REDDOTS)
         parser.set(self.SECTION_REDDOTS, self.OPTION_DISTANCE_BETWEEN_REDDOTS, str(self.__default_distance_reddots()))
-        parser.set(self.SECTION_REDDOTS, self.OPTION_MID_POINT_X_COORD_BETWEEN_REDDOTS, str(self.__default_red_dots_x_mid_point()))
 
         return parser
 
@@ -60,9 +56,6 @@ class Configurations:
 
     def __default_drifts_step_size(self):
         return Defaults.DEFAULT_DRIFTS_STEP_SIZE
-
-    def __default_red_dots_x_mid_point(self):
-        return Defaults.DEFAULT_MID_POINT_X_COORD_BETWEEN_REDDOTS
 
     def is_debug(self) -> bool:
         has_value = self._has_value(self.SECTION_GENERAL, self.OPTION_DEBUG_UI)
@@ -99,15 +92,6 @@ class Configurations:
             return int(self._get_value(self.SECTION_REDDOTS, self.OPTION_DISTANCE_BETWEEN_REDDOTS))
         else:
             return self.__default_distance_reddots()
-
-    def get_red_dots_x_mid_point(self) -> int:
-        # type: () -> int
-        if self._has_value(self.SECTION_REDDOTS, self.OPTION_MID_POINT_X_COORD_BETWEEN_REDDOTS):
-            point = int(self._get_value(self.SECTION_REDDOTS, self.OPTION_MID_POINT_X_COORD_BETWEEN_REDDOTS))
-        else:
-            point = self.__default_red_dots_x_mid_point()
-
-        return point
 
 
     def _get_value(self, sectionName, optionName):
