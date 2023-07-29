@@ -51,7 +51,8 @@ class InterpolateController:
     def regenerateGraphs(self):
         print("drawing graphs for RedDots")
         rdd = RedDotsData.createFromFolderStruct(self.__folderStruct)
-        rdd.saveGraphs(13000, 14000)
+        # rdd.saveGraphs(13000, 14000)
+        rdd.saveGraphs()
 
         print("drawing graphs for SeeFloor")
         sf = SeeFloor.createFromFolderStruct(self.__folderStruct)

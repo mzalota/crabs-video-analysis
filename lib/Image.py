@@ -224,6 +224,12 @@ class Image:
         FolderStructure.createDirectoriesIfDontExist(filepath)
         cv2.imwrite(filepath, self.asNumpyArray())  # save frame as JPEG file
 
+        if not cv2.imwrite(filepath, self.asNumpyArray()):
+            mesage = "Could not write image: " + filepath + ", width: " + str(self.width()) + ", height: " + str(
+                self.height())
+            print("ERROR in Image.py in writeToFile: "+mesage)
+            raise Exception(mesage)
+
     def __eqHist(self, image, clache=True, gray_only=False):
         """
         Equalization of image, by default based on CLACHE method

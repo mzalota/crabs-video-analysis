@@ -29,45 +29,35 @@ class VelocityDetector():
             try:
                 frame = Frame(frameID, videoStream)
                 self.detectVelocity(frame)
-            except VideoStreamException as error:
-                if frameID > 1000:
-                    print ("no more frames to read from video ")
-                    print(repr(error))
-                    # traceback.print_exc()
-                    break
-                else:
-                    print("cannot read frame " + str(frameID) + ", skipping to next")
-                    frameID += stepSize
-                    continue
+                driftVector = self.write_out_drift_row(frameID, logger)
 
+                if self.__is_debug:
+                    self.__show_ui_window(self._fm.values(), frame, driftVector)
+
+            except VideoStreamException as error:
+                print("cannot read frame " + str(frameID) + ", skipping to next")
+                print(repr(error))
             except Exception as error:
                 print('Caught this error: ' + repr(error))
                 traceback.print_exc()
                 break
-            except AssertionError as assertion:
-                print('Caught this assertion: ' + repr(assertion))
-                traceback.print_exc()
-                break
-
-            driftVector = self.__getMedianDriftVector()
-            if driftVector is None:
-                driftsRow = self.emptyRow(frameID)
-            else:
-                driftsRow = self.infoAboutDrift(frameID)
-
-            print(driftsRow)
-            logger.writeToFile(driftsRow)
-
-            if self.__is_debug:
-                self.__show_ui_window(self._fm.values(), frame, driftVector)
 
             frameID += stepSize
-
-            if frameID > 99100:
+            if frameID > videoStream.num_of_frames():
                 break
 
         if self.__is_debug:
             self.__ui_window.closeWindow()
+
+    def write_out_drift_row(self, frameID, logger):
+        driftVector = self.__getMedianDriftVector()
+        if driftVector is None:
+            driftsRow = self.emptyRow(frameID)
+        else:
+            driftsRow = self.infoAboutDrift(frameID)
+        print(driftsRow)
+        logger.writeToFile(driftsRow)
+        return driftVector
 
     def __show_ui_window(self, feature_matchers, frame, driftVector):
         img = frame.getImgObj()

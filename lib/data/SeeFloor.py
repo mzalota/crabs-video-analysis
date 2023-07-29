@@ -53,6 +53,7 @@ class SeeFloor(SeeFloorNoBadBlocks):
         minFrameID = self.__badFramesData.firstGoodFrameAfter(minFrameID)
         return minFrameID
 
+
     def _jump_to_previous_seefloor_slice(self, frame_id):
         # type: (int) -> int
         if frame_id < self._min_frame_id():

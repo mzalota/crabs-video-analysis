@@ -58,6 +58,6 @@ cv2.destroyAllWindows()
 timer.lap("Finished session")
 
 print ("Done Manually Improving RedDots")
-exit()
+print("Dir: "+rootDir+", file "+videoFileName)
 
 

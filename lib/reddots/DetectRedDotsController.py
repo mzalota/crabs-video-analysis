@@ -1,8 +1,10 @@
+import traceback
+
 from lib.FolderStructure import FolderStructure
 from lib.Frame import Frame
 from lib.infra.Configurations import Configurations
 from lib.reddots.RedDotsDetector import RedDotsDetector
-from lib.VideoStream import VideoStream
+from lib.VideoStream import VideoStream, VideoStreamException
 
 #https://www.pyimagesearch.com/2016/10/31/detecting-multiple-bright-spots-in-an-image-with-python-and-opencv/
 from lib.data.RedDotsRawData import RedDotsRawData
@@ -29,6 +31,7 @@ class DetectRedDotsController:
     def __loop_thru_all_frames(self):
         stepSize = 5
         frame_id = self.__videoStream.get_id_of_first_frame(stepSize)
+
         while True:
             self.__loop_count += 1
             print("frame_id", frame_id)
@@ -36,18 +39,14 @@ class DetectRedDotsController:
 
             try:
                 frame.getImgObj()
+                self.__detect_red_dots_on_frame(frame, frame_id)
+            except VideoStreamException as error:
+                print("cannot read frame " + str(frame_id) + ", skipping to next")
+                print(repr(error))
             except Exception as error:
-                if frame_id > 300:
-                    print ("no more frames to read from video ")
-                    print(repr(error))
-                    # traceback.print_exc()
-                    break
-                else:
-                    print("cannot read frame " + str(frame_id) + ", skipping to next")
-                    frame_id += stepSize
-                    continue
-
-            self.__detect_red_dots_on_frame(frame, frame_id)
+                print('Caught this error: ' + repr(error))
+                traceback.print_exc()
+                break
 
             frame_id += stepSize
             if frame_id > self.__videoStream.num_of_frames():
