@@ -219,22 +219,13 @@ class DriftRawData(PandasWrapper):
         if self.__generate_debug_graphs:
             self.__save_graphs_drifts_raw(self.__df)
 
-        df = self.__df.copy()
-
-        #comment out next 5 lines to skip new logic of compensating each FeatureMatcher
         zoom_factor = redDotsData.scalingFactorColumn(driftsDetectionStep)
 
-        # if self.__generate_debug_graphs:
-        #     redDotsData._save_graph_zoom_factor(driftsDetectionStep,1000,2000)
-
-
-        #zoom_factor = redDotsData.scalingFactorColumn_undiestoreted(driftsDetectionStep)
-
         df_comp = self._compensate_for_zoom(zoom_factor)
-
         if self.__generate_debug_graphs:
             self.__save_graphs_drifts_zoom_compensated(df_comp)
 
+        df = self.__df.copy()
         df = pd.merge(df, df_comp[['average_y_new', "average_x_new", "frameNumber"]], on='frameNumber', how='left', suffixes=('_draft', '_reddot'))
         df["driftY"] = df['average_y_new']
         df["driftX"] = df['average_x_new']
