@@ -29,13 +29,6 @@ class DriftRawData(PandasWrapper):
 
         print(" value of var is XXXXX __generate_debug_graphs", self.__generate_debug_graphs)
 
-    def getPandasDF(self):
-        # type: () -> pd
-        return self.__df
-
-    def getCount(self):
-        # type: () -> int
-        return len(self.__df.index)
 
     def __save_graphs_drifts_raw(self, df_param, frame_id_from: int = 0, fream_id_to: int = 123456):
 
@@ -143,7 +136,7 @@ class DriftRawData(PandasWrapper):
 
         df = self.__remove_values_in_failed_records(df)
 
-        factor = df["scaling_factor"]  # scaling_factor scaling_factor_undistorted
+        factor = df["scaling_factor"]  # scaling_factor scaling_factor_not_smooth
         yColumns_new = list()
         xColumns_new = list()
         for feature_matcher_idx in range(0, 9):
@@ -223,10 +216,16 @@ class DriftRawData(PandasWrapper):
 
 
     def interpolate(self, manualDrifts: DriftManualData, redDotsData: RedDotsData, driftsDetectionStep: int) -> pd.DataFrame:
+        if self.__generate_debug_graphs:
+            self.__save_graphs_drifts_raw(self.__df)
+
         df = self.__df.copy()
 
         #comment out next 5 lines to skip new logic of compensating each FeatureMatcher
         zoom_factor = redDotsData.scalingFactorColumn(driftsDetectionStep)
+
+        # if self.__generate_debug_graphs:
+        #     redDotsData._save_graph_zoom_factor(driftsDetectionStep,1000,2000)
 
 
         #zoom_factor = redDotsData.scalingFactorColumn_undiestoreted(driftsDetectionStep)
@@ -234,9 +233,7 @@ class DriftRawData(PandasWrapper):
         df_comp = self._compensate_for_zoom(zoom_factor)
 
         if self.__generate_debug_graphs:
-            self.__save_graphs_drifts_raw(self.__df)
             self.__save_graphs_drifts_zoom_compensated(df_comp)
-            redDotsData._save_graph_zoom_factor(driftsDetectionStep)
 
         df = pd.merge(df, df_comp[['average_y_new', "average_x_new", "frameNumber"]], on='frameNumber', how='left', suffixes=('_draft', '_reddot'))
         df["driftY"] = df['average_y_new']
@@ -263,7 +260,6 @@ class DriftRawData(PandasWrapper):
         # df["driftY"] = df["driftY"] / distortion_coeff
 
         df = manualDrifts.overwrite_values(df)
-        df = df.interpolate(limit_direction='both')
 
         #set drifts in the first row to zero.
         self.setValuesInFirstRowToZeros(df)

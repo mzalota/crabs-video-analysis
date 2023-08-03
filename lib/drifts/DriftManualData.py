@@ -136,7 +136,7 @@ class DriftManualData(PandasWrapper):
             correctionsDF = correctionsDF.set_index("frameNumber")
             df = correctionsDF.combine_first(df)
 
-        return df.reset_index()
+        return df.reset_index().interpolate(limit_direction='both')
 
 
     def minFrameID(self):

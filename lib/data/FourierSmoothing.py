@@ -22,7 +22,7 @@ class FourierSmoothing:
         shifted = dataset['distance_streight'].shift(-phase_shift)
 
         self._draw_fft_lowpass(orig_np, column_name, 0.1)
-        self.save_plot_numpy_as_png("c:/tmp/maxim_corr.png", corr.corr_np())
+        # self.save_plot_numpy_as_png("c:/tmp/maxim_corr.png", corr.corr_np())
         print("offset_of_peak_from_center", phase_shift)
         #dataset['distance_streight'] = dataset['distance_streight'].astype(int)
 
@@ -33,8 +33,8 @@ class FourierSmoothing:
         print(column_name, orig_np)
         png_filepath = "c:/tmp/maximFFT_" + column_name + ".png"
         self._plotFourierGraph(orig_np, column_name, png_filepath)
-        self.save_plot_numpy_as_png("c:/tmp/maxim_" + column_name + ".png", orig_np[8000:10000])
-        self.save_plot_numpy_as_png("c:/tmp/maxim_" + column_name + "_after_filter.png", lowpass_np[8000:10000])
+        self.save_plot_numpy_as_png("c:/tmp/maxim_" + column_name + ".png", orig_np[2000:4000])
+        self.save_plot_numpy_as_png("c:/tmp/maxim_" + column_name + "_after_filter.png", lowpass_np[2000:4000])
         return lowpass_np
 
     def _plotFourierGraph(self, np_array_to_plot: np, title: str, png_filepath: str):
