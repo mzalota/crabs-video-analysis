@@ -8,7 +8,7 @@ from lib.data.Correlation import Correlation
 
 
 class FourierSmoothing:
-    def smooth_curve(self, column_to_smooth, column_name, cutoff_freq=0.1):
+    def smooth_curve(self, column_to_smooth: pd.DataFrame, column_name: str, cutoff_freq=0.1) -> pd.DataFrame:
 
         #column_to_smooth = df[column_name]
         orig_np = column_to_smooth.to_numpy()
@@ -30,7 +30,7 @@ class FourierSmoothing:
 
     def _draw_fft_lowpass(self, orig_np, column_name, cutoff_freq=0.1):
         lowpass_np = self.bandpass_filter(orig_np, 1, cutoff_freq, 25)
-        print(column_name, orig_np)
+        # print(column_name, orig_np)
         png_filepath = "c:/tmp/maximFFT_" + column_name + ".png"
         self._plotFourierGraph(orig_np, column_name, png_filepath)
         self.save_plot_numpy_as_png("c:/tmp/maxim_" + column_name + ".png", orig_np[2000:4000])

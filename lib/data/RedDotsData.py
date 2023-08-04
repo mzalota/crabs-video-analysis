@@ -81,7 +81,9 @@ class RedDotsData(PandasWrapper):
 
     def scalingFactorColumn(self, driftsDetectionStep: int = 1) -> pd.DataFrame:
         df = self.getPandasDF()
-        return VerticalSpeed(self.__folderStruct).vertical_speed_ratio(df, driftsDetectionStep)
+        newDF = df[["frameNumber", "distance"]].copy()
+        verticalSpeedCalculator = VerticalSpeed(self.__folderStruct)
+        return verticalSpeedCalculator.vertical_speed_ratio(newDF, driftsDetectionStep)
 
     def saveGraphs(self, frame_id_from: int = 0, frame_id_to: int = 123456):
         df = self.getPandasDF()
