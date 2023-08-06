@@ -89,12 +89,12 @@ class ImageWindow:
     def closeWindow(self):
         cv2.waitKey(1)
         cv2.waitKey(1)
+        cv2.waitKey(1)
+        cv2.waitKey(1)
+        cv2.waitKey(1)
+        cv2.waitKey(1)
+        cv2.waitKey(1)
         cv2.destroyWindow(self.__windowName)
-        cv2.waitKey(1)
-        cv2.waitKey(1)
-        cv2.waitKey(1)
-        cv2.waitKey(1)
-        cv2.waitKey(1)
         # print "trying to close window " + self.__windowName
 
     def showWindowAndWaitForTwoClicks(self, image):

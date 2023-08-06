@@ -20,22 +20,21 @@ class DataframeWrapper:
         return self.__df
 
     @staticmethod
-    def append_to_df(df, row_to_append):
-        # type: (pd.DataFrame, Dict) -> pd.DataFrame
+    def append_to_df(df, row_to_append: Dict) -> pd.DataFrame:
         return pd.concat([df, pd.DataFrame([row_to_append])])
+
+    def append_dataframe(self, df_to_append: Dict) -> pd.DataFrame:
+        self.__df = pd.concat([self.__df, df_to_append], axis='columns')
 
     # example of the output of this to_dict() function
     # [{'crabLocationX': 221, 'crabLocationY': 368, 'frameNumber': 10026},
     # {'crabLocationX': 865, 'crabLocationY': 304, 'frameNumber': 10243},
     # {'crabLocationX': 101, 'crabLocationY': 420, 'frameNumber': 10530}]
-    def to_list(self) -> List:
-        return self.__df.to_dict("records")
-
-    def to_dict(self) -> List:
+    def as_records_list(self) -> List:
         return self.__df.to_dict("records")
 
     def as_records_dict(self, frame_id_column_name: str) -> Dict:
-        list_of_rows = self.to_list()
+        list_of_rows = self.as_records_list()
         records_by_frame_id = dict()
         for row in list_of_rows:
             frame_id_of_row = row[frame_id_column_name]

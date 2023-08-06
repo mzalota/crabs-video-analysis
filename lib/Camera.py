@@ -77,14 +77,18 @@ class Camera:
         return self.__frame_width
 
     def distortion_at_center(self) -> float:
-        point_away_1 = self.get_optical_center().translate_by_xy(0, -20)
-        point_away_2 = self.get_optical_center().translate_by_xy(0, 20)
-        distance_distorted = point_away_1.distanceTo(point_away_2)
+        point = self.get_optical_center()
+        return self.distortion_at_point(point)
 
+    def distortion_at_point(self, point: Point) -> float:
+        if point is None:
+            return 1
+        point_away_1 = point.translate_by_xy(0, -20)
+        point_away_2 = point.translate_by_xy(0, 20)
+        distance_distorted = point_away_1.distanceTo(point_away_2)
         point_away_1_undistorted = self.undistort_point(point_away_1)
         point_away_2_undistorted = self.undistort_point(point_away_2)
         distance_non_distorted = point_away_1_undistorted.distanceTo(point_away_2_undistorted)
-
         distortion_coeff = distance_non_distorted / distance_distorted
         return distortion_coeff
 

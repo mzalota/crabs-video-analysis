@@ -1,9 +1,14 @@
+import math
+from typing import Dict
+
 import numpy
+import numpy as np
 import pandas as pd
 
 # import statistics as statistics
 from lib.Camera import Camera
 from lib.FolderStructure import FolderStructure
+from lib.common import Point
 from lib.data.GraphPlotter import GraphPlotter
 from lib.data.PandasWrapper import PandasWrapper
 from lib.data.RedDotsData import RedDotsData
@@ -123,16 +128,21 @@ class DriftRawData(PandasWrapper):
     #TODO: Refactor this function into a separate class out of DriftRawData
     def _compensate_for_zoom(self, raw_drifts_df, zoom_factor: pd.DataFrame) -> pd.DataFrame:
 
-
         raw_drifts_df = pd.merge(raw_drifts_df, zoom_factor, on='frameNumber', how='left', suffixes=('_draft', '_reddot'))
 
         raw_drifts_df = self.__remove_values_in_failed_records(raw_drifts_df)
 
         factor = raw_drifts_df["scaling_factor"]  # scaling_factor scaling_factor_not_smooth
+        yColumns_raw = list()
+        xColumns_raw = list()
         yColumns_new = list()
         xColumns_new = list()
         for feature_matcher_idx in range(0, 9):
             num = str(feature_matcher_idx)
+
+            yColumns_raw.append("fm_" + num + "_drift_y")
+            xColumns_raw.append("fm_" + num + "_drift_x")
+
             drift_y_dezoomed = self.__drift_y_dezoomed(raw_drifts_df, num, factor)
             column_name_y_new = ("fm_" + num + "_drift_y_new")
             yColumns_new.append(column_name_y_new)
@@ -153,10 +163,72 @@ class DriftRawData(PandasWrapper):
         raw_drifts_df = dframe.pandas_df()
         raw_drifts_df = raw_drifts_df.interpolate(limit_direction='both')
 
+
+        all_x_vals = DataframeWrapper(raw_drifts_df[xColumns_raw]).as_records_list()
+        variance_list = [self._for_variance(k) for k in all_x_vals]
+        frame_b = pd.DataFrame(variance_list, columns=["variance_x_raw"])
+
+        combined = pd.concat([raw_drifts_df, frame_b], axis='columns')
+
+        DataframeWrapper(combined).save_file_csv("c:/tmp/raw_drifts_df2.csv")
+
+        # ---
+        self.__save_graphs_variance(raw_drifts_df[xColumns_raw], 'variance_x_raw')
+        self.__save_graphs_variance(raw_drifts_df[yColumns_raw], 'variance_y_raw')
+        self.__save_graphs_variance(raw_drifts_df[xColumns_new], 'variance_x_new')
+        self.__save_graphs_variance(raw_drifts_df[yColumns_new], 'variance_y_new')
+
+        #---
+
         raw_drifts_df['average_y_new'] = raw_drifts_df[yColumns_new].mean(axis=1)
         raw_drifts_df['average_x_new'] = raw_drifts_df[xColumns_new].mean(axis=1)
 
+        camera = Camera.create()
+        distortion_coeff = camera.distortion_at_center()
+        raw_drifts_df["average_x_new"] = raw_drifts_df["average_x_new"] / distortion_coeff
+        raw_drifts_df["average_y_new"] = raw_drifts_df["average_y_new"] / distortion_coeff
+
         return raw_drifts_df
+
+    def __save_graphs_variance(self, columns, variance_column_name):
+
+        all_x_vals = DataframeWrapper(columns).as_records_list()
+        variance_list = [self._for_variance(k) for k in all_x_vals]
+        frame_b = pd.DataFrame(variance_list, columns=[variance_column_name])
+        print(variance_column_name+"_variance: ", frame_b.var())
+        print(variance_column_name+"_variance2: ", np.var(variance_list))
+        print(variance_column_name+"_variance_avg: ", sum(variance_list) / len(variance_list) )
+
+        frame_b = frame_b.reset_index()
+        DataframeWrapper(frame_b).df_print_head(9)
+
+
+        filepath_prefix = self.__folderStruct.getSubDirpath() + "graph_debug_"
+        graph_title = variance_column_name
+        graph_axis_x_column = 'index'
+        df_to_plot = frame_b.loc[(frame_b[graph_axis_x_column] > 100) & (frame_b[graph_axis_x_column] < 6000)]
+        graphPlotter = GraphPlotter(df_to_plot)
+        filename = filepath_prefix + variance_column_name + ".png"
+
+        graphPlotter.saveGraphToFile(["index"], [variance_column_name], graph_title, filename)
+
+    def _for_variance(self, dict_of_vals: Dict):
+        values = list(dict_of_vals.values())
+        return np.var(values)
+
+    def __undistort_coeff(self, num, raw_drifts_df):
+        center_y = self.__fm_center_y(raw_drifts_df, num)
+        center_x = self.__fm_center_x(raw_drifts_df, num)
+
+        combined = pd.concat([center_x, center_y], axis='columns')
+        new_list = DataframeWrapper(combined).as_records_list()
+        center_point = [self._point_from_x_y_coord(k) for k in new_list]
+
+        camera = Camera.create()
+        distortion_coeff = [camera.distortion_at_point(k) for k in center_point]
+
+        frame_a = pd.DataFrame(distortion_coeff, columns=['undistort_coeff'])
+        return DataframeWrapper(frame_a)
 
     def __remove_values_in_failed_records(self, df):
         for feature_matcher_idx in range(0, 9):
@@ -164,8 +236,63 @@ class DriftRawData(PandasWrapper):
             column_name_y_drift_raw = "fm_" + num + "_drift_y"
             column_name_x_drift_raw = "fm_" + num + "_drift_x"
             df.loc[df['fm_' + num + '_result'] == "FAILED", [column_name_y_drift_raw, column_name_x_drift_raw]] = numpy.nan
+
+            df.loc[df[column_name_x_drift_raw] < -200, [column_name_x_drift_raw, column_name_y_drift_raw]] = numpy.nan
+            df.loc[df[column_name_x_drift_raw] > 200, [column_name_x_drift_raw, column_name_y_drift_raw]] = numpy.nan
+
+            df.loc[df[column_name_y_drift_raw] < -200, [column_name_x_drift_raw, column_name_y_drift_raw]] = numpy.nan
+            df.loc[df[column_name_y_drift_raw] > 200, [column_name_x_drift_raw, column_name_y_drift_raw]] = numpy.nan
+
+            without_outliers_y = DataframeWrapper(df)
+            without_outliers_y.remove_outliers_quantile(column_name_y_drift_raw)
+            df[column_name_y_drift_raw] = without_outliers_y.pandas_df()[column_name_y_drift_raw]
+
+            without_outliers_x = DataframeWrapper(df)
+            without_outliers_x.remove_outliers_quantile(column_name_x_drift_raw)
+            df[column_name_x_drift_raw] = without_outliers_x.pandas_df()[column_name_x_drift_raw]
+
+            df = df.interpolate(limit_direction='both')
+
+
         return df
 
+    def _point_from_x_y_coord(self, val: Dict) -> Point:
+        x_coord = val[0]
+        y_coord = val[1]
+        if math.isnan(x_coord):
+            return None
+        if math.isnan(y_coord):
+            return None
+
+        return Point(x_coord, y_coord)
+
+    def _undistort_coeff_for_point(self, point: Point) ->float:
+        camera = Camera.create()
+        return camera.distortion_at_point(point)
+
+    def _undistort_coeff_for_point(self, val: Dict):
+        x_coord = val[0]
+        y_coord = val[1]
+        if math.isnan(x_coord):
+            return 1
+        if math.isnan(y_coord):
+            return 1
+
+        point = Point(x_coord, y_coord)
+        camera = Camera.create()
+        return camera.distortion_at_point(point)
+
+    def __fm_center_y(self, df: pd.DataFrame, num: str) -> pd.DataFrame:
+        y_coord_top = df[("fm_" + str(num) + "_top_y")]
+        y_coord_bottom = df[("fm_" + str(num) + "_bottom_y")]
+        y_coord_center = y_coord_top + (y_coord_bottom - y_coord_top) / 2
+        return y_coord_center
+
+    def __fm_center_x(self, df: pd.DataFrame, num: str) -> pd.DataFrame:
+        x_coord_top = df[("fm_" + str(num) + "_top_x")]
+        x_coord_bottom = df[("fm_" + str(num) + "_bottom_x")]
+        x_coord_center = x_coord_top + (x_coord_bottom - x_coord_top) / 2
+        return x_coord_center
 
 
     def __drift_y_dezoomed(self, df: pd.DataFrame, num: str, zoom_factor: pd.DataFrame)-> pd.DataFrame:
@@ -174,36 +301,24 @@ class DriftRawData(PandasWrapper):
         camera = Camera.create()
         frame_center_y_coord = camera.frame_height() / 2
 
-        drift_y_due_to_zoom = (center_y - frame_center_y_coord) * zoom_factor
+        wrapper = self.__undistort_coeff(num, df)
+
+        drift_y_due_to_zoom = (center_y - frame_center_y_coord) * zoom_factor * wrapper.pandas_df()["undistort_coeff"]
         drift_y_dezoomed = df[column_name_y_raw] + drift_y_due_to_zoom
 
         return drift_y_dezoomed
 
-    def __fm_center_y(self, df: pd.DataFrame, num: str) -> pd.DataFrame:
-        y_coord_top = df[("fm_" + str(num) + "_top_y")]
-        y_coord_bottom = df[("fm_" + str(num) + "_bottom_y")]
-        y_coord_center = y_coord_top + (y_coord_bottom - y_coord_top) / 2
-        return y_coord_center
-
-
-    #TODO: Refactor - Move this function to some new dedicated class
     def __drift_x_dezoomed(self, df: pd.DataFrame, num: str, zoom_factor: pd.DataFrame) -> pd.DataFrame:
         center_x = self.__fm_center_x(df, num)
         column_name_x_raw = "fm_" + num + "_drift_x"
         camera = Camera.create()
         frame_center_x_coord = camera.frame_width() / 2
 
-        drift_x_due_to_zoom = (center_x - frame_center_x_coord) * zoom_factor
+        wrapper = self.__undistort_coeff(num, df)
+
+        drift_x_due_to_zoom = (center_x - frame_center_x_coord) * zoom_factor* wrapper.pandas_df()["undistort_coeff"]
         drift_x_dezoomed = df[column_name_x_raw] + drift_x_due_to_zoom
-
         return drift_x_dezoomed
-
-
-    def __fm_center_x(self, df: pd.DataFrame, num: str) -> pd.DataFrame:
-        x_coord_top = df[("fm_" + str(num) + "_top_x")]
-        x_coord_bottom = df[("fm_" + str(num) + "_bottom_x")]
-        x_coord_center = x_coord_top + (x_coord_bottom - x_coord_top) / 2
-        return x_coord_center
 
     def interpolate(self, manualDrifts: DriftManualData, redDotsData: RedDotsData, driftsDetectionStep: int) -> pd.DataFrame:
         raw_drifts_df = self._replaceInvalidValuesWithNaN(self.__df, driftsDetectionStep)
@@ -238,6 +353,7 @@ class DriftRawData(PandasWrapper):
         # since drifts were created using undistorted image, we need to increase drifts for raw/distored images
         # camera = Camera.create()
         # distortion_coeff = camera.distortion_at_center()
+        # print ("distortion_coeff is ",distortion_coeff)
         # df["driftX"] = df["driftX"] / distortion_coeff
         # df["driftY"] = df["driftY"] / distortion_coeff
 

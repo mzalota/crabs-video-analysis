@@ -169,7 +169,7 @@ class RedDotsData(PandasWrapper):
         if self.__df_as_dict is not None:
             return
 
-        list_of_rows = DataframeWrapper(self.getPandasDF()).to_list()
+        list_of_rows = DataframeWrapper(self.getPandasDF()).as_records_list()
         records_by_frame_id = dict()
         for row in list_of_rows:
             frame_id_of_row = row[self.COLNAME_frameNumber]
