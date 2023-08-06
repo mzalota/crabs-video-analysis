@@ -163,14 +163,6 @@ class DriftRawData(PandasWrapper):
         raw_drifts_df = dframe.pandas_df()
         raw_drifts_df = raw_drifts_df.interpolate(limit_direction='both')
 
-        # all_x_vals = DataframeWrapper(raw_drifts_df[xColumns_raw]).as_records_list()
-        # variance_list = [self._for_variance(k) for k in all_x_vals]
-        # frame_b = DataframeWrapper.create_from_list(variance_list, "variance_x_raw")
-        # raw_drifts = DataframeWrapper(raw_drifts_df)
-        # raw_drifts.append_dataframe(frame_b)
-        # combined = raw_drifts.pandas_df()
-        # DataframeWrapper(combined).save_file_csv("c:/tmp/raw_drifts_df2.csv")
-
         # ---
         self.__save_graphs_variance(raw_drifts_df[xColumns_raw], 'variance_x_raw')
         self.__save_graphs_variance(raw_drifts_df[xColumns_new], 'variance_x_new')
@@ -219,10 +211,18 @@ class DriftRawData(PandasWrapper):
     def __undistort_coeff_column(self, center_point: List[Point]) -> DataframeWrapper:
         camera = Camera.create()
         distortion_coeff = [camera.distortion_at_point(k) for k in center_point]
-        frame_a = pd.DataFrame(distortion_coeff, columns=['undistort_coeff'])
-        return DataframeWrapper(frame_a)
+        return distortion_coeff
+        # frame_a = pd.DataFrame(distortion_coeff, columns=['undistort_coeff'])
+        # return DataframeWrapper(frame_a)
 
-    def _center_points_list(self, raw_drifts_df, num):
+    def __undistorted_points_column(self, point: List[Point]) -> DataframeWrapper:
+        camera = Camera.create()
+        undistorted_point = [camera.undistort_point(k) for k in point]
+        return undistorted_point
+        # frame_a = pd.DataFrame(undistorted_point, columns=['undistored_point'])
+        # return DataframeWrapper(frame_a)
+
+    def _center_points_list(self, raw_drifts_df, num) -> List[Point]:
         center_y = self.__fm_center_y(raw_drifts_df, num)
         center_x = self.__fm_center_x(raw_drifts_df, num)
         combined = pd.concat([center_x, center_y], axis='columns')
@@ -296,35 +296,51 @@ class DriftRawData(PandasWrapper):
 
 
     def __drift_y_dezoomed(self, df: pd.DataFrame, num: str, zoom_factor: pd.DataFrame)-> pd.DataFrame:
-        center_y = self.__fm_center_y(df, num)
+        undistored_drift_y = self._undistored_drift_y(df, num)
+        drift_y_due_to_zoom = self._drift_compnent_due_to_zoom_y(df, num, zoom_factor)
+        return undistored_drift_y + drift_y_due_to_zoom
+
+    def _drift_compnent_due_to_zoom_y(self, df, num, zoom_factor):
+        center_point_undistorted = self._center_points_undistorted_list(df, num)
+        center_y_undistorted = pd.Series([k.y for k in center_point_undistorted])
+        distance_from_center_along_y = center_y_undistorted - Camera.create().center_point().y
+        drift_y_due_to_zoom = distance_from_center_along_y * zoom_factor
+        return drift_y_due_to_zoom
+
+    def _undistored_drift_y(self, df, num):
         column_name_y_raw = "fm_" + num + "_drift_y"
-        camera = Camera.create()
-        frame_center_y_coord = camera.frame_height() / 2
-
         center_point = self._center_points_list(df, num)
-        undistort_coeff = self.__undistort_coeff_column(center_point).pandas_df()
-        undistored_drift_y = df[column_name_y_raw] * undistort_coeff["undistort_coeff"]
-
-        drift_y_due_to_zoom = (center_y - frame_center_y_coord) * zoom_factor
-        drift_y_dezoomed = undistored_drift_y + drift_y_due_to_zoom
-
-        return drift_y_dezoomed
+        undistort_coeff = pd.Series(self.__undistort_coeff_column(center_point))
+        undistored_drift_y = df[column_name_y_raw] * undistort_coeff
+        return undistored_drift_y
 
     def __drift_x_dezoomed(self, df: pd.DataFrame, num: str, zoom_factor: pd.DataFrame) -> pd.DataFrame:
-        center_x = self.__fm_center_x(df, num)
+        undistored_drift_x = self._undistored_drift_x(df, num)
+        drift_x_due_to_zoom = self._drift_compnent_due_to_zoom_x(df, num, zoom_factor)
+        return undistored_drift_x + drift_x_due_to_zoom
+
+    def _drift_compnent_due_to_zoom_x(self, df, num, zoom_factor):
+        center_point_undistorted = self._center_points_undistorted_list(df, num)
+        center_x_undistorted = pd.Series([k.x for k in center_point_undistorted])
+        distance_from_center_along_x = center_x_undistorted - Camera.create().center_point().x
+        drift_x_due_to_zoom = distance_from_center_along_x * zoom_factor
+        return drift_x_due_to_zoom
+
+    def _undistored_drift_x(self, df, num):
         column_name_x_raw = "fm_" + num + "_drift_x"
-        camera = Camera.create()
-        frame_center_x_coord = camera.frame_width() / 2
-
         center_point = self._center_points_list(df, num)
-        # wrapper = self.__undistort_coeff_column(center_point)
-        undistort_coeff = self.__undistort_coeff_column(center_point).pandas_df()
-        undistored_drift_x = df[column_name_x_raw] * undistort_coeff["undistort_coeff"]
+        undistort_coeff = pd.Series(self.__undistort_coeff_column(center_point))
+        undistored_drift_x = df[column_name_x_raw] * undistort_coeff
+        return undistored_drift_x
 
-        drift_x_due_to_zoom = (center_x - frame_center_x_coord) * zoom_factor #'* wrapper.pandas_df()["undistort_coeff"]
-        drift_x_dezoomed = undistored_drift_x + drift_x_due_to_zoom
-
-        return drift_x_dezoomed
+    def _center_points_undistorted_list(self, df, num):
+        point = self._center_points_list(df, num)
+        camera = Camera.create()
+        undistorted_points = [camera.undistort_point(k) for k in point]
+        # frame_a = pd.DataFrame(undistorted_points, columns=['undistored_point'])
+        # return DataframeWrapper(frame_a)
+        #return undistorted_points
+        return pd.Series(undistorted_points)
 
     def interpolate(self, manualDrifts: DriftManualData, redDotsData: RedDotsData, driftsDetectionStep: int) -> pd.DataFrame:
         raw_drifts_df = self._replaceInvalidValuesWithNaN(self.__df, driftsDetectionStep)
@@ -337,7 +353,6 @@ class DriftRawData(PandasWrapper):
         if self.__generate_debug_graphs:
             self.__save_graphs_drifts_zoom_compensated(df_compensated, 2000, 2500)
 
-        # df = self.__df.copy()
         df = raw_drifts_df.copy()
         df = pd.merge(df, df_compensated[['average_y_new', "average_x_new", "frameNumber"]], on='frameNumber', how='left', suffixes=('_draft', '_reddot'))
         df["driftY"] = df['average_y_new']

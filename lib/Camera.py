@@ -69,7 +69,8 @@ class Camera:
     def initialize_4k() -> None:
         Camera.__instance = Camera(Frame._FRAME_WIDTH_HIGH_RES, Frame._FRAME_HEIGHT_HIGH_RES)
 
-
+    def center_point(self) -> Point:
+        return Point(int(self.frame_width() / 2), int(self.frame_height()/2))
     def frame_height(self) -> int:
         return self.__frame_height
 
@@ -83,8 +84,8 @@ class Camera:
     def distortion_at_point(self, point: Point) -> float:
         if point is None:
             return 1
-        point_away_1 = point.translate_by_xy(0, -20)
-        point_away_2 = point.translate_by_xy(0, 20)
+        point_away_1 = point.translate_by_xy(-10, -10)
+        point_away_2 = point.translate_by_xy(10, 10)
         distance_distorted = point_away_1.distanceTo(point_away_2)
         point_away_1_undistorted = self.undistort_point(point_away_1)
         point_away_2_undistorted = self.undistort_point(point_away_2)

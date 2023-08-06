@@ -17,7 +17,6 @@ class VerticalSpeed:
 
         if Configurations(self.__folderStruct).is_debug():
             result = self.__calculate_scaling_factor(df["distance"], driftsDetectionStep)
-            # result = self.__calculate_scaling_factor(df["distance_px_undistort"], driftsDetectionStep)
             df["scaling_factor_not_smooth"] = result
             self._save_graph_zoom_factor(df, ["scaling_factor", "scaling_factor_not_smooth"], 3000, 4000)
 
