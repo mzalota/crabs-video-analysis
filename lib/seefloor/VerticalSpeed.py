@@ -34,21 +34,21 @@ class VerticalSpeed:
 
     def __smooth_distance_value(self, newDF, distance_column_name):
         distance_column = newDF[distance_column_name]
-        shifted1 = FourierSmoothing().smooth_curve(distance_column, "distance_raw", 1)
-        shifted2 = FourierSmoothing().smooth_curve(distance_column, "distance_raw", 0.4)
-        shifted3 = FourierSmoothing().smooth_curve(distance_column, "distance_raw", 0.7)
+        shifted_0_7 = FourierSmoothing().smooth_curve(distance_column, "distance_0_7", 0.7)
+        shifted_0_4 = FourierSmoothing().smooth_curve(distance_column, "distance_0_4", 0.4)
+        shifted_1_0 = FourierSmoothing().smooth_curve(distance_column, "distance_1_0", 1)
 
-        newDF['distance_shift1_0'] = shifted1
-        newDF['distance_shift0_4'] = shifted2
-        newDF['distance_shift0_7'] = shifted3
+        newDF['distance_shift1_0'] = shifted_1_0
+        newDF['distance_shift0_7'] = shifted_0_7
+        newDF['distance_shift0_4'] = shifted_0_4
 
         if Configurations(self.__folderStruct).is_debug():
             columns_y = [distance_column_name, "distance_shift1_0", "distance_shift0_7", "distance_shift0_4"]
-            self.__save_graphs_smooth_distance(newDF, distance_column_name, columns_y, 4000, 5000)
+            self.__save_graphs_smooth_distance(newDF, distance_column_name, columns_y, 2000, 2500)
 
         #TODO: Access which smoothing setting (which value of lowband pass: 1.0, 0.7 or 0.4 or other) is best by looking at variance of fm_N_drift_x_new
 
-        return shifted2
+        return shifted_1_0
 
     def __save_graphs_smooth_distance(self, df, distance_column_name, columns_y, frame_id_from: int = 0, fream_id_to: int = 123456):
         df_to_plot = df.loc[(df['frameNumber'] > frame_id_from) & (df['frameNumber'] < fream_id_to)]

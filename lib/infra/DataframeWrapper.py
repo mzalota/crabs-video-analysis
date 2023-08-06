@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import List, Dict
 
 import numpy
@@ -8,6 +9,10 @@ class DataframeWrapper:
     def __init__(self, df):
         # type: (pd.DataFrame) -> DataframeWrapper
         self.__df = df
+
+    @staticmethod
+    def create_from_list(list_of_values: List, column_name) -> DataframeWrapper:
+        return DataframeWrapper(pd.DataFrame(list_of_values, columns=[column_name]))
 
     def save_file_csv(self, filepath):
         # type: (str) -> None
@@ -23,8 +28,8 @@ class DataframeWrapper:
     def append_to_df(df, row_to_append: Dict) -> pd.DataFrame:
         return pd.concat([df, pd.DataFrame([row_to_append])])
 
-    def append_dataframe(self, df_to_append: Dict) -> pd.DataFrame:
-        self.__df = pd.concat([self.__df, df_to_append], axis='columns')
+    def append_dataframe(self, df_to_append: DataframeWrapper) -> pd.DataFrame:
+        self.__df = pd.concat([self.__df, df_to_append.pandas_df()], axis='columns')
 
     # example of the output of this to_dict() function
     # [{'crabLocationX': 221, 'crabLocationY': 368, 'frameNumber': 10026},

@@ -21,15 +21,15 @@ class FourierSmoothing:
         dataset['distance_streight'] = dist_freq1.reshape(-1)
         shifted = dataset['distance_streight'].shift(-phase_shift)
 
-        self._draw_fft_lowpass(orig_np, column_name, 0.1)
+        self._draw_fft_lowpass(orig_np, shifted.to_numpy(), column_name) #, cutoff_freq)
         # self.save_plot_numpy_as_png("c:/tmp/maxim_corr.png", corr.corr_np())
         print("offset_of_peak_from_center", phase_shift)
         #dataset['distance_streight'] = dataset['distance_streight'].astype(int)
 
         return shifted
 
-    def _draw_fft_lowpass(self, orig_np, column_name, cutoff_freq=0.1):
-        lowpass_np = self.bandpass_filter(orig_np, 1, cutoff_freq, 25)
+    def _draw_fft_lowpass(self, orig_np, lowpass_np, column_name): #, cutoff_freq=0.1):
+        # lowpass_np = self.bandpass_filter(orig_np, 1, cutoff_freq, 25)
         # print(column_name, orig_np)
         png_filepath = "c:/tmp/maximFFT_" + column_name + ".png"
         self._plotFourierGraph(orig_np, column_name, png_filepath)
