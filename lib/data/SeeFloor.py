@@ -1,5 +1,5 @@
 from lib.data.BadFramesData import BadFramesData
-from lib.data.DriftData import DriftData
+from lib.data.DriftInterpolatedData import DriftInterpolatedData
 from lib.Frame import Frame
 from lib.data.PandasWrapper import PandasWrapper
 from lib.data.RedDotsData import RedDotsData
@@ -16,7 +16,7 @@ class SeeFloor(SeeFloorNoBadBlocks):
     __COLNAME_frameNumber = 'frameNumber'
 
     def __init__(self, driftsData, badFramesData, redDotsData, folderStruct = None,  df = None):
-        # type: (DriftData, BadFramesData, RedDotsData, FolderStructure, pd.DataFrame) -> SeeFloor
+        # type: (DriftInterpolatedData, BadFramesData, RedDotsData, FolderStructure, pd.DataFrame) -> SeeFloor
 
         SeeFloorNoBadBlocks.__init__(self, driftsData, redDotsData, folderStruct,  df)
         self.__badFramesData = badFramesData
@@ -25,7 +25,7 @@ class SeeFloor(SeeFloorNoBadBlocks):
     def createFromFolderStruct(folderStruct):
         # type: (FolderStructure) -> SeeFloor
 
-        driftsData = DriftData.createFromFolderStruct(folderStruct)
+        driftsData = DriftInterpolatedData.createFromFolderStruct(folderStruct)
         badFramesData = BadFramesData.createFromFolderStruct(folderStruct)
         redDotsData = RedDotsData.createFromFolderStruct(folderStruct)
 
@@ -52,6 +52,7 @@ class SeeFloor(SeeFloorNoBadBlocks):
         minFrameID = self._min_frame_id()
         minFrameID = self.__badFramesData.firstGoodFrameAfter(minFrameID)
         return minFrameID
+
 
     def _jump_to_previous_seefloor_slice(self, frame_id):
         # type: (int) -> int

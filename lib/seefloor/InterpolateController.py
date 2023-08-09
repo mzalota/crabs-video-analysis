@@ -1,6 +1,6 @@
 from lib.FolderStructure import FolderStructure
 from lib.data.CrabsData import CrabsData
-from lib.data.DriftData import DriftData
+from lib.data.DriftInterpolatedData import DriftInterpolatedData
 from lib.drifts.DriftManualData import DriftManualData
 from lib.drifts.DriftRawData import DriftRawData
 from lib.data.RedDotsData import RedDotsData
@@ -33,13 +33,13 @@ class InterpolateController:
         print ("regenerating/interpolating Drafts")
         manualDrifts = DriftManualData.createFromFile(self.__folderStruct)
 
-        df = rawDrifts.interpolate(manualDrifts, rdd, driftsStepSize)
+        drifts_interpolated_df = rawDrifts.interpolate(manualDrifts, rdd, driftsStepSize)
 
-        drifts = DriftData.createFromFolderStruct(self.__folderStruct)
-        drifts.setDF(df)
+        drifts = DriftInterpolatedData.createFromFolderStruct(self.__folderStruct)
+        drifts.setDF(drifts_interpolated_df)
         drifts.saveToFile(self.__folderStruct.getDriftsFilepath())
 
-        print ("regenerating SeeFloor")
+        print("regenerating SeeFloor")
         sf = SeeFloor.createFromFolderStruct(self.__folderStruct)
         sf.saveToFile()
 
@@ -49,12 +49,12 @@ class InterpolateController:
         crabs_on_seefloor_df.save_file_csv(self.__folderStruct.getCrabsOnSeefloorFilepath())
 
     def regenerateGraphs(self):
-        print ("drawing graphs for RedDots")
+        print("drawing graphs for RedDots")
         rdd = RedDotsData.createFromFolderStruct(self.__folderStruct)
-        rdd.saveGraphOfAngle()
-        rdd.saveGraphOfDistance()
+        # rdd.saveGraphs(13000, 14000)
+        rdd.saveGraphs(2000,2500)
 
-        print ("drawing graphs for SeeFloor")
+        print("drawing graphs for SeeFloor")
         sf = SeeFloor.createFromFolderStruct(self.__folderStruct)
         sf.saveGraphSeefloorY()
         sf.saveGraphSeefloorX()

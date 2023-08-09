@@ -1,4 +1,6 @@
+from lib.Camera import Camera
 from lib.Frame import Frame
+from lib.common import Point
 from lib.drifts.SeeFloorSection import SeeFloorSection
 
 
@@ -14,7 +16,6 @@ class FeatureMatcher:
         return self.__startingBox
 
     def seefloor_section(self):
-        #@rtype: SeeFloorSection
         return self.__seeFloorSection
 
     def detectionWasReset(self):
@@ -43,20 +44,14 @@ class FeatureMatcher:
         else:
             return section
 
-    def __is_feature_too_close_to_edge(self, top_left_of_feature, is_high_resolution):
-        # type: (Point, bool) -> str
+    def __is_feature_too_close_to_edge(self, top_left_of_feature: Point, is_high_resolution: bool) -> str:
 
-        if is_high_resolution:
-            hi_res_height_diff = 968
-            hi_res_width_diff = 1152
-        else:
-            hi_res_height_diff = 0
-            hi_res_width_diff = 0
+        camera = Camera.create()
 
-        too_close_to_image_top_edge = 20
-        too_close_to_image_bottom_edge = 980+hi_res_height_diff
-        too_close_to_image_left_edge = 20
-        too_close_to_image_right_edge = 1900+hi_res_width_diff
+        too_close_to_image_top_edge = 100 #20
+        too_close_to_image_bottom_edge = camera.frame_height() - 150 # 980+hi_res_height_diff
+        too_close_to_image_left_edge = 80 #20
+        too_close_to_image_right_edge = camera.frame_width() - 80 # 1900+hi_res_width_diff
 
         if top_left_of_feature.y <= too_close_to_image_top_edge:
             return "TopEdge"

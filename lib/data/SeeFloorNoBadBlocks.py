@@ -1,20 +1,20 @@
 import numpy
+import pandas as pd
 
 from lib.Camera import Camera
 from lib.FrameId import FrameId
 from lib.FramePhysics import FramePhysics
 from lib.VideoStream import VideoStream
 from lib.data.BadFramesData import BadFramesData
-from lib.data.DriftData import DriftData
+from lib.data.DriftInterpolatedData import DriftInterpolatedData
 from lib.data.GraphPlotter import GraphPlotter
 from lib.data.PandasWrapper import PandasWrapper
 from lib.data.RedDotsData import RedDotsData
 from lib.FolderStructure import FolderStructure
-import pandas as pd
 
 from lib.common import Vector, Point
 from lib.data.SeeFloorSlicer import SeeFloorSlicer
-from lib.infra.MyTimer import MyTimer
+from lib.infra.DataframeWrapper import DataframeWrapper
 
 
 class SeeFloorNoBadBlocks(SeeFloorSlicer):
@@ -23,7 +23,7 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
     __COLNAME_frameNumber = 'frameNumber'
 
     def __init__(self, driftsData, redDotsData, folderStruct = None,  df = None):
-        # type: (DriftData, BadFramesData, RedDotsData, FolderStructure) -> SeeFloorNoBadBlocks
+        # type: (DriftInterpolatedData, BadFramesData, RedDotsData, FolderStructure) -> SeeFloorNoBadBlocks
         self.__mm_per_pixel_dict = None
         self.__drift_x_dict = None
         self.__drift_y_dict = None
@@ -31,13 +31,14 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
         self.__redDotsData = redDotsData
         self.__df = df
         self._folderStruct = folderStruct
+        self.__df_as_dict = None
         #self.__crabsData = CrabsData(self.__folderStruct)
 
     @staticmethod
     def createFromFolderStruct(folderStruct):
         # type: (FolderStructure) -> SeeFloorNoBadBlocks
 
-        driftsData = DriftData.createFromFolderStruct(folderStruct)
+        driftsData = DriftInterpolatedData.createFromFolderStruct(folderStruct)
         redDotsData = RedDotsData.createFromFolderStruct(folderStruct)
 
         filepath = folderStruct.getSeefloorFilepath()
@@ -50,7 +51,7 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
         return newObj
 
     def getDriftData(self):
-        # type: () -> DriftData
+        # type: () -> DriftInterpolatedData
         return self.__driftData
 
     def getRedDotsData(self) -> RedDotsData:
@@ -73,6 +74,33 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
             return self._max_frame_id()
 
         return frame_id
+
+
+    # def _jump_to_previous_seefloor_slice(self, frame_id):
+    #     # type: (int) -> int
+    #     if frame_id < self._min_frame_id():
+    #         return self._min_frame_id()
+    #
+    #     if frame_id > self._max_frame_id():
+    #         return self._max_frame_id()
+    #
+    #     # we are in a good segment and not in its first frame.
+    #     pixels_to_jump = Camera.create().frame_height() * (-1)
+    #     new_frame_id = int(self._getNextFrame(pixels_to_jump, frame_id))
+    #     return new_frame_id
+
+    # def _jump_to_next_seefloor_slice(self, frame_id, fraction=1):
+    #     # type: (int) -> int
+    #     if frame_id < self._min_frame_id():
+    #         return self._min_frame_id()
+    #
+    #     if frame_id > self._max_frame_id():
+    #         return self._max_frame_id()
+    #
+    #     # we are in a good segment and not in its last frame.
+    #     pixels_to_jump = Camera.create().frame_height() * fraction
+    #     new_frame_id = int(self._getNextFrame(pixels_to_jump, frame_id))
+    #     return new_frame_id
 
     def _min_frame_id(self):
         return self.getDriftData().minFrameID()
@@ -149,11 +177,6 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
 
         if fromFrameID == toFrameID:
             return Vector(0, 0)
-
-        # driftX = self.getXDriftPixels(fromFrameID, toFrameID)
-        # driftY = self.getYDriftPixels(fromFrameID, toFrameID)
-        # result = Vector(driftX, driftY)
-        # return result
 
         result_new = Vector(self.get_x_drift_px(fromFrameID, toFrameID), self.get_y_drift_px(fromFrameID, toFrameID))
         #print("__driftBetweenFramesPixels orig "+str(result), " new: ", str(result_new))
@@ -243,12 +266,12 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
         if self.__mm_per_pixel_dict is None:
             # Lazy loading of cache
             # key is frame_id, value is mm_per_pixel
+            # self.__mm_per_pixel_dict = DataframeWrapper(self.__getPandasDF()).as_records_dict(self.__COLNAME_frameNumber)
             self.__mm_per_pixel_dict = self.__df.set_index(self.__COLNAME_frameNumber)["mm_per_pixel"].to_dict()
 
         return self.__mm_per_pixel_dict[frame_id]
 
     def mm_per_pixel(self, frame_id):
-        # return self.__getValueFromDF("mm_per_pixel", frame_id)
         return self.__mm_per_pixel_fast(frame_id)
 
     def getXDriftMM(self, fromFrameID, toFrameID):
@@ -267,14 +290,12 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
         # type: (int) -> float
         mmPerPixel = self.mm_per_pixel(frame_id)
         height_mm = Camera.create().frame_height() * float(mmPerPixel)
-        # height_mm = Frame.FRAME_HEIGHT * float(mmPerPixel)
         return height_mm
 
     def widthMM(self,frame_id):
         # type: (int) -> float
         mmPerPixel = self.mm_per_pixel(frame_id)
         width_mm = Camera.create().frame_width() * float(mmPerPixel)
-        # width_mm = Frame.FRAME_WIDTH * float(mmPerPixel)
         return width_mm
 
     def getYCoordMMOrigin(self, frame_id):
@@ -288,6 +309,10 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
         return float(retValue)
 
     def __getValueFromDF(self, columnName, frame_id):
+        self.__initialize_cache()
+        return self.__df_as_dict[frame_id][columnName]
+
+    def __getValueFromDF_usingDF(self, columnName, frame_id):
         df = self.__getPandasDF()
         if df is None:
             return 0
@@ -305,8 +330,14 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
 
         return vals[0]
 
+    def __initialize_cache(self):
+        if self.__df_as_dict is not None:
+            # cache is already initialized
+            return
+        self.__df_as_dict = DataframeWrapper(self.__getPandasDF()).as_records_dict("frameNumber")
+
     def refreshItself(self):
-        self.__driftData = DriftData.createFromFolderStruct(self._folderStruct)
+        self.__driftData = DriftInterpolatedData.createFromFolderStruct(self._folderStruct)
         self.__redDotsData = RedDotsData.createFromFolderStruct(self._folderStruct)
         self.saveToFile()
 
@@ -314,6 +345,7 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
         filepath = self._folderStruct.getSeefloorFilepath()
         self.__df = self.__interpolate()
         self.__df.to_csv(filepath, sep='\t', index=False)
+        self.__df_as_dict = None #clear out the cache because Pandas Dataframe _df has changed. the Cache will be regenerated when it is ccessed next
 
     def __interpolate(self):
         dfDrifts = self.getDriftData().getDF()
@@ -331,27 +363,34 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
 
         camera = Camera.create()
         dfMerged["bottom_corner_mm"] = camera.frame_height() * dfMerged["mm_per_pixel"] + dfMerged["driftY_sum_mm"]
-        # dfMerged["bottom_corner_mm"] = Frame.FRAME_HEIGHT * dfMerged["mm_per_pixel"] + dfMerged["driftY_sum_mm"]
         dfMerged["seconds"] = dfMerged["frameNumber"]/VideoStream.FRAMES_PER_SECOND
         dfMerged = dfMerged.sort_values(by=['frameNumber'])
         return dfMerged
 
+    def getPrevFrame(self, frame_id):
+        # type: (int) -> int
+        return self.jumpToSeefloorSlice(frame_id, -1)
+
+    def getNextFrame(self, frame_id):
+        # type: (int) -> int
+        return self.jumpToSeefloorSlice(frame_id, 1)
+
     #translates the point stepwise for each frame between orig and target.
     def translatePointCoordinate(self, pointLocation: Point, origFrameID: int, targetFrameID: int) -> Point:
         point_location_new = pointLocation
-        timer = MyTimer("translatePointCoordinate")
+        # timer = MyTimer("start translatePointCoordinate")
         individual_frames = FrameId.sequence_of_frames(origFrameID, targetFrameID)
         for idx in range(1, len(individual_frames)):
             to_frame_id = individual_frames[idx]
             # frame_physics = self.__get_frame_physics(to_frame_id)
             if targetFrameID < origFrameID:
-                frame_physics = self.__get_frame_physics(to_frame_id-1)
+                frame_physics = self.__get_frame_physics(to_frame_id)
                 result = frame_physics.translate_backward(point_location_new)
             else:
                 frame_physics = self.__get_frame_physics(to_frame_id)
                 result = frame_physics.translate_forward(point_location_new)
             point_location_new = result
-        # timer.lap("end "+str(pointLocation)+" loops:"+ str(len(individual_frames))+ ", orig frameId: "+str(origFrameID)+ ", target frameId: "+str(targetFrameID) + " new loc:"+str(point_location_new) )
+        # timer.lap("end translatePointCoordinate "+str(pointLocation)+" loops:"+ str(len(individual_frames))+ ", orig frameId: "+str(origFrameID)+ ", target frameId: "+str(targetFrameID) + " new loc:"+str(point_location_new) )
 
         return Point(int(round(point_location_new.x, 0)), int(round(point_location_new.y, 0)))
 

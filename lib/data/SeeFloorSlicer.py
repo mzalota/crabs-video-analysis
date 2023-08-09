@@ -76,13 +76,6 @@ class SeeFloorSlicer(PandasWrapper):
 
     def _get_next_frame_id(self, start_frame_id: int):
         #examine next frames, until none of the corner pixels visible.
-        frame_width = Camera.create().frame_width()
-        frame_height = Camera.create().frame_height()
-        top_left = Point(1,1)
-        top_right = Point(frame_width-1, 1)
-        bottom_left = Point(1, frame_height-1)
-        bottom_right = Point(frame_width-1, frame_height-1)
-        center = Point(int(frame_width/2), int(frame_height/2))
 
         candidate_frame_id = start_frame_id
         while(True):
@@ -95,66 +88,75 @@ class SeeFloorSlicer(PandasWrapper):
             if candidate_frame_id <= self._min_frame_id():
                 break
 
-            new_top_left = self.translatePointCoordinate(top_left, start_frame_id, candidate_frame_id)
-            # print("new_top_left")
-            new_top_right = self.translatePointCoordinate(top_right, start_frame_id, candidate_frame_id)
-            # print("new_top_right")
-            new_bottom_left = self.translatePointCoordinate(bottom_left, start_frame_id, candidate_frame_id)
-            # print("new_bottom_left")
-            new_bottom_right = self.translatePointCoordinate(bottom_right, start_frame_id, candidate_frame_id)
-            # print("new_bottom_right")
-            new_center = self.translatePointCoordinate(center, start_frame_id, candidate_frame_id)
-            # print("new_center")
-
-            if (self.__point_is_visible(new_top_left)):
-                # print("new_top_left is still visible")
-                continue
-            if self.__point_is_visible(new_top_right):
-                # print("new_top_right is still visible")
-                continue
-            if self.__point_is_visible(new_bottom_left):
-                # print("new_bottom_left is still visible")
-                continue
-            if self.__point_is_visible(new_bottom_right):
-                # print("new_bottom_right is still visible")
-                continue
-            if self.__point_is_visible(new_center):
-                # print("new_center is still visible")
-                continue
-
-            # now check the 4 corners of destination frame
-            new_top_left = self.translatePointCoordinate(top_left, candidate_frame_id, start_frame_id)
-            # print("new_top_left reverse")
-            new_top_right = self.translatePointCoordinate(top_right, candidate_frame_id, start_frame_id)
-            # print("new_top_right reverse")
-            new_bottom_left = self.translatePointCoordinate(bottom_left, candidate_frame_id, start_frame_id)
-            # print("new_bottom_left reverse")
-            new_bottom_right = self.translatePointCoordinate(bottom_right, candidate_frame_id, start_frame_id)
-            # print("new_bottom_right reverse")
-            new_center = self.translatePointCoordinate(center, candidate_frame_id, start_frame_id)
-            # print("new_center reverse")
-
-            if (self.__point_is_visible(new_top_left)):
-                # print("new_top_left reverse is still visible")
-                continue
-            if self.__point_is_visible(new_top_right):
-                # print("new_top_right reverse is still visible")
-                continue
-            if self.__point_is_visible(new_bottom_left):
-                # print("new_bottom_left reverse is still visible")
-                continue
-            if self.__point_is_visible(new_bottom_right):
-                # print("new_bottom_right reverse is still visible")
-                continue
-            if self.__point_is_visible(new_center):
-                # print("new_center reverse is still visible")
-                continue
-
-            #All 4 corner points have disappeared from the screen on frame "candidate_frame_id".
-            #we found our next frame!
-            break
+            if (not self._frames_overlap(start_frame_id, candidate_frame_id)):
+                # we found our next frame!
+                break
 
         return candidate_frame_id
+
+    def _frames_overlap(self, start_frame_id: int, candidate_frame_id: int):
+        frame_width = Camera.create().frame_width()
+        frame_height = Camera.create().frame_height()
+        top_left = Point(1,1)
+        top_right = Point(frame_width-1, 1)
+        bottom_left = Point(1, frame_height-1)
+        bottom_right = Point(frame_width-1, frame_height-1)
+        center = Point(int(frame_width/2), int(frame_height/2))
+
+        new_bottom_left = self.translatePointCoordinate(bottom_left, start_frame_id, candidate_frame_id)
+        if self.__point_is_visible(new_bottom_left):
+            # print("1. new_bottom_left is still visible")
+            return True
+
+        new_center = self.translatePointCoordinate(center, start_frame_id, candidate_frame_id)
+        if self.__point_is_visible(new_center):
+            # print("2. new_center is still visible")
+            return True
+
+        new_top_left = self.translatePointCoordinate(top_left, start_frame_id, candidate_frame_id)
+        if (self.__point_is_visible(new_top_left)):
+            # print("3. new_top_left is still visible")
+            return True
+
+        reverse_new_bottom_right = self.translatePointCoordinate(bottom_right, candidate_frame_id, start_frame_id)
+        if self.__point_is_visible(reverse_new_bottom_right):
+            # print("7. reverse_new_bottom_right reverse is still visible")
+            return True
+
+        new_top_right = self.translatePointCoordinate(top_right, start_frame_id, candidate_frame_id)
+        if self.__point_is_visible(new_top_right):
+            # print("4. new_top_right is still visible")
+            return True
+
+        new_bottom_right = self.translatePointCoordinate(bottom_right, start_frame_id, candidate_frame_id)
+        if self.__point_is_visible(new_bottom_right):
+            # print("5. new_bottom_right is still visible")
+            return True
+
+        # All 4 corner points have disappeared from the screen on frame "candidate_frame_id".
+
+        # now check the 4 corners of destination/candidate frame
+        new_bottom_left = self.translatePointCoordinate(bottom_left, candidate_frame_id, start_frame_id)
+        if self.__point_is_visible(new_bottom_left):
+            # print("6. new_bottom_left reverse is still visible")
+            return True
+
+        new_center = self.translatePointCoordinate(center, candidate_frame_id, start_frame_id)
+        if self.__point_is_visible(new_center):
+            # print("8. new_center reverse is still visible")
+            return True
+
+        new_top_left = self.translatePointCoordinate(top_left, candidate_frame_id, start_frame_id)
+        if (self.__point_is_visible(new_top_left)):
+            # print("9. new_top_left reverse is still visible")
+            return True
+
+        new_top_right = self.translatePointCoordinate(top_right, candidate_frame_id, start_frame_id)
+        if self.__point_is_visible(new_top_right):
+            # print("10. new_top_right reverse is still visible")
+            return True
+
+        return False
 
     def __point_is_visible(self, point):
         frame_width = Camera.create().frame_width()
