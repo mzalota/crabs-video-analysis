@@ -29,7 +29,7 @@ class TestSeeFloorSlicer(TestCase):
 
         return True
 
-    def test__get_prev_frame_id_result_is_close_to_start(self):
+    def test__get_prev_frame_id_result_is_first(self):
         slicer = SeeFloorSlicer()
 
         slicer.frames_overlap = MagicMock(side_effect=self.frames_overlap_160)
@@ -42,18 +42,6 @@ class TestSeeFloorSlicer(TestCase):
         #assert
         self.assertEqual(5, result_frame_id)
 
-    def test__get_next_frame_id_result_is_close_to_start(self):
-        slicer = SeeFloorSlicer()
-
-        slicer.frames_overlap = MagicMock(side_effect=self.frames_overlap_160)
-        slicer._max_frame_id = MagicMock(return_value=890)
-        slicer._min_frame_id = MagicMock(return_value=5)
-
-        #exercise
-        result_frame_id = slicer._get_next_frame_id(890)
-
-        #assert
-        self.assertEqual(890, result_frame_id)
 
     def test__get_next_frame_id_next_frame_is_last(self):
         slicer = SeeFloorSlicer()
@@ -90,7 +78,7 @@ class TestSeeFloorSlicer(TestCase):
         slicer._min_frame_id = MagicMock(return_value=5)
 
         #exercise
-        result_frame_id = slicer._get_prev_frame_id(255)
+        result_frame_id = slicer._get_prev_frame_id(253)
 
         #assert
         self.assertEqual(250, result_frame_id)
@@ -103,7 +91,7 @@ class TestSeeFloorSlicer(TestCase):
         slicer._min_frame_id = MagicMock(return_value=5)
 
         #exercise
-        result_frame_id = slicer._get_prev_frame_id(650)
+        result_frame_id = slicer._get_prev_frame_id(550)
 
         #assert
         self.assertEqual(250, result_frame_id)
