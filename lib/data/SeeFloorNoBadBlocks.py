@@ -62,7 +62,8 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
 
     def minFrameID(self):
         # type: () -> int
-        return self._min_frame_id()
+        return self.__df[self.__COLNAME_frameNumber].min()
+        # return self._min_frame_id()
 
     def _adjust_outofbound_values(self, frame_id):
         # type: (int) -> int
@@ -75,7 +76,8 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
         return frame_id
 
     def _min_frame_id(self):
-        return self.getDriftData().minFrameID()
+        return self.__df[self.__COLNAME_frameNumber].min()
+        # return self.getDriftData().minFrameID()
 
     def _max_frame_id(self):
         return self.getDriftData().maxFrameID()
@@ -244,7 +246,6 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
             # Lazy loading of cache
             # key is frame_id, value is mm_per_pixel
             self.__mm_per_pixel_dict = self.__df.set_index(self.__COLNAME_frameNumber)["mm_per_pixel"].to_dict()
-
         return self.__mm_per_pixel_dict[frame_id]
 
     def mm_per_pixel(self, frame_id):

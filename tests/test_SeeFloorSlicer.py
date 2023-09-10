@@ -24,7 +24,7 @@ class TestSeeFloorSlicer(TestCase):
         if candidate_frame_id >= 660:
             return False
 
-        if candidate_frame_id <= 250:
+        if candidate_frame_id <= 220:
             return False
 
         return True
@@ -78,10 +78,10 @@ class TestSeeFloorSlicer(TestCase):
         slicer._min_frame_id = MagicMock(return_value=5)
 
         #exercise
-        result_frame_id = slicer._get_prev_frame_id(253)
+        result_frame_id = slicer._get_prev_frame_id(240)
 
         #assert
-        self.assertEqual(250, result_frame_id)
+        self.assertEqual(220, result_frame_id)
 
     def test__get_prev_frame_id_result_is_further_than_256(self):
         slicer = SeeFloorSlicer()
@@ -94,4 +94,4 @@ class TestSeeFloorSlicer(TestCase):
         result_frame_id = slicer._get_prev_frame_id(550)
 
         #assert
-        self.assertEqual(250, result_frame_id)
+        self.assertEqual(220, result_frame_id)

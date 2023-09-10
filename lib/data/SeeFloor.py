@@ -75,6 +75,7 @@ class SeeFloor(SeeFloorNoBadBlocks):
                 return self._jump_to_previous_seefloor_slice(frame_id - 1)
 
         # we are in a good segment and not in its first frame.
+        # new_frame_id = SeeFloorNoBadBlocks._jump_to_previous_seefloor_slice(self, frame_id)
         new_frame_id = SeeFloorNoBadBlocks._jump_to_previous_seefloor_slice(self, frame_id)
 
         if (first_good_frame >= new_frame_id):

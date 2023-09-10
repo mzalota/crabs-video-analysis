@@ -47,9 +47,12 @@ class SeeFloorSlicer(PandasWrapper):
         if frame_id > self._max_frame_id():
             return self._max_frame_id()
 
+        print("!!!!!!!!!! in _jump_to_previous_seefloor_slice. frame_id:", frame_id)
+        new_frame_id = self._get_prev_frame_id(frame_id)
+
         # we are in a good segment and not in its first frame.
-        pixels_to_jump = Camera.create().frame_height() * (-1)
-        new_frame_id = int(self._getNextFrame(pixels_to_jump, frame_id))
+        # pixels_to_jump = Camera.create().frame_height() * (-1)
+        # new_frame_id = int(self._getNextFrame(pixels_to_jump, frame_id))
         return new_frame_id
 
     def _jump_to_next_seefloor_slice(self, frame_id, fraction=1):
@@ -60,11 +63,7 @@ class SeeFloorSlicer(PandasWrapper):
         if frame_id > self._max_frame_id():
             return self._max_frame_id()
 
-
         new_frame_id = self._get_next_frame_id(frame_id)
-
-        # print("finished calculating netxt_frame_id. next_frame_id_new: " + str(new_frame_id) + " orig_frameId: " + str(frame_id) + ", fraction: " + str(fraction))
-        # print("new_frame_id: " + str(new_frame_id) + ", next_frame_id_new: " + str(next_frame_id_new) + " orig_frameId: " + str(frame_id) + ", fraction: " + str(fraction) + ", pixels_to_jump:" + str(pixels_to_jump))
 
         return new_frame_id
 
@@ -78,9 +77,14 @@ class SeeFloorSlicer(PandasWrapper):
         # #examine next frames, until none of the corner pixels visible.
         step_size = 256
 
+        if start_frame_id >= self._max_frame_id() and direction == 1:
+            return self._max_frame_id()
+        if start_frame_id <= self._min_frame_id() and direction == -1:
+            return self._min_frame_id()
+
         timer = MyTimer("SeeFloorSlicer._get_next_frame_id()")
 
-        candidate_frame_id = start_frame_id
+        candidate_frame_id = start_frame_id + direction
         too_far_frame_id = start_frame_id + (step_size * direction)
         not_far_enough_frame_id = start_frame_id
 
@@ -90,27 +94,22 @@ class SeeFloorSlicer(PandasWrapper):
             too_far_frame_id = self._min_frame_id()
 
         while self.frames_overlap(start_frame_id, too_far_frame_id):
+            too_far_frame_id = too_far_frame_id + (step_size * direction)
             if too_far_frame_id > self._max_frame_id():
                 too_far_frame_id = self._max_frame_id()
                 break
             if too_far_frame_id < self._min_frame_id():
                 too_far_frame_id = self._min_frame_id()
                 break
-            too_far_frame_id = too_far_frame_id + (step_size * direction)
 
         num_of_loops = 0
         while(True):
             num_of_loops += 1
-            print(candidate_frame_id, not_far_enough_frame_id, too_far_frame_id)
+            # print(candidate_frame_id, not_far_enough_frame_id, too_far_frame_id)
+
             if not_far_enough_frame_id + direction == too_far_frame_id:
                 #not_far_enough_frame_id has overlap and too_far_frame_id does not have overlap. So our answer is too_far_frame_id
                 candidate_frame_id = too_far_frame_id
-                break
-
-            if candidate_frame_id >= self._max_frame_id():
-                break
-
-            if candidate_frame_id <= self._min_frame_id():
                 break
 
             if self.frames_overlap(start_frame_id, candidate_frame_id):
