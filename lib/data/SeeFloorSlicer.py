@@ -78,9 +78,25 @@ class SeeFloorSlicer(PandasWrapper):
         # #examine next frames, until none of the corner pixels visible.
 
         candidate_frame_id = start_frame_id
+        upper_candidate_frame_id = start_frame_id+100
+        lower_candidate_frame_id = start_frame_id
+
+        while self.frames_overlap(start_frame_id, upper_candidate_frame_id):
+            upper_candidate_frame_id = upper_candidate_frame_id + 100
+            if upper_candidate_frame_id > self._max_frame_id():
+                upper_candidate_frame_id = self._max_frame_id()
+                break
+
         while(True):
-            candidate_frame_id += 1
-            # print("candidate_frame_id: "+str(candidate_frame_id))
+            # candidate_frame_id += 1
+            print("candidate_frame_id: "+str(candidate_frame_id))
+            print("lower_candidate_frame_id: "+str(lower_candidate_frame_id))
+            print("upper_candidate_frame_id: "+str(upper_candidate_frame_id))
+
+            if lower_candidate_frame_id +1 == upper_candidate_frame_id:
+                #lower_candidate_frame_id has overlap and upper_candidate_frame_id does not have overlap. So our answer is upper_candidate_frame_id
+                candidate_frame_id = upper_candidate_frame_id
+                break
 
             if candidate_frame_id >= self._max_frame_id():
                 break
@@ -88,12 +104,20 @@ class SeeFloorSlicer(PandasWrapper):
             if candidate_frame_id <= self._min_frame_id():
                 break
 
-            if not self.frames_overlap(candidate_frame_id, start_frame_id):
-                break
+
+
+
+            if self.frames_overlap(start_frame_id, candidate_frame_id):
+                lower_candidate_frame_id = candidate_frame_id
+            else:
+                upper_candidate_frame_id = candidate_frame_id
+
+
+            candidate_frame_id = lower_candidate_frame_id + int((upper_candidate_frame_id - lower_candidate_frame_id)/2)
 
         return candidate_frame_id
 
-    def frames_overlap(self, candidate_frame_id, start_frame_id):
+    def frames_overlap(self, start_frame_id, candidate_frame_id):
         # examine next frames, until none of the corner pixels visible.
         frame_width = Camera.create().frame_width()
         frame_height = Camera.create().frame_height()
