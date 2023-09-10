@@ -60,24 +60,19 @@ class SeeFloorSlicer(PandasWrapper):
         if frame_id > self._max_frame_id():
             return self._max_frame_id()
 
-        # we are in a good segment and not in its last frame.
-        if Configurations(self._folderStruct).is_simple_slicer():
-            pixels_to_jump = Camera.create().frame_height() * fraction
-            new_frame_id = int(self._getNextFrame(pixels_to_jump, frame_id))
-        else:
-            print("Starting to calculate next frame_id using precise but slow algorithm. Please wait a bit...")
-            timer = MyTimer("SeeFloorSlicer._get_next_frame_id()")
-            new_frame_id = self._get_next_frame_id(frame_id)
-            timer.lap("finished calculating next_frame_id. next_frame_id_new: " + str(new_frame_id) + " orig_frameId: " + str(frame_id) + ", fraction: " + str(fraction))
-            # print("finished calculating netxt_frame_id. next_frame_id_new: " + str(new_frame_id) + " orig_frameId: " + str(frame_id) + ", fraction: " + str(fraction))
-            # print("new_frame_id: " + str(new_frame_id) + ", next_frame_id_new: " + str(next_frame_id_new) + " orig_frameId: " + str(frame_id) + ", fraction: " + str(fraction) + ", pixels_to_jump:" + str(pixels_to_jump))
+        print("Starting to calculate next frame_id using precise but slow algorithm. Please wait a bit...")
+        timer = MyTimer("SeeFloorSlicer._get_next_frame_id()")
+        new_frame_id = self._get_next_frame_id(frame_id)
+        timer.lap("finished calculating next_frame_id. next_frame_id_new: " + str(new_frame_id) + " orig_frameId: " + str(frame_id) + ", fraction: " + str(fraction))
+        # print("finished calculating netxt_frame_id. next_frame_id_new: " + str(new_frame_id) + " orig_frameId: " + str(frame_id) + ", fraction: " + str(fraction))
+        # print("new_frame_id: " + str(new_frame_id) + ", next_frame_id_new: " + str(next_frame_id_new) + " orig_frameId: " + str(frame_id) + ", fraction: " + str(fraction) + ", pixels_to_jump:" + str(pixels_to_jump))
 
         return new_frame_id
 
     def _get_next_frame_id(self, start_frame_id: int):
         # #examine next frames, until none of the corner pixels visible.
 
-        candidate_frame_id = start_frame_id
+        candidate_frame_id = start_frame_id+1
         upper_candidate_frame_id = start_frame_id+100
         lower_candidate_frame_id = start_frame_id
 
