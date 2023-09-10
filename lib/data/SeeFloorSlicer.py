@@ -75,14 +75,7 @@ class SeeFloorSlicer(PandasWrapper):
         return new_frame_id
 
     def _get_next_frame_id(self, start_frame_id: int):
-        #examine next frames, until none of the corner pixels visible.
-        frame_width = Camera.create().frame_width()
-        frame_height = Camera.create().frame_height()
-        top_left = Point(1,1)
-        top_right = Point(frame_width-1, 1)
-        bottom_left = Point(1, frame_height-1)
-        bottom_right = Point(frame_width-1, frame_height-1)
-        center = Point(int(frame_width/2), int(frame_height/2))
+        # #examine next frames, until none of the corner pixels visible.
 
         candidate_frame_id = start_frame_id
         while(True):
@@ -95,6 +88,25 @@ class SeeFloorSlicer(PandasWrapper):
             if candidate_frame_id <= self._min_frame_id():
                 break
 
+            if not self.frames_overlap(candidate_frame_id, start_frame_id):
+                break
+
+        return candidate_frame_id
+
+    def frames_overlap(self, candidate_frame_id, start_frame_id):
+        # examine next frames, until none of the corner pixels visible.
+        frame_width = Camera.create().frame_width()
+        frame_height = Camera.create().frame_height()
+        top_left = Point(1, 1)
+        top_right = Point(frame_width - 1, 1)
+        bottom_left = Point(1, frame_height - 1)
+        bottom_right = Point(frame_width - 1, frame_height - 1)
+        center = Point(int(frame_width / 2), int(frame_height / 2))
+
+        isContinue = True
+        firstLoop = True
+        while (firstLoop):
+            firstLoop = False
             new_top_left = self.translatePointCoordinate(top_left, start_frame_id, candidate_frame_id)
             # print("new_top_left")
             new_top_right = self.translatePointCoordinate(top_right, start_frame_id, candidate_frame_id)
@@ -150,11 +162,10 @@ class SeeFloorSlicer(PandasWrapper):
                 # print("new_center reverse is still visible")
                 continue
 
-            #All 4 corner points have disappeared from the screen on frame "candidate_frame_id".
-            #we found our next frame!
-            break
-
-        return candidate_frame_id
+            # All 4 corner points have disappeared from the screen on frame "candidate_frame_id".
+            # we found our next frame!
+            isContinue = False
+        return isContinue
 
     def __point_is_visible(self, point):
         frame_width = Camera.create().frame_width()
