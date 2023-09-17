@@ -11,6 +11,7 @@ from lib.ImageWindow import ImageWindow
 from lib.ImagesCollage import ImagesCollage
 from lib.data.RedDotsData import RedDotsData
 from lib.imageProcessing.Rectificator import Rectificator
+from lib.VideoStream import VideoStreamException
 
 import traceback
 from lib.ui.FrameDecorators import FrameDecoFactory
@@ -76,7 +77,17 @@ class ScientistUI:
                 traceback.print_exc()
                 break
 
-            keyPressed = self.showFrame(frame)
+            try:
+                keyPressed = self.showFrame(frame)
+            except VideoStreamException as error:
+                print (error)
+                if frame_id < self.__seeFloor.maxFrameID():
+                    #video stream has a technical problem at this frame. Try reading next frame
+                    frame_id = frame_id+1
+                    continue
+                else:
+                    raise error
+
             user_input = UserInput(keyPressed)
 
             print("keyPressed", keyPressed)
@@ -333,14 +344,14 @@ class ScientistUI:
 
     def __process_navigation_key_press(self, frame_id, user_input):
 
-        if user_input.is_large_step_forward():
-            # scroll 500 frames forward
-            new_frame_id = frame_id + 500
+        if user_input.is_next_frame_command():
+            # scroll 50 frames backward
+            new_frame_id = frame_id + 1
             return new_frame_id
 
-        if user_input.is_large_step_backward():
-            # scroll 500 frames backward
-            new_frame_id = frame_id - 500
+        if user_input.is_prev_frame_command():
+            # scroll 50 frames backward
+            new_frame_id = frame_id - 1
             return new_frame_id
 
         if user_input.is_small_step_forward():
@@ -361,6 +372,16 @@ class ScientistUI:
         if user_input.is_key_arrow_up():
             # scroll 50 frames backward
             new_frame_id = frame_id - 50
+            return new_frame_id
+
+        if user_input.is_large_step_forward():
+            # scroll 500 frames forward
+            new_frame_id = frame_id + 500
+            return new_frame_id
+
+        if user_input.is_large_step_backward():
+            # scroll 500 frames backward
+            new_frame_id = frame_id - 500
             return new_frame_id
 
         if user_input.is_key_end():
@@ -388,5 +409,6 @@ class ScientistUI:
         if user_input.is_key_page_up():
             # Jump 10 steps backward
             return self.__seeFloor.jumpToSeefloorSlice(frame_id, -10)
+
 
         return None
