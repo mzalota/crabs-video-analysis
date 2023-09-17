@@ -86,18 +86,20 @@ Subdirectory
 - **q** - "Quit": quite application 
 
 #### Navigation commands in main "Scientist UI" screen
+- **home** - jump to the very first frame of the video
+- **end** - jump to the very last frame of the video
 - **arrow right** - jump to next seefloor slice.
 - **arrow left** - jump to previous seefloor slice. 
 - **page down** - jump 10 seefloor slice backwoard. 
 - **page up** - jump 10 seefloor slice forward.
-- **home** - jump to the very first frame of the video
-- **end** - jump to the very last frame of the video
-- **arrow down** - scroll exactly 50 frames forward
-- **arrow up** - scroll exactly 50 frames backward
-- **plus (+)** - scroll 500 frames forward
-- **minus (-)** - scroll 500 frames backward
+- **n** - scroll 1 frame forward
+- **p** - scroll 1 frame backward
 - **space** - scroll 7 frames forward
 - **backspace** - scroll 7 frames backward
+- **arrow down** - scroll 50 frames forward
+- **arrow up** - scroll 50 frames backward
+- **plus (+)** - scroll 500 frames forward
+- **minus (-)** - scroll 500 frames backward
 
 #### Commands in "RedDots UI" screen
 - **mouse click** - "Mark RedDots": click exactly two times, once on each red dot.  
