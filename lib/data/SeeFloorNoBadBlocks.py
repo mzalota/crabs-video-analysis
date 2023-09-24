@@ -12,13 +12,14 @@ from lib.FolderStructure import FolderStructure
 import pandas as pd
 
 from lib.data.SeeFloorFast import SeeFloorFast
+from lib.data.PointTranslator import PointTranslator
 from lib.data.SeeFloorSlicer import SeeFloorSlicer
 
 
 # class SeeFloorNoBadBlocks(SeeFloorSlicer):
 
 
-class SeeFloorNoBadBlocks(SeeFloorFast):
+class SeeFloorNoBadBlocks(PandasWrapper):
     __COLNAME_driftX = 'driftX'
     __COLNAME_driftY = 'driftY'
     _COLNAME_frameNumber = 'frameNumber'
@@ -30,7 +31,7 @@ class SeeFloorNoBadBlocks(SeeFloorFast):
         self.__df = df
         self._folderStruct = folderStruct
         self.__fastObj = SeeFloorFast(df)
-        #self.__crabsData = CrabsData(self.__folderStruct)
+        self.__pointTranslator = PointTranslator(self.__fastObj)
 
     @staticmethod
     def createFromFolderStruct(folderStruct):
@@ -153,7 +154,7 @@ class SeeFloorNoBadBlocks(SeeFloorFast):
         return endYCoordMM-startYCoordMM
 
     def translatePointCoordinate(self, pointLocation: Point, origFrameID: int, targetFrameID: int) -> Point:
-        return self.__fastObj.translatePointCoordinate(pointLocation, origFrameID, targetFrameID)
+        return self.__pointTranslator.translatePointCoordinate(pointLocation, origFrameID, targetFrameID)
     def mm_per_pixel(self, frame_id):
         return self.__fastObj._mm_per_pixel(frame_id)
 
@@ -279,7 +280,7 @@ class SeeFloorNoBadBlocks(SeeFloorFast):
         graphPlotter.saveGraphToFile(xColumn, yColumns, graphTitle, filePath)
 
     def jumpToSeefloorSlice(self, frame_id, frames_to_jump):
-        slicer = SeeFloorSlicer(self.__fastObj)
+        slicer = SeeFloorSlicer(self.__pointTranslator, self.__fastObj)
         return slicer.jumpToSeefloorSlice(frame_id, frames_to_jump)
 
     def getPrevFrame(self, frame_id):

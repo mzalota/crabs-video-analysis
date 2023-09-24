@@ -1,16 +1,16 @@
 from lib.Camera import Camera
 from lib.common import Point
+from lib.data.PointTranslator import PointTranslator
 from lib.data.SeeFloorFast import SeeFloorFast
 from lib.infra.MyTimer import MyTimer
 
-
-# class SeeFloorSlicer(PandasWrapper):
 class SeeFloorSlicer:
-    def __init__(self, seeFloorFast: SeeFloorFast):
-        self.__fastObj = seeFloorFast
+    def __init__(self, point_translator: PointTranslator, fastObj: SeeFloorFast):
+        self._point_translator = point_translator
+        self.__fastObj = fastObj
 
     def translatePointCoordinate(self, pointLocation: Point, origFrameID: int, targetFrameID: int) -> Point:
-        return self.__fastObj.translatePointCoordinate(pointLocation, origFrameID, targetFrameID)
+        return self._point_translator.translatePointCoordinate(pointLocation, origFrameID, targetFrameID)
 
     def _min_frame_id(self):
         return self.__fastObj.min_frame_id()
