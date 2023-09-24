@@ -32,7 +32,7 @@ class TestSeeFloorSlicer(TestCase):
     def test__get_prev_frame_id_result_is_first(self):
         slicer = SeeFloorSlicer()
 
-        slicer.frames_overlap = MagicMock(side_effect=self.frames_overlap_160)
+        slicer._frames_overlap = MagicMock(side_effect=self.frames_overlap_160)
         slicer._max_frame_id = MagicMock(return_value=890)
         slicer._min_frame_id = MagicMock(return_value=5)
 
@@ -46,7 +46,7 @@ class TestSeeFloorSlicer(TestCase):
     def test__get_next_frame_id_next_frame_is_last(self):
         slicer = SeeFloorSlicer()
 
-        slicer.frames_overlap = MagicMock(side_effect=self.frames_overlap_160)
+        slicer._frames_overlap = MagicMock(side_effect=self.frames_overlap_160)
         slicer._max_frame_id = MagicMock(return_value=890)
         slicer._min_frame_id = MagicMock(return_value=5)
 
@@ -59,7 +59,7 @@ class TestSeeFloorSlicer(TestCase):
     def test__get_next_frame_id_next_frame_is_further_than_256(self):
         slicer = SeeFloorSlicer()
 
-        slicer.frames_overlap = MagicMock(side_effect=self.frames_overlap_160)
+        slicer._frames_overlap = MagicMock(side_effect=self.frames_overlap_160)
         slicer._max_frame_id = MagicMock(return_value=890)
         slicer._min_frame_id = MagicMock(return_value=5)
 
@@ -73,7 +73,7 @@ class TestSeeFloorSlicer(TestCase):
     def test__get_prev_frame_id_result_is_close_to_start(self):
         slicer = SeeFloorSlicer()
 
-        slicer.frames_overlap = MagicMock(side_effect=self.frames_overlap_160)
+        slicer._frames_overlap = MagicMock(side_effect=self.frames_overlap_160)
         slicer._max_frame_id = MagicMock(return_value=890)
         slicer._min_frame_id = MagicMock(return_value=5)
 
@@ -86,7 +86,7 @@ class TestSeeFloorSlicer(TestCase):
     def test__get_prev_frame_id_result_is_further_than_256(self):
         slicer = SeeFloorSlicer()
 
-        slicer.frames_overlap = MagicMock(side_effect=self.frames_overlap_160)
+        slicer._frames_overlap = MagicMock(side_effect=self.frames_overlap_160)
         slicer._max_frame_id = MagicMock(return_value=890)
         slicer._min_frame_id = MagicMock(return_value=5)
 

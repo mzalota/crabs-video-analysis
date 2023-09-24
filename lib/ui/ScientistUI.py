@@ -18,7 +18,7 @@ from lib.ui.FrameDecorators import FrameDecoFactory
 
 from lib.infra.MyTimer import MyTimer
 from lib.ui.UserInput import UserInput
-from lib.data.SeeFloor import SeeFloor
+from lib.data.SeeFloorWithBadBlocks import SeeFloor
 from lib.ui.RedDotsUI import RedDotsUI
 
 from lib.common import Point

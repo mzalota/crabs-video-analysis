@@ -20,7 +20,7 @@ from lib.infra.MyTimer import MyTimer
 class SeeFloorNoBadBlocks(SeeFloorSlicer):
     __COLNAME_driftX = 'driftX'
     __COLNAME_driftY = 'driftY'
-    __COLNAME_frameNumber = 'frameNumber'
+    _COLNAME_frameNumber = 'frameNumber'
 
     def __init__(self, driftsData, redDotsData, folderStruct = None,  df = None):
         # type: (DriftData, BadFramesData, RedDotsData, FolderStructure) -> SeeFloorNoBadBlocks
@@ -58,29 +58,13 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
 
     def maxFrameID(self):
         # type: () -> int
-        return self._max_frame_id()
+        return self.__df[self._COLNAME_frameNumber].max()
+        # return self._max_frame_id()
 
     def minFrameID(self):
         # type: () -> int
-        return self.__df[self.__COLNAME_frameNumber].min()
+        return self.__df[self._COLNAME_frameNumber].min()
         # return self._min_frame_id()
-
-    def _adjust_outofbound_values(self, frame_id):
-        # type: (int) -> int
-        if frame_id < self._min_frame_id():
-            return self._min_frame_id()
-
-        if frame_id > self._max_frame_id():
-            return self._max_frame_id()
-
-        return frame_id
-
-    def _min_frame_id(self):
-        return self.__df[self.__COLNAME_frameNumber].min()
-        # return self.getDriftData().minFrameID()
-
-    def _max_frame_id(self):
-        return self.getDriftData().maxFrameID()
 
     def __getPandasDF(self):
         # type: () -> pd.DataFrame
@@ -115,29 +99,6 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
             nextFrameID = fromFrameID
         return nextFrameID
 
-    def __driftBetweenFramesPixels(self, fromFrameID, toFrameID):
-        # type: (int, int) -> Vector
-
-        if fromFrameID < self._min_frame_id() or toFrameID < self._min_frame_id():
-            # return Vector(0,0)
-            return None
-
-        if fromFrameID > self._max_frame_id() or toFrameID > self._max_frame_id():
-            # return Vector(0, 0)
-            return None
-
-        if fromFrameID == toFrameID:
-            return Vector(0, 0)
-
-        # driftX = self.getXDriftPixels(fromFrameID, toFrameID)
-        # driftY = self.getYDriftPixels(fromFrameID, toFrameID)
-        # result = Vector(driftX, driftY)
-        # return result
-
-        result_new = Vector(self.get_x_drift_px(fromFrameID, toFrameID), self.get_y_drift_px(fromFrameID, toFrameID))
-        #print("__driftBetweenFramesPixels orig "+str(result), " new: ", str(result_new))
-        return result_new
-
 
     def getXDriftPixels(self, fromFrameID, toFrameID):
         # type: (int, int) -> int
@@ -169,7 +130,7 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
         if self.__drift_x_dict is None:
             # Lazy loading of cache
             # key is frame_id, value is drift_x_
-            self.__drift_x_dict = self.__df.set_index(self.__COLNAME_frameNumber)[self.__COLNAME_driftX].to_dict()
+            self.__drift_x_dict = self.__df.set_index(self._COLNAME_frameNumber)[self.__COLNAME_driftX].to_dict()
 
         return self.__drift_x_dict[frame_id]
 
@@ -177,7 +138,7 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
         if self.__drift_y_dict is None:
             # Lazy loading of cache
             # key is frame_id, value is drift_y
-            self.__drift_y_dict = self.__df.set_index(self.__COLNAME_frameNumber)[self.__COLNAME_driftY].to_dict()
+            self.__drift_y_dict = self.__df.set_index(self._COLNAME_frameNumber)[self.__COLNAME_driftY].to_dict()
 
         return self.__drift_y_dict[frame_id]
 
@@ -222,7 +183,7 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
         if self.__mm_per_pixel_dict is None:
             # Lazy loading of cache
             # key is frame_id, value is mm_per_pixel
-            self.__mm_per_pixel_dict = self.__df.set_index(self.__COLNAME_frameNumber)["mm_per_pixel"].to_dict()
+            self.__mm_per_pixel_dict = self.__df.set_index(self._COLNAME_frameNumber)["mm_per_pixel"].to_dict()
         return self.__mm_per_pixel_dict[frame_id]
 
     def mm_per_pixel(self, frame_id):

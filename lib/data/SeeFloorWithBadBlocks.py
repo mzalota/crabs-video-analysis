@@ -1,19 +1,20 @@
 from lib.data.BadFramesData import BadFramesData
 from lib.data.DriftData import DriftData
-from lib.Frame import Frame
 from lib.data.PandasWrapper import PandasWrapper
 from lib.data.RedDotsData import RedDotsData
 from lib.FolderStructure import FolderStructure
 import pandas as pd
 
-from lib.common import Vector
 from lib.data.SeeFloorNoBadBlocks import SeeFloorNoBadBlocks
 
-
 class SeeFloor(SeeFloorNoBadBlocks):
+    pass
+
+
+class SeeFloorWithBadBlocks(SeeFloor):
     __COLNAME_driftX = 'driftX'
     __COLNAME_driftY = 'driftY'
-    __COLNAME_frameNumber = 'frameNumber'
+    _COLNAME_frameNumber = 'frameNumber'
 
     def __init__(self, driftsData, badFramesData, redDotsData, folderStruct = None,  df = None):
         # type: (DriftData, BadFramesData, RedDotsData, FolderStructure, pd.DataFrame) -> SeeFloor
@@ -41,17 +42,25 @@ class SeeFloor(SeeFloorNoBadBlocks):
         # type: (BadFramesData) -> None
         self.__badFramesData = badFramesData
 
-    def maxFrameID(self):
+    def maxFrameID_nobadBlocks(self):
         # type: () -> int
         maxFrameID = self._max_frame_id()
         maxFrameID = self.__badFramesData.firstGoodFrameBefore(maxFrameID)
         return maxFrameID
 
-    def minFrameID(self):
+    def minFrameID_nobadBlocks(self):
         # type: () -> int
         minFrameID = self._min_frame_id()
         minFrameID = self.__badFramesData.firstGoodFrameAfter(minFrameID)
         return minFrameID
+
+    def _min_frame_id(self):
+        #return self.minFrameID()
+         return self.getDriftData().minFrameID()
+
+    def _max_frame_id(self):
+        #return self.maxFrameID()
+        return self.getDriftData().maxFrameID()
 
     def _jump_to_previous_seefloor_slice(self, frame_id):
         # type: (int) -> int
@@ -115,4 +124,14 @@ class SeeFloor(SeeFloorNoBadBlocks):
             return last_good_frame
         else:
             return new_frame_id
+
+    def _adjust_outofbound_values(self, frame_id):
+        # type: (int) -> int
+        if frame_id < self._min_frame_id():
+            return self._min_frame_id()
+
+        if frame_id > self._max_frame_id():
+            return self._max_frame_id()
+
+        return frame_id
 

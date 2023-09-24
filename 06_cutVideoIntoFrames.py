@@ -10,7 +10,7 @@ from lib.VideoToImages import VideoToImages
 from lib.infra.Logger import Logger
 from lib.VideoStream import VideoStream
 from lib.data.CrabsData import CrabsData
-from lib.data.SeeFloor import SeeFloor
+from lib.data.SeeFloorWithBadBlocks import SeeFloor
 from lib.seefloor.InterpolateController import InterpolateController
 
 print ("Launched markCrabs script")

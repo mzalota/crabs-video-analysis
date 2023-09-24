@@ -7,11 +7,11 @@ from lib.Frame import Frame
 from lib.data.BadFramesData import BadFramesData
 from lib.data.DriftData import DriftData
 from lib.VideoToImages import VideoToImages
-from lib.data.SeeFloor import SeeFloor
+from lib.data.SeeFloorWithBadBlocks import SeeFloor, SeeFloorWithBadBlocks
 from lib.infra.DataframeWrapper import DataframeWrapper
 
 
-class TestSeeFloor(TestCase):
+class TestSeeFloorWithBadBlocks(TestCase):
 
     def setUp(self):
         #set current working directory to be not in "tests" subfolder, but one level above together with resource
@@ -41,7 +41,7 @@ class TestSeeFloor(TestCase):
 
 
         badframesData = BadFramesData(None,None)
-        seeFloor = SeeFloor(driftData, badframesData, None, None)
+        seeFloor = SeeFloorWithBadBlocks(driftData, badframesData, None, None)
 
         # Exercise
 
@@ -66,11 +66,11 @@ class TestSeeFloor(TestCase):
 
 
         badframesData = BadFramesData(None,None)
-        seeFloor = SeeFloor(driftData, badframesData, None, None)
+        seeFloor = SeeFloorWithBadBlocks(driftData, badframesData, None, None)
 
         # Exercise
-        maxFrameID = seeFloor.maxFrameID()
-        minFrameID = seeFloor.minFrameID()
+        maxFrameID = seeFloor.maxFrameID_nobadBlocks()
+        minFrameID = seeFloor.minFrameID_nobadBlocks()
 
         # Assert
         self.assertEqual(minFrameID, 95)
@@ -89,11 +89,11 @@ class TestSeeFloor(TestCase):
         badframes_df = self.__append_to_badframes_df(badframes_df, 92, 95)
         badframesData = BadFramesData.createFromDataFrame(None, badframes_df)
 
-        seeFloor = SeeFloor(driftData, badframesData, None,None)
+        seeFloor = SeeFloorWithBadBlocks(driftData, badframesData, None, None)
 
         # Exercise
-        minFrameID = seeFloor.minFrameID()
-        maxFrameID = seeFloor.maxFrameID()
+        minFrameID = seeFloor.minFrameID_nobadBlocks()
+        maxFrameID = seeFloor.maxFrameID_nobadBlocks()
 
         # Assert
         self.assertEqual(minFrameID, 96)
@@ -119,7 +119,7 @@ class TestSeeFloor(TestCase):
 
         #--- good frames are 96,97,98 and 102,103. startFrame is 93, endFrame is 107
 
-        seeFloor = SeeFloor(driftData, badframesData, None, None)
+        seeFloor = SeeFloorWithBadBlocks(driftData, badframesData, None, None)
 
         # Exercise
 
@@ -195,7 +195,7 @@ class TestSeeFloor(TestCase):
 
         #--- good frames are 150-574 and 625-689. startFrame is 100, endFrame is 700
 
-        seeFloor = SeeFloor(driftData, badframesData, None, None)
+        seeFloor = SeeFloorWithBadBlocks(driftData, badframesData, None, None)
 
         # Exercise
         # Assert
@@ -309,7 +309,7 @@ class TestSeeFloor(TestCase):
 
         #--- good frames are 150-574 and 625-689. startFrame is 100, endFrame is 700
 
-        seeFloor = SeeFloor(driftData, badframesData, None, None)
+        seeFloor = SeeFloorWithBadBlocks(driftData, badframesData, None, None)
 
         # Exercise
         # Assert
@@ -429,7 +429,7 @@ class TestSeeFloor(TestCase):
 
         # --- good frames are 150-574 and 625-689. startFrame is 100, endFrame is 700
 
-        seeFloor = SeeFloor(driftData, badframesData, None, None)
+        seeFloor = SeeFloorWithBadBlocks(driftData, badframesData, None, None)
 
         # Exercise
         # Assert

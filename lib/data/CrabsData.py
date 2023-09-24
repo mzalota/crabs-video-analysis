@@ -7,7 +7,7 @@ from datetime import datetime
 from lib.FolderStructure import FolderStructure
 from lib.common import Box
 from lib.data.PandasWrapper import PandasWrapper
-from lib.data.SeeFloor import SeeFloor
+from lib.data.SeeFloorWithBadBlocks import SeeFloor
 from lib.infra.DataframeWrapper import DataframeWrapper
 from lib.model.Crab import Crab
 
