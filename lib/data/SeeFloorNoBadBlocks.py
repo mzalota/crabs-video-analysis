@@ -63,7 +63,6 @@ class SeeFloorNoBadBlocks(SeeFloorFast):
     def minFrameID(self):
         # type: () -> int
         return self.__df[self._COLNAME_frameNumber].min()
-        # return self._min_frame_id()
 
     def __getPandasDF(self):
         # type: () -> pd.DataFrame
@@ -280,7 +279,7 @@ class SeeFloorNoBadBlocks(SeeFloorFast):
         graphPlotter.saveGraphToFile(xColumn, yColumns, graphTitle, filePath)
 
     def jumpToSeefloorSlice(self, frame_id, frames_to_jump):
-        slicer = SeeFloorSlicer(self.__fastObj, self.minFrameID(), self.maxFrameID())
+        slicer = SeeFloorSlicer(self.__fastObj)
         return slicer.jumpToSeefloorSlice(frame_id, frames_to_jump)
 
     def getPrevFrame(self, frame_id):

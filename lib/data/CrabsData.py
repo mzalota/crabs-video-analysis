@@ -154,8 +154,8 @@ class CrabsData(PandasWrapper):
 
         mm_per_pixel_undistorted = sf.getRedDotsData().mm_per_pixel_undistorted(frame_id)
 
-        mm_per_pixel = sf._mm_per_pixel(frame_id)
-        # mm_per_pixel = sf.getRedDotsData().getMMPerPixel(frame_id)
+        mm_per_pixel = sf.mm_per_pixel(frame_id)
+
         frame_coord_y_mm = frame_coord_y_px * mm_per_pixel
         y_coord_mm = sf.getYCoordMMOrigin(frame_id) + frame_coord_y_mm
         frame_coord_x_mm = frame_coord_x_px * mm_per_pixel

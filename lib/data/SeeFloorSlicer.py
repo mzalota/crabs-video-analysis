@@ -6,21 +6,17 @@ from lib.infra.MyTimer import MyTimer
 
 # class SeeFloorSlicer(PandasWrapper):
 class SeeFloorSlicer:
-    def __init__(self, seeFloorFast: SeeFloorFast, minFrameID: int, maxFrameID: int):
+    def __init__(self, seeFloorFast: SeeFloorFast):
         self.__fastObj = seeFloorFast
-        self.__minFrameID = minFrameID
-        self.__maxFrameID = maxFrameID
 
     def translatePointCoordinate(self, pointLocation: Point, origFrameID: int, targetFrameID: int) -> Point:
         return self.__fastObj.translatePointCoordinate(pointLocation, origFrameID, targetFrameID)
 
     def _min_frame_id(self):
-        return self.__minFrameID
-        # return self.__seeFloor.minFrameID()
+        return self.__fastObj.min_frame_id()
 
     def _max_frame_id(self):
-        return self.__maxFrameID
-        # return self.__seeFloor.maxFrameID()
+        return self.__fastObj.max_frame_id()
 
     def jumpToSeefloorSlice(self, frame_id, frames_to_jump):
         # type: (int, float) -> int
