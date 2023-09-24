@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List
+from typing import List, Dict
 
 from lib.Camera import Camera
 from lib.Frame import Frame
@@ -154,10 +154,9 @@ class DecoMarkersWithNumbers(FrameDecorator):
 
         # timer.lap("Number of markers" + str(len(markers)))
 
-    def __markersOnFrame(self, frame_id):
-        # type: (int) -> dict
-        prev_frame_id = self.__seefloorGeometry.getPrevFrameMM(frame_id)
-        next_frame_id = self.__seefloorGeometry.getNextFrameMM(frame_id)
+    def __markersOnFrame(self, frame_id: int) -> Dict:
+        prev_frame_id = self.__seefloorGeometry.getPrevFrame(frame_id)
+        next_frame_id = self.__seefloorGeometry.getNextFrame(frame_id)
         print("__markersOnFrame: frame_id",frame_id, "prev_frame_id", prev_frame_id, "next_frame_id", next_frame_id)
         return self.__markersData.marksBetweenFrames(prev_frame_id, next_frame_id)
 
@@ -257,8 +256,8 @@ class DecoMarkedCrabs(FrameDecorator):
         #timer.lap("Number of crabs" + str(len(markedCrabs)))
 
     def __crabs_visible_on_frame(self, frame_id: int) -> List[Crab]:
-        prev_frame_id = self.__seefloorGeometry.getPrevFrameMM(frame_id)
-        next_frame_id = self.__seefloorGeometry.getNextFrameMM(frame_id)
+        prev_frame_id = self.__seefloorGeometry.getPrevFrame(frame_id)
+        next_frame_id = self.__seefloorGeometry.getNextFrame(frame_id)
         markedCrabs = self.__crabsData.crabs_between_frames(prev_frame_id, next_frame_id)
         return markedCrabs
 

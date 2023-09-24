@@ -7,7 +7,6 @@ from lib.infra.Defaults import Defaults
 class Configurations:
     SECTION_GENERAL = 'general'
     OPTION_DEBUG_UI = "debug_ui"
-    OPTION_DEBUG_UI = "simple_slicer"
 
     SECTION_DRIFTS = 'drifts'
     OPTION_DRIFTS_STEP_SIZE = 'drifts_step_size'
@@ -67,17 +66,6 @@ class Configurations:
             return True
 
         return False
-
-    def is_simple_slicer(self) -> bool:
-        has_value = self._has_value(self.SECTION_GENERAL, self.OPTION_DEBUG_UI)
-        if not has_value:
-            return True
-
-        value = self._get_value(self.SECTION_GENERAL, self.OPTION_DEBUG_UI)
-        if value == "False":
-            return False
-
-        return True
 
     def get_drifts_step_size(self):
         # type: () -> int

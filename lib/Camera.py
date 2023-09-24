@@ -68,7 +68,6 @@ class Camera:
     def initialize_4k() -> None:
         Camera.__instance = Camera(Frame._FRAME_WIDTH_HIGH_RES, Frame._FRAME_HEIGHT_HIGH_RES)
 
-
     def frame_height(self) -> int:
         return self.__frame_height
 

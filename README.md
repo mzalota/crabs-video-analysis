@@ -102,7 +102,7 @@ Subdirectory
 - **minus (-)** - scroll 500 frames backward
 
 #### Commands in "RedDots UI" screen
-- **mouse click** - "Mark RedDots": click exactly two times, once on each red dot.  
+- **mouse click** - "Mark RedDots": clnick exactly two times, once on each red dot.  
 - **q** - "quit": quite this RedDots UI screen. 
 - **arrow down** - scroll exactly 2 frames forward
 - **arrow up** - scroll exactly 2 frames backward

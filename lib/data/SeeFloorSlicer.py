@@ -10,7 +10,7 @@ class SeeFloorSlicer(PandasWrapper):
         # type: (int) -> int
         return self.jumpToSeefloorSlice(frame_id, -1)
 
-    def getNextFrame(self, frame_id):
+    def getNextFrame(self, frame_id: int) -> int:
         # type: (int) -> int
         return self.jumpToSeefloorSlice(frame_id, 1)
 
@@ -50,9 +50,6 @@ class SeeFloorSlicer(PandasWrapper):
         print("!!!!!!!!!! in _jump_to_previous_seefloor_slice. frame_id:", frame_id)
         new_frame_id = self._get_prev_frame_id(frame_id)
 
-        # we are in a good segment and not in its first frame.
-        # pixels_to_jump = Camera.create().frame_height() * (-1)
-        # new_frame_id = int(self._getNextFrame(pixels_to_jump, frame_id))
         return new_frame_id
 
     def _jump_to_next_seefloor_slice(self, frame_id, fraction=1):
@@ -126,10 +123,17 @@ class SeeFloorSlicer(PandasWrapper):
         # examine next frames, until none of the corner pixels visible.
         frame_width = Camera.create().frame_width()
         frame_height = Camera.create().frame_height()
-        top_left = Point(1, 1)
-        top_right = Point(frame_width - 1, 1)
-        bottom_left = Point(1, frame_height - 1)
-        bottom_right = Point(frame_width - 1, frame_height - 1)
+
+        # top_left = Point(1, 1)
+        # top_right = Point(frame_width - 1, 1)
+        # bottom_left = Point(1, frame_height - 1)
+        # bottom_right = Point(frame_width - 1, frame_height - 1)
+        # center = Point(int(frame_width / 2), int(frame_height / 2))
+
+        top_left = Point(int(frame_width / 2), 1)  # top_center
+        top_right = Point(frame_width - 1, int(frame_height / 2))  # right_center
+        bottom_left = Point(int(frame_width / 2), frame_height - 1)  # bottom center
+        bottom_right = Point(1, int(frame_height / 2))  # left_center
         center = Point(int(frame_width / 2), int(frame_height / 2))
 
         isContinue = True

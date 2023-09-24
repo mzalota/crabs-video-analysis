@@ -89,30 +89,7 @@ class SeeFloorNoBadBlocks(SeeFloorSlicer):
         except AttributeError:
             return None
 
-    def _getNextFrame(self, pixels_to_jump, frame_id):
-        nextFrameID = self.__getNextFrameMM(pixels_to_jump, frame_id)
-        if nextFrameID is None:
-            return self.getDriftData().getNextFrame(pixels_to_jump, frame_id)
-        else:
-            return nextFrameID
-
-    def __getNextFrameMM(self, pixels_to_jump, frame_id):
-        if self.__redDotsData is None:
-            return None
-        scale = self.__redDotsData.getMMPerPixel(frame_id)
-        mm_to_jump = pixels_to_jump * scale
-        return self.getFrame(mm_to_jump,frame_id)
-
-    def getNextFrameMM(self, thisFrameID):
-        thisFrameHeightMM = self.heightMM(int(thisFrameID))
-        return self.getFrame(thisFrameHeightMM, thisFrameID)
-
-    def getPrevFrameMM(self, thisFrameID):
-        thisFrameHeightMM = self.heightMM(int(thisFrameID))
-        return self.getFrame(-thisFrameHeightMM, thisFrameID)
-
-
-    def getFrame(self, yMMAway, fromFrameID):
+    def getFrame(self, yMMAway: int, fromFrameID: int) ->int:
         # type: (float, int) -> int
         df = self.__getPandasDF()
         if df is None:
