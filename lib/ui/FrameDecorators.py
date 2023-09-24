@@ -11,7 +11,7 @@ from lib.data import RedDotsData
 from lib.data.BadFramesData import BadFramesData
 from lib.data.CrabsData import CrabsData
 from lib.data.MarkersData import MarkersData
-from lib.data.SeeFloorWithBadBlocks import SeeFloor
+from lib.data.SeeFloor import SeeFloor
 from lib.imageProcessing.Analyzer import Analyzer
 from lib.imageProcessing.Rectificator import Rectificator
 from lib.model.Crab import Crab

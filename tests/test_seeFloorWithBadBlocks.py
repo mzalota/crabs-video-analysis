@@ -7,7 +7,8 @@ from lib.Frame import Frame
 from lib.data.BadFramesData import BadFramesData
 from lib.data.DriftData import DriftData
 from lib.VideoToImages import VideoToImages
-from lib.data.SeeFloorWithBadBlocks import SeeFloor, SeeFloorWithBadBlocks
+from lib.data.SeeFloorWithBadBlocks import SeeFloorWithBadBlocks
+from lib.data.SeeFloor import SeeFloor
 from lib.infra.DataframeWrapper import DataframeWrapper
 
 

@@ -1,18 +1,26 @@
 from lib.Camera import Camera
 from lib.common import Point
-from lib.data.PandasWrapper import PandasWrapper
-from lib.infra.Configurations import Configurations
+from lib.data.SeeFloorFast import SeeFloorFast
 from lib.infra.MyTimer import MyTimer
 
 
-class SeeFloorSlicer(PandasWrapper):
-    def getPrevFrame(self, frame_id):
-        # type: (int) -> int
-        return self.jumpToSeefloorSlice(frame_id, -1)
+# class SeeFloorSlicer(PandasWrapper):
+class SeeFloorSlicer:
+    def __init__(self, seeFloorFast: SeeFloorFast, minFrameID: int, maxFrameID: int):
+        self.__fastObj = seeFloorFast
+        self.__minFrameID = minFrameID
+        self.__maxFrameID = maxFrameID
 
-    def getNextFrame(self, frame_id: int) -> int:
-        # type: (int) -> int
-        return self.jumpToSeefloorSlice(frame_id, 1)
+    def translatePointCoordinate(self, pointLocation: Point, origFrameID: int, targetFrameID: int) -> Point:
+        return self.__fastObj.translatePointCoordinate(pointLocation, origFrameID, targetFrameID)
+
+    def _min_frame_id(self):
+        return self.__minFrameID
+        # return self.__seeFloor.minFrameID()
+
+    def _max_frame_id(self):
+        return self.__maxFrameID
+        # return self.__seeFloor.maxFrameID()
 
     def jumpToSeefloorSlice(self, frame_id, frames_to_jump):
         # type: (int, float) -> int

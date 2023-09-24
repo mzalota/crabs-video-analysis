@@ -2,7 +2,7 @@ import traceback
 
 #from Frame import Frame
 from lib.Frame import Frame
-from lib.data.SeeFloorWithBadBlocks import SeeFloor
+from lib.data.SeeFloor import SeeFloor
 
 
 class VideoToImages:

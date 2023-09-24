@@ -5,10 +5,8 @@ from lib.data.RedDotsData import RedDotsData
 from lib.FolderStructure import FolderStructure
 import pandas as pd
 
-from lib.data.SeeFloorNoBadBlocks import SeeFloorNoBadBlocks
-
-class SeeFloor(SeeFloorNoBadBlocks):
-    pass
+from lib.data.SeeFloor import SeeFloor
+# from lib.data.SeeFloorNoBadBlocks import SeeFloorNoBadBlocks
 
 
 class SeeFloorWithBadBlocks(SeeFloor):
@@ -19,7 +17,8 @@ class SeeFloorWithBadBlocks(SeeFloor):
     def __init__(self, driftsData, badFramesData, redDotsData, folderStruct = None,  df = None):
         # type: (DriftData, BadFramesData, RedDotsData, FolderStructure, pd.DataFrame) -> SeeFloor
 
-        SeeFloorNoBadBlocks.__init__(self, driftsData, redDotsData, folderStruct,  df)
+        # SeeFloorNoBadBlocks.__init__(self, driftsData, redDotsData, folderStruct,  df)
+        super().__init__(driftsData, redDotsData, folderStruct,  df)
         self.__badFramesData = badFramesData
 
     @staticmethod
@@ -44,33 +43,33 @@ class SeeFloorWithBadBlocks(SeeFloor):
 
     def maxFrameID_nobadBlocks(self):
         # type: () -> int
-        maxFrameID = self._max_frame_id()
+        maxFrameID = self._max_frame_id_badBlocks()
         maxFrameID = self.__badFramesData.firstGoodFrameBefore(maxFrameID)
         return maxFrameID
 
     def minFrameID_nobadBlocks(self):
         # type: () -> int
-        minFrameID = self._min_frame_id()
+        minFrameID = self._min_frame_id_badBlocks()
         minFrameID = self.__badFramesData.firstGoodFrameAfter(minFrameID)
         return minFrameID
 
-    def _min_frame_id(self):
+    def _min_frame_id_badBlocks(self):
         #return self.minFrameID()
          return self.getDriftData().minFrameID()
 
-    def _max_frame_id(self):
+    def _max_frame_id_badBlocks(self):
         #return self.maxFrameID()
         return self.getDriftData().maxFrameID()
 
     def _jump_to_previous_seefloor_slice(self, frame_id):
         # type: (int) -> int
-        if frame_id < self._min_frame_id():
-            return self._min_frame_id()
+        if frame_id < self._min_frame_id_badBlocks():
+            return self._min_frame_id_badBlocks()
 
-        if frame_id > self._max_frame_id():
-            return self._max_frame_id()
+        if frame_id > self._max_frame_id_badBlocks():
+            return self._max_frame_id_badBlocks()
 
-        first_good_frame = self._min_frame_id()
+        first_good_frame = self._min_frame_id_badBlocks()
 
         if self.__badFramesData.is_bad_frame(frame_id):
             # we are currently in a bad frame. Jump out of this bad segment to the closest previous good frame
@@ -96,13 +95,13 @@ class SeeFloorWithBadBlocks(SeeFloor):
 
     def _jump_to_next_seefloor_slice(self, frame_id, fraction = 1):
         # type: (int) -> int
-        if frame_id < self._min_frame_id():
-            return self._min_frame_id()
+        if frame_id < self._min_frame_id_badBlocks():
+            return self._min_frame_id_badBlocks()
 
-        if frame_id > self._max_frame_id():
-            return self._max_frame_id()
+        if frame_id > self._max_frame_id_badBlocks():
+            return self._max_frame_id_badBlocks()
 
-        last_good_frame = self._max_frame_id()
+        last_good_frame = self._max_frame_id_badBlocks()
 
         if self.__badFramesData.is_bad_frame(frame_id):
             #we are currently in a bad frame. Jump out of this bad segment to the closest next good frame
@@ -127,11 +126,11 @@ class SeeFloorWithBadBlocks(SeeFloor):
 
     def _adjust_outofbound_values(self, frame_id):
         # type: (int) -> int
-        if frame_id < self._min_frame_id():
-            return self._min_frame_id()
+        if frame_id < self._min_frame_id_badBlocks():
+            return self._min_frame_id_badBlocks()
 
-        if frame_id > self._max_frame_id():
-            return self._max_frame_id()
+        if frame_id > self._max_frame_id_badBlocks():
+            return self._max_frame_id_badBlocks()
 
         return frame_id
 

@@ -7,7 +7,7 @@ from datetime import datetime
 from lib.FolderStructure import FolderStructure
 from lib.common import Box
 from lib.data.PandasWrapper import PandasWrapper
-from lib.data.SeeFloorWithBadBlocks import SeeFloor
+from lib.data.SeeFloor import SeeFloor
 from lib.infra.DataframeWrapper import DataframeWrapper
 from lib.model.Crab import Crab
 
@@ -154,7 +154,8 @@ class CrabsData(PandasWrapper):
 
         mm_per_pixel_undistorted = sf.getRedDotsData().mm_per_pixel_undistorted(frame_id)
 
-        mm_per_pixel = sf.mm_per_pixel(frame_id)
+        mm_per_pixel = sf._mm_per_pixel(frame_id)
+        # mm_per_pixel = sf.getRedDotsData().getMMPerPixel(frame_id)
         frame_coord_y_mm = frame_coord_y_px * mm_per_pixel
         y_coord_mm = sf.getYCoordMMOrigin(frame_id) + frame_coord_y_mm
         frame_coord_x_mm = frame_coord_x_px * mm_per_pixel
