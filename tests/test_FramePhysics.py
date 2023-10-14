@@ -5,7 +5,6 @@ from lib.Camera import Camera
 from lib.Frame import Frame
 from lib.FramePhysics import FramePhysics
 from lib.common import Vector, Point
-from lib.data.SeeFloorNoBadBlocks import SeeFloorNoBadBlocks
 
 
 class TestFramePhysics(TestCase):

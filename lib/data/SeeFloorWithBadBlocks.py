@@ -1,12 +1,12 @@
+import pandas as pd
+
+from lib.FolderStructure import FolderStructure
 from lib.data.BadFramesData import BadFramesData
 from lib.data.DriftData import DriftData
 from lib.data.PandasWrapper import PandasWrapper
 from lib.data.RedDotsData import RedDotsData
-from lib.FolderStructure import FolderStructure
-import pandas as pd
-
 from lib.data.SeeFloor import SeeFloor
-# from lib.data.SeeFloorNoBadBlocks import SeeFloorNoBadBlocks
+from lib.data.SeeFloorSlicer import SeeFloorSlicer
 
 
 class SeeFloorWithBadBlocks(SeeFloor):
@@ -17,7 +17,6 @@ class SeeFloorWithBadBlocks(SeeFloor):
     def __init__(self, driftsData, badFramesData, redDotsData, folderStruct = None,  df = None):
         # type: (DriftData, BadFramesData, RedDotsData, FolderStructure, pd.DataFrame) -> SeeFloor
 
-        # SeeFloorNoBadBlocks.__init__(self, driftsData, redDotsData, folderStruct,  df)
         super().__init__(driftsData, redDotsData, folderStruct,  df)
         self.__badFramesData = badFramesData
 
@@ -83,8 +82,7 @@ class SeeFloorWithBadBlocks(SeeFloor):
                 return self._jump_to_previous_seefloor_slice(frame_id - 1)
 
         # we are in a good segment and not in its first frame.
-        # new_frame_id = SeeFloorNoBadBlocks._jump_to_previous_seefloor_slice(self, frame_id)
-        new_frame_id = SeeFloorNoBadBlocks._jump_to_previous_seefloor_slice(self, frame_id)
+        new_frame_id = SeeFloorSlicer._jump_to_previous_seefloor_slice(self, frame_id)
 
         if (first_good_frame >= new_frame_id):
             #the current good segment does not enough runway from frame_id to jump FramesStitcher.FRAME_HEIGHT pixels back.
@@ -115,7 +113,7 @@ class SeeFloorWithBadBlocks(SeeFloor):
                 return self._jump_to_next_seefloor_slice(frame_id + 1)
 
         # we are in a good segment and not in its last frame.
-        new_frame_id = SeeFloorNoBadBlocks._jump_to_next_seefloor_slice(self, frame_id, fraction)
+        new_frame_id = SeeFloorSlicer._jump_to_next_seefloor_slice(self, frame_id, fraction)
 
         if (last_good_frame < new_frame_id):
             #the current good segment does not enough runway from frame_id to jump FramesStitcher.FRAME_HEIGHT pixels.

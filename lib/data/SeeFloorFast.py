@@ -1,6 +1,12 @@
+from pandas import DataFrame
+
+
 class SeeFloorFast:
 
-    def __init__(self, seefloorDF):
+    def __init__(self, seefloorDF: DataFrame):
+        if seefloorDF is None:
+            return
+
         df_indexed = seefloorDF.set_index('frameNumber')
 
         self.__mm_per_pixel_dict = df_indexed["mm_per_pixel"].to_dict()

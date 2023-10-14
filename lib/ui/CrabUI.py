@@ -1,6 +1,6 @@
 from lib.FolderStructure import FolderStructure
 from lib.VideoStream import VideoStream
-from lib.data import SeeFloorNoBadBlocks
+from lib.data import SeeFloor
 from lib.data.CrabsData import CrabsData
 from lib.Feature import Feature
 from lib.ImageWindow import ImageWindow
@@ -12,7 +12,7 @@ class CrabUI:
     def __init__(self,
                  crabsData: CrabsData,
                  videoStream: VideoStream,
-                 seeFloor: SeeFloorNoBadBlocks,
+                 seeFloor: SeeFloor,
                  folderStruct: FolderStructure,
                  frameID: int,
                  crabPoint: Point):

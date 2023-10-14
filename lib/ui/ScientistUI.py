@@ -1,27 +1,24 @@
+import traceback
+
 from lib.FolderStructure import FolderStructure
-from lib.Image import Image
-from lib.data.BadFramesData import BadFramesData
-from lib.drifts.DriftManualData import DriftManualData
-from lib.data.MarkersData import MarkersData
-from lib.data.SeeFloorNoBadBlocks import SeeFloorNoBadBlocks
-from lib.ui.CrabUI import CrabUI
-from lib.data.CrabsData import CrabsData
 from lib.Frame import Frame
+from lib.Image import Image
 from lib.ImageWindow import ImageWindow
 from lib.ImagesCollage import ImagesCollage
-from lib.data.RedDotsData import RedDotsData
-from lib.imageProcessing.Rectificator import Rectificator
 from lib.VideoStream import VideoStreamException
-
-import traceback
-from lib.ui.FrameDecorators import FrameDecoFactory
-
-from lib.infra.MyTimer import MyTimer
-from lib.ui.UserInput import UserInput
-from lib.data.SeeFloor import SeeFloor
-from lib.ui.RedDotsUI import RedDotsUI
-
 from lib.common import Point
+from lib.data.BadFramesData import BadFramesData
+from lib.data.CrabsData import CrabsData
+from lib.data.MarkersData import MarkersData
+from lib.data.RedDotsData import RedDotsData
+from lib.data.SeeFloor import SeeFloor
+from lib.drifts.DriftManualData import DriftManualData
+from lib.imageProcessing.Rectificator import Rectificator
+from lib.infra.MyTimer import MyTimer
+from lib.ui.CrabUI import CrabUI
+from lib.ui.FrameDecorators import FrameDecoFactory
+from lib.ui.RedDotsUI import RedDotsUI
+from lib.ui.UserInput import UserInput
 
 
 class ScientistUI:
@@ -56,7 +53,6 @@ class ScientistUI:
         self.__redDotsData = RedDotsData.createFromFolderStruct(folderStruct)
 
         self.__seeFloor = SeeFloor.createFromFolderStruct(folderStruct)
-        self.__seeFloorNoBadBlocks = SeeFloorNoBadBlocks.createFromFolderStruct(folderStruct)
 
         self.__crabData = CrabsData.createFromFolderStruct(self.__folderStruct)
         self.__redDotsUI = RedDotsUI(self.__videoStream)
@@ -207,7 +203,7 @@ class ScientistUI:
 
     def __show_crab_ui(self, frame_id):
         crabPoint = self.__imageWin.featureCoordiate
-        crabUI = CrabUI(self.__crabData, self.__videoStream, self.__seeFloorNoBadBlocks, self.__folderStruct, frame_id, crabPoint)
+        crabUI = CrabUI(self.__crabData, self.__videoStream, self.__seeFloor, self.__folderStruct, frame_id, crabPoint)
         crabUI.showCrabWindow()
 
     def __show_red_dot_ui(self, frame_id):
@@ -262,7 +258,7 @@ class ScientistUI:
                                               self.__markersData, self.__videoStream)
 
         if self.__zoom:
-            collage = ImagesCollage(frameImagesFactory, self.__seeFloorNoBadBlocks)
+            collage = ImagesCollage(frameImagesFactory, self.__seeFloor)
             imageToShow = collage.constructCollage(frame, frame.frame_height() / 2)
         else:
             imageToShow = self.__constructFrameImage(frameImagesFactory, frame)

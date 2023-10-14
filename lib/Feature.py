@@ -1,12 +1,13 @@
+from __future__ import annotations
+
 from math import ceil
 
 from lib.Camera import Camera
-from lib.Frame import Frame
 from lib.common import Point, Box
+from lib.data.SeeFloor import SeeFloor
 
 
 #TODO: SeeFloorSection and Feature classes are very similar. The concepts are not clearly defined/separated. Refactor!
-from lib.data.SeeFloorNoBadBlocks import SeeFloorNoBadBlocks
 
 
 class Feature:
@@ -19,9 +20,7 @@ class Feature:
     #__frameID
     #__location
 
-
-    def __init__(self, seeFloor, frameID, location, boxSize):
-        # type: (SeeFloorNoBadBlocks, int, Point, int) -> Feature
+    def __init__(self, seeFloor: SeeFloor, frameID: int, location: Point, boxSize: int) -> Feature:
         self.__seeFloor = seeFloor
         self.__frameID = frameID
         self.__location = location
