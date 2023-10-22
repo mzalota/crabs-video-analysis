@@ -4,7 +4,7 @@ from lib.data.DriftData import DriftData
 from lib.drifts.DriftManualData import DriftManualData
 from lib.drifts.DriftRawData import DriftRawData
 from lib.data.RedDotsData import RedDotsData
-from lib.data.SeeFloor import SeeFloor
+from lib.seefloor.SeeFloor import SeeFloor
 from lib.infra.Configurations import Configurations
 
 

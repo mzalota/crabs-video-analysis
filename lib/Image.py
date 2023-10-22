@@ -4,7 +4,10 @@ import cv2
 import numpy as np
 
 from lib.FolderStructure import FolderStructure
-from lib.common import Point, Box, Vector
+from lib.model.Box import Box
+from lib.model.Vector import Vector
+from lib.model.Point import Point
+
 
 class Image:
     def __init__(self, imageAsNumpyArray):

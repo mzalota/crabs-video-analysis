@@ -5,7 +5,8 @@ import cv2
 from lib.Frame import Frame
 from lib.Image import Image
 from lib.reddots.RedDot import RedDot
-from lib.common import Point, Box
+from lib.model.Box import Box
+from lib.model.Point import Point
 
 
 class RedDotsDetector:

@@ -3,8 +3,9 @@ from __future__ import annotations
 from math import ceil
 
 from lib.Camera import Camera
-from lib.common import Point, Box
-from lib.data.SeeFloor import SeeFloor
+from lib.model.Box import Box
+from lib.model.Point import Point
+from lib.seefloor.SeeFloor import SeeFloor
 
 
 #TODO: SeeFloorSection and Feature classes are very similar. The concepts are not clearly defined/separated. Refactor!

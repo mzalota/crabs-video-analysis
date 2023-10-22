@@ -8,7 +8,7 @@ import numpy as np
 
 from lib.Frame import Frame
 from lib.Image import Image
-from lib.common import Point
+from lib.model.Point import Point
 
 
 class Camera:

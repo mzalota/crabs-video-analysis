@@ -1,7 +1,8 @@
 from lib.Image import Image
 from lib.ImageWindow import ImageWindow
 from lib.ui.UserInput import UserInput
-from lib.common import Box, Point
+from lib.model.Box import Box
+from lib.model.Point import Point
 
 
 class RedDotsUI:

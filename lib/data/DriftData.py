@@ -3,7 +3,7 @@ import math
 import pandas as pd
 
 from lib.data.PandasWrapper import PandasWrapper
-from lib.common import Vector
+from lib.model.Vector import Vector
 from lib.FolderStructure import FolderStructure
 
 

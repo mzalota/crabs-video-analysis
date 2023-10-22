@@ -1,7 +1,7 @@
 from unittest import TestCase
 from unittest.mock import MagicMock
 
-from lib.data.SeeFloorSlicer import SeeFloorSlicer
+from lib.seefloor.SeeFloorSlicer import SeeFloorSlicer
 
 
 

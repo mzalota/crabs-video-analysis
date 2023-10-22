@@ -6,12 +6,14 @@ from lib.Camera import Camera
 from lib.Frame import Frame
 from lib.Image import Image
 from lib.VideoStream import VideoStream
-from lib.common import Point, Vector, Box
+from lib.model.Box import Box
+from lib.model.Vector import Vector
+from lib.model.Point import Point
 from lib.data import RedDotsData
 from lib.data.BadFramesData import BadFramesData
 from lib.data.CrabsData import CrabsData
 from lib.data.MarkersData import MarkersData
-from lib.data.SeeFloor import SeeFloor
+from lib.seefloor.SeeFloor import SeeFloor
 from lib.imageProcessing.Analyzer import Analyzer
 from lib.imageProcessing.Rectificator import Rectificator
 from lib.model.Crab import Crab

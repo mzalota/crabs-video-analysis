@@ -4,18 +4,17 @@ import numpy
 
 from lib.Camera import Camera
 from lib.VideoStream import VideoStream
-from lib.common import Point
-from lib.data.BadFramesData import BadFramesData
+from lib.model.Point import Point
 from lib.data.DriftData import DriftData
-from lib.data.GraphPlotter import GraphPlotter
+from lib.infra.GraphPlotter import GraphPlotter
 from lib.data.PandasWrapper import PandasWrapper
 from lib.data.RedDotsData import RedDotsData
 from lib.FolderStructure import FolderStructure
 import pandas as pd
 
-from lib.data.SeeFloorFast import SeeFloorFast
-from lib.data.PointTranslator import PointTranslator
-from lib.data.SeeFloorSlicer import SeeFloorSlicer
+from lib.seefloor.SeeFloorFast import SeeFloorFast
+from lib.seefloor.PointTranslator import PointTranslator
+from lib.seefloor.SeeFloorSlicer import SeeFloorSlicer
 
 
 class SeeFloor(PandasWrapper):

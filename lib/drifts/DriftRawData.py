@@ -3,8 +3,7 @@ import pandas as pd
 #import statistics as statistics
 from lib.Camera import Camera
 from lib.FolderStructure import FolderStructure
-from lib.Frame import Frame
-from lib.data.GraphPlotter import GraphPlotter
+from lib.infra.GraphPlotter import GraphPlotter
 from lib.drifts.DriftManualData import DriftManualData
 
 from lib.data.PandasWrapper import PandasWrapper

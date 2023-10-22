@@ -1,6 +1,6 @@
 from lib.Camera import Camera
-from lib.Frame import Frame
-from lib.common import Point, Vector
+from lib.model.Vector import Vector
+from lib.model.Point import Point
 
 
 class FramePhysics:

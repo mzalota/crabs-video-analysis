@@ -1,7 +1,7 @@
 from lib.Camera import Camera
-from lib.common import Point
-from lib.data.PointTranslator import PointTranslator
-from lib.data.SeeFloorFast import SeeFloorFast
+from lib.model.Point import Point
+from lib.seefloor.PointTranslator import PointTranslator
+from lib.seefloor.SeeFloorFast import SeeFloorFast
 from lib.infra.MyTimer import MyTimer
 
 class SeeFloorSlicer:

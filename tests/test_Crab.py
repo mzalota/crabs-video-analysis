@@ -3,7 +3,7 @@ from os import getcwd
 from unittest import TestCase
 
 from lib.Camera import Camera
-from lib.common import Point
+from lib.model.Point import Point
 from lib.data.CrabsData import CrabsData
 from lib.model.Crab import Crab
 

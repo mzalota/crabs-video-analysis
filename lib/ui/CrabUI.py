@@ -1,10 +1,12 @@
 from lib.FolderStructure import FolderStructure
 from lib.VideoStream import VideoStream
-from lib.data import SeeFloor
+from lib.seefloor import SeeFloor
 from lib.data.CrabsData import CrabsData
 from lib.Feature import Feature
 from lib.ImageWindow import ImageWindow
-from lib.common import Box, Point, Vector
+from lib.model.Box import Box
+from lib.model.Vector import Vector
+from lib.model.Point import Point
 from lib.model.Crab import Crab
 
 

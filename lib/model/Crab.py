@@ -1,6 +1,6 @@
 from lib.Camera import Camera
-from lib.Frame import Frame
-from lib.common import Point, Box
+from lib.model.Box import Box
+from lib.model.Point import Point
 
 
 class Crab:

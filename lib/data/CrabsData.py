@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from typing import List, Dict
+from typing import List
 
 import pandas as pd
 from datetime import datetime
 from lib.FolderStructure import FolderStructure
-from lib.common import Box
+from lib.model.Box import Box
 from lib.data.PandasWrapper import PandasWrapper
-from lib.data.SeeFloor import SeeFloor
+from lib.seefloor.SeeFloor import SeeFloor
 from lib.infra.DataframeWrapper import DataframeWrapper
 from lib.model.Crab import Crab
 

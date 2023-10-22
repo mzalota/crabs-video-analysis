@@ -7,9 +7,9 @@ from lib.Camera import Camera
 from lib.infra.Configurations import Configurations
 from lib.FolderStructure import FolderStructure
 from lib.VideoStream import VideoStream
-from lib.data.GraphPlotter import GraphPlotter
+from lib.infra.GraphPlotter import GraphPlotter
 from lib.data.PandasWrapper import PandasWrapper
-from lib.common import Point
+from lib.model.Point import Point
 from lib.data.RedDotsManualData import RedDotsManualData
 from lib.data.RedDotsRawData import RedDotsRawData
 

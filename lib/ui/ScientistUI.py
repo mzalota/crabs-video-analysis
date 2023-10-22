@@ -6,12 +6,12 @@ from lib.Image import Image
 from lib.ImageWindow import ImageWindow
 from lib.ImagesCollage import ImagesCollage
 from lib.VideoStream import VideoStreamException
-from lib.common import Point
+from lib.model.Point import Point
 from lib.data.BadFramesData import BadFramesData
 from lib.data.CrabsData import CrabsData
 from lib.data.MarkersData import MarkersData
 from lib.data.RedDotsData import RedDotsData
-from lib.data.SeeFloor import SeeFloor
+from lib.seefloor.SeeFloor import SeeFloor
 from lib.drifts.DriftManualData import DriftManualData
 from lib.imageProcessing.Rectificator import Rectificator
 from lib.infra.MyTimer import MyTimer

@@ -1,7 +1,8 @@
 from lib.FrameId import FrameId
 from lib.FramePhysics import FramePhysics
-from lib.common import Vector, Point
-from lib.data.SeeFloorFast import SeeFloorFast
+from lib.model.Vector import Vector
+from lib.model.Point import Point
+from lib.seefloor.SeeFloorFast import SeeFloorFast
 from lib.infra.MyTimer import MyTimer
 
 

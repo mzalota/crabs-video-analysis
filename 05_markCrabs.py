@@ -6,13 +6,12 @@ from lib.CommandLineLauncher import CommandLineLauncher
 from lib.FolderStructure import FolderStructure
 from lib.ImageWindow import ImageWindow
 from lib.VideoStream import VideoStream
-from lib.common import Point
+from lib.model.Point import Point
 from lib.infra.Configurations import Configurations
 from lib.infra.MyTimer import MyTimer
 from lib.seefloor.InterpolateController import InterpolateController
 from lib.ui.FileOpenUI import FileOpenUI
 from lib.ui.ScientistUI import ScientistUI
-from lib.ui.StreamToLogger import StreamToLogger
 
 print("Launched markCrabs script")
 

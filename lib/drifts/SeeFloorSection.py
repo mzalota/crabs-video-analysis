@@ -4,7 +4,10 @@ import cv2
 
 from lib.Frame import Frame
 from lib.Image import Image
-from lib.common import Box, Point, Vector
+from lib.model.Box import Box
+from lib.model.Vector import Vector
+from lib.model.Point import Point
+
 
 class SeeFloorSection:
     #__threshold_for_matching = 0.6

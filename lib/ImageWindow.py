@@ -2,7 +2,8 @@ import cv2
 from pyautogui import press
 
 from lib.Image import Image
-from lib.common import Box, Point
+from lib.model.Box import Box
+from lib.model.Point import Point
 
 
 class ImageWindow:

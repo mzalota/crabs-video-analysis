@@ -4,7 +4,9 @@ import traceback
 import numpy
 
 from lib.drifts.FeatureMatcher import FeatureMatcher
-from lib.common import Box, Point, Vector
+from lib.model.Box import Box
+from lib.model.Vector import Vector
+from lib.model.Point import Point
 from lib.Frame import Frame
 from lib.ImageWindow import ImageWindow
 from lib.infra.MyTimer import MyTimer

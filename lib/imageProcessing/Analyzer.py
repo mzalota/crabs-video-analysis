@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 
 from lib.Image import Image
-from lib.common import Point
 
 
 class Analyzer:

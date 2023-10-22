@@ -5,8 +5,8 @@ from lib.data.BadFramesData import BadFramesData
 from lib.data.DriftData import DriftData
 from lib.data.PandasWrapper import PandasWrapper
 from lib.data.RedDotsData import RedDotsData
-from lib.data.SeeFloor import SeeFloor
-from lib.data.SeeFloorSlicer import SeeFloorSlicer
+from lib.seefloor.SeeFloor import SeeFloor
+from lib.seefloor.SeeFloorSlicer import SeeFloorSlicer
 
 
 class SeeFloorWithBadBlocks(SeeFloor):
