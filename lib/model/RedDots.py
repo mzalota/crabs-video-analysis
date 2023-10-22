@@ -1,4 +1,4 @@
-from lib.Camera import Camera
+from lib.imageProcessing.Camera import Camera
 from lib.reddots.RedDot import RedDot
 
 

@@ -1,6 +1,6 @@
 #from pandas.compat.numpy import np
 
-from lib.Image import Image
+from lib.model.Image import Image
 
 class Frame:
     #__frameID = None

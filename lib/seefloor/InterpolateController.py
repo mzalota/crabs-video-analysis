@@ -1,4 +1,4 @@
-from lib.FolderStructure import FolderStructure
+from lib.infra.FolderStructure import FolderStructure
 from lib.data.CrabsData import CrabsData
 from lib.data.DriftData import DriftData
 from lib.drifts.DriftManualData import DriftManualData

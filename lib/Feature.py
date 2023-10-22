@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from math import ceil
 
-from lib.Camera import Camera
+from lib.imageProcessing.Camera import Camera
 from lib.model.Box import Box
 from lib.model.Point import Point
 from lib.seefloor.SeeFloor import SeeFloor

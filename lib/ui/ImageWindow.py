@@ -1,7 +1,7 @@
 import cv2
 from pyautogui import press
 
-from lib.Image import Image
+from lib.model.Image import Image
 from lib.model.Box import Box
 from lib.model.Point import Point
 
@@ -107,7 +107,7 @@ class ImageWindow:
         point1 = self.featureCoordiate
 
         img = Image(image)
-        img.drawBoxOnImage(point1.boxAroundPoint(3))
+        img.drawBoxOnImage(Box.boxAroundPoint(point1, 3))
 
         keyPress = self.showWindowAndWaitForClick(image)
         if not self.userClickedMouse():

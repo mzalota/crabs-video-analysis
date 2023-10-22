@@ -3,7 +3,7 @@ from __future__ import annotations
 import cv2
 import numpy as np
 
-from lib.FolderStructure import FolderStructure
+from lib.infra.FolderStructure import FolderStructure
 from lib.model.Box import Box
 from lib.model.Vector import Vector
 from lib.model.Point import Point

@@ -8,7 +8,7 @@ from lib.model.Box import Box
 from lib.model.Vector import Vector
 from lib.model.Point import Point
 from lib.Frame import Frame
-from lib.ImageWindow import ImageWindow
+from lib.ui.ImageWindow import ImageWindow
 from lib.infra.MyTimer import MyTimer
 from lib.VideoStream import VideoStreamException
 
@@ -76,7 +76,7 @@ class VelocityDetector():
                     vector_shift_up = Vector(0, -50)
                     # vector_shift_up = Vector(0, 0)
                     draw_starting_point2 = draw_starting_point.translateBy(vector_shift_up)
-                    without_drift = drift_vector.asPoint().translateBy(Vector(-driftVector.x, -driftVector.y))
+                    without_drift = drift_vector.translateBy(Vector(-driftVector.x, -driftVector.y))
                     img.drawDriftVectorOnImage(without_drift, draw_starting_point2)
 
                     without_drift_elongated = Point(without_drift.x*20, without_drift.y)

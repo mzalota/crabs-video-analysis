@@ -1,8 +1,8 @@
 import sys
 
-from lib.Camera import Camera
-from lib.CommandLineLauncher import CommandLineLauncher
-from lib.FolderStructure import FolderStructure
+from lib.imageProcessing.Camera import Camera
+from lib.infra.CommandLineLauncher import CommandLineLauncher
+from lib.infra.FolderStructure import FolderStructure
 from lib.infra.Configurations import Configurations
 from lib.ui.FileOpenUI import FileOpenUI
 from lib.VideoToImages import VideoToImages

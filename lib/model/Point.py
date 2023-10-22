@@ -2,10 +2,6 @@ from __future__ import annotations
 
 import math
 
-from lib.model.Box import Box
-from lib.model.Vector import Vector
-
-
 class Point:
     def __init__(self, x, y):
         self.x = x
@@ -32,7 +28,6 @@ class Point:
         return "(" + str(self.x) + "," + str(self.y) + ")"
 
 
-
     def calculateMidpoint(self, point2):
         # type: (Point) -> Point
         x1 = self.x
@@ -57,15 +52,12 @@ class Point:
         dist = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
         return dist
 
-    def translateBy(self, vector: Vector) -> Point:
+    # def translateBy(self, vector: Vector) -> Point:
+    def translateBy(self, vector: Point) -> Point:
         return Point(int(self.x + vector.x), int(self.y + vector.y))
 
-    def translate_by_float(self, vector: Vector) -> Point:
+    def translate_by_float(self, vector: Point) -> Point:
         return Point(self.x + vector.x, self.y + vector.y)
 
     def translate_by_xy(self, x: int, y: int):
-        return self.translateBy(Vector(x, y))
-
-    def boxAroundPoint(self, boxSize):
-        offset = int(boxSize / 2)
-        return Box(Point(max(self.x - offset, 1), max(self.y - offset, 1)), Point(self.x + offset, self.y + offset))
+        return self.translateBy(Point(x, y))

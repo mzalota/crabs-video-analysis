@@ -3,9 +3,9 @@ import math
 import pandas as pd
 import numpy
 
-from lib.Camera import Camera
+from lib.imageProcessing.Camera import Camera
 from lib.infra.Configurations import Configurations
-from lib.FolderStructure import FolderStructure
+from lib.infra.FolderStructure import FolderStructure
 from lib.VideoStream import VideoStream
 from lib.infra.GraphPlotter import GraphPlotter
 from lib.data.PandasWrapper import PandasWrapper

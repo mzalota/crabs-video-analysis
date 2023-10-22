@@ -3,7 +3,7 @@ from __future__ import annotations
 import cv2
 
 from lib.Frame import Frame
-from lib.Image import Image
+from lib.model.Image import Image
 from lib.reddots.RedDot import RedDot
 from lib.model.Box import Box
 from lib.model.Point import Point

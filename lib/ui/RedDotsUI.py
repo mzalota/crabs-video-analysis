@@ -1,5 +1,5 @@
-from lib.Image import Image
-from lib.ImageWindow import ImageWindow
+from lib.model.Image import Image
+from lib.ui.ImageWindow import ImageWindow
 from lib.ui.UserInput import UserInput
 from lib.model.Box import Box
 from lib.model.Point import Point

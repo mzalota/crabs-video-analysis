@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import numpy
 
-from lib.Camera import Camera
+from lib.imageProcessing.Camera import Camera
 from lib.VideoStream import VideoStream
 from lib.model.Point import Point
 from lib.data.DriftData import DriftData
 from lib.infra.GraphPlotter import GraphPlotter
 from lib.data.PandasWrapper import PandasWrapper
 from lib.data.RedDotsData import RedDotsData
-from lib.FolderStructure import FolderStructure
+from lib.infra.FolderStructure import FolderStructure
 import pandas as pd
 
 from lib.seefloor.SeeFloorFast import SeeFloorFast

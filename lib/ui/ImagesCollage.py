@@ -2,7 +2,7 @@
 
 from lib.Frame import Frame
 from lib.ui.FrameDecorators import FrameDecoFactory
-from lib.Image import Image
+from lib.model.Image import Image
 
 
 class ImagesCollage:

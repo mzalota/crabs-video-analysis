@@ -1,9 +1,9 @@
 from os import getcwd, chdir
 from unittest import TestCase
 
-from lib.Camera import Camera
+from lib.imageProcessing.Camera import Camera
 from lib.Frame import Frame
-from lib.FramePhysics import FramePhysics
+from lib.seefloor.FramePhysics import FramePhysics
 from lib.model.Vector import Vector
 from lib.model.Point import Point
 

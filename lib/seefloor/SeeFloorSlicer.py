@@ -1,4 +1,4 @@
-from lib.Camera import Camera
+from lib.imageProcessing.Camera import Camera
 from lib.model.Point import Point
 from lib.seefloor.PointTranslator import PointTranslator
 from lib.seefloor.SeeFloorFast import SeeFloorFast

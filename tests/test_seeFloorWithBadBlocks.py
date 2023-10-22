@@ -2,7 +2,7 @@ import os
 from unittest import TestCase
 import pandas as pd
 
-from lib.Camera import Camera
+from lib.imageProcessing.Camera import Camera
 from lib.Frame import Frame
 from lib.data.BadFramesData import BadFramesData
 from lib.data.DriftData import DriftData

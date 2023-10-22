@@ -1,10 +1,10 @@
 import traceback
 
-from lib.FolderStructure import FolderStructure
+from lib.infra.FolderStructure import FolderStructure
 from lib.Frame import Frame
-from lib.Image import Image
-from lib.ImageWindow import ImageWindow
-from lib.ImagesCollage import ImagesCollage
+from lib.model.Image import Image
+from lib.ui.ImageWindow import ImageWindow
+from lib.ui.ImagesCollage import ImagesCollage
 from lib.VideoStream import VideoStreamException
 from lib.model.Point import Point
 from lib.data.BadFramesData import BadFramesData

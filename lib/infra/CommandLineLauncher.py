@@ -1,6 +1,6 @@
 import os
 
-from lib.FolderStructure import FolderStructure
+from lib.infra.FolderStructure import FolderStructure
 
 
 class CommandLineLauncher:

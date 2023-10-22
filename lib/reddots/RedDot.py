@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from skimage import measure
 
-from lib.Image import Image
+from lib.model.Image import Image
 from lib.model.Box import Box
 from lib.model.Point import Point
 

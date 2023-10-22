@@ -1,4 +1,4 @@
-from lib.ImageWindow import ImageWindow
+from lib.ui.ImageWindow import ImageWindow
 
 
 class UserInput():

@@ -5,8 +5,8 @@ import os
 import numpy as np
 
 # import Image
-from lib.Camera import Camera
-from lib.Image import Image
+from lib.imageProcessing.Camera import Camera
+from lib.model.Image import Image
 
 
 class VideoStreamException(Exception):

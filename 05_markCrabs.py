@@ -1,10 +1,10 @@
 import sys
 import cv2
 
-from lib.Camera import Camera
-from lib.CommandLineLauncher import CommandLineLauncher
-from lib.FolderStructure import FolderStructure
-from lib.ImageWindow import ImageWindow
+from lib.imageProcessing.Camera import Camera
+from lib.infra.CommandLineLauncher import CommandLineLauncher
+from lib.infra.FolderStructure import FolderStructure
+from lib.ui.ImageWindow import ImageWindow
 from lib.VideoStream import VideoStream
 from lib.model.Point import Point
 from lib.infra.Configurations import Configurations

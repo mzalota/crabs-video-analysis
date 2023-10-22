@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from lib.FolderStructure import FolderStructure
+from lib.infra.FolderStructure import FolderStructure
 from lib.model.Point import Point
 from lib.drifts.DriftManualData import DriftManualData
 import pandas as pd

@@ -3,7 +3,7 @@ import uuid
 import cv2
 
 from lib.Frame import Frame
-from lib.Image import Image
+from lib.model.Image import Image
 from lib.model.Box import Box
 from lib.model.Vector import Vector
 from lib.model.Point import Point

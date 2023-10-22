@@ -1,6 +1,6 @@
 from configparser import ConfigParser
 
-from lib.FolderStructure import FolderStructure
+from lib.infra.FolderStructure import FolderStructure
 from lib.infra.Defaults import Defaults
 
 

@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
 
-from lib.Image import Image
-from lib.Camera import Camera
+from lib.model.Image import Image
+from lib.imageProcessing.Camera import Camera
 from lib.model.Point import Point
 from lib.VideoStream import VideoStream
 from lib.imageProcessing.EuclidianPlane import EuclidianPlane

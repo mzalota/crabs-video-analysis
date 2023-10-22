@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typing import List, Dict
 
-from lib.Camera import Camera
+from lib.imageProcessing.Camera import Camera
 from lib.Frame import Frame
-from lib.Image import Image
+from lib.model.Image import Image
 from lib.VideoStream import VideoStream
 from lib.model.Box import Box
 from lib.model.Vector import Vector

@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 
 from lib.Frame import Frame
-from lib.Image import Image
+from lib.model.Image import Image
 from lib.model.Point import Point
 
 

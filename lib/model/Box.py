@@ -64,6 +64,11 @@ class Box:
         # type: (int, int) -> Box
         return Box(Point(0, 0), Point(x_width, y_height))
 
+    @staticmethod
+    def boxAroundPoint(point : Point, boxSize: int) -> Box:
+        offset = int(boxSize / 2)
+        return Box(Point(max(point.x - offset, 1), max(point.y - offset, 1)), Point(point.x + offset, point.y + offset))
+
     def width(self):
         return self.bottomRight.x - self.topLeft.x
 

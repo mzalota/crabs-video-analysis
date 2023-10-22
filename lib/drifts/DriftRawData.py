@@ -1,8 +1,8 @@
 import numpy
 import pandas as pd
 #import statistics as statistics
-from lib.Camera import Camera
-from lib.FolderStructure import FolderStructure
+from lib.imageProcessing.Camera import Camera
+from lib.infra.FolderStructure import FolderStructure
 from lib.infra.GraphPlotter import GraphPlotter
 from lib.drifts.DriftManualData import DriftManualData
 

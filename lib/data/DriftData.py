@@ -4,7 +4,7 @@ import pandas as pd
 
 from lib.data.PandasWrapper import PandasWrapper
 from lib.model.Vector import Vector
-from lib.FolderStructure import FolderStructure
+from lib.infra.FolderStructure import FolderStructure
 
 
 class DriftData(PandasWrapper):

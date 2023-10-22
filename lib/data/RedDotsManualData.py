@@ -1,10 +1,9 @@
 import math
 
 import numpy
-import numpy as np
 import pandas as pd
 
-from lib.FolderStructure import FolderStructure
+from lib.infra.FolderStructure import FolderStructure
 from lib.data.PandasWrapper import PandasWrapper
 from lib.data.RedDotsRawData import RedDotsRawData
 from lib.infra.DataframeWrapper import DataframeWrapper

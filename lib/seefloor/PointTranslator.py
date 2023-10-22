@@ -1,5 +1,5 @@
-from lib.FrameId import FrameId
-from lib.FramePhysics import FramePhysics
+from lib.model.FrameId import FrameId
+from lib.seefloor.FramePhysics import FramePhysics
 from lib.model.Vector import Vector
 from lib.model.Point import Point
 from lib.seefloor.SeeFloorFast import SeeFloorFast

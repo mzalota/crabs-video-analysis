@@ -1,4 +1,4 @@
-from lib.Camera import Camera
+from lib.imageProcessing.Camera import Camera
 from lib.model.Box import Box
 from lib.model.Point import Point
 
