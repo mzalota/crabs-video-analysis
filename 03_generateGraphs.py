@@ -17,6 +17,9 @@ if folderStruct is None:
     # rootDir = "C:/data/AnjutkaVideo/2020-Kara/2020.09.16_6922"
     # videoFileName = "R_20200916_194953_20200916_195355"
 
+    # rootDir = "C:/data/AnjutkaVideo/2019/c6259"
+    # videoFileName = "V3"
+
     show_file_select = FileOpenUI()
     rootDir = show_file_select.root_dir()
     videoFileName = show_file_select.filename()

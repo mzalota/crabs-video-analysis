@@ -202,7 +202,11 @@ class ScientistUI:
         self.__seeFloor.setBadFramesData(self.__badFramesData)
 
     def __show_crab_ui(self, frame_id):
+        timer = MyTimer("start translatePointCoordinate")
         crabPoint = self.__imageWin.featureCoordiate
+        crabUI = CrabUI(self.__crabData, self.__videoStream, self.__seeFloorNoBadBlocks, self.__folderStruct, frame_id, crabPoint)
+        timer.lap("__show_crab_ui. clicked on crab at: "+str(crabPoint))
+
         crabUI = CrabUI(self.__crabData, self.__videoStream, self.__seeFloor, self.__folderStruct, frame_id, crabPoint)
         crabUI.showCrabWindow()
 

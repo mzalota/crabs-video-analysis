@@ -202,10 +202,9 @@ class DecoUndistortedImage(FrameDecorator):
         FrameDecorator.__init__(self, Frame(frame_id, videoStream))
         self.__videoStream = videoStream
 
-    def getImgObj(self):
-        # type: () -> Image
-        return self.__videoStream.read_image_undistorted(self.getFrameID())
-
+    def getImgObj(self) -> Image:
+        image = self.__videoStream._read_image_raw(self.getFrameID())
+        return Camera.create().undistort_image(Image(image))
 
 class DecoRectifiedImage(FrameDecorator):
     def __init__(self, frame_id: int, videoStream: VideoStream) -> DecoRectifiedImage:

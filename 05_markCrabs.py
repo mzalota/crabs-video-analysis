@@ -21,6 +21,9 @@ if folderStruct is None:
     # videoFileName = "R_20200916_194953_20200916_195355"
     # videoFileName = "R_20200916_202543_20200916_202941"
 
+    # rootDir = "C:/data/AnjutkaVideo/2019/c6259"
+    # videoFileName = "V3"
+
     show_file_select = FileOpenUI()
     rootDir = show_file_select.root_dir()
     videoFileName = show_file_select.filename()
@@ -48,7 +51,7 @@ timer.lap("Initialized ImageWindow")
 scientistUI = ScientistUI(imageWin, folderStruct, videoStream)
 timer.lap("Initialized ScientistUI")
 
-# Uncomment two lines below to get a nice summary which function uses the most time during excecution
+# Uncomment two lines below to get a nice summary which function uses the most time during execution
 # import cProfile
 # cProfile.run('scientistUI.processVideo()')
 

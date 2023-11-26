@@ -7,14 +7,14 @@ from lib.model.Vector import Vector
 from lib.infra.FolderStructure import FolderStructure
 
 
-class DriftData(PandasWrapper):
+class DriftInterpolatedData(PandasWrapper):
     # __driftData = None
     __COLNAME_driftX = 'driftX'
     __COLNAME_driftY = 'driftY'
     __COLNAME_frameNumber = 'frameNumber'
 
     def __init__(self, driftData):
-        # type: (pd.DataFrame) -> DriftData
+        # type: (pd.DataFrame) -> DriftInterpolatedData
         self.setDF(driftData)
 
     def setDF(self, driftData):
@@ -39,28 +39,28 @@ class DriftData(PandasWrapper):
 
     @staticmethod
     def createFromFolderStruct(folderStruct):
-        # type: (FolderStructure) -> DriftData
+        # type: (FolderStructure) -> DriftInterpolatedData
         filepath = folderStruct.getDriftsFilepath()
         if folderStruct.fileExists(filepath):
             df = PandasWrapper.readDataFrameFromCSV(filepath)
             # dfRaw = dfRaw.rename(columns={dfRaw.columns[0]: "rowNum"}) # rename first column to be rowNum
         else:
-            df = DriftData.__createEmptyDF()
+            df = DriftInterpolatedData.__createEmptyDF()
 
-        return DriftData(df)
+        return DriftInterpolatedData(df)
 
     @staticmethod
     def __createEmptyDF():
-        column_names = [DriftData.__COLNAME_frameNumber,
-                        DriftData.__COLNAME_driftX,
-                        DriftData.__COLNAME_driftY]
+        column_names = [DriftInterpolatedData.__COLNAME_frameNumber,
+                        DriftInterpolatedData.__COLNAME_driftX,
+                        DriftInterpolatedData.__COLNAME_driftY]
         df = pd.DataFrame(columns=column_names)
         return df
 
     @staticmethod
     def createFromDataFrame(driftData):
-        # type: (pd.DataFrame) -> DriftData
-        return DriftData(driftData)
+        # type: (pd.DataFrame) -> DriftInterpolatedData
+        return DriftInterpolatedData(driftData)
 
     def saveToFile(self, filepath):
         # type: (String) -> None

@@ -110,7 +110,7 @@ class CrabsData(PandasWrapper):
         #print ("count in tmpDF", len(tmpDF.index),len(self.__crabsDF))
 
         # crabs_list_of_dict = tmpDF[["frameNumber", "cranbCoordinateBox"]].reset_index(drop=True).to_dict("records")
-        crabs_list_of_dict = DataframeWrapper(tmpDF).to_dict()
+        crabs_list_of_dict = DataframeWrapper(tmpDF).as_records_list()
 
         #example of the output
         #[{'crabLocationX': 221, 'crabLocationY': 368, 'frameNumber': 10026},
@@ -132,7 +132,7 @@ class CrabsData(PandasWrapper):
         seed_df = self.__get_pandas_df()[["frameNumber", "crabWidthPixels", "crabLocationX", "crabLocationY", "cranbCoordinateBox"]]
 
         result_rows = list()
-        for markedCrab in DataframeWrapper(seed_df).to_dict():
+        for markedCrab in DataframeWrapper(seed_df).as_records_list():
             crabBox = Box.from_string(markedCrab['cranbCoordinateBox'])
             frame_id = markedCrab['frameNumber']
             crab = Crab(frame_id, crabBox.topLeft, crabBox.bottomRight)

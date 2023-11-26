@@ -69,10 +69,6 @@ class VideoStream():
         # type: () -> Image
         return Image(self.read_image(frameID))
 
-    def read_image_undistorted(self, frameID: int) -> np:
-        image = self._read_image_raw(frameID)
-        image = Camera.create().undistort_image(Image(image))
-        return image
 
     def _read_image_raw(self, frameID: int) -> np:
         self._vidcap.set(cv2.CAP_PROP_POS_FRAMES, float(frameID))

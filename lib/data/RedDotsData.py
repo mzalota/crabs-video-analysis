@@ -4,6 +4,8 @@ import pandas as pd
 import numpy
 
 from lib.imageProcessing.Camera import Camera
+from lib.Camera import Camera
+from lib.seefloor.VerticalSpeed import VerticalSpeed
 from lib.infra.Configurations import Configurations
 from lib.infra.FolderStructure import FolderStructure
 from lib.VideoStream import VideoStream
@@ -12,6 +14,8 @@ from lib.data.PandasWrapper import PandasWrapper
 from lib.model.Point import Point
 from lib.data.RedDotsManualData import RedDotsManualData
 from lib.data.RedDotsRawData import RedDotsRawData
+from lib.infra.DataframeWrapper import DataframeWrapper
+from lib.model.RedDots import RedDots
 
 
 class RedDotsData(PandasWrapper):
@@ -39,6 +43,7 @@ class RedDotsData(PandasWrapper):
         # type: (FolderStructure, RedDotsManualData) -> RedDotsData
         self.__folderStruct = folderStruct
         self.__redDotsManual = redDotsManual
+        self.__df_as_dict = None
 
     @staticmethod
     def createFromFolderStruct(folderStruct):
@@ -75,39 +80,26 @@ class RedDotsData(PandasWrapper):
                 self.__interpolatedDF = PandasWrapper.empty_df()
             return self.__interpolatedDF
 
-    def scalingFactorColumn(self, driftsDetectionStep = 1):
-        # type: (int) -> pd.DataFrame
-
+    def scalingFactorColumn(self, driftsDetectionStep: int = 1) -> pd.DataFrame:
         df = self.getPandasDF()
-        dist_diff = df[self.__COLNAME_distance] - df[self.__COLNAME_distance].shift(periods=-1)
-        scaling_factor_single_step = dist_diff/df[self.__COLNAME_distance]
+        newDF = df[["frameNumber", "distance"]].copy()
+        verticalSpeedCalculator = VerticalSpeed(self.__folderStruct)
+        return verticalSpeedCalculator.vertical_speed_ratio(newDF, driftsDetectionStep)
 
-        result = scaling_factor_single_step+0
-        for increment in range(1, driftsDetectionStep):
-            prev = scaling_factor_single_step.shift(periods=-increment)
-            result = result + prev
-        df["scaling_factor"] = result
+    def saveGraphs(self, frame_id_from: int = 0, frame_id_to: int = 123456):
+        df = self.getPandasDF()
+        df_to_plot = df.loc[(df['frameNumber'] > frame_id_from) & (df['frameNumber'] < frame_id_to)]
+        xColumns = [self.COLNAME_frameNumber, self.__COLNAME_seconds]
 
-        return df[[self.COLNAME_frameNumber, "scaling_factor"]]
-
-
-    def saveGraphOfAngle(self):
         filePath = self.__folderStruct.getGraphRedDotsAngle()
         graphTitle = self.__folderStruct.getVideoFilename()+ " Red Dots Angle (degrees)"
-        xColumns = [self.COLNAME_frameNumber, self.__COLNAME_seconds]
-        yColumns = [self.__COLNAME_angle]
+        graphPlotter = GraphPlotter(df_to_plot)
+        graphPlotter.saveGraphToFile(xColumns, [self.__COLNAME_angle], graphTitle, filePath)
 
-        graphPlotter = GraphPlotter(self.getPandasDF())
-        graphPlotter.saveGraphToFile(xColumns, yColumns, graphTitle, filePath)
-
-    def saveGraphOfDistance(self):
         filePath = self.__folderStruct.getGraphRedDotsDistance()
         graphTitle = self.__folderStruct.getVideoFilename()+ " Red Dots Distance (pixels)"
-        xColumns = [self.COLNAME_frameNumber, self.__COLNAME_seconds]
-        yColumns = [self.__COLNAME_distance]
-
-        graphPlotter = GraphPlotter(self.getPandasDF())
-        graphPlotter.saveGraphToFile(xColumns, yColumns, graphTitle, filePath)
+        graphPlotter = GraphPlotter(df_to_plot)
+        graphPlotter.saveGraphToFile(xColumns, [self.__COLNAME_distance], graphTitle, filePath)
 
     def getCount(self):
         # type: () -> int
@@ -138,20 +130,15 @@ class RedDotsData(PandasWrapper):
         return dfResult["distance"].iloc[0]
 
     def get_camera_height_mm(self, frame_id: int):
-        camera = Camera.create()
 
         red_dot1 = self.getRedDot1(frame_id)
         red_dot2 = self.getRedDot2(frame_id)
+        dots = RedDots(frame_id, red_dot1, red_dot2)
 
-        distance_between_red_dots_px = self.__distance_px_between_red_dots(red_dot1, red_dot2)
-
-        depth_z_axis_to_seefloor_on_image = camera.distance_to_object(distance_between_red_dots_px,
+        camera = Camera.create()
+        depth_z_axis_to_seefloor_on_image = camera.distance_to_object(dots.distance(),
                                                                       self.red_dots_separation_mm())
-
         return depth_z_axis_to_seefloor_on_image
-
-    def __distance_px_between_red_dots(self, red_dot1, red_dot2):
-        return ((red_dot1.x - red_dot2.x) ** 2 + (red_dot1.y - red_dot2.y) ** 2) ** 0.5
 
     def zoom_instantaneous(self, frame_id):
         # type: (int) -> float
@@ -166,10 +153,30 @@ class RedDotsData(PandasWrapper):
         scalingFactor = distanceRef / distanceToScale
         return scalingFactor
 
+
     def getMMPerPixel(self, frameId):
         # type: (int) -> float
-        dfResult = self.__rowForFrame(frameId)
-        return dfResult["mm_per_pixel"].iloc[0]
+        self.__initialize_dict()
+        result = self.__df_as_dict[frameId]["mm_per_pixel"]
+
+        #old slower way to fetch record
+        # dfResult = self.__rowForFrame(frameId)
+        # result2 = dfResult["mm_per_pixel"].iloc[0]
+        # print("getMMPerPixel results: "+str(result)+ " _ "+str(result2))
+
+        return result
+
+    def __initialize_dict(self):
+        if self.__df_as_dict is not None:
+            return
+
+        list_of_rows = DataframeWrapper(self.getPandasDF()).as_records_list()
+        records_by_frame_id = dict()
+        for row in list_of_rows:
+            frame_id_of_row = row[self.COLNAME_frameNumber]
+            records_by_frame_id[frame_id_of_row] = row
+
+        self.__df_as_dict = records_by_frame_id
 
     def mm_per_pixel_undistorted(self, frameId : int) -> float:
         # type: (int) -> float
@@ -194,6 +201,7 @@ class RedDotsData(PandasWrapper):
         filepath = self.__folderStruct.getRedDotsInterpolatedFilepath()
         interpolatedDF.to_csv(filepath, sep='\t', index=False)
         self.__interpolatedDF = interpolatedDF
+        self.__df_as_dict = None # clear the cache of the DF. it will be need to be regenerated next time
 
     def __generateIntepolatedDF(self, minVal, maxVal):
         df = self.__add_rows_for_every_frame(minVal, maxVal)
@@ -207,6 +215,7 @@ class RedDotsData(PandasWrapper):
         self.__clearOutliersBasedOnDistance(df)
         df = self.__interpolate_values(df)
         self.__calculateDerivedValues(df)
+        df = self.__recalculate_distance_undistorted(df)
         return df
 
     def __add_rows_for_every_frame(self, minVal, maxVal):
@@ -222,15 +231,41 @@ class RedDotsData(PandasWrapper):
         df = df.combine_first(everyFrame).reset_index()
         return df
 
-    def __calculateDerivedValues(self, df):
+    def __calculateDerivedValues(self, df: pd.DataFrame):
         self.__recalculate_column_distance(df)
         self.__recalculate_column_angle(df)
         df[self.__COLNAME_seconds] = df[self.COLNAME_frameNumber]/VideoStream.FRAMES_PER_SECOND
 
-    def __recalculate_column_distance(self, df):
-        df['distance'] = pow(pow(df["centerPoint_x_dot2"] - df["centerPoint_x_dot1"], 2) + pow(
-            df["centerPoint_y_dot2"] - df["centerPoint_y_dot1"], 2), 0.5)  # .astype(int)
-        df[self.__COLNAME_mm_per_pixel] = self.red_dots_separation_mm() / df['distance']
+
+    def __recalculate_column_distance(self, df: pd.DataFrame):
+        df[self.__COLNAME_distance] = pow(pow(df["centerPoint_x_dot2"] - df["centerPoint_x_dot1"], 2) + pow(df["centerPoint_y_dot2"] - df["centerPoint_y_dot1"], 2), 0.5)  # .astype(int)
+        df[self.__COLNAME_mm_per_pixel] = self.red_dots_separation_mm() / df[self.__COLNAME_distance]
+
+    def __recalculate_distance_undistorted(self, df: pd.DataFrame):
+        points = DataframeWrapper(df).as_records_dict("frameNumber")
+        camera = Camera.create()
+        result_dict = list()
+        for frame_id in points:
+            point_x_dot_1 = points[frame_id]["centerPoint_x_dot1"]
+            point_y_dot_1 = points[frame_id]["centerPoint_y_dot1"]
+            point_x_dot_2 = points[frame_id]["centerPoint_x_dot2"]
+            point_y_dot_2 = points[frame_id]["centerPoint_y_dot2"]
+
+            point_1 = Point(point_x_dot_1, point_y_dot_1)
+            point_2 = Point(point_x_dot_2, point_y_dot_2)
+            distance_raw = point_1.distanceTo(point_2)
+
+            point_1_undistorted = camera.undistort_point(point_1)
+            point_2_undistorted = camera.undistort_point(point_2)
+            distance_undistorted = point_1_undistorted.distanceTo(point_2_undistorted)
+
+            result_dict.append((frame_id, distance_undistorted, distance_raw))
+
+        df_new_column = pd.DataFrame.from_records(result_dict,
+                                                  columns=['frameNumber', 'distance_px_undistort', "distance_px"])
+
+        df = pd.merge(df, df_new_column, on='frameNumber', how='left', suffixes=('_dot1', '_dot2'))
+        return df
 
     def red_dots_separation_mm(self):
         configs = Configurations(self.__folderStruct)
@@ -242,7 +277,7 @@ class RedDotsData(PandasWrapper):
         angle_in_radians = numpy.arctan(yLength_df / xLength_df)*(-1)
         df[self.__COLNAME_angle] = angle_in_radians / math.pi * 90
 
-    def __interpolate_values(self, df):
+    def __interpolate_values(self, df) -> pd.DataFrame:
         df = df.interpolate(limit_direction='both')
 
         df.loc[pd.isna(df["origin_dot1"]), ["origin_dot1"]] = self.VALUE_ORIGIN_interpolate
