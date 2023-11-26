@@ -4,7 +4,6 @@ import pandas as pd
 import numpy
 
 from lib.imageProcessing.Camera import Camera
-from lib.Camera import Camera
 from lib.seefloor.VerticalSpeed import VerticalSpeed
 from lib.infra.Configurations import Configurations
 from lib.infra.FolderStructure import FolderStructure

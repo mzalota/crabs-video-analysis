@@ -6,9 +6,6 @@ from lib.imageProcessing.Camera import Camera
 from lib.Frame import Frame
 from lib.data.BadFramesData import BadFramesData
 from lib.data.DriftInterpolatedData import DriftInterpolatedData
-from lib.VideoToImages import VideoToImages
-from lib.data.SeeFloor import SeeFloor
-from lib.data.DriftData import DriftData
 from lib.seefloor.SeeFloorWithBadBlocks import SeeFloorWithBadBlocks
 from lib.infra.DataframeWrapper import DataframeWrapper
 

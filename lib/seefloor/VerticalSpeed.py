@@ -1,7 +1,7 @@
-from lib.FolderStructure import FolderStructure
 from lib.data.FourierSmoothing import FourierSmoothing
-from lib.data.GraphPlotter import GraphPlotter
 from lib.infra.Configurations import Configurations
+from lib.infra.FolderStructure import FolderStructure
+from lib.infra.GraphPlotter import GraphPlotter
 
 
 class VerticalSpeed:

@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import numpy
 
+from lib.data.DriftInterpolatedData import DriftInterpolatedData
 from lib.imageProcessing.Camera import Camera
 from lib.VideoStream import VideoStream
 from lib.model.Point import Point
-from lib.data.DriftData import DriftData
 from lib.infra.GraphPlotter import GraphPlotter
 from lib.data.PandasWrapper import PandasWrapper
 from lib.data.RedDotsData import RedDotsData
@@ -22,7 +22,7 @@ class SeeFloor(PandasWrapper):
     __COLNAME_driftY = 'driftY'
     _COLNAME_frameNumber = 'frameNumber'
 
-    def __init__(self, driftsData: DriftData, redDotsData: RedDotsData, folderStruct : FolderStructure = None,  df = None) -> SeeFloor:
+    def __init__(self, driftsData: DriftInterpolatedData, redDotsData: RedDotsData, folderStruct : FolderStructure = None,  df = None) -> SeeFloor:
         self.__driftData = driftsData
         self.__redDotsData = redDotsData
         self.__df = df
@@ -33,7 +33,7 @@ class SeeFloor(PandasWrapper):
     @staticmethod
     def createFromFolderStruct(folderStruct: FolderStructure) -> SeeFloor:
 
-        driftsData = DriftData.createFromFolderStruct(folderStruct)
+        driftsData = DriftInterpolatedData.createFromFolderStruct(folderStruct)
         redDotsData = RedDotsData.createFromFolderStruct(folderStruct)
 
         filepath = folderStruct.getSeefloorFilepath()
@@ -193,7 +193,7 @@ class SeeFloor(PandasWrapper):
         return vals[0]
 
     def refreshItself(self):
-        self.__driftData = DriftData.createFromFolderStruct(self._folderStruct)
+        self.__driftData = DriftInterpolatedData.createFromFolderStruct(self._folderStruct)
         self.__redDotsData = RedDotsData.createFromFolderStruct(self._folderStruct)
         self.saveToFile()
 

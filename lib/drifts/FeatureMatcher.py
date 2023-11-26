@@ -1,7 +1,7 @@
-from lib.Camera import Camera
 from lib.Frame import Frame
-from lib.common import Point
 from lib.drifts.SeeFloorSection import SeeFloorSection
+from lib.imageProcessing.Camera import Camera
+from lib.model.Point import Point
 
 
 class FeatureMatcher:

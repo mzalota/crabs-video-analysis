@@ -1,8 +1,8 @@
 import pandas as pd
 
+from lib.data.DriftInterpolatedData import DriftInterpolatedData
 from lib.infra.FolderStructure import FolderStructure
 from lib.data.BadFramesData import BadFramesData
-from lib.data.DriftData import DriftData
 from lib.data.PandasWrapper import PandasWrapper
 from lib.data.RedDotsData import RedDotsData
 from lib.seefloor.SeeFloor import SeeFloor
@@ -24,7 +24,7 @@ class SeeFloorWithBadBlocks(SeeFloor):
     def createFromFolderStruct(folderStruct):
         # type: (FolderStructure) -> SeeFloor
 
-        driftsData = DriftData.createFromFolderStruct(folderStruct)
+        driftsData = DriftInterpolatedData.createFromFolderStruct(folderStruct)
         badFramesData = BadFramesData.createFromFolderStruct(folderStruct)
         redDotsData = RedDotsData.createFromFolderStruct(folderStruct)
 

@@ -1,4 +1,5 @@
 from lib.imageProcessing.Camera import Camera
+from lib.model.Point import Point
 from lib.reddots.RedDot import RedDot
 
 
