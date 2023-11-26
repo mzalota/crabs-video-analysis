@@ -29,7 +29,6 @@ class PointTranslator:
         return change
 
     def __get_frame_physics(self, to_frame_id: int) -> FramePhysics:
-        scale = self.__fastObj._mm_per_pixel(to_frame_id)
         drift = self.__get_drift_instantaneous(to_frame_id)
         zoom = self.__zoom_instantaneous(to_frame_id)
         #print("In __get_frame_physics: scale", scale, "drift", drift, "zoom", zoom)
@@ -41,7 +40,6 @@ class PointTranslator:
         individual_frames = FrameId.sequence_of_frames(origFrameID, targetFrameID)
         for idx in range(1, len(individual_frames)):
             to_frame_id = individual_frames[idx]
-            # frame_physics = self.__get_frame_physics(to_frame_id)
             if targetFrameID < origFrameID:
                 frame_physics = self.__get_frame_physics(to_frame_id-1)
                 result = frame_physics.translate_backward(point_location_new)
