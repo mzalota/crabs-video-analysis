@@ -73,9 +73,8 @@ class TestFramePhysics(TestCase):
 
     def test_change_than_reverse(self):
         #setup
-        scale = 0.5480785130693868
         zoom = 0.9997025696116583
-        physics = FramePhysics(100, scale, Vector(3, 11), zoom)
+        physics = FramePhysics(Vector(3, 11), zoom)
         point = Point(1000, 1000)
 
         #exercise
@@ -88,9 +87,8 @@ class TestFramePhysics(TestCase):
 
     def test_change_than_reverse2(self):
         #setup
-        scale = 0.7405656263087846
         zoom = 1.0071198209766583
-        physics = FramePhysics(100, scale, Vector(-0.9365915776278864, 5.538252792970677), zoom)
+        physics = FramePhysics(Vector(-0.9365915776278864, 5.538252792970677), zoom)
         point = Point(1000, 1000)
 
         #exercise

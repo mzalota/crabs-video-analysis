@@ -118,7 +118,7 @@ class Feature:
                 self.__lastFrameID = self.__seeFloor.maxFrameID()
                 break
 
-            newPoint = self.__seeFloor.translatePointCoordinate(self.__location, self.__frameID, nextFrameID)
+            newPoint = self.__seeFloor.translatePointCoord(self.__location, self.__frameID, nextFrameID)
 
             # print("drift:", frameID, str(crabPoint), nextFrameID, str(newPoint), str(drift), visibleBoxArea.area(), str(visibleBoxArea))
             if (newPoint.x <= 0 or newPoint.y <= 0):
@@ -198,7 +198,7 @@ class Feature:
         return visibleBoxArea
 
     def getCoordinateInFrame(self, frameID: int) -> Point:
-        newPoint = self.__seeFloor.translatePointCoordinate(self.__location, self.__frameID, frameID)
+        newPoint = self.__seeFloor.translatePointCoord(self.__location, self.__frameID, frameID)
         return newPoint
 
     # def getCoordinateInFrame_old(self, frameID):

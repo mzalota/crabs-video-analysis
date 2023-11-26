@@ -147,7 +147,7 @@ class SeeFloor(PandasWrapper):
         endYCoordMM = self.getYCoordMMOrigin(toFrameID)
         return endYCoordMM-startYCoordMM
 
-    def translatePointCoordinate(self, pointLocation: Point, origFrameID: int, targetFrameID: int) -> Point:
+    def translatePointCoord(self, pointLocation: Point, origFrameID: int, targetFrameID: int) -> Point:
         return self.__pointTranslator.translatePointCoordinate(pointLocation, origFrameID, targetFrameID)
     def mm_per_pixel(self, frame_id):
         return self.__fastObj._mm_per_pixel(frame_id)

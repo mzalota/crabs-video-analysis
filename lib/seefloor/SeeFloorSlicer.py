@@ -9,9 +9,6 @@ class SeeFloorSlicer:
         self._point_translator = point_translator
         self.__fastObj = fastObj
 
-    def translatePointCoordinate(self, pointLocation: Point, origFrameID: int, targetFrameID: int) -> Point:
-        return self._point_translator.translatePointCoordinate(pointLocation, origFrameID, targetFrameID)
-
     def _min_frame_id(self):
         return self.__fastObj.min_frame_id()
 
@@ -144,15 +141,16 @@ class SeeFloorSlicer:
         firstLoop = True
         while (firstLoop):
             firstLoop = False
-            new_top_left = self.translatePointCoordinate(top_left, start_frame_id, candidate_frame_id)
+            point_translator = self._point_translator
+            new_top_left = point_translator.translatePointCoordinate(top_left, start_frame_id, candidate_frame_id)
             # print("new_top_left")
-            new_top_right = self.translatePointCoordinate(top_right, start_frame_id, candidate_frame_id)
+            new_top_right = point_translator.translatePointCoordinate(top_right, start_frame_id, candidate_frame_id)
             # print("new_top_right")
-            new_bottom_left = self.translatePointCoordinate(bottom_left, start_frame_id, candidate_frame_id)
+            new_bottom_left = point_translator.translatePointCoordinate(bottom_left, start_frame_id, candidate_frame_id)
             # print("new_bottom_left")
-            new_bottom_right = self.translatePointCoordinate(bottom_right, start_frame_id, candidate_frame_id)
+            new_bottom_right = point_translator.translatePointCoordinate(bottom_right, start_frame_id, candidate_frame_id)
             # print("new_bottom_right")
-            new_center = self.translatePointCoordinate(center, start_frame_id, candidate_frame_id)
+            new_center = point_translator.translatePointCoordinate(center, start_frame_id, candidate_frame_id)
             # print("new_center")
 
             if (self.__point_is_visible(new_top_left)):
@@ -172,15 +170,15 @@ class SeeFloorSlicer:
                 continue
 
             # now check the 4 corners of destination frame
-            new_top_left = self.translatePointCoordinate(top_left, candidate_frame_id, start_frame_id)
+            new_top_left = point_translator.translatePointCoordinate(top_left, candidate_frame_id, start_frame_id)
             # print("new_top_left reverse")
-            new_top_right = self.translatePointCoordinate(top_right, candidate_frame_id, start_frame_id)
+            new_top_right = point_translator.translatePointCoordinate(top_right, candidate_frame_id, start_frame_id)
             # print("new_top_right reverse")
-            new_bottom_left = self.translatePointCoordinate(bottom_left, candidate_frame_id, start_frame_id)
+            new_bottom_left = point_translator.translatePointCoordinate(bottom_left, candidate_frame_id, start_frame_id)
             # print("new_bottom_left reverse")
-            new_bottom_right = self.translatePointCoordinate(bottom_right, candidate_frame_id, start_frame_id)
+            new_bottom_right = point_translator.translatePointCoordinate(bottom_right, candidate_frame_id, start_frame_id)
             # print("new_bottom_right reverse")
-            new_center = self.translatePointCoordinate(center, candidate_frame_id, start_frame_id)
+            new_center = point_translator.translatePointCoordinate(center, candidate_frame_id, start_frame_id)
             # print("new_center reverse")
 
             if (self.__point_is_visible(new_top_left)):

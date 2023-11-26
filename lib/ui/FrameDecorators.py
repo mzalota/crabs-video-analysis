@@ -48,7 +48,7 @@ class FrameDecoFactory:
 
     def __centerPointForGrid(self, frameID, referenceFrameID):
         gridMidPoint = self.__seeFloorGeometry.getRedDotsData().midPoint(referenceFrameID)
-        return self.__seeFloorGeometry.translatePointCoordinate(gridMidPoint, referenceFrameID, frameID)
+        return self.__seeFloorGeometry.translatePointCoord(gridMidPoint, referenceFrameID, frameID)
 
     def getFrameDecoRedDots(self, frameDeco: FrameDecorator) -> DecoRedDots:
         return DecoRedDots(frameDeco, self.__seeFloorGeometry.getRedDotsData())
@@ -146,7 +146,7 @@ class DecoMarkersWithNumbers(FrameDecorator):
             marker_id = marker['markerId']
 
             orig_location = Point(marker['locationX'], marker['locationY'])
-            location = self.__seefloorGeometry.translatePointCoordinate(orig_location, frame_number, frame_id)
+            location = self.__seefloorGeometry.translatePointCoord(orig_location, frame_number, frame_id)
 
             if self.__is_undistorted:
                 camera = Camera.create()
@@ -248,7 +248,7 @@ class DecoMarkedCrabs(FrameDecorator):
             frame_id_crab_orig = markedCrab.frame_id()
             crabLocationOrig = markedCrab.center()
 
-            crab_location_image = self.__seefloorGeometry.translatePointCoordinate(crabLocationOrig, frame_id_crab_orig, frame_id_image)
+            crab_location_image = self.__seefloorGeometry.translatePointCoord(crabLocationOrig, frame_id_crab_orig, frame_id_image)
             if self.__is_undistorted:
                 camera = Camera.create()
                 crab_location_image = camera.undistort_point(crab_location_image)
@@ -276,7 +276,7 @@ class DecoAdjustDrift(FrameDecorator):
         # type: () -> Image
         imgObj = self.frameDeco.getImgObj()
 
-        new_location = self.__seefloorGeometry.translatePointCoordinate(self.__start_point, self.__start_frame_id, self.getFrameID())
+        new_location = self.__seefloorGeometry.translatePointCoord(self.__start_point, self.__start_frame_id, self.getFrameID())
         #print ("trying to mark manual drift", new_location, self.getFrameID(), self.__start_frame_id)
         imgObj.drawCrossVertical(new_location, size=12)
         return imgObj
