@@ -15,6 +15,7 @@ from lib.data.RedDotsData import RedDotsData
 from lib.drifts.DriftManualData import DriftManualData
 from lib.infra.Configurations import Configurations
 from lib.infra.DataframeWrapper import DataframeWrapper
+from lib.model.Point import Point
 
 
 class DriftRawData(PandasWrapper):
