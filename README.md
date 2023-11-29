@@ -83,6 +83,7 @@ Subdirectory
 - **b** - "Bad": mark this and next 50 frames as *bad* and jump to 51st frame
 - **s** - "Save Image": save image of the currently viewed frame into savedFrames subdirectory  
 - **r** - "open RedDotsUI": opens new window zoomed to area around red dots. Click on each red dot once. Data will be saved to reddots_manual.csv and all files interpolated again.
+- **ctrl+z** - "Undo": remove mark that was last added.
 - **q** - "Quit": quite application 
 
 #### Navigation commands in main "Scientist UI" screen

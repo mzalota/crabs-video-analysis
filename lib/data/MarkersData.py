@@ -57,8 +57,8 @@ class MarkersData(PandasWrapper):
             return
 
         last_item_idx = self.getCount()-1
+        print("removing last marker, index: "+str(last_item_idx))
         self.__markersDF = self.__markersDF.drop([last_item_idx])
-        print("removed last marker, index: "+str(last_item_idx))
 
     def getCount(self):
         return len(self.__markersDF.index)
