@@ -8,6 +8,8 @@ class SeeFloorSlicer:
     def __init__(self, point_translator: PointTranslator, fastObj: SeeFloorFast):
         self._point_translator = point_translator
         self.__fastObj = fastObj
+        self.__cache_next_frames = dict()
+        self.__cache_prev_frames = dict()
 
     def _min_frame_id(self):
         return self.__fastObj.min_frame_id()
@@ -40,7 +42,26 @@ class SeeFloorSlicer:
 
         return new_frame_id
 
-    def _jump_to_previous_seefloor_slice(self, frame_id):
+    def _jump_to_previous_seefloor_slice(self, frame_id: int) -> int:
+        if frame_id < self._min_frame_id():
+            return self._min_frame_id()
+
+        if frame_id > self._max_frame_id():
+            return self._max_frame_id()
+
+        print("in _jump_to_previous_seefloor_slice. frame_id: ", frame_id)
+        if (frame_id in self.__cache_prev_frames):
+            prev_frames_id = self.__cache_prev_frames.get(frame_id)
+            print("in _jump_to_previous_seefloor_slice. returning from cache prev_frames_id: ", prev_frames_id)
+            return prev_frames_id
+
+        prev_frame_id = self._get_prev_frame_id(frame_id)
+
+        self.__cache_prev_frames[frame_id] = prev_frame_id
+        self.__cache_next_frames[prev_frame_id] = frame_id
+        return prev_frame_id
+
+    def _jump_to_next_seefloor_slice(self, frame_id):
         # type: (int) -> int
         if frame_id < self._min_frame_id():
             return self._min_frame_id()
@@ -48,22 +69,17 @@ class SeeFloorSlicer:
         if frame_id > self._max_frame_id():
             return self._max_frame_id()
 
-        print("!!!!!!!!!! in _jump_to_previous_seefloor_slice. frame_id:", frame_id)
-        new_frame_id = self._get_prev_frame_id(frame_id)
+        print("in _jump_to_next_seefloor_slice. frame_id: ", frame_id)
+        if (frame_id in self.__cache_next_frames):
+            next_frame_id = self.__cache_next_frames.get(frame_id)
+            print("in _jump_to_next_seefloor_slice. returning from cache next_frame_id: ", next_frame_id)
+            return next_frame_id
 
-        return new_frame_id
+        next_frame_id = self._get_next_frame_id(frame_id)
 
-    def _jump_to_next_seefloor_slice(self, frame_id, fraction=1):
-        # type: (int) -> int
-        if frame_id < self._min_frame_id():
-            return self._min_frame_id()
-
-        if frame_id > self._max_frame_id():
-            return self._max_frame_id()
-
-        new_frame_id = self._get_next_frame_id(frame_id)
-
-        return new_frame_id
+        self.__cache_next_frames[frame_id] = next_frame_id
+        self.__cache_prev_frames[next_frame_id] = frame_id
+        return next_frame_id
 
     def _get_prev_frame_id(self, start_frame_id: int):
         return self._jump_one_frame_id(start_frame_id, -1)
@@ -80,7 +96,7 @@ class SeeFloorSlicer:
         if start_frame_id <= self._min_frame_id() and direction == -1:
             return self._min_frame_id()
 
-        timer = MyTimer("SeeFloorSlicer._get_next_frame_id()")
+        timer = MyTimer("SeeFloorSlicer._jump_one_frame_id()")
 
         candidate_frame_id = start_frame_id + direction
         too_far_frame_id = start_frame_id + (step_size * direction)
@@ -142,31 +158,36 @@ class SeeFloorSlicer:
         while (firstLoop):
             firstLoop = False
             point_translator = self._point_translator
+
             new_top_left = point_translator.translatePointCoordinate(top_left, start_frame_id, candidate_frame_id)
             # print("new_top_left")
-            new_top_right = point_translator.translatePointCoordinate(top_right, start_frame_id, candidate_frame_id)
-            # print("new_top_right")
+            if (self.__point_is_visible(new_top_left)):
+                print("new_top_left is still visible")
+                continue
+
             new_bottom_left = point_translator.translatePointCoordinate(bottom_left, start_frame_id, candidate_frame_id)
             # print("new_bottom_left")
+            if self.__point_is_visible(new_bottom_left):
+                print("new_bottom_left is still visible")
+                continue
+
+
+            new_top_right = point_translator.translatePointCoordinate(top_right, start_frame_id, candidate_frame_id)
+            # print("new_top_right")
             new_bottom_right = point_translator.translatePointCoordinate(bottom_right, start_frame_id, candidate_frame_id)
             # print("new_bottom_right")
             new_center = point_translator.translatePointCoordinate(center, start_frame_id, candidate_frame_id)
             # print("new_center")
 
-            if (self.__point_is_visible(new_top_left)):
-                # print("new_top_left is still visible")
-                continue
+
             if self.__point_is_visible(new_top_right):
-                # print("new_top_right is still visible")
-                continue
-            if self.__point_is_visible(new_bottom_left):
-                # print("new_bottom_left is still visible")
+                print("new_top_right is still visible")
                 continue
             if self.__point_is_visible(new_bottom_right):
-                # print("new_bottom_right is still visible")
+                print("new_bottom_right is still visible")
                 continue
             if self.__point_is_visible(new_center):
-                # print("new_center is still visible")
+                print("new_center is still visible")
                 continue
 
             # now check the 4 corners of destination frame
@@ -182,19 +203,19 @@ class SeeFloorSlicer:
             # print("new_center reverse")
 
             if (self.__point_is_visible(new_top_left)):
-                # print("new_top_left reverse is still visible")
+                print("new_top_left reverse is still visible")
                 continue
             if self.__point_is_visible(new_top_right):
-                # print("new_top_right reverse is still visible")
+                print("new_top_right reverse is still visible")
                 continue
             if self.__point_is_visible(new_bottom_left):
-                # print("new_bottom_left reverse is still visible")
+                print("new_bottom_left reverse is still visible")
                 continue
             if self.__point_is_visible(new_bottom_right):
-                # print("new_bottom_right reverse is still visible")
+                print("new_bottom_right reverse is still visible")
                 continue
             if self.__point_is_visible(new_center):
-                # print("new_center reverse is still visible")
+                print("new_center reverse is still visible")
                 continue
 
             # All 4 corner points have disappeared from the screen on frame "candidate_frame_id".

@@ -113,7 +113,7 @@ class SeeFloorWithBadBlocks(SeeFloor):
                 return self._jump_to_next_seefloor_slice(frame_id + 1)
 
         # we are in a good segment and not in its last frame.
-        new_frame_id = SeeFloorSlicer._jump_to_next_seefloor_slice(self, frame_id, fraction)
+        new_frame_id = SeeFloorSlicer._jump_to_next_seefloor_slice(self, frame_id)
 
         if (last_good_frame < new_frame_id):
             #the current good segment does not enough runway from frame_id to jump FramesStitcher.FRAME_HEIGHT pixels.

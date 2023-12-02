@@ -22,18 +22,18 @@ class FramePhysics:
         point_after_drift = point.translate_by_float(drift_backward)
         return self._adjust_location_for_depth_change_zoom(point_after_drift, depth_scaling_factor_backward)
 
+    #scaling factor greater than 1 means that seefloor got further away. Everything got smaller. Everything on the image got closer to the center of the image (fewer pixels away from center).
     @staticmethod
     def _adjust_location_for_depth_change_zoom(point: Point, scaling_factor: float) -> Point:
-        create = Camera.create()
+        camera = Camera.create()
+        frame_center_point = camera.center_point()
 
-        mid_frame_width = create.frame_width() / 2
-        x_offset_from_middle_old = point.x - mid_frame_width
+        x_offset_from_middle_old = point.x - frame_center_point.x
         x_offset_from_middle_new = x_offset_from_middle_old / scaling_factor
-        new_x = mid_frame_width + x_offset_from_middle_new
+        new_x = frame_center_point.x + x_offset_from_middle_new
 
-        mid_frame_height = create.frame_height() / 2
-        y_offset_from_middle_old = point.y - mid_frame_height
+        y_offset_from_middle_old = point.y - frame_center_point.y
         y_offset_from_middle_new = y_offset_from_middle_old / scaling_factor
-        new_y = mid_frame_height + y_offset_from_middle_new
+        new_y = frame_center_point.y + y_offset_from_middle_new
 
         return Point(new_x, new_y)

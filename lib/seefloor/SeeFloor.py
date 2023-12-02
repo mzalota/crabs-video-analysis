@@ -29,6 +29,7 @@ class SeeFloor(PandasWrapper):
         self._folderStruct = folderStruct
         self.__fastObj = SeeFloorFast(df)
         self.__pointTranslator = PointTranslator(self.__fastObj)
+        self.__slicer = SeeFloorSlicer(self.__pointTranslator, self.__fastObj)
 
     @staticmethod
     def createFromFolderStruct(folderStruct: FolderStructure) -> SeeFloor:
@@ -274,8 +275,7 @@ class SeeFloor(PandasWrapper):
         graphPlotter.saveGraphToFile(xColumn, yColumns, graphTitle, filePath)
 
     def jumpToSeefloorSlice(self, frame_id, frames_to_jump):
-        slicer = SeeFloorSlicer(self.__pointTranslator, self.__fastObj)
-        return slicer.jumpToSeefloorSlice(frame_id, frames_to_jump)
+        return self.__slicer.jumpToSeefloorSlice(frame_id, frames_to_jump)
 
     def getPrevFrame(self, frame_id):
         # type: (int) -> int
