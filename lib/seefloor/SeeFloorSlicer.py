@@ -43,16 +43,14 @@ class SeeFloorSlicer:
         return new_frame_id
 
     def _jump_to_previous_seefloor_slice(self, frame_id: int) -> int:
-        if frame_id < self._min_frame_id():
+        if frame_id <= self._min_frame_id():
             return self._min_frame_id()
 
         if frame_id > self._max_frame_id():
             return self._max_frame_id()
 
-        print("in _jump_to_previous_seefloor_slice. frame_id: ", frame_id)
         if (frame_id in self.__cache_prev_frames):
             prev_frames_id = self.__cache_prev_frames.get(frame_id)
-            print("in _jump_to_previous_seefloor_slice. returning from cache prev_frames_id: ", prev_frames_id)
             return prev_frames_id
 
         prev_frame_id = self._get_prev_frame_id(frame_id)
@@ -61,18 +59,15 @@ class SeeFloorSlicer:
         self.__cache_next_frames[prev_frame_id] = frame_id
         return prev_frame_id
 
-    def _jump_to_next_seefloor_slice(self, frame_id):
-        # type: (int) -> int
+    def _jump_to_next_seefloor_slice(self, frame_id: int) -> int:
         if frame_id < self._min_frame_id():
             return self._min_frame_id()
 
-        if frame_id > self._max_frame_id():
+        if frame_id >= self._max_frame_id():
             return self._max_frame_id()
 
-        print("in _jump_to_next_seefloor_slice. frame_id: ", frame_id)
         if (frame_id in self.__cache_next_frames):
             next_frame_id = self.__cache_next_frames.get(frame_id)
-            print("in _jump_to_next_seefloor_slice. returning from cache next_frame_id: ", next_frame_id)
             return next_frame_id
 
         next_frame_id = self._get_next_frame_id(frame_id)
@@ -88,8 +83,6 @@ class SeeFloorSlicer:
         return self._jump_one_frame_id(start_frame_id, 1)
 
     def _jump_one_frame_id(self, start_frame_id: int, direction = 1):
-        # #examine next frames, until none of the corner pixels visible.
-        step_size = 256
 
         if start_frame_id >= self._max_frame_id() and direction == 1:
             return self._max_frame_id()
@@ -97,6 +90,9 @@ class SeeFloorSlicer:
             return self._min_frame_id()
 
         timer = MyTimer("SeeFloorSlicer._jump_one_frame_id()")
+
+        # #examine next frames, until none of the corner pixels visible.
+        step_size = 256
 
         candidate_frame_id = start_frame_id + direction
         too_far_frame_id = start_frame_id + (step_size * direction)
