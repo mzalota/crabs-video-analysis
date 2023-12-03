@@ -102,7 +102,7 @@ class VelocityDetector():
 
 
             drift_vector = section.getDrift()
-            draw_starting_point = section.getLocation()
+            draw_starting_point = section.get_center_point()
             img.drawDriftVectorOnImage(drift_vector, draw_starting_point)
 
             if drift_vector_median is not None and drift_vector is not None:
@@ -271,8 +271,8 @@ class VelocityDetector():
         self._timer.lap("in detectVelocity() sequential start")
         self._drifts = list()
         for fm_id, fm in self._fm.items():
-            fm.detectSeeFloorSection(frame)
-            if fm.detectionWasReset():
+            is_success = fm.detectSeeFloorSection(frame)
+            if not is_success:
                 continue
 
             section = fm.seefloor_section()

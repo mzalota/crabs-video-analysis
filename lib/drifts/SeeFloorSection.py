@@ -31,7 +31,7 @@ class SeeFloorSection:
         self.__frames = dict()
         self.__topLeftPoints = dict()
 
-    def box_around_feature(self):
+    def box_around_feature(self) -> Box:
         max_frame_id = max(self.__frameIDs)
         return self.__boxAroundFeatureForFrame(max_frame_id)
 
@@ -41,8 +41,7 @@ class SeeFloorSection:
                             self.__getTopLeft().y + self.__startingBox.hight()))
         return box
 
-    def __boxAroundFeatureForFrame(self, frameID):
-        # type: (Int) -> Box
+    def __boxAroundFeatureForFrame(self, frameID: int) -> Box:
         topLeftPoint = self.__getTopLeftForFrame(frameID)
         box = Box(topLeftPoint,
                   Point(topLeftPoint.x + self.__startingBox.width(),
@@ -61,11 +60,14 @@ class SeeFloorSection:
 
         return self.__topLeftPoints[frameID]
 
-    def __recordFeatureLocationOnFrame(self, frame, topLeftPoint):
-        # type: (Frame, Point) -> None
+    def __recordFeatureLocationOnFrame(self, frame: Frame, topLeftPoint: Point) -> None:
         self.__frameIDs.append(frame.getFrameID())
         self.__topLeftPoints[frame.getFrameID()] = topLeftPoint #append
         self.__frames[frame.getFrameID()] = frame
+
+
+    def number_of_detections(self):
+        return len(self.__topLeftPoints)
 
     def drift_was_detected(self):
         numOfFrames = len(self.__topLeftPoints)
@@ -109,8 +111,7 @@ class SeeFloorSection:
         img = imgObj.subImage(self.__boxAroundFeatureForFrame(frameID))
         return img
 
-    def getLocation(self):
-        # type: () -> Point
+    def get_center_point(self) -> Point:
         box = self.__defaultBoxAroundFeature()
         return box.topLeft.calculateMidpoint(box.bottomRight)
 
@@ -140,7 +141,6 @@ class SeeFloorSection:
         if max_val < self.__threshold_for_matching:
             # If the best matching box still has correlation below the "threshold" then declare defeat -> we could not find a match for subImage on this image
             return None
-        print ("Correlation frame matcher: max_val: "+str(max_val)+", min val: "+str(max_val))
 
         # get w and h, so that we can reconstruct the box
         d, w, h = subImage.shape[::-1]

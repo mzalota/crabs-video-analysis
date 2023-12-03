@@ -2,6 +2,7 @@ from lib.Frame import Frame
 from lib.drifts.SeeFloorSection import SeeFloorSection
 from lib.imageProcessing.Analyzer import Analyzer
 from lib.imageProcessing.Camera import Camera
+from lib.model.Box import Box
 from lib.model.Point import Point
 
 
@@ -25,52 +26,81 @@ class FeatureMatcher:
         else:
             return True
 
-    def detectSeeFloorSection(self, frame):
-        # type: (Frame) -> None
-        self.__seeFloorSection = self.__detectSeeFloorSection(frame, self.__seeFloorSection)
+    def detectSeeFloorSection(self, frame: Frame) -> bool:
 
-    def __detectSeeFloorSection(self, frame: Frame, section: SeeFloorSection) -> SeeFloorSection:
-        if section is None:
-            return SeeFloorSection(frame, self.__startingBox)
+        if self.__seeFloorSection is None:
+            self.__resetReason = "NotInitialized"
+            self.__seeFloorSection = SeeFloorSection(frame, self.__startingBox)
+            return False
 
+        result = self.__detectSeeFloorSection(frame, self.__seeFloorSection)
+        if not result:
+            self.__seeFloorSection = SeeFloorSection(frame, self.__startingBox)
+            return False
+
+        if self.__is_feature_too_close_to_edge(self.__seeFloorSection.box_around_feature()):
+            self.__seeFloorSection = SeeFloorSection(frame, self.__startingBox)
+
+        return True
+
+
+    def __detectSeeFloorSection(self, frame: Frame, section: SeeFloorSection) -> bool:
         newTopLeftOfFeature = section.findLocationInFrame(frame)
 
         if newTopLeftOfFeature is None:
-            self.__resetReason = "NotDetected"
-            return SeeFloorSection(frame, self.__startingBox)
+            print("WARN: newTopLeftOfFeature is None. NotDetected_1")
+            self.__resetReason = "NotDetected_1"
+            return False
 
         section_drift = section.getDrift()
-        if (section_drift is not None):
+        if section_drift is None:
+            print("WARN: section_drift is None. NotDetected_2")
+            self.__resetReason = "NotDetected_2"
+            return False
 
-            image = section.getImage()
-            i = Analyzer(image)
-            haze_ratio = i.getHazeRatio()
-            focus_ratio = i.getFocusRatio()
-            brightness_ratio = i.getBrightnessRatio()
-            if (section_drift.x == 0 and section_drift.y == 0):
-                msg =  "ZERO drift.     " + str(newTopLeftOfFeature.x) + "x" + str(newTopLeftOfFeature.y)
+        if section_drift.x != 0 or section_drift.y != 0:
+            #drift was detected.
+            return True
 
-                if haze_ratio < 50 and focus_ratio > 200:
-                    print("This Subimage is very hazy and unfocused. Don't try to match it")
-                    self.__resetReason = "TooHazy"
-                    return SeeFloorSection(frame, self.__startingBox)
+        image = section.getImage()
+        i = Analyzer(image)
+        haze_ratio = i.getHazeRatio()
+        focus_ratio = i.getFocusRatio()
 
-            else:
-                msg =  "Non-zero drift. " + str(newTopLeftOfFeature.x) + "x" + str(newTopLeftOfFeature.y)
+        if haze_ratio < 50 and focus_ratio > 200:
+            print("This Subimage is very hazy and unfocused. Don't use this drift reading")
+            self.__resetReason = "TooHazy"
+            return False
 
-            msg += ": haze_ratio=" + str(haze_ratio)
-            msg += ", focus_ratio=" + str(focus_ratio)
-            msg += ", brightness_ratio=" + str(brightness_ratio)
-            print(msg)
+        number_of_detections = section.number_of_detections()
+        if number_of_detections == 2:
+            print("This Subimage is StuckOnStart. Don't use this drift reading")
+            self.__resetReason = "StuckOnStart"
+            return False
 
-        self.__resetReason = self.__is_feature_too_close_to_edge(newTopLeftOfFeature, Frame.is_high_resolution(frame.frame_height()))
+        return True
 
-        if self.detectionWasReset():
-            return SeeFloorSection(frame, self.__startingBox)
 
-        return section
+    def __is_feature_too_close_to_edge(self, top_left_of_feature: Box) -> bool:
+        camera = Camera.create()
 
-    def __is_feature_too_close_to_edge(self, top_left_of_feature: Point, is_high_resolution: bool) -> str:
+        too_close_to_image_top_edge = 100
+        too_close_to_image_bottom_edge = camera.frame_height() - 150
+        too_close_to_image_left_edge = 80
+        too_close_to_image_right_edge = camera.frame_width() - 80
+
+        if top_left_of_feature.topLeft.y < too_close_to_image_top_edge:
+            return True #"TopEdge"
+        if top_left_of_feature.bottomRight.y > too_close_to_image_bottom_edge:
+            return True #"BottomEdge"
+        if top_left_of_feature.topLeft.x < too_close_to_image_left_edge:
+            return True #"LeftEdge"
+        if top_left_of_feature.bottomRight.x > too_close_to_image_right_edge:
+            return True #"RightEdge"
+
+        return False
+
+    def __is_feature_too_close_to_edge_old(self, top_left_of_feature: Point) -> str:
 
         camera = Camera.create()
 
