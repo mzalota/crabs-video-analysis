@@ -1,5 +1,3 @@
-import uuid
-
 import cv2
 
 from lib.Frame import Frame
@@ -13,7 +11,6 @@ class SeeFloorSection:
     #__threshold_for_matching = 0.6
     #__startingBox
 
-    #__id
     #__topLeftPoints
     #__frameIDs
     #__frames
@@ -21,19 +18,41 @@ class SeeFloorSection:
 
     def __init__(self, frame, box):
         self.__threshold_for_matching = 0.6
-        self.__initialize()
         self.__startingBox = box
-        self.__recordFeatureLocationOnFrame(frame, box.topLeft)
-
-    def __initialize(self):
-        self.__id = str(uuid.uuid4().fields[-1])[:5]
         self.__frameIDs = list()
         self.__frames = dict()
         self.__topLeftPoints = dict()
+        self.__recordFeatureLocationOnFrame(frame, box.topLeft)
+
 
     def box_around_feature(self) -> Box:
         max_frame_id = max(self.__frameIDs)
         return self.__boxAroundFeatureForFrame(max_frame_id)
+
+    def number_of_detections(self):
+        return len(self.__topLeftPoints)
+
+    def drift_was_detected(self):
+        numOfFrames = len(self.__topLeftPoints)
+        if numOfFrames <= 1:
+            return False
+        else:
+            return True
+
+    def get_detected_drift(self) -> Vector:
+        if not self.drift_was_detected():
+            return None
+
+        numOfFrames = len(self.__topLeftPoints)
+
+        lastFrame = self.__frameIDs[numOfFrames-1]
+        beforeLastFrame = self.__frameIDs[numOfFrames-2]
+
+        lastPoint = self.__topLeftPoints[lastFrame]
+        beforeLastPoint = self.__topLeftPoints[beforeLastFrame]
+        driftVector = Vector(lastPoint.x-beforeLastPoint.x, lastPoint.y-beforeLastPoint.y)
+
+        return driftVector
 
     def __defaultBoxAroundFeature(self):
         box = Box(self.__getTopLeft(),
@@ -49,7 +68,7 @@ class SeeFloorSection:
         return box
 
     def __getTopLeft(self):
-        return self.__getTopLeftForFrame(self.getMaxFrameID())
+        return self.__getTopLeftForFrame(self.__get_max_frame_id())
 
     def __getTopLeftForFrame(self, frameID):
         if len(self.__topLeftPoints) < 1:
@@ -62,44 +81,13 @@ class SeeFloorSection:
 
     def __recordFeatureLocationOnFrame(self, frame: Frame, topLeftPoint: Point) -> None:
         self.__frameIDs.append(frame.getFrameID())
-        self.__topLeftPoints[frame.getFrameID()] = topLeftPoint #append
+        self.__topLeftPoints[frame.getFrameID()] = topLeftPoint
         self.__frames[frame.getFrameID()] = frame
 
+    def __get_last_image(self) -> Image:
+        return self.__get_image_on_frame(self.__get_max_frame_id())
 
-    def number_of_detections(self):
-        return len(self.__topLeftPoints)
-
-    def drift_was_detected(self):
-        numOfFrames = len(self.__topLeftPoints)
-        if numOfFrames <= 1:
-            return False
-        else:
-            return True
-
-    def getDrift(self):
-        # type: () -> Vector
-        if not self.drift_was_detected():
-            return None
-
-        numOfFrames = len(self.__topLeftPoints)
-        lastFrame = self.__frameIDs[numOfFrames-1]
-        beforeLastFrame = self.__frameIDs[numOfFrames-2]
-        lastPoint = self.__topLeftPoints[lastFrame]
-        beforeLastPoint = self.__topLeftPoints[beforeLastFrame]
-        driftVector = Vector(lastPoint.x-beforeLastPoint.x, lastPoint.y-beforeLastPoint.y)
-
-        return driftVector
-
-    def drawFeatureOnFrame(self, image):
-        box = self.__defaultBoxAroundFeature()
-        image.drawBoxOnImage(box)
-        image.drawTextInBox(box,self.__id)
-
-    def getImage(self):
-        # type: () -> Image
-        return self.getImageOnFrame(self.getMaxFrameID())
-
-    def getImageOnFrame(self, frameID: int)->Image:
+    def __get_image_on_frame(self, frameID: int)->Image:
         if len(self.__frames)<1:
             return None
 
@@ -115,13 +103,16 @@ class SeeFloorSection:
         box = self.__defaultBoxAroundFeature()
         return box.topLeft.calculateMidpoint(box.bottomRight)
 
-    def findLocationInFrame(self, frame: Frame) ->Point:
-        newLocation = self.__findSubImage(frame.getImgObj().asNumpyArray(), self.getImage().asNumpyArray())
+    def findLocationInFrame(self, frame: Frame)->Point:
+        newLocation = self.__find_location_of_sub_image(frame.getImgObj(), self.__get_last_image())
         if newLocation:
             self.__recordFeatureLocationOnFrame(frame, newLocation)
         return newLocation
 
-    def __findSubImage(self, image, subImage):
+    def __find_location_of_sub_image(self, whereToSearch: Image, whatToFind: Image) -> Point:
+        image = whereToSearch.asNumpyArray()
+        subImage = whatToFind.asNumpyArray()
+
         if subImage is None:
             return None
 
@@ -149,10 +140,6 @@ class SeeFloorSection:
 
         return topLeft
 
-    def getID(self):
-        # type: () -> String
-        return self.__id
-
-    def getMaxFrameID(self):
+    def __get_max_frame_id(self):
         # type: () -> String
         return max(self.__frameIDs)

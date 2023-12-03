@@ -97,15 +97,16 @@ class VelocityDetector():
 
             if feature_matcher.detectionWasReset():
                 color = (0, 255, 255) # draw box in yellow color when it is reset
-                img.drawBoxOnImage(section.box_around_feature(), color=color, thickness=4)
-                continue
+            else:
+                color = (0, 255, 0)  # green
+            img.drawBoxOnImage(section.box_around_feature(), color=color, thickness=4)
 
-
-            drift_vector = section.getDrift()
-            draw_starting_point = section.get_center_point()
-            img.drawDriftVectorOnImage(drift_vector, draw_starting_point)
-
+            drift_vector = section.get_detected_drift()
             if drift_vector_median is not None and drift_vector is not None:
+
+                draw_starting_point = section.get_center_point()
+                img.drawDriftVectorOnImage(drift_vector, draw_starting_point)
+
                 vector_shift_up = Vector(-50, -50)
 
                 draw_starting_point2 = draw_starting_point.translateBy(vector_shift_up)
@@ -117,8 +118,7 @@ class VelocityDetector():
                 without_drift_elongated = Point(drift_contribution_of_this_feature_matcher.x*20, drift_contribution_of_this_feature_matcher.y)
                 img.drawDriftVectorOnImage(without_drift_elongated, draw_starting_point3)
 
-            color = (0, 255, 0) #green
-            img.drawBoxOnImage(section.box_around_feature(), color=color, thickness=4)
+
 
         self.__ui_window.showWindowAndWait(img.asNumpyArray())
 
@@ -276,7 +276,7 @@ class VelocityDetector():
                 continue
 
             section = fm.seefloor_section()
-            drift = section.getDrift()
+            drift = section.get_detected_drift()
             if not drift:
                 continue
 
@@ -315,7 +315,7 @@ class VelocityDetector():
             for idx in range(0, 9):
                 section = self._fm[idx].seefloor_section()
                 box = section.box_around_feature()
-                drift = section.getDrift()
+                drift = section.get_detected_drift()
                 driftsRow.append(box.topLeft.x)
                 driftsRow.append(box.topLeft.y)
                 driftsRow.append(box.bottomRight.x)

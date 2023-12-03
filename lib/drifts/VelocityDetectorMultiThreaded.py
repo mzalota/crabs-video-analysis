@@ -21,14 +21,12 @@ class VelocityDetectorMultiThreaded(VelocityDetector):
             #timerInner.lap("futures.append")
 
         for future in futures:
-            #timerInner = MyTimer("futures")
             section = future.result()
-            #timerInner.lap("join")
-            section.drawFeatureOnFrame(imgObj)
+
             if fm.detectionWasReset():
                 continue
 
-            drift = section.getDrift()
+            drift = section.get_detected_drift()
             if not drift:
                 continue
 
