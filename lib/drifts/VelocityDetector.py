@@ -19,8 +19,9 @@ class VelocityDetector():
         self._prevFrame = None
         self._timer = MyTimer("VelocityDetector")
         self.__is_debug = is_debug
+        self._drifts = list()
 
-    def runLoop(self, frameID, stepSize, logger, videoStream):
+    def runLoop(self, frameID: int, stepSize: int, logger, videoStream):
         self.__createFeatureMatchers(Frame.is_high_resolution(videoStream.frame_height()))
 
         if self.__is_debug:
@@ -29,34 +30,43 @@ class VelocityDetector():
         prevFrameID = frameID
         success = True
         while success:
-            frame = Frame(frameID, videoStream)
-            framePrev = Frame(prevFrameID, videoStream)
+            if frameID > videoStream.num_of_frames():
+                break
 
-            if (prevFrameID != frameID) and frame.getImgObj().is_identical_to(framePrev.getImgObj()):
-                print("WARN: the image in this frame, "+frameID+", is identical to image in previous frame, "+prevFrameID)
+            frame = Frame(frameID, videoStream)
+            try:
+                #try to read frame from video stream
+                current_image = frame.getImgObj()
+            except VideoStreamException as error:
+                print("cannot read frame " + str(frameID) + ", skipping to next")
+                print(repr(error))
+                self.write_out_empty_row(frameID, logger)
+                frameID += stepSize
+                continue
+
+            if (prevFrameID == frameID):
+                print("this is the first frame in the video stream")
+                self.write_out_empty_row(frameID, logger)
+                frameID += stepSize
+                continue
+
+            framePrev = Frame(prevFrameID, videoStream)
+            if current_image.is_identical_to(framePrev.getImgObj()):
+                print("WARN: the image in this frame, "+str(frameID)+", is identical to image in previous frame, "+str(prevFrameID))
                 self.write_out_empty_row(frameID, logger)
                 driftVector = None
             else:
-                try:
-                    self.detectVelocity(frame)
-                    self.write_out_drift_row(frameID, logger)
-                    driftVector = self.__getMedianDriftVector()
+                self.detectVelocity(frame)
+                self.write_out_drift_row(frameID, logger)
+                driftVector = self.__getMedianDriftVector()
 
-                except VideoStreamException as error:
-                    print("cannot read frame " + str(frameID) + ", skipping to next")
-                    print(repr(error))
-                except Exception as error:
-                    print('Caught this error: ' + repr(error))
-                    traceback.print_exc()
-                    break
 
             if self.__is_debug:
                 self.__show_ui_window(self._fm.values(), frame, driftVector)
 
             prevFrameID = frameID
             frameID += stepSize
-            if frameID > videoStream.num_of_frames():
-                break
+
 
         if self.__is_debug:
             self.__ui_window.closeWindow()
@@ -77,30 +87,37 @@ class VelocityDetector():
         print(driftsRow)
         logger.writeToFile(driftsRow)
 
-    def __show_ui_window(self, feature_matchers, frame, driftVector):
+    def __show_ui_window(self, feature_matchers, frame, drift_vector_median):
         img = frame.getImgObj()
         for feature_matcher in feature_matchers:
+            section = feature_matcher.seefloor_section()
+            if (section is None):
+                #we did not initialize the seefloor_section in this feature_matcher yet
+                continue
+
             if feature_matcher.detectionWasReset():
                 color = (0, 255, 255) # draw box in yellow color when it is reset
-            else:
-                color = (0, 255, 0)
-                drift_vector = feature_matcher.seefloor_section().getDrift()
-                draw_starting_point = feature_matcher.seefloor_section().getLocation()
-                img.drawDriftVectorOnImage(drift_vector, draw_starting_point)
-
-                if driftVector is not None:
-                    vector_shift_up = Vector(0, -50)
-                    # vector_shift_up = Vector(0, 0)
-                    draw_starting_point2 = draw_starting_point.translateBy(vector_shift_up)
-                    without_drift = drift_vector.translateBy(Vector(-driftVector.x, -driftVector.y))
-                    img.drawDriftVectorOnImage(without_drift, draw_starting_point2)
-
-                    without_drift_elongated = Point(without_drift.x*20, without_drift.y)
-                    draw_starting_point3 = draw_starting_point2.translateBy(Vector(-without_drift_elongated.x, -without_drift_elongated.y))
-                    img.drawDriftVectorOnImage(without_drift_elongated, draw_starting_point3)
+                img.drawBoxOnImage(section.box_around_feature(), color=color, thickness=4)
 
 
-            img.drawBoxOnImage(feature_matcher.seefloor_section().box_around_feature(), color=color, thickness=4)
+            drift_vector = section.getDrift()
+            draw_starting_point = section.getLocation()
+            img.drawDriftVectorOnImage(drift_vector, draw_starting_point)
+
+            if drift_vector_median is not None and drift_vector is not None:
+                vector_shift_up = Vector(-50, -50)
+
+                draw_starting_point2 = draw_starting_point.translateBy(vector_shift_up)
+                drift_contribution_of_this_feature_matcher = drift_vector.translateBy(Vector(-drift_vector_median.x, -drift_vector_median.y))
+                img.drawDriftVectorOnImage(drift_contribution_of_this_feature_matcher, draw_starting_point2)
+
+
+                draw_starting_point3 = draw_starting_point.translateBy(vector_shift_up.invert())
+                without_drift_elongated = Point(drift_contribution_of_this_feature_matcher.x*20, drift_contribution_of_this_feature_matcher.y)
+                img.drawDriftVectorOnImage(without_drift_elongated, draw_starting_point3)
+
+            color = (0, 255, 0) #green
+            img.drawBoxOnImage(section.box_around_feature(), color=color, thickness=4)
 
         self.__ui_window.showWindowAndWait(img.asNumpyArray())
 
@@ -253,11 +270,8 @@ class VelocityDetector():
         self._timer.lap("in detectVelocity() sequential start")
         self._drifts = list()
         for fm_id, fm in self._fm.items():
-            # TODO: If the next line is moved one down we get exception for video files that don't have first frame
-            #imgObj = frame.getImgObj()
             fm.detectSeeFloorSection(frame)
             section = fm.seefloor_section()
-            #section.drawFeatureOnFrame(imgObj)
             if fm.detectionWasReset():
                 continue
 

@@ -4,8 +4,6 @@ import pylru
 import os
 import numpy as np
 
-# import Image
-from lib.imageProcessing.Camera import Camera
 from lib.model.Image import Image
 
 

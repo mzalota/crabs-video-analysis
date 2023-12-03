@@ -3,6 +3,7 @@ import uuid
 import cv2
 
 from lib.Frame import Frame
+from lib.imageProcessing.Analyzer import Analyzer
 from lib.model.Image import Image
 from lib.model.Box import Box
 from lib.model.Vector import Vector
@@ -92,8 +93,6 @@ class SeeFloorSection:
         lastPoint = self.__topLeftPoints[lastFrame]
         beforeLastPoint = self.__topLeftPoints[beforeLastFrame]
         driftVector = Vector(lastPoint.x-beforeLastPoint.x, lastPoint.y-beforeLastPoint.y)
-        #if (driftVector.isZeroVector()):
-        #    return None
 
         return driftVector
 
@@ -124,8 +123,7 @@ class SeeFloorSection:
         box = self.__defaultBoxAroundFeature()
         return box.topLeft.calculateMidpoint(box.bottomRight)
 
-    def findLocationInFrame(self, frame):
-        # type: (Frame) -> Point
+    def findLocationInFrame(self, frame: Frame) ->Point:
         newLocation = self.__findSubImage(frame.getImgObj().asNumpyArray(), self.getImage().asNumpyArray())
         if newLocation:
             self.__recordFeatureLocationOnFrame(frame, newLocation)

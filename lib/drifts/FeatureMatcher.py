@@ -1,5 +1,6 @@
 from lib.Frame import Frame
 from lib.drifts.SeeFloorSection import SeeFloorSection
+from lib.imageProcessing.Analyzer import Analyzer
 from lib.imageProcessing.Camera import Camera
 from lib.model.Point import Point
 
@@ -33,16 +34,27 @@ class FeatureMatcher:
             return SeeFloorSection(frame, self.__startingBox)
 
         newTopLeftOfFeature = section.findLocationInFrame(frame)
+
         if newTopLeftOfFeature is None:
             self.__resetReason = "NotDetected"
-        else:
-            self.__resetReason = self.__is_feature_too_close_to_edge(newTopLeftOfFeature, Frame.is_high_resolution(frame.frame_height()))
-
-        if self.detectionWasReset():
-            #create bew SeeFloorSection
             return SeeFloorSection(frame, self.__startingBox)
-        else:
-            return section
+
+        section_drift = section.getDrift()
+        if (section_drift is not None and section_drift.x == 0 and section_drift.y == 0):
+            i = Analyzer(section.getImage())
+            haze_ratio = i.getHazeRatio()
+            focus_ratio = i.getFocusRatio()
+            brightness_ratio = i.getBrightnessRatio()
+            msg =  "detected zero drift. " + str(newTopLeftOfFeature.x) + "x" + str(newTopLeftOfFeature.y)
+            msg += ": haze_ratio=" + str(haze_ratio)
+            msg += ", focus_ratio=" + str(focus_ratio)
+            msg += ", brightness_ratio=" + str(brightness_ratio)
+            print(msg)
+
+        self.__resetReason = self.__is_feature_too_close_to_edge(newTopLeftOfFeature, Frame.is_high_resolution(frame.frame_height()))
+
+
+        return section
 
     def __is_feature_too_close_to_edge(self, top_left_of_feature: Point, is_high_resolution: bool) -> str:
 
