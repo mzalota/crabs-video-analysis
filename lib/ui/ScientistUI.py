@@ -65,13 +65,7 @@ class ScientistUI:
         while True:
             print("processing frame ID", int(frame_id))
 
-            try:
-                frame = Frame(frame_id, self.__videoStream)
-            except Exception as error:
-                print("Failed to read next frame from video: ", frame_id)
-                print(repr(error))
-                traceback.print_exc()
-                break
+            frame = Frame(frame_id, self.__videoStream)
 
             try:
                 keyPressed = self.showFrame(frame)

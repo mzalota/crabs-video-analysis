@@ -55,8 +55,7 @@ class VideoStream():
         return int(self._vidcap.get(cv2.CAP_PROP_RECTIFICATION))
 
 
-    def read_image(self, frameID):
-        # type: (int) -> np
+    def read_image(self, frameID:int) ->np:
         if  frameID not in self.__imagesCache:
             # image is not in the cache. Read it from VideoCapture and save into cache
             # image = self.read_image_undistorted(frameID).asNumpyArray()

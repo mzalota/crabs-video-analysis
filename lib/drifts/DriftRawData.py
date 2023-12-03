@@ -346,13 +346,13 @@ class DriftRawData(PandasWrapper):
     def interpolate(self, manualDrifts: DriftManualData, redDotsData: RedDotsData, driftsDetectionStep: int) -> pd.DataFrame:
         raw_drifts_df = self._replaceInvalidValuesWithNaN(self.__df, driftsDetectionStep)
         if self.__generate_debug_graphs:
-            self.__save_graphs_drifts_raw(raw_drifts_df, 2000, 2500)
+            self.__save_graphs_drifts_raw(raw_drifts_df, 1000, 1500)
 
         zoom_factor = redDotsData.scalingFactorColumn(driftsDetectionStep)
 
         df_compensated = self._compensate_for_zoom(raw_drifts_df, zoom_factor)
         if self.__generate_debug_graphs:
-            self.__save_graphs_drifts_zoom_compensated(df_compensated, 2000, 2500)
+            self.__save_graphs_drifts_zoom_compensated(df_compensated, 1000, 1500)
 
         df = raw_drifts_df.copy()
         df = pd.merge(df, df_compensated[['average_y_new', "average_x_new", "frameNumber"]], on='frameNumber', how='left', suffixes=('_draft', '_reddot'))

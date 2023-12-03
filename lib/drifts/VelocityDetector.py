@@ -26,30 +26,41 @@ class VelocityDetector():
         if self.__is_debug:
             self.__ui_window = ImageWindow("mainWindow", Point(700, 200))
 
+        prevFrameID = frameID
         success = True
         while success:
-            try:
-                frame = Frame(frameID, videoStream)
-                self.detectVelocity(frame)
-                driftVector = self.write_out_drift_row(frameID, logger)
+            frame = Frame(frameID, videoStream)
+            framePrev = Frame(prevFrameID, videoStream)
 
-                if self.__is_debug:
-                    self.__show_ui_window(self._fm.values(), frame, driftVector)
+            if (prevFrameID != frameID) and frame.getImgObj().is_identical_to(framePrev.getImgObj()):
+                print("WARN: the image in this frame, "+frameID+", is identical to image in previous frame, "+prevFrameID)
+                self.write_out_empty_row(frameID, logger)
+                driftVector = None
+            else:
+                try:
+                    self.detectVelocity(frame)
+                    self.write_out_drift_row(frameID, logger)
+                    driftVector = self.__getMedianDriftVector()
 
-            except VideoStreamException as error:
-                print("cannot read frame " + str(frameID) + ", skipping to next")
-                print(repr(error))
-            except Exception as error:
-                print('Caught this error: ' + repr(error))
-                traceback.print_exc()
-                break
+                except VideoStreamException as error:
+                    print("cannot read frame " + str(frameID) + ", skipping to next")
+                    print(repr(error))
+                except Exception as error:
+                    print('Caught this error: ' + repr(error))
+                    traceback.print_exc()
+                    break
 
+            if self.__is_debug:
+                self.__show_ui_window(self._fm.values(), frame, driftVector)
+
+            prevFrameID = frameID
             frameID += stepSize
             if frameID > videoStream.num_of_frames():
                 break
 
         if self.__is_debug:
             self.__ui_window.closeWindow()
+
 
     def write_out_drift_row(self, frameID, logger):
         driftVector = self.__getMedianDriftVector()
@@ -60,6 +71,11 @@ class VelocityDetector():
         print(driftsRow)
         logger.writeToFile(driftsRow)
         return driftVector
+
+    def write_out_empty_row(self, frameID, logger):
+        driftsRow = self.emptyRow(frameID)
+        print(driftsRow)
+        logger.writeToFile(driftsRow)
 
     def __show_ui_window(self, feature_matchers, frame, driftVector):
         img = frame.getImgObj()

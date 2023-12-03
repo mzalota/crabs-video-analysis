@@ -28,6 +28,9 @@ class Image:
     def asNumpyArray(self):
         return self.__image
 
+    def is_identical_to(self, other_image: Image) -> bool:
+        return np.array_equal(self.asNumpyArray(), other_image.asNumpyArray())
+
     def copy(self):
         # type: () -> Image
         return Image(self.__image.copy())
