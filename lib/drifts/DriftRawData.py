@@ -127,13 +127,13 @@ class DriftRawData(PandasWrapper):
 
 
     #TODO: Refactor this function into a separate class out of DriftRawData
-    def _compensate_for_zoom(self, raw_drifts_df, zoom_factor: pd.DataFrame) -> pd.DataFrame:
+    def _compensate_for_zoom(self, result_df, zoom_factor: pd.DataFrame) -> pd.DataFrame:
 
-        raw_drifts_df = pd.merge(raw_drifts_df, zoom_factor, on='frameNumber', how='left', suffixes=('_draft', '_reddot'))
+        result_df = pd.merge(result_df, zoom_factor, on='frameNumber', how='left', suffixes=('_draft', '_reddot'))
 
-        raw_drifts_df = self.__remove_values_in_failed_records(raw_drifts_df)
+        result_df = self.__remove_values_in_failed_records(result_df)
 
-        factor = raw_drifts_df["scaling_factor"]  # scaling_factor scaling_factor_not_smooth
+        factor = result_df["scaling_factor"]  # scaling_factor scaling_factor_not_smooth
         yColumns_raw = list()
         xColumns_raw = list()
         yColumns_new = list()
@@ -144,43 +144,48 @@ class DriftRawData(PandasWrapper):
             yColumns_raw.append("fm_" + num + "_drift_y")
             xColumns_raw.append("fm_" + num + "_drift_x")
 
-            drift_y_dezoomed = self.__drift_y_dezoomed(raw_drifts_df, num, factor)
+            drift_y_dezoomed = self.__drift_y_dezoomed(result_df, num, factor)
             column_name_y_new = ("fm_" + num + "_drift_y_new")
             yColumns_new.append(column_name_y_new)
-            raw_drifts_df[column_name_y_new] = drift_y_dezoomed
+            result_df[column_name_y_new] = drift_y_dezoomed
 
-            drift_x_dezoomed = self.__drift_x_dezoomed(raw_drifts_df, num, factor)
+            drift_x_dezoomed = self.__drift_x_dezoomed(result_df, num, factor)
             column_name_x_new = ("fm_" + num + "_drift_x_new")
             xColumns_new.append(column_name_x_new)
-            raw_drifts_df[column_name_x_new] = drift_x_dezoomed
+            result_df[column_name_x_new] = drift_x_dezoomed
 
-        dframe = DataframeWrapper(raw_drifts_df)
+            #if featureMatcher failed, then set values of column_name_x_new and column_name_y_new to NaN (NULL)
+            result_df.loc[result_df["fm_" + num + "_result"] == "FAILED", [column_name_x_new, column_name_y_new]] = numpy.nan
+
+        dframe = DataframeWrapper(result_df)
         for col_name in yColumns_new:
             dframe.remove_outliers_quantile(col_name)
 
         for col_name in xColumns_new:
             dframe.remove_outliers_quantile(col_name)
 
-        raw_drifts_df = dframe.pandas_df()
-        raw_drifts_df = raw_drifts_df.interpolate(limit_direction='both')
+        result_df = dframe.pandas_df()
+        #result_df = result_df.interpolate(limit_direction='both')
 
         # ---
-        self.__save_graphs_variance(raw_drifts_df[xColumns_raw], 'variance_x_raw')
-        self.__save_graphs_variance(raw_drifts_df[xColumns_new], 'variance_x_new')
-        self.__save_graphs_variance(raw_drifts_df[yColumns_raw], 'variance_y_raw')
-        self.__save_graphs_variance(raw_drifts_df[yColumns_new], 'variance_y_new')
+        self.__save_graphs_variance(result_df[xColumns_raw], 'variance_x_raw')
+        self.__save_graphs_variance(result_df[xColumns_new], 'variance_x_new')
+        self.__save_graphs_variance(result_df[yColumns_raw], 'variance_y_raw')
+        self.__save_graphs_variance(result_df[yColumns_new], 'variance_y_new')
 
         #---
 
-        raw_drifts_df['average_y_new'] = raw_drifts_df[yColumns_new].mean(axis=1)
-        raw_drifts_df['average_x_new'] = raw_drifts_df[xColumns_new].mean(axis=1)
+        result_df['average_y_new'] = result_df[yColumns_new].mean(axis=1)
+        result_df['average_x_new'] = result_df[xColumns_new].mean(axis=1)
+
+        DataframeWrapper(result_df).df_print_head(100)
 
         camera = Camera.create()
         distortion_coeff = camera.distortion_at_center()
-        raw_drifts_df["average_x_new"] = raw_drifts_df["average_x_new"] / distortion_coeff
-        raw_drifts_df["average_y_new"] = raw_drifts_df["average_y_new"] / distortion_coeff
+        result_df["average_x_new"] = result_df["average_x_new"] / distortion_coeff
+        result_df["average_y_new"] = result_df["average_y_new"] / distortion_coeff
 
-        return raw_drifts_df
+        return result_df
 
     def __save_graphs_variance(self, columns, variance_column_name):
 
@@ -314,6 +319,17 @@ class DriftRawData(PandasWrapper):
         undistort_coeff = pd.Series(self.__undistort_coeff_column(center_point))
         undistored_drift_y = df[column_name_y_raw] * undistort_coeff
         return undistored_drift_y
+
+
+    def _detection_was_successfull_columnName(self, num) -> str:
+        column_name_result_raw = "fm_" + num + "_result"
+
+    def aaa(self):
+        if column_value == "DETECTED":
+            return True
+        else:
+            return False
+
 
     def __drift_x_dezoomed(self, df: pd.DataFrame, num: str, zoom_factor: pd.DataFrame) -> pd.DataFrame:
         undistored_drift_x = self._undistored_drift_x(df, num)
