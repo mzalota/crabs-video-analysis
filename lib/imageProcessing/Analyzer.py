@@ -11,8 +11,9 @@ class Analyzer:
     """
 
     def __init__(self, image: Image):
-        tmpImg = cv2.resize(image.asNumpyArray()[:-100, :, :], (720, 480))
-        self.__image_equalized = Image(tmpImg).equalize().asNumpyArray()
+        # tmpImg = cv2.resize(image.asNumpyArray()[:-100, :, :], (720, 480))
+        # self.__image_equalized = Image(tmpImg).equalize().asNumpyArray()
+        self.__image_equalized = image.equalize().asNumpyArray()
 
     def getHazeRatio(self):
         min_img = self.__getMinChannel(self.__image_equalized)

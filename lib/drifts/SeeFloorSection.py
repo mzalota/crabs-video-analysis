@@ -3,7 +3,6 @@ import uuid
 import cv2
 
 from lib.Frame import Frame
-from lib.imageProcessing.Analyzer import Analyzer
 from lib.model.Image import Image
 from lib.model.Box import Box
 from lib.model.Vector import Vector
@@ -20,8 +19,8 @@ class SeeFloorSection:
     #__frames
     #__startingBox
 
-    def __init__(self,frame, box):
-        self.setThreshold(0.6)
+    def __init__(self, frame, box):
+        self.__threshold_for_matching = 0.6
         self.__initialize()
         self.__startingBox = box
         self.__recordFeatureLocationOnFrame(frame, box.topLeft)
@@ -31,17 +30,10 @@ class SeeFloorSection:
         self.__frameIDs = list()
         self.__frames = dict()
         self.__topLeftPoints = dict()
-        self.__startingBox = None
-
-    def setThreshold(self, newThresholdForMatching):
-        self.__threshold_for_matching = newThresholdForMatching
 
     def box_around_feature(self):
         max_frame_id = max(self.__frameIDs)
         return self.__boxAroundFeatureForFrame(max_frame_id)
-
-    def __getWindowName(self):
-        return self.__id
 
     def __defaultBoxAroundFeature(self):
         box = Box(self.__getTopLeft(),
@@ -105,8 +97,7 @@ class SeeFloorSection:
         # type: () -> Image
         return self.getImageOnFrame(self.getMaxFrameID())
 
-    def getImageOnFrame(self, frameID):
-        # type: () -> Image
+    def getImageOnFrame(self, frameID: int)->Image:
         if len(self.__frames)<1:
             return None
 
@@ -149,6 +140,7 @@ class SeeFloorSection:
         if max_val < self.__threshold_for_matching:
             # If the best matching box still has correlation below the "threshold" then declare defeat -> we could not find a match for subImage on this image
             return None
+        print ("Correlation frame matcher: max_val: "+str(max_val)+", min val: "+str(max_val))
 
         # get w and h, so that we can reconstruct the box
         d, w, h = subImage.shape[::-1]
@@ -164,34 +156,3 @@ class SeeFloorSection:
     def getMaxFrameID(self):
         # type: () -> String
         return max(self.__frameIDs)
-
-    def getMinFrameID(self):
-        # type: () -> String
-        return min(self.__frameIDs)
-
-    @staticmethod
-    def infoHeaders():
-        row = []
-        row.append("featureId")
-        row.append("featureX")
-        row.append("featureY")
-        row.append("numberOfFrameIDs")
-        row.append("numberOfFrames")
-        row.append("numberOfTopLeftPoints")
-        row.append("maxFrameID")
-        row.append("minFrameID")
-        row.append("correlation")
-        return row
-
-    def infoAboutFeature(self):
-        row = []
-        row.append(self.__id)
-        row.append(self.getLocation().x)
-        row.append(self.getLocation().y)
-        row.append(len(self.__frameIDs))
-        row.append(len(self.__frames))
-        row.append(len(self.__topLeftPoints))
-        row.append(self.getMaxFrameID())
-        row.append(self.getMinFrameID())
-        row.append(self.__correlation)
-        return row

@@ -98,6 +98,7 @@ class VelocityDetector():
             if feature_matcher.detectionWasReset():
                 color = (0, 255, 255) # draw box in yellow color when it is reset
                 img.drawBoxOnImage(section.box_around_feature(), color=color, thickness=4)
+                continue
 
 
             drift_vector = section.getDrift()
@@ -271,10 +272,10 @@ class VelocityDetector():
         self._drifts = list()
         for fm_id, fm in self._fm.items():
             fm.detectSeeFloorSection(frame)
-            section = fm.seefloor_section()
             if fm.detectionWasReset():
                 continue
 
+            section = fm.seefloor_section()
             drift = section.getDrift()
             if not drift:
                 continue
