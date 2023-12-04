@@ -178,7 +178,8 @@ class DriftRawData(PandasWrapper):
         result_df['average_y_new'] = result_df[yColumns_new].mean(axis=1)
         result_df['average_x_new'] = result_df[xColumns_new].mean(axis=1)
 
-        DataframeWrapper(result_df).df_print_head(100)
+        #mzalota Remove this printout
+        # DataframeWrapper(result_df).df_print_head(600)
 
         camera = Camera.create()
         distortion_coeff = camera.distortion_at_center()
@@ -241,7 +242,7 @@ class DriftRawData(PandasWrapper):
             num = str(feature_matcher_idx)
             column_name_y_drift_raw = "fm_" + num + "_drift_y"
             column_name_x_drift_raw = "fm_" + num + "_drift_x"
-            df.loc[df['fm_' + num + '_result'] == "FAILED", [column_name_y_drift_raw, column_name_x_drift_raw]] = numpy.nan
+            df.loc[df['fm_' + num + '_result'] != "DETECTED", [column_name_y_drift_raw, column_name_x_drift_raw]] = numpy.nan
 
             df.loc[df[column_name_x_drift_raw] < -200, [column_name_x_drift_raw, column_name_y_drift_raw]] = numpy.nan
             df.loc[df[column_name_x_drift_raw] > 200, [column_name_x_drift_raw, column_name_y_drift_raw]] = numpy.nan
