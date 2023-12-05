@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import figure
-from scipy.signal import lfilter, butter
+from scipy.signal import lfilter, butter, filtfilt
 
 from lib.data.Correlation import Correlation
 
@@ -10,23 +10,13 @@ from lib.data.Correlation import Correlation
 class FourierSmoothing:
     def smooth_curve(self, column_to_smooth: pd.DataFrame, column_name: str, cutoff_freq=0.1) -> pd.DataFrame:
 
-        #column_to_smooth = df[column_name]
-        orig_np = column_to_smooth.to_numpy()
-        dist_freq1 = self.bandpass_filter(orig_np, 1, cutoff_freq, 25)
-        corr = Correlation(dist_freq1, orig_np)
-
-        phase_shift = corr.offset_of_peak_from_center()
+        # https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html
+        b, a = self._butter_bandpass(1, cutoff_freq, 25, order=6)
+        dist_freq1 = filtfilt(b, a, column_to_smooth.to_numpy(), padlen=150)
 
         dataset = pd.DataFrame()
         dataset['distance_streight'] = dist_freq1.reshape(-1)
-        shifted = dataset['distance_streight'].shift(-phase_shift)
-
-        self._draw_fft_lowpass(orig_np, shifted.to_numpy(), column_name) #, cutoff_freq)
-        # self.save_plot_numpy_as_png("c:/tmp/maxim_corr.png", corr.corr_np())
-        print("offset_of_peak_from_center", phase_shift)
-        #dataset['distance_streight'] = dataset['distance_streight'].astype(int)
-
-        return shifted
+        return dataset
 
     def _draw_fft_lowpass(self, orig_np, lowpass_np, column_name): #, cutoff_freq=0.1):
         # lowpass_np = self.bandpass_filter(orig_np, 1, cutoff_freq, 25)
