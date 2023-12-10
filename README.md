@@ -80,6 +80,7 @@ Subdirectory
 - **z** - "Zoom": toggle between viewing just one frame (zoom-in) or viewing neighboring frames (zoom-out)   
 - **c** - "Contrast": toggle between make image *brighter*, *darker* and return to *normal*
 - **f** - "Focus": toggle between make image *more focused/shaper*, *even more focused/sharper* and return to *normal* 
+- **x** - "Rectifier": Rectify image (remove optical distortion caused by the convexity of camera lens)
 - **b** - "Bad": mark this and next 50 frames as *bad* and jump to 51st frame
 - **s** - "Save Image": save image of the currently viewed frame into savedFrames subdirectory  
 - **r** - "open RedDotsUI": opens new window zoomed to area around red dots. Click on each red dot once. Data will be saved to reddots_manual.csv and all files interpolated again.

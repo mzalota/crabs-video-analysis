@@ -4,6 +4,8 @@ from typing import Dict, List
 import numpy
 import numpy as np
 import pandas as pd
+from scipy.stats import stats
+
 #import statistics as statistics
 from lib.imageProcessing.Camera import Camera
 from lib.infra.FolderStructure import FolderStructure
@@ -147,16 +149,39 @@ class DriftRawData(PandasWrapper):
             drift_y_dezoomed = self.__drift_y_dezoomed(result_df, num, factor)
             column_name_y_new = ("fm_" + num + "_drift_y_new")
             yColumns_new.append(column_name_y_new)
-            result_df[column_name_y_new] = drift_y_dezoomed
+            # result_df[column_name_y_new] = drift_y_dezoomed
 
             drift_x_dezoomed = self.__drift_x_dezoomed(result_df, num, factor)
             column_name_x_new = ("fm_" + num + "_drift_x_new")
             xColumns_new.append(column_name_x_new)
+            # result_df[column_name_x_new] = drift_x_dezoomed
+
+            # drift_y_dezoomed.loc[drift_y_dezoomed[column_name_y_new] == -888, [column_name_x_new, column_name_y_new]] = numpy.nan
+            # drift_x_dezoomed.loc[drift_x_dezoomed[column_name_x_new] < -150, [column_name_x_new, column_name_y_new]] = numpy.nan
+
+            result_df[column_name_y_new] = drift_y_dezoomed
             result_df[column_name_x_new] = drift_x_dezoomed
 
             #if featureMatcher failed, then set values of column_name_x_new and column_name_y_new to NaN (NULL)
             result_df.loc[result_df["fm_" + num + "_result"] == "FAILED", [column_name_x_new, column_name_y_new]] = numpy.nan
 
+        #remove outliers using standard error measure
+        records_list_y = DataframeWrapper(result_df[yColumns_new]).as_records_list()
+        outliersY = [DriftRawData._remove_outlier(k) for k in records_list_y]
+        result_df["crazy_variance_y"] = outliersY
+        result_df.loc[result_df["crazy_variance_y"] != "OK", yColumns_new] = numpy.nan
+        result_df.loc[result_df["crazy_variance_y"] != "OK", xColumns_new] = numpy.nan
+
+        records_list_x = DataframeWrapper(result_df[xColumns_new]).as_records_list()
+        outliersX = [DriftRawData._remove_outlier(k) for k in records_list_x]
+        result_df["crazy_variance_x"] = outliersX
+        result_df.loc[result_df["crazy_variance_x"] != "OK", yColumns_new] = numpy.nan
+        result_df.loc[result_df["crazy_variance_x"] != "OK", xColumns_new] = numpy.nan
+
+        # DataframeWrapper(result_df).df_print_head(600)
+
+
+        #try to relax the 0.8 quantile outlier removing.
         dframe = DataframeWrapper(result_df)
         for col_name in yColumns_new:
             dframe.remove_outliers_quantile(col_name)
@@ -177,9 +202,6 @@ class DriftRawData(PandasWrapper):
 
         result_df['average_y_new'] = result_df[yColumns_new].mean(axis=1)
         result_df['average_x_new'] = result_df[xColumns_new].mean(axis=1)
-
-        #mzalota Remove this printout
-        # DataframeWrapper(result_df).df_print_head(600)
 
         camera = Camera.create()
         distortion_coeff = camera.distortion_at_center()
@@ -262,6 +284,52 @@ class DriftRawData(PandasWrapper):
 
 
         return df
+
+
+    @staticmethod
+    def _remove_outlier(val: Dict) -> Point:
+
+        values = val.values()
+        ls = list()
+        for k in values:
+            if math.isnan(k):
+                continue
+            ls.append(k)
+
+        #print(np.var(ls), len(ls), ls)
+        return DriftRawData._remove_outlier2(ls)
+
+
+
+
+    @staticmethod
+    def _remove_outlier2(ls: List) -> bool:
+        if len(ls)<3:
+            return "OK"
+
+        stdev = np.std(ls)
+        min_loc = ls.index(min(ls))
+        max_loc = ls.index(max(ls))
+        std_err = stats.sem(ls, axis=None, ddof=0)
+        # print("lst     ", std_err, stdev, len(ls), min_loc, max_loc,ls)
+
+        lst_no_min = ls[:min_loc] + ls[min_loc + 1:]
+        new_std = np.std(lst_no_min)
+        std_err_min = stats.sem(lst_no_min, axis=None, ddof=0)
+        # print("lst_no_min", std_err_min, new_std, (stdev/new_std), len(lst_no_min), max(lst_no_min) - min(lst_no_min), lst_no_min)
+        if std_err > 8 and std_err_min <4:
+            # removing this one value has reduced standard error by more than twice.
+            return "MIN_OUTLIER"
+
+        lst_no_max = ls[:max_loc] + ls[max_loc + 1:]
+        new_std = np.std(lst_no_max)
+        std_err_max = stats.sem(lst_no_max, axis=None, ddof=0)
+        # print("lst_no_max", std_err_max, new_std, (stdev/new_std), len(lst_no_max), max(lst_no_max) - min(lst_no_max), lst_no_max)
+        if std_err > 8 and std_err_max < 4:
+            #removing this one value has reduced standard error by more than twice.
+            return "MAX_OUTLIER"
+
+        return "OK"
 
     def _point_from_x_y_coord(self, val: Dict) -> Point:
         x_coord = val[0]

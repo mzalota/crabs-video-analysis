@@ -23,6 +23,10 @@ class FeatureMatcher:
     def drift_is_valid(self) -> bool:
         return self.__driftIsValid
 
+    def reset_to_starting_box(self):
+        self.__resetReason = "ManualReset"
+        self.__resetToStartingBox = True
+        self.__driftIsValid = False
 
     def detectSeeFloorSection(self, frame: Frame) -> bool:
         if self.__resetToStartingBox:
@@ -33,7 +37,6 @@ class FeatureMatcher:
             return False
 
         newTopLeftOfFeature = self.__seeFloorSection.findLocationInFrame(frame)
-
         if newTopLeftOfFeature is None:
             print("WARN: newTopLeftOfFeature is None. NotDetected_1")
             self.__resetReason = "NotDetected_1"
@@ -66,28 +69,6 @@ class FeatureMatcher:
         self.__driftIsValid = True
         return True
 
-
-    def __detectSeeFloorSection(self, frame: Frame, section: SeeFloorSection) -> bool:
-
-
-        newTopLeftOfFeature = section.findLocationInFrame(frame)
-
-        if newTopLeftOfFeature is None:
-            print("WARN: newTopLeftOfFeature is None. NotDetected_1")
-            self.__resetReason = "NotDetected_1"
-            return False
-
-        section_drift = section.get_detected_drift()
-        if section_drift is None:
-            print("WARN: section_drift is None. NotDetected_2")
-            self.__resetReason = "NotDetected_2"
-            return False
-
-        if section_drift.x == 0 and section_drift.y == 0:
-            return False
-
-        #drift was detected.
-        return True
 
     def __is_feature_too_close_to_edge(self, top_left_of_feature: Box) -> bool:
         camera = Camera.create()

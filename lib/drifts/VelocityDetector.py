@@ -54,6 +54,7 @@ class VelocityDetector():
             if current_image.is_identical_to(framePrev.getImgObj()):
                 print("WARN: the image in this frame, "+str(frameID)+", is identical to image in previous frame, "+str(prevFrameID))
                 self.write_out_empty_row(frameID, logger)
+                self.reset_all_fm()
                 driftVector = None
             else:
                 self.detectVelocity(frame)
@@ -267,6 +268,10 @@ class VelocityDetector():
         medianYDrift = numpy.median(driftY)
         return Vector(medianXDrift, medianYDrift)
 
+    def reset_all_fm(self):
+        for fm_id, fm in self._fm.items():
+            fm.reset_to_starting_box()
+
     def detectVelocity(self, frame: Frame):
         self._timer.lap("in detectVelocity() sequential start")
         self._drifts = list()
@@ -320,7 +325,7 @@ class VelocityDetector():
                 driftsRow.append(box.topLeft.y)
                 driftsRow.append(box.bottomRight.x)
                 driftsRow.append(box.bottomRight.y)
-                if section.drift_was_detected():
+                if self._fm[idx].drift_is_valid():
                     driftsRow.append("DETECTED")
                     driftsRow.append(drift.x)
                     driftsRow.append(drift.y)
