@@ -68,7 +68,7 @@ class SeeFloorSection:
         return box
 
     def __getTopLeft(self):
-        return self.__getTopLeftForFrame(self.__get_max_frame_id())
+        return self.__getTopLeftForFrame(self.get_last_frame_id())
 
     def __getTopLeftForFrame(self, frameID):
         if len(self.__topLeftPoints) < 1:
@@ -85,7 +85,7 @@ class SeeFloorSection:
         self.__frames[frame.getFrameID()] = frame
 
     def __get_last_image(self) -> Image:
-        return self.__get_image_on_frame(self.__get_max_frame_id())
+        return self.__get_image_on_frame(self.get_last_frame_id())
 
     def __get_image_on_frame(self, frameID: int)->Image:
         if len(self.__frames)<1:
@@ -140,6 +140,9 @@ class SeeFloorSection:
 
         return topLeft
 
-    def __get_max_frame_id(self):
-        # type: () -> String
+    def __get_last_frame_id(self) -> Frame:
+        frameID = self.get_last_frame_id()
+        return self.__frames[frameID]
+
+    def get_last_frame_id(self) -> str:
         return max(self.__frameIDs)

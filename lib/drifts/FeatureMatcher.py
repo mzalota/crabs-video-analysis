@@ -9,39 +9,67 @@ from lib.model.Point import Point
 class FeatureMatcher:
     def __init__(self, startingBox):
         self.__startingBox = startingBox
-        self.__resetReason = ""
-        self.__resetToStartingBox = False
-        self.__correlation = 0
+        self.__resetReason = "JustCreated"
+        self.__resetToStartingBox = True
+        self.__driftIsValid = False
         self.__seeFloorSection = None
 
-    def seefloor_section(self):
+    def seefloor_section(self) -> SeeFloorSection:
         return self.__seeFloorSection
 
-    def detectionWasReset(self):
+    def detectionWasReset(self) -> bool:
         return self.__resetToStartingBox
 
+    def drift_is_valid(self) -> bool:
+        return self.__driftIsValid
+
+
     def detectSeeFloorSection(self, frame: Frame) -> bool:
-        if self.__seeFloorSection is None:
-            self.__resetReason = "NotInitialized"
-            self.__resetToStartingBox = False
+        if self.__resetToStartingBox:
             self.__seeFloorSection = SeeFloorSection(frame, self.__startingBox)
+            self.__resetReason = "JustReset"
+            self.__resetToStartingBox = False
+            self.__driftIsValid = False
             return False
 
-        successfull_detection = self.__detectSeeFloorSection(frame, self.__seeFloorSection)
-        if not successfull_detection:
-            self.__resetToStartingBox = False
-            self.__seeFloorSection = SeeFloorSection(frame, self.__startingBox)
+        newTopLeftOfFeature = self.__seeFloorSection.findLocationInFrame(frame)
+
+        if newTopLeftOfFeature is None:
+            print("WARN: newTopLeftOfFeature is None. NotDetected_1")
+            self.__resetReason = "NotDetected_1"
+            self.__resetToStartingBox = True
+            self.__driftIsValid = False
+            return False
+
+        section_drift = self.__seeFloorSection.get_detected_drift()
+        if section_drift is None:
+            print("WARN: section_drift is None. NotDetected_2")
+            self.__resetReason = "NotDetected_2"
+            self.__resetToStartingBox = True
+            self.__driftIsValid = False
+            return False
+
+        if section_drift.x == 0 and section_drift.y == 0:
+            self.__resetReason = "NotMoved"
+            self.__resetToStartingBox = True
+            self.__driftIsValid = False
             return False
 
         if self.__is_feature_too_close_to_edge(self.__seeFloorSection.box_around_feature()):
             self.__resetReason = "TooCloseToEdge"
-            self.__resetToStartingBox = False
-            self.__seeFloorSection = SeeFloorSection(frame, self.__startingBox)
+            self.__resetToStartingBox = True
+            self.__driftIsValid = True
+            return False
 
+        self.__resetReason = ""
+        self.__resetToStartingBox = False
+        self.__driftIsValid = True
         return True
 
 
     def __detectSeeFloorSection(self, frame: Frame, section: SeeFloorSection) -> bool:
+
+
         newTopLeftOfFeature = section.findLocationInFrame(frame)
 
         if newTopLeftOfFeature is None:
@@ -55,31 +83,11 @@ class FeatureMatcher:
             self.__resetReason = "NotDetected_2"
             return False
 
-        if section_drift.x != 0 or section_drift.y != 0:
-            #drift was detected.
-            return True
+        if section_drift.x == 0 and section_drift.y == 0:
+            return False
 
-        return False
-
-
-        # image = section.getImage()
-        # i = Analyzer(image)
-        # haze_ratio = i.getHazeRatio()
-        # focus_ratio = i.getFocusRatio()
-        #
-        # if haze_ratio < 50 and focus_ratio > 200:
-        #     print("This Subimage is very hazy and unfocused. Don't use this drift reading")
-        #     self.__resetReason = "TooHazy"
-        #     return False
-        #
-        # number_of_detections = section.number_of_detections()
-        # if number_of_detections == 2:
-        #     print("This Subimage is StuckOnStart. Don't use this drift reading")
-        #     self.__resetReason = "StuckOnStart"
-        #     return False
-        #
-        # return True
-
+        #drift was detected.
+        return True
 
     def __is_feature_too_close_to_edge(self, top_left_of_feature: Box) -> bool:
         camera = Camera.create()
