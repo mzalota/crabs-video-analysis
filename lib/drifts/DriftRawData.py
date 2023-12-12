@@ -156,9 +156,6 @@ class DriftRawData(PandasWrapper):
             xColumns_new.append(column_name_x_new)
             # result_df[column_name_x_new] = drift_x_dezoomed
 
-            # drift_y_dezoomed.loc[drift_y_dezoomed[column_name_y_new] == -888, [column_name_x_new, column_name_y_new]] = numpy.nan
-            # drift_x_dezoomed.loc[drift_x_dezoomed[column_name_x_new] < -150, [column_name_x_new, column_name_y_new]] = numpy.nan
-
             result_df[column_name_y_new] = drift_y_dezoomed
             result_df[column_name_x_new] = drift_x_dezoomed
 
@@ -166,17 +163,27 @@ class DriftRawData(PandasWrapper):
             result_df.loc[result_df["fm_" + num + "_result"] == "FAILED", [column_name_x_new, column_name_y_new]] = numpy.nan
 
         #remove outliers using standard error measure
-        records_list_y = DataframeWrapper(result_df[yColumns_new]).as_records_list()
-        outliersY = [DriftRawData._remove_outlier(k) for k in records_list_y]
-        result_df["crazy_variance_y"] = outliersY
-        result_df.loc[result_df["crazy_variance_y"] != "OK", yColumns_new] = numpy.nan
-        result_df.loc[result_df["crazy_variance_y"] != "OK", xColumns_new] = numpy.nan
+        new_column_name = "crazy_variance_y"
+        newColumnName2 = "crazy_variance_x"
+        wrapper = DataframeWrapper(result_df[yColumns_new])
+        wrapper.append_dataframe(DataframeWrapper(result_df["frameNumber"]))
+
+        # DataframeWrapper(result_df).df_print_head(100)
+
+        records_list_y = wrapper.as_records_list()
+        outliersY = [DriftRawData._remove_outliers_stderr(k) for k in records_list_y]
+        wrapper.pandas_df()[new_column_name]= outliersY
+        wrapper.df_print_head(600)
+
+        result_df[new_column_name] = outliersY
+        result_df.loc[result_df[new_column_name] != "OK", yColumns_new] = numpy.nan
+        result_df.loc[result_df[new_column_name] != "OK", xColumns_new] = numpy.nan
 
         records_list_x = DataframeWrapper(result_df[xColumns_new]).as_records_list()
-        outliersX = [DriftRawData._remove_outlier(k) for k in records_list_x]
-        result_df["crazy_variance_x"] = outliersX
-        result_df.loc[result_df["crazy_variance_x"] != "OK", yColumns_new] = numpy.nan
-        result_df.loc[result_df["crazy_variance_x"] != "OK", xColumns_new] = numpy.nan
+        outliersX = [DriftRawData._remove_outliers_stderr(k) for k in records_list_x]
+        result_df[newColumnName2] = outliersX
+        result_df.loc[result_df[newColumnName2] != "OK", yColumns_new] = numpy.nan
+        result_df.loc[result_df[newColumnName2] != "OK", xColumns_new] = numpy.nan
 
         # DataframeWrapper(result_df).df_print_head(600)
 
@@ -282,28 +289,33 @@ class DriftRawData(PandasWrapper):
 
             df = df.interpolate(limit_direction='both')
 
-
         return df
 
 
     @staticmethod
-    def _remove_outlier(val: Dict) -> Point:
-
-        values = val.values()
-        ls = list()
-        for k in values:
-            if math.isnan(k):
+    def _remove_outliers_stderr(val: Dict) -> Point:
+        non_null_values = list()
+        for k,v in val.items():
+            if k == "frameNumber":
                 continue
-            ls.append(k)
 
-        #print(np.var(ls), len(ls), ls)
-        return DriftRawData._remove_outlier2(ls)
+            if math.isnan(v):
+                continue
+            non_null_values.append(v)
 
+        has_outlier = DriftRawData._has_outlier_stderr(non_null_values)
 
+        val["has_outlier"] = has_outlier
+
+        #min_loc = ls.index(min(ls))
+        #max_loc = ls.index(max(ls))
+
+        return has_outlier
+        # return val
 
 
     @staticmethod
-    def _remove_outlier2(ls: List) -> bool:
+    def _has_outlier_stderr(ls: List) -> bool:
         if len(ls)<3:
             return "OK"
 
