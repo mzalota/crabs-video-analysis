@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import stats
 
+from lib.drifts.DetectedRawDrift import DetectedRawDrift
 #import statistics as statistics
 from lib.imageProcessing.Camera import Camera
 from lib.infra.FolderStructure import FolderStructure
@@ -133,6 +134,12 @@ class DriftRawData(PandasWrapper):
 
         result_df = pd.merge(result_df, zoom_factor, on='frameNumber', how='left', suffixes=('_draft', '_reddot'))
 
+        records_list_all = DataframeWrapper(result_df).as_records_list()
+        raw_drift_objs = [DetectedRawDrift.createFromDict(k) for k in records_list_all]
+        outliersX2  = [k.outliers_x() for k in raw_drift_objs]
+        # for one_obj in raw_drift_objs:
+        #     one_obj.all_x_drifts()
+
         result_df = self.__remove_values_in_failed_records(result_df)
 
         factor = result_df["scaling_factor"]  # scaling_factor scaling_factor_not_smooth
@@ -142,25 +149,36 @@ class DriftRawData(PandasWrapper):
         xColumns_new = list()
         for feature_matcher_idx in range(0, 9):
             num = str(feature_matcher_idx)
-
             yColumns_raw.append("fm_" + num + "_drift_y")
             xColumns_raw.append("fm_" + num + "_drift_x")
+            yColumns_new.append("fm_" + num + "_drift_y_new")
+            xColumns_new.append("fm_" + num + "_drift_x_new")
+
+
+        for feature_matcher_idx in range(0, 9):
+            num = str(feature_matcher_idx)
 
             drift_y_dezoomed = self.__drift_y_dezoomed(result_df, num, factor)
             column_name_y_new = ("fm_" + num + "_drift_y_new")
-            yColumns_new.append(column_name_y_new)
-            # result_df[column_name_y_new] = drift_y_dezoomed
+            # yColumns_new.append(column_name_y_new)
 
             drift_x_dezoomed = self.__drift_x_dezoomed(result_df, num, factor)
             column_name_x_new = ("fm_" + num + "_drift_x_new")
-            xColumns_new.append(column_name_x_new)
-            # result_df[column_name_x_new] = drift_x_dezoomed
+            # xColumns_new.append(column_name_x_new)
 
             result_df[column_name_y_new] = drift_y_dezoomed
             result_df[column_name_x_new] = drift_x_dezoomed
 
             #if featureMatcher failed, then set values of column_name_x_new and column_name_y_new to NaN (NULL)
+            # result_df.loc[result_df["fm_" + num + "_result"] == "FAILED", [column_name_x_new, column_name_y_new]] = numpy.nan
+
+        for feature_matcher_idx in range(0, 9):
+            num = str(feature_matcher_idx)
+            column_name_y_new = "fm_" + num + "_drift_y_new"
+            column_name_x_new = "fm_" + num + "_drift_x_new"
+            #if featureMatcher failed, then set values of column_name_x_new and column_name_y_new to NaN (NULL)
             result_df.loc[result_df["fm_" + num + "_result"] == "FAILED", [column_name_x_new, column_name_y_new]] = numpy.nan
+
 
         #remove outliers using standard error measure
         new_column_name = "crazy_variance_y"
@@ -168,20 +186,26 @@ class DriftRawData(PandasWrapper):
         wrapper = DataframeWrapper(result_df[yColumns_new])
         wrapper.append_dataframe(DataframeWrapper(result_df["frameNumber"]))
 
-        # DataframeWrapper(result_df).df_print_head(100)
+        #DataframeWrapper(result_df).df_print_head(600)
 
         records_list_y = wrapper.as_records_list()
         outliersY = [DriftRawData._remove_outliers_stderr(k) for k in records_list_y]
         wrapper.pandas_df()[new_column_name]= outliersY
-        wrapper.df_print_head(600)
+        #wrapper.df_print_head(600)
 
         result_df[new_column_name] = outliersY
         result_df.loc[result_df[new_column_name] != "OK", yColumns_new] = numpy.nan
         result_df.loc[result_df[new_column_name] != "OK", xColumns_new] = numpy.nan
 
-        records_list_x = DataframeWrapper(result_df[xColumns_new]).as_records_list()
+        dataframe_wrapper = DataframeWrapper(result_df[xColumns_new])
+        records_list_x = dataframe_wrapper.as_records_list()
         outliersX = [DriftRawData._remove_outliers_stderr(k) for k in records_list_x]
-        result_df[newColumnName2] = outliersX
+        result_df["crazy_variance_x_prev"] = outliersX
+        result_df[newColumnName2] = outliersX2
+        dataframe_wrapper.pandas_df()["crazy_variance_x_prev"] = outliersX
+        dataframe_wrapper.pandas_df()[newColumnName2] = outliersX2
+        dataframe_wrapper.df_print_head(600)
+
         result_df.loc[result_df[newColumnName2] != "OK", yColumns_new] = numpy.nan
         result_df.loc[result_df[newColumnName2] != "OK", xColumns_new] = numpy.nan
 
@@ -212,8 +236,8 @@ class DriftRawData(PandasWrapper):
 
         camera = Camera.create()
         distortion_coeff = camera.distortion_at_center()
-        result_df["average_x_new"] = result_df["average_x_new"] / distortion_coeff
-        result_df["average_y_new"] = result_df["average_y_new"] / distortion_coeff
+        result_df["average_x_new"] = result_df["average_x_new"] / distortion_coeff.x
+        result_df["average_y_new"] = result_df["average_y_new"] / distortion_coeff.y
 
         return result_df
 
@@ -291,6 +315,9 @@ class DriftRawData(PandasWrapper):
 
         return df
 
+    def _to_obj(val: Dict) -> Point:
+        non_null_values = list()
+        print (val)
 
     @staticmethod
     def _remove_outliers_stderr(val: Dict) -> Point:
@@ -400,7 +427,6 @@ class DriftRawData(PandasWrapper):
         undistort_coeff = pd.Series(self.__undistort_coeff_column(center_point))
         undistored_drift_y = df[column_name_y_raw] * undistort_coeff
         return undistored_drift_y
-
 
     def _detection_was_successfull_columnName(self, num) -> str:
         column_name_result_raw = "fm_" + num + "_result"

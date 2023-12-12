@@ -11,7 +11,7 @@ class PointTranslator:
     def __init__(self, fastObj: SeeFloorFast):
         self.__fastObj = fastObj
 
-    def __get_drift_instantaneous(self, frame_id):
+    def __get_drift_instantaneous(self, frame_id) -> Vector:
         # type: (int) -> Vector
         drift_x = self.__fastObj._drift_x(frame_id)
         drift_y = self.__fastObj._drift_y(frame_id)

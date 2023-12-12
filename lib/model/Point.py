@@ -56,7 +56,7 @@ class Point:
     def translateBy(self, vector: Point) -> Point:
         return Point(int(self.x + vector.x), int(self.y + vector.y))
 
-    def translate_by_float(self, vector: Point) -> Point:
+    def translate_by_vector(self, vector: Point) -> Point:
         return Point(self.x + vector.x, self.y + vector.y)
 
     def translate_by_xy(self, x: int, y: int):
