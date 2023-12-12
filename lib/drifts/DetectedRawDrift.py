@@ -24,8 +24,7 @@ class DetectedRawDrift:
         else:
             return True
 
-    def drifts_x(self):
-
+    def calculate_drifts(self):
 
         camera = Camera.create()
         drifts_raw = list()
@@ -67,26 +66,35 @@ class DetectedRawDrift:
         # print (self.frame_id(), " distortion_vector", distortion_vector)
         # print (self.frame_id(), " distortion_coeff", distortion_coeff)
         # print (self.frame_id(), " drifts_raw", drifts_raw)
-        return non_null_values_x
+        return non_null_values_x, non_null_values_y
 
-    def drift_x(self):
-        non_null_values_x = self.drifts_x()
-        avg1 = np.mean(non_null_values_x)
-        return avg1
+    def drift_vector(self):
+        values_x, values_y = self.calculate_drifts()
+        avg_x = np.mean(values_x)
+        avg_y = np.mean(values_y)
+        return Vector(avg_x,avg_y)
+
 
     def outliers_x(self):
         if self.skip_row():
             return "INVALID"
 
-        non_null_values_x = self.drifts_x()
-        average = self.drift_x()
-        response = DetectedRawDrift._has_outlier_stderr(non_null_values_x)
+        values_x, values_y = self.calculate_drifts()
+        drift_vec = self.drift_vector()
+        response = DetectedRawDrift._has_outlier_stderr(values_x)
         if self.frame_id()>500 and self.frame_id() <1200:
-            print (self.frame_id(), response, average, " non_null_values_x", non_null_values_x)
+            print (self.frame_id(), response, str(drift_vec), " values_x", values_x)
             # print (self.frame_id(), " non_null_values_y", non_null_values_y)
 
         return response
 
+    def outliers_y(self):
+        if self.skip_row():
+            return "INVALID"
+
+        values_x, values_y = self.calculate_drifts()
+        response = DetectedRawDrift._has_outlier_stderr(values_y)
+        return response
 
     @staticmethod
     def _has_outlier_stderr(ls: List) -> bool:
