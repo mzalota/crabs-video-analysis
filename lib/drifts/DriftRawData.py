@@ -129,6 +129,7 @@ class DriftRawData(PandasWrapper):
         graph_plotter.saveGraphToFile(x_axis_column, yColumns_new, graph_title, filepath_prefix + "drift_y_new.png")
 
 
+
     #TODO: Refactor this function into a separate class out of DriftRawData
     def _compensate_for_zoom(self, result_df, zoom_factor: pd.DataFrame) -> pd.DataFrame:
 
@@ -136,10 +137,27 @@ class DriftRawData(PandasWrapper):
 
         result_df = self.__remove_values_in_failed_records(result_df)
 
+        if self.__generate_debug_graphs:
+            self.__save_graphs_drifts_raw(result_df, 1000, 1500)
+
         records_list_all = DataframeWrapper(result_df).as_records_list()
+        # print (records_list_all)
+        # df = self.dict_to_df(records_list_all)
+        # nowBack = DataframeWrapper(df)
+        # nowBack.df_print_head(50)
+        # print("AAAAA")
+
         raw_drift_objs = [DetectedRawDrift.createFromDict(k) for k in records_list_all]
+
+
         outliersX2  = [k.outliers_x() for k in raw_drift_objs]
         outliersY2  = [k.outliers_y() for k in raw_drift_objs]
+
+        toPRint = [k.to_dict() for k in raw_drift_objs]
+        df = DataframeWrapper.create_from_record_list(toPRint)
+        nowBack = DataframeWrapper(df)
+        nowBack.df_print_head(50)
+        print("BBBN")
 
         factor = result_df["scaling_factor"]  # scaling_factor scaling_factor_not_smooth
         yColumns_raw = list()
@@ -165,8 +183,12 @@ class DriftRawData(PandasWrapper):
             column_name_x_new = ("fm_" + num + "_drift_x_new")
             # xColumns_new.append(column_name_x_new)
 
-            result_df[column_name_y_new] = drift_y_dezoomed
-            result_df[column_name_x_new] = drift_x_dezoomed
+            #result_df[column_name_y_new] = drift_y_dezoomed
+            # result_df[column_name_x_new] = drift_x_dezoomed
+
+        dataframe_new = DataframeWrapper(result_df)
+        dataframe_new.append_dataframe(nowBack)
+        result_df = dataframe_new.pandas_df()
 
         for feature_matcher_idx in range(0, 9):
             num = str(feature_matcher_idx)
@@ -193,7 +215,7 @@ class DriftRawData(PandasWrapper):
 
         dataframe_wrapper = DataframeWrapper(result_df[xColumns_new])
         dataframe_wrapper.pandas_df()[outlier_X_column_name] = outliersX2
-        dataframe_wrapper.df_print_head(600)
+        #dataframe_wrapper.df_print_head(600)
 
 
 
@@ -290,8 +312,8 @@ class DriftRawData(PandasWrapper):
             column_name_x_drift_raw = "fm_" + num + "_drift_x"
             df.loc[df['fm_' + num + '_result'] != "DETECTED", [column_name_y_drift_raw, column_name_x_drift_raw]] = numpy.nan
 
-            df.loc[df[column_name_x_drift_raw] < -200, [column_name_x_drift_raw, column_name_y_drift_raw]] = numpy.nan
-            df.loc[df[column_name_x_drift_raw] > 200, [column_name_x_drift_raw, column_name_y_drift_raw]] = numpy.nan
+            df.loc[df[column_name_x_drift_raw] < -50, [column_name_x_drift_raw, column_name_y_drift_raw]] = numpy.nan
+            df.loc[df[column_name_x_drift_raw] > 50, [column_name_x_drift_raw, column_name_y_drift_raw]] = numpy.nan
 
             df.loc[df[column_name_y_drift_raw] < -200, [column_name_x_drift_raw, column_name_y_drift_raw]] = numpy.nan
             df.loc[df[column_name_y_drift_raw] > 200, [column_name_x_drift_raw, column_name_y_drift_raw]] = numpy.nan
@@ -451,8 +473,8 @@ class DriftRawData(PandasWrapper):
 
     def interpolate(self, manualDrifts: DriftManualData, redDotsData: RedDotsData, driftsDetectionStep: int) -> pd.DataFrame:
         raw_drifts_df = self._replaceInvalidValuesWithNaN(self.__df, driftsDetectionStep)
-        if self.__generate_debug_graphs:
-            self.__save_graphs_drifts_raw(raw_drifts_df, 1000, 1500)
+        # if self.__generate_debug_graphs:
+        #     self.__save_graphs_drifts_raw(raw_drifts_df, 1000, 1500)
 
         zoom_factor = redDotsData.scalingFactorColumn(driftsDetectionStep)
 

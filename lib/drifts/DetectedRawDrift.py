@@ -18,6 +18,20 @@ class DetectedRawDrift:
     @staticmethod
     def createFromDict(from_dict: Dict):
         return DetectedRawDrift(from_dict)
+
+    def to_dict(self) -> Dict:
+        result = dict()
+        for k,v in self.__init_dict.items():
+            # if k.endswith("_drift_x") or  k.endswith("_drift_y"):
+            #     result[k]=v
+            #     continue
+            if k.endswith("_drift_x_new") or k.endswith("_drift_y_new"):
+                result[k] = v
+            # if k == "frameNumber":
+            #     result[k] = v
+
+        return result
+
     def skip_row(self) -> bool:
         if self.__init_dict["outlier"] == "DETECTED_DRIFTS":
             return False
@@ -46,6 +60,8 @@ class DetectedRawDrift:
             distortion_coeff.append(str(drift))
             drifts_raw.append(str(self.drift_vector_at(feature_matcher_idx)))
 
+            self.__init_dict["fm_" + str(feature_matcher_idx) + "_drift_x_new"] = drift.x
+            self.__init_dict["fm_" + str(feature_matcher_idx) + "_drift_y_new"] = drift.y
             val = drift.x
             # val = self.drift_x_at(feature_matcher_idx)
             if math.isnan(val):
