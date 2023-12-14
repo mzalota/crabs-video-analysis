@@ -46,7 +46,7 @@ class FramePhysics:
     @staticmethod
     def _adjust_location_for_depth_change_zoom(point: Point, scaling_factor: float) -> Point:
         camera = Camera.create()
-        frame_center_point = camera.center_point()
+        frame_center_point = camera.get_optical_center()
 
         x_offset_from_middle_old = point.x - frame_center_point.x
         x_offset_from_middle_new = x_offset_from_middle_old / scaling_factor

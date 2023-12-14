@@ -141,11 +141,6 @@ class DriftRawData(PandasWrapper):
             self.__save_graphs_drifts_raw(result_df, 1000, 1500)
 
         records_list_all = DataframeWrapper(result_df).as_records_list()
-        # print (records_list_all)
-        # df = self.dict_to_df(records_list_all)
-        # nowBack = DataframeWrapper(df)
-        # nowBack.df_print_head(50)
-        # print("AAAAA")
 
         raw_drift_objs = [DetectedRawDrift.createFromDict(k) for k in records_list_all]
 
@@ -156,7 +151,7 @@ class DriftRawData(PandasWrapper):
         toPRint = [k.to_dict() for k in raw_drift_objs]
         df = DataframeWrapper.create_from_record_list(toPRint)
         nowBack = DataframeWrapper(df)
-        nowBack.df_print_head(50)
+        # nowBack.df_print_head(50)
         print("BBBN")
 
         factor = result_df["scaling_factor"]  # scaling_factor scaling_factor_not_smooth
@@ -171,20 +166,6 @@ class DriftRawData(PandasWrapper):
             yColumns_new.append("fm_" + num + "_drift_y_new")
             xColumns_new.append("fm_" + num + "_drift_x_new")
 
-
-        for feature_matcher_idx in range(0, 9):
-            num = str(feature_matcher_idx)
-
-            drift_y_dezoomed = self.__drift_y_dezoomed(result_df, num, factor)
-            column_name_y_new = ("fm_" + num + "_drift_y_new")
-            # yColumns_new.append(column_name_y_new)
-
-            drift_x_dezoomed = self.__drift_x_dezoomed(result_df, num, factor)
-            column_name_x_new = ("fm_" + num + "_drift_x_new")
-            # xColumns_new.append(column_name_x_new)
-
-            #result_df[column_name_y_new] = drift_y_dezoomed
-            # result_df[column_name_x_new] = drift_x_dezoomed
 
         dataframe_new = DataframeWrapper(result_df)
         dataframe_new.append_dataframe(nowBack)
@@ -216,8 +197,6 @@ class DriftRawData(PandasWrapper):
         dataframe_wrapper = DataframeWrapper(result_df[xColumns_new])
         dataframe_wrapper.pandas_df()[outlier_X_column_name] = outliersX2
         #dataframe_wrapper.df_print_head(600)
-
-
 
         # DataframeWrapper(result_df).df_print_head(600)
 
@@ -477,7 +456,7 @@ class DriftRawData(PandasWrapper):
         #     self.__save_graphs_drifts_raw(raw_drifts_df, 1000, 1500)
 
         zoom_factor = redDotsData.scalingFactorColumn(driftsDetectionStep)
-
+        DataframeWrapper(zoom_factor).df_print_head(100)
         df_compensated = self._compensate_for_zoom(raw_drifts_df, zoom_factor)
         if self.__generate_debug_graphs:
             self.__save_graphs_drifts_zoom_compensated(df_compensated, 1000, 1500)

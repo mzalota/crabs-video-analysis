@@ -53,19 +53,20 @@ class DetectedRawDrift:
             if not self.__is_detected(feature_matcher_idx):
                 continue
 
+            # drifts_raw.append(str(self.drift_vector_at(feature_matcher_idx)))
+
             feature_location = self.center_point_at(feature_matcher_idx)
-            center_points.append(str(feature_location))
-            center_points_undist.append(str(self.undistorted_center_point(feature_matcher_idx)))
+            # center_points.append(str(feature_location))
+            # center_points_undist.append(str(self.undistorted_center_point(feature_matcher_idx)))
 
             zoom_factor = self._zoom_factor()+1
             new_loc = FramePhysics._adjust_location_for_depth_change_zoom(feature_location, zoom_factor)
             diff_due_to_zoom = feature_location.minus(new_loc)
-            print("diff due to zoom", str(diff_due_to_zoom), zoom_factor, str(feature_location), str(new_loc))
+            # print("diff due to zoom", str(diff_due_to_zoom), zoom_factor, str(feature_location), str(new_loc))
 
-            distortion_vector.append(str(camera.distortion_at_point_vector(feature_location)))
+            # distortion_vector.append(str(camera.distortion_at_point_vector(feature_location)))
             drift = self.undistorted_drifts_at(feature_matcher_idx)
-            distortion_coeff.append(str(drift))
-            drifts_raw.append(str(self.drift_vector_at(feature_matcher_idx)))
+            # distortion_coeff.append(str(drift))
 
             self.__init_dict["fm_" + str(feature_matcher_idx) + "_drift_x_new"] = drift.x
             self.__init_dict["fm_" + str(feature_matcher_idx) + "_drift_y_new"] = drift.y
@@ -73,21 +74,18 @@ class DetectedRawDrift:
             if math.isnan(drift.x):
                 continue
             # non_null_values_x.append(drift.x * (1 +zoom_factor))
-            non_null_values_x.append(drift.x + diff_due_to_zoom.x)
+            compensated_drift_x = (drift.x + diff_due_to_zoom.x) #* (zoom_factor)
+            non_null_values_x.append(compensated_drift_x)
 
             if math.isnan(drift.y):
                 continue
             # non_null_values_y.append(drift.y * (1 +zoom_factor))
-            non_null_values_y.append(drift.y + diff_due_to_zoom.y)
+            compensated_drift_y = (drift.y + diff_due_to_zoom.y)  #* (zoom_factor)
+            non_null_values_y.append(compensated_drift_y)
 
-            self.__init_dict["fm_" + str(feature_matcher_idx) + "_drift_x_new"] = drift.x + diff_due_to_zoom.x
-            self.__init_dict["fm_" + str(feature_matcher_idx) + "_drift_y_new"] = drift.y + diff_due_to_zoom.y
+            self.__init_dict["fm_" + str(feature_matcher_idx) + "_drift_x_new"] = compensated_drift_x
+            self.__init_dict["fm_" + str(feature_matcher_idx) + "_drift_y_new"] = compensated_drift_y
 
-        # print (self.frame_id(), " center_points", center_points)
-        # print (self.frame_id(), " center_points_undist", center_points_undist)
-        # print (self.frame_id(), " distortion_vector", distortion_vector)
-        # print (self.frame_id(), " distortion_coeff", distortion_coeff)
-        # print (self.frame_id(), " drifts_raw", drifts_raw)
         return non_null_values_x, non_null_values_y
 
     def drift_vector(self):
@@ -105,10 +103,6 @@ class DetectedRawDrift:
         values_x, values_y = self.calculate_drifts()
         drift_vec = self.drift_vector()
         response = DetectedRawDrift._has_outlier_stderr(values_x)
-        if self.frame_id()>500 and self.frame_id() <1200:
-            print (self.frame_id(), response, str(drift_vec), " values_x", values_x)
-            # print (self.frame_id(), " non_null_values_y", non_null_values_y)
-
         return response
 
     def outliers_y(self):
@@ -124,7 +118,6 @@ class DetectedRawDrift:
         if len(ls)<3:
             return "OK"
 
-        stdev = np.std(ls)
         min_loc = ls.index(min(ls))
         max_loc = ls.index(max(ls))
         std_err = stats.sem(ls, axis=None, ddof=0)
