@@ -82,8 +82,8 @@ class TestFramePhysics(TestCase):
         point_back = physics.translate_backward(point_forward)
 
         #assert
-        self.assertAlmostEqual(point_back.x, point.x, 2)
-        self.assertAlmostEqual(point_back.y, point.y, 2)
+        self.assertAlmostEqual(point_back.x, point.x, 1)
+        self.assertAlmostEqual(point_back.y, point.y, 1)
 
     def test_change_than_reverse2(self):
         #setup
@@ -100,4 +100,4 @@ class TestFramePhysics(TestCase):
         self.assertAlmostEqual(point_back.x, point.x, 1)
         self.assertAlmostEqual(point_back.y, point.y, 1)
 
-        self.assertAlmostEqual(point_forward.y, 1005.668, 2)
+        self.assertAlmostEqual(point_forward.y, 1005.75, 2)

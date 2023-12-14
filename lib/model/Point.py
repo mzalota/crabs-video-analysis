@@ -42,8 +42,7 @@ class Point:
 
         return Point(xMid, yMid)
 
-    def distanceTo(self, otherPoint):
-        # type: (Point) -> decimal
+    def distanceTo(self, otherPoint: Point) -> float:
         x1 = self.x
         y1 = self.y
         x2 = otherPoint.x
@@ -52,12 +51,17 @@ class Point:
         dist = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
         return dist
 
+    def minus(self, vector: Point) -> Point:
+        return Point(self.x - vector.x, self.y - vector.y)
+
     # def translateBy(self, vector: Vector) -> Point:
     def translateBy(self, vector: Point) -> Point:
-        return Point(int(self.x + vector.x), int(self.y + vector.y))
+        vector_floats = self.translate_by_vector(vector)
+        #round to integer
+        return Point(int(round(vector_floats.x)), int(round(vector_floats.y)))
 
     def translate_by_vector(self, vector: Point) -> Point:
         return Point(self.x + vector.x, self.y + vector.y)
 
-    def translate_by_xy(self, x: int, y: int):
+    def translate_by_xy(self, x: int, y: int) -> Point:
         return self.translateBy(Point(x, y))

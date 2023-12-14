@@ -38,7 +38,6 @@ class FramePhysics:
 
         drift_vector_optical_at_point = Vector(x_drift_at_point, y_drift_at_point)
         point_after_drift = point.translate_by_vector(drift_vector_optical_at_point)
-        # point_after_drift = point.translate_by_vector(drift_backward_at_center)
 
         depth_scaling_factor_backward = 1 / self.__zoom
         return self._adjust_location_for_depth_change_zoom(point_after_drift, depth_scaling_factor_backward)
