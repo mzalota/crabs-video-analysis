@@ -20,12 +20,12 @@ if folderStruct is None:
     # rootDir = "C:/data/AnjutkaVideo/2019/c6259"
     # videoFileName = "V3"
 
-    rootDir = "C:/data/crabs/2023_st7505_АМК_89"
-    videoFileName = "R5"
+    # rootDir = "C:/data/crabs/2023_st7505_АМК_89"
+    # videoFileName = "R5"
 
-    # show_file_select = FileOpenUI()
-    # rootDir = show_file_select.root_dir()
-    # videoFileName = show_file_select.filename()
+    show_file_select = FileOpenUI()
+    rootDir = show_file_select.root_dir()
+    videoFileName = show_file_select.filename()
 
     folderStruct = FolderStructure(rootDir, videoFileName)
 

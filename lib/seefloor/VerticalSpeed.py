@@ -29,15 +29,10 @@ class VerticalSpeed:
         dist_diff = column - column.shift(periods=-1)
         scaling_factor_single_step = dist_diff / column
         result = scaling_factor_single_step + 0
-        print("BEfore for loop")
-        DataframeWrapper(result).df_print_head(100)
-
         for increment in range(1, driftsDetectionStep+1):
-            print ("__calculate_scaling_factor. shifring", increment)
             prev = scaling_factor_single_step.shift(periods=-increment)
             result = result + prev
-        print("AFTER for loop")
-        DataframeWrapper(result).df_print_head(100)
+        result = result.shift(periods=driftsDetectionStep)
         return result
 
     def __smooth_distance_value(self, newDF, distance_column_name):

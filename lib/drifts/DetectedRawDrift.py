@@ -23,9 +23,6 @@ class DetectedRawDrift:
     def to_dict(self) -> Dict:
         result = dict()
         for k,v in self.__init_dict.items():
-            # if k.endswith("_drift_x") or  k.endswith("_drift_y"):
-            #     result[k]=v
-            #     continue
             if k.endswith("_drift_x_new") or k.endswith("_drift_y_new"):
                 result[k] = v
             # if k == "frameNumber":
@@ -40,47 +37,36 @@ class DetectedRawDrift:
             return True
 
     def calculate_drifts(self):
-
         camera = Camera.create()
-        drifts_raw = list()
-        distortion_coeff = list()
-        distortion_vector = list()
-        center_points_undist = list()
-        center_points = list()
+        distortion_coeff = camera.distortion_at_center()
+
         non_null_values_x = list()
         non_null_values_y = list()
         for feature_matcher_idx in range(0, 9):
             if not self.__is_detected(feature_matcher_idx):
                 continue
 
-            # drifts_raw.append(str(self.drift_vector_at(feature_matcher_idx)))
-
             feature_location = self.center_point_at(feature_matcher_idx)
-            # center_points.append(str(feature_location))
-            # center_points_undist.append(str(self.undistorted_center_point(feature_matcher_idx)))
 
             zoom_factor = self._zoom_factor()+1
             new_loc = FramePhysics._adjust_location_for_depth_change_zoom(feature_location, zoom_factor)
             diff_due_to_zoom = feature_location.minus(new_loc)
             # print("diff due to zoom", str(diff_due_to_zoom), zoom_factor, str(feature_location), str(new_loc))
 
-            # distortion_vector.append(str(camera.distortion_at_point_vector(feature_location)))
-            drift = self.undistorted_drifts_at(feature_matcher_idx)
-            # distortion_coeff.append(str(drift))
+            undistorted_drift = self.undistorted_drifts_at(feature_matcher_idx)
 
-            self.__init_dict["fm_" + str(feature_matcher_idx) + "_drift_x_new"] = drift.x
-            self.__init_dict["fm_" + str(feature_matcher_idx) + "_drift_y_new"] = drift.y
+            self.__init_dict["fm_" + str(feature_matcher_idx) + "_drift_x_new"] = undistorted_drift.x
+            self.__init_dict["fm_" + str(feature_matcher_idx) + "_drift_y_new"] = undistorted_drift.y
 
-            if math.isnan(drift.x):
+            if math.isnan(undistorted_drift.x):
                 continue
-            # non_null_values_x.append(drift.x * (1 +zoom_factor))
-            compensated_drift_x = (drift.x + diff_due_to_zoom.x) #* (zoom_factor)
+
+            compensated_drift_x = (undistorted_drift.x / distortion_coeff.x + diff_due_to_zoom.x)
             non_null_values_x.append(compensated_drift_x)
 
-            if math.isnan(drift.y):
+            if math.isnan(undistorted_drift.y):
                 continue
-            # non_null_values_y.append(drift.y * (1 +zoom_factor))
-            compensated_drift_y = (drift.y + diff_due_to_zoom.y)  #* (zoom_factor)
+            compensated_drift_y = (undistorted_drift.y / distortion_coeff.y + diff_due_to_zoom.y)
             non_null_values_y.append(compensated_drift_y)
 
             self.__init_dict["fm_" + str(feature_matcher_idx) + "_drift_x_new"] = compensated_drift_x
@@ -92,6 +78,12 @@ class DetectedRawDrift:
         values_x, values_y = self.calculate_drifts()
         avg_x = np.mean(values_x)
         avg_y = np.mean(values_y)
+
+        # camera = Camera.create()
+        # distortion_coeff = camera.distortion_at_center()
+        #
+        # avg_x = avg_x / distortion_coeff.x
+        # avg_y = avg_y / distortion_coeff.y
 
         return Vector(avg_x,avg_y)
 

@@ -140,21 +140,7 @@ class DriftRawData(PandasWrapper):
         if self.__generate_debug_graphs:
             self.__save_graphs_drifts_raw(result_df, 1000, 1500)
 
-        records_list_all = DataframeWrapper(result_df).as_records_list()
 
-        raw_drift_objs = [DetectedRawDrift.createFromDict(k) for k in records_list_all]
-
-
-        outliersX2  = [k.outliers_x() for k in raw_drift_objs]
-        outliersY2  = [k.outliers_y() for k in raw_drift_objs]
-
-        toPRint = [k.to_dict() for k in raw_drift_objs]
-        df = DataframeWrapper.create_from_record_list(toPRint)
-        nowBack = DataframeWrapper(df)
-        # nowBack.df_print_head(50)
-        print("BBBN")
-
-        factor = result_df["scaling_factor"]  # scaling_factor scaling_factor_not_smooth
         yColumns_raw = list()
         xColumns_raw = list()
         yColumns_new = list()
@@ -166,72 +152,32 @@ class DriftRawData(PandasWrapper):
             yColumns_new.append("fm_" + num + "_drift_y_new")
             xColumns_new.append("fm_" + num + "_drift_x_new")
 
+        full_df = DataframeWrapper(result_df)
+        records_list_all = full_df.as_records_list()
+        raw_drift_objs = [DetectedRawDrift.createFromDict(k) for k in records_list_all]
 
-        dataframe_new = DataframeWrapper(result_df)
-        dataframe_new.append_dataframe(nowBack)
-        result_df = dataframe_new.pandas_df()
-
-        for feature_matcher_idx in range(0, 9):
-            num = str(feature_matcher_idx)
-            column_name_y_new = "fm_" + num + "_drift_y_new"
-            column_name_x_new = "fm_" + num + "_drift_x_new"
-            #if featureMatcher failed, then set values of column_name_x_new and column_name_y_new to NaN (NULL)
-            result_df.loc[result_df["fm_" + num + "_result"] == "FAILED", [column_name_x_new, column_name_y_new]] = numpy.nan
-
-
-        #remove outliers using standard error measure
-        outlier_Y_column_name = "crazy_variance_y"
-        outlier_X_column_name = "crazy_variance_x"
-
-        result_df[outlier_Y_column_name] = outliersY2
-        result_df.loc[result_df[outlier_Y_column_name] != "OK", yColumns_new] = numpy.nan
-        result_df.loc[result_df[outlier_Y_column_name] != "OK", xColumns_new] = numpy.nan
-
-        result_df[outlier_X_column_name] = outliersX2
-        result_df.loc[result_df[outlier_X_column_name] != "OK", yColumns_new] = numpy.nan
-        result_df.loc[result_df[outlier_X_column_name] != "OK", xColumns_new] = numpy.nan
-
-
-        #TODO: need to compensate for Zoom.
-
-        dataframe_wrapper = DataframeWrapper(result_df[xColumns_new])
-        dataframe_wrapper.pandas_df()[outlier_X_column_name] = outliersX2
-        #dataframe_wrapper.df_print_head(600)
-
-        # DataframeWrapper(result_df).df_print_head(600)
-
-
-        #TODO: Apply these exclusions to new columns produced by DetectRawDrift object.
-        dframe = DataframeWrapper(result_df)
-        for col_name in yColumns_new:
-            dframe.remove_outliers_quantile(col_name)
-
-        for col_name in xColumns_new:
-            dframe.remove_outliers_quantile(col_name)
-
-        result_df = dframe.pandas_df()
-        #result_df = result_df.interpolate(limit_direction='both')
-
-        # ---
-        self.__save_graphs_variance(result_df[xColumns_raw], 'variance_x_raw')
-        self.__save_graphs_variance(result_df[xColumns_new], 'variance_x_new')
-        self.__save_graphs_variance(result_df[yColumns_raw], 'variance_y_raw')
-        self.__save_graphs_variance(result_df[yColumns_new], 'variance_y_new')
-
-        #---
         average_y_new = [k.drift_vector().y for k in raw_drift_objs]
         average_x_new = [k.drift_vector().x for k in raw_drift_objs]
+
+        backToDataFrame = [k.to_dict() for k in raw_drift_objs]
+        nowBack = DataframeWrapper.create_from_record_list(backToDataFrame)
+        full_df.append_dataframe(nowBack)
+        result_df = full_df.pandas_df()
 
         result_df['average_x_new'] = average_x_new
         result_df['average_y_new'] = average_y_new
 
-        result_df.loc[result_df[outlier_X_column_name] != "OK", ['average_x_new', 'average_y_new'] ] = numpy.nan
-        result_df.loc[result_df[outlier_Y_column_name] != "OK", ['average_x_new', 'average_y_new'] ] = numpy.nan
+        #TODO: move this undistortion logic into DetectedRawDrift class
+        # camera = Camera.create()
+        # distortion_coeff = camera.distortion_at_center()
+        # result_df["average_x_new"] = result_df["average_x_new"] / distortion_coeff.x
+        # result_df["average_y_new"] = result_df["average_y_new"] / distortion_coeff.y
 
-        camera = Camera.create()
-        distortion_coeff = camera.distortion_at_center()
-        result_df["average_x_new"] = result_df["average_x_new"] / distortion_coeff.x
-        result_df["average_y_new"] = result_df["average_y_new"] / distortion_coeff.y
+        # ---
+        self.__save_graphs_variance(result_df[xColumns_raw], 'variance_x_raw')
+        self.__save_graphs_variance(nowBack.pandas_df()[xColumns_new], 'variance_x_new')
+        self.__save_graphs_variance(result_df[yColumns_raw], 'variance_y_raw')
+        self.__save_graphs_variance(nowBack.pandas_df()[yColumns_new], 'variance_y_new')
 
         return result_df
 
@@ -452,11 +398,9 @@ class DriftRawData(PandasWrapper):
 
     def interpolate(self, manualDrifts: DriftManualData, redDotsData: RedDotsData, driftsDetectionStep: int) -> pd.DataFrame:
         raw_drifts_df = self._replaceInvalidValuesWithNaN(self.__df, driftsDetectionStep)
-        # if self.__generate_debug_graphs:
-        #     self.__save_graphs_drifts_raw(raw_drifts_df, 1000, 1500)
 
         zoom_factor = redDotsData.scalingFactorColumn(driftsDetectionStep)
-        DataframeWrapper(zoom_factor).df_print_head(100)
+
         df_compensated = self._compensate_for_zoom(raw_drifts_df, zoom_factor)
         if self.__generate_debug_graphs:
             self.__save_graphs_drifts_zoom_compensated(df_compensated, 1000, 1500)
@@ -478,13 +422,6 @@ class DriftRawData(PandasWrapper):
 
         # df = self.__replace_with_NaN_if_very_diff_to_neighbors(df, "driftY", driftsDetectionStep)
         df = self.__interpolateToHaveEveryFrame(df)
-
-        # since drifts were created using undistorted image, we need to increase drifts for raw/distored images
-        # camera = Camera.create()
-        # distortion_coeff = camera.distortion_at_center()
-        # print ("distortion_coeff is ",distortion_coeff)
-        # df["driftX"] = df["driftX"] / distortion_coeff
-        # df["driftY"] = df["driftY"] / distortion_coeff
 
         #TODO: extract this function of overwriting raw drifts with manual values elsewhere, so that it is more explicit
         df = manualDrifts.overwrite_values(df)

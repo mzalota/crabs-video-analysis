@@ -20,9 +20,10 @@ class DataframeWrapper:
     # {'crabLocationX': 865, 'crabLocationY': 304, 'frameNumber': 10243},
     # {'crabLocationX': 101, 'crabLocationY': 420, 'frameNumber': 10530}]
     @staticmethod
-    def create_from_record_list(d):
-        df = pd.DataFrame.from_records(d)
-        return df
+    def create_from_record_list(list_of_dicts: List) -> DataframeWrapper:
+        df = pd.DataFrame.from_records(list_of_dicts)
+        return DataframeWrapper(df)
+
     def save_file_csv(self, filepath):
         # type: (str) -> None
         self.__df.to_csv(filepath, sep='\t', index=False)
