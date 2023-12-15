@@ -1,6 +1,6 @@
 import pandas as pd
 from datetime import datetime
-from lib.FolderStructure import FolderStructure
+from lib.infra.FolderStructure import FolderStructure
 from lib.data.PandasWrapper import PandasWrapper
 from lib.infra.DataframeWrapper import DataframeWrapper
 
@@ -75,7 +75,6 @@ class BadFramesData(PandasWrapper):
             return True
 
     def __rows_containing(self, frame_id):
-
         result_df = self.__df.loc[(self.__df[self.COLNAME_startfFrameNumber] <= frame_id) & (
                     self.__df[self.COLNAME_endFrameNumber] >= frame_id)]
         return result_df

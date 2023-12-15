@@ -1,26 +1,24 @@
-from lib.FolderStructure import FolderStructure
-from lib.Image import Image
-from lib.data.BadFramesData import BadFramesData
-from lib.drifts.DriftManualData import DriftManualData
-from lib.data.MarkersData import MarkersData
-from lib.data.SeeFloorNoBadBlocks import SeeFloorNoBadBlocks
-from lib.ui.CrabUI import CrabUI
-from lib.data.CrabsData import CrabsData
-from lib.Frame import Frame
-from lib.ImageWindow import ImageWindow
-from lib.ImagesCollage import ImagesCollage
-from lib.data.RedDotsData import RedDotsData
-from lib.imageProcessing.Rectificator import Rectificator
-
 import traceback
-from lib.ui.FrameDecorators import FrameDecoFactory
 
+from lib.infra.FolderStructure import FolderStructure
+from lib.Frame import Frame
+from lib.model.Image import Image
+from lib.ui.ImageWindow import ImageWindow
+from lib.ui.ImagesCollage import ImagesCollage
+from lib.VideoStream import VideoStreamException
+from lib.model.Point import Point
+from lib.data.BadFramesData import BadFramesData
+from lib.data.CrabsData import CrabsData
+from lib.data.MarkersData import MarkersData
+from lib.data.RedDotsData import RedDotsData
+from lib.seefloor.SeeFloor import SeeFloor
+from lib.drifts.DriftManualData import DriftManualData
+from lib.imageProcessing.Rectificator import Rectificator
 from lib.infra.MyTimer import MyTimer
-from lib.ui.UserInput import UserInput
-from lib.data.SeeFloor import SeeFloor
+from lib.ui.CrabUI import CrabUI
+from lib.ui.FrameDecorators import FrameDecoFactory
 from lib.ui.RedDotsUI import RedDotsUI
-
-from lib.common import Point
+from lib.ui.UserInput import UserInput
 
 
 class ScientistUI:
@@ -55,7 +53,6 @@ class ScientistUI:
         self.__redDotsData = RedDotsData.createFromFolderStruct(folderStruct)
 
         self.__seeFloor = SeeFloor.createFromFolderStruct(folderStruct)
-        self.__seeFloorNoBadBlocks = SeeFloorNoBadBlocks.createFromFolderStruct(folderStruct)
 
         self.__crabData = CrabsData.createFromFolderStruct(self.__folderStruct)
         self.__redDotsUI = RedDotsUI(self.__videoStream)
@@ -68,15 +65,19 @@ class ScientistUI:
         while True:
             print("processing frame ID", int(frame_id))
 
-            try:
-                frame = Frame(frame_id, self.__videoStream)
-            except Exception as error:
-                print("Failed to read next frame from video: ", frame_id)
-                print(repr(error))
-                traceback.print_exc()
-                break
+            frame = Frame(frame_id, self.__videoStream)
 
-            keyPressed = self.showFrame(frame)
+            try:
+                keyPressed = self.showFrame(frame)
+            except VideoStreamException as error:
+                print (error)
+                if frame_id < self.__seeFloor.maxFrameID():
+                    #video stream has a technical problem at this frame. Try reading next frame
+                    frame_id = frame_id+1
+                    continue
+                else:
+                    raise error
+
             user_input = UserInput(keyPressed)
 
             print("keyPressed", keyPressed)
@@ -197,9 +198,10 @@ class ScientistUI:
     def __show_crab_ui(self, frame_id):
         timer = MyTimer("start translatePointCoordinate")
         crabPoint = self.__imageWin.featureCoordiate
-        crabUI = CrabUI(self.__crabData, self.__videoStream, self.__seeFloorNoBadBlocks, self.__folderStruct, frame_id, crabPoint)
+        crabUI = CrabUI(self.__crabData, self.__videoStream, self.__seeFloor, self.__folderStruct, frame_id, crabPoint)
         timer.lap("__show_crab_ui. clicked on crab at: "+str(crabPoint))
 
+        crabUI = CrabUI(self.__crabData, self.__videoStream, self.__seeFloor, self.__folderStruct, frame_id, crabPoint)
         crabUI.showCrabWindow()
 
     def __show_red_dot_ui(self, frame_id):
@@ -254,7 +256,7 @@ class ScientistUI:
                                               self.__markersData, self.__videoStream)
 
         if self.__zoom:
-            collage = ImagesCollage(frameImagesFactory, self.__seeFloorNoBadBlocks)
+            collage = ImagesCollage(frameImagesFactory, self.__seeFloor)
             imageToShow = collage.constructCollage(frame, frame.frame_height() / 2)
         else:
             imageToShow = self.__constructFrameImage(frameImagesFactory, frame)
@@ -336,14 +338,14 @@ class ScientistUI:
 
     def __process_navigation_key_press(self, frame_id, user_input):
 
-        if user_input.is_large_step_forward():
-            # scroll 500 frames forward
-            new_frame_id = frame_id + 500
+        if user_input.is_next_frame_command():
+            # scroll 50 frames backward
+            new_frame_id = frame_id + 1
             return new_frame_id
 
-        if user_input.is_large_step_backward():
-            # scroll 500 frames backward
-            new_frame_id = frame_id - 500
+        if user_input.is_prev_frame_command():
+            # scroll 50 frames backward
+            new_frame_id = frame_id - 1
             return new_frame_id
 
         if user_input.is_small_step_forward():
@@ -364,6 +366,16 @@ class ScientistUI:
         if user_input.is_key_arrow_up():
             # scroll 50 frames backward
             new_frame_id = frame_id - 50
+            return new_frame_id
+
+        if user_input.is_large_step_forward():
+            # scroll 500 frames forward
+            new_frame_id = frame_id + 500
+            return new_frame_id
+
+        if user_input.is_large_step_backward():
+            # scroll 500 frames backward
+            new_frame_id = frame_id - 500
             return new_frame_id
 
         if user_input.is_key_end():
@@ -391,5 +403,6 @@ class ScientistUI:
         if user_input.is_key_page_up():
             # Jump 10 steps backward
             return self.__seeFloor.jumpToSeefloorSlice(frame_id, -10)
+
 
         return None

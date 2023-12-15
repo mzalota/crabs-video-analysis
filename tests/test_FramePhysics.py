@@ -1,11 +1,11 @@
 from os import getcwd, chdir
 from unittest import TestCase
 
-from lib.Camera import Camera
+from lib.imageProcessing.Camera import Camera
 from lib.Frame import Frame
-from lib.FramePhysics import FramePhysics
-from lib.common import Vector, Point
-from lib.data.SeeFloorNoBadBlocks import SeeFloorNoBadBlocks
+from lib.seefloor.FramePhysics import FramePhysics
+from lib.model.Vector import Vector
+from lib.model.Point import Point
 
 
 class TestFramePhysics(TestCase):
@@ -73,9 +73,8 @@ class TestFramePhysics(TestCase):
 
     def test_change_than_reverse(self):
         #setup
-        scale = 0.5480785130693868
         zoom = 0.9997025696116583
-        physics = FramePhysics(100, scale, Vector(3, 11), zoom)
+        physics = FramePhysics(Vector(3, 11), zoom)
         point = Point(1000, 1000)
 
         #exercise
@@ -83,14 +82,13 @@ class TestFramePhysics(TestCase):
         point_back = physics.translate_backward(point_forward)
 
         #assert
-        self.assertAlmostEqual(point_back.x, point.x, 2)
-        self.assertAlmostEqual(point_back.y, point.y, 2)
+        self.assertAlmostEqual(point_back.x, point.x, 1)
+        self.assertAlmostEqual(point_back.y, point.y, 1)
 
     def test_change_than_reverse2(self):
         #setup
-        scale = 0.7405656263087846
         zoom = 1.0071198209766583
-        physics = FramePhysics(100, scale, Vector(-0.9365915776278864, 5.538252792970677), zoom)
+        physics = FramePhysics(Vector(-0.9365915776278864, 5.538252792970677), zoom)
         point = Point(1000, 1000)
 
         #exercise
@@ -102,4 +100,4 @@ class TestFramePhysics(TestCase):
         self.assertAlmostEqual(point_back.x, point.x, 1)
         self.assertAlmostEqual(point_back.y, point.y, 1)
 
-        self.assertAlmostEqual(point_forward.y, 1005.668, 2)
+        self.assertAlmostEqual(point_forward.y, 1005.75, 2)

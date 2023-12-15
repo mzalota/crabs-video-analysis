@@ -2,7 +2,7 @@
 
 from lib.Frame import Frame
 from lib.ui.FrameDecorators import FrameDecoFactory
-from lib.Image import Image
+from lib.model.Image import Image
 
 
 class ImagesCollage:
@@ -65,8 +65,7 @@ class ImagesCollage:
         afterMiddleFrameID = self.__seeFloorGeometry.getFrame(thisFrameHeightMM / 2, thisFrameID)
         return afterMiddleFrameID
 
-    def __buildImageUsingTopPart(self, referenceFrameID, frameID, height):
-        # type: (int, int, int) -> Image
+    def __buildImageUsingTopPart(self, referenceFrameID: int, frameID: int, height: int) -> Image:
         origImage = self.__constructImageUsingFrameDeco(referenceFrameID, frameID)
         adjustedImage = self.__scaleAndSchiftOtherFrameToMatchThisFrame(referenceFrameID, frameID, origImage)
 

@@ -1,6 +1,6 @@
 import traceback
 
-from lib.FolderStructure import FolderStructure
+from lib.infra.FolderStructure import FolderStructure
 from lib.Frame import Frame
 from lib.infra.Configurations import Configurations
 from lib.reddots.RedDotsDetector import RedDotsDetector

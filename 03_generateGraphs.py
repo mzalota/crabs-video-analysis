@@ -1,13 +1,13 @@
 import sys
 
-from lib.Camera import Camera
-from lib.CommandLineLauncher import CommandLineLauncher
-from lib.FolderStructure import FolderStructure
+from lib.imageProcessing.Camera import Camera
+from lib.infra.CommandLineLauncher import CommandLineLauncher
 from lib.VideoStream import VideoStream
-from lib.infra.Configurations import Configurations
 from lib.infra.MyTimer import MyTimer
-from lib.seefloor.InterpolateController import InterpolateController
 from lib.ui.FileOpenUI import FileOpenUI
+from lib.infra.FolderStructure import FolderStructure
+from lib.infra.Configurations import Configurations
+from lib.seefloor.InterpolateController import InterpolateController
 
 print ("Launched Generate Graphs script")
 
@@ -19,6 +19,9 @@ if folderStruct is None:
 
     # rootDir = "C:/data/AnjutkaVideo/2019/c6259"
     # videoFileName = "V3"
+
+    # rootDir = "C:/data/crabs/2023_st7505_АМК_89"
+    # videoFileName = "R5"
 
     show_file_select = FileOpenUI()
     rootDir = show_file_select.root_dir()

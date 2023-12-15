@@ -4,17 +4,21 @@ from typing import Dict, List
 import numpy
 import numpy as np
 import pandas as pd
+from scipy.stats import stats
 
-# import statistics as statistics
-from lib.Camera import Camera
-from lib.FolderStructure import FolderStructure
-from lib.common import Point
-from lib.data.GraphPlotter import GraphPlotter
+from lib.drifts.DetectedRawDrift import DetectedRawDrift
+#import statistics as statistics
+from lib.imageProcessing.Camera import Camera
+from lib.infra.FolderStructure import FolderStructure
+from lib.infra.GraphPlotter import GraphPlotter
+from lib.drifts.DriftManualData import DriftManualData
+
 from lib.data.PandasWrapper import PandasWrapper
 from lib.data.RedDotsData import RedDotsData
 from lib.drifts.DriftManualData import DriftManualData
 from lib.infra.Configurations import Configurations
 from lib.infra.DataframeWrapper import DataframeWrapper
+from lib.model.Point import Point
 
 
 class DriftRawData(PandasWrapper):
@@ -125,61 +129,57 @@ class DriftRawData(PandasWrapper):
         graph_plotter.saveGraphToFile(x_axis_column, yColumns_new, graph_title, filepath_prefix + "drift_y_new.png")
 
 
+
     #TODO: Refactor this function into a separate class out of DriftRawData
-    def _compensate_for_zoom(self, raw_drifts_df, zoom_factor: pd.DataFrame) -> pd.DataFrame:
+    def _compensate_for_zoom(self, result_df, zoom_factor: pd.DataFrame) -> pd.DataFrame:
 
-        raw_drifts_df = pd.merge(raw_drifts_df, zoom_factor, on='frameNumber', how='left', suffixes=('_draft', '_reddot'))
+        result_df = pd.merge(result_df, zoom_factor, on='frameNumber', how='left', suffixes=('_draft', '_reddot'))
 
-        raw_drifts_df = self.__remove_values_in_failed_records(raw_drifts_df)
+        result_df = self.__remove_values_in_failed_records(result_df)
 
-        factor = raw_drifts_df["scaling_factor"]  # scaling_factor scaling_factor_not_smooth
+        if self.__generate_debug_graphs:
+            self.__save_graphs_drifts_raw(result_df, 1000, 1500)
+
+
         yColumns_raw = list()
         xColumns_raw = list()
         yColumns_new = list()
         xColumns_new = list()
         for feature_matcher_idx in range(0, 9):
             num = str(feature_matcher_idx)
-
             yColumns_raw.append("fm_" + num + "_drift_y")
             xColumns_raw.append("fm_" + num + "_drift_x")
+            yColumns_new.append("fm_" + num + "_drift_y_new")
+            xColumns_new.append("fm_" + num + "_drift_x_new")
 
-            drift_y_dezoomed = self.__drift_y_dezoomed(raw_drifts_df, num, factor)
-            column_name_y_new = ("fm_" + num + "_drift_y_new")
-            yColumns_new.append(column_name_y_new)
-            raw_drifts_df[column_name_y_new] = drift_y_dezoomed
+        full_df = DataframeWrapper(result_df)
+        records_list_all = full_df.as_records_list()
+        raw_drift_objs = [DetectedRawDrift.createFromDict(k) for k in records_list_all]
 
-            drift_x_dezoomed = self.__drift_x_dezoomed(raw_drifts_df, num, factor)
-            column_name_x_new = ("fm_" + num + "_drift_x_new")
-            xColumns_new.append(column_name_x_new)
-            raw_drifts_df[column_name_x_new] = drift_x_dezoomed
+        average_y_new = [k.drift_vector().y for k in raw_drift_objs]
+        average_x_new = [k.drift_vector().x for k in raw_drift_objs]
 
-        dframe = DataframeWrapper(raw_drifts_df)
-        for col_name in yColumns_new:
-            dframe.remove_outliers_quantile(col_name)
+        backToDataFrame = [k.to_dict() for k in raw_drift_objs]
+        nowBack = DataframeWrapper.create_from_record_list(backToDataFrame)
+        full_df.append_dataframe(nowBack)
+        result_df = full_df.pandas_df()
 
-        for col_name in xColumns_new:
-            dframe.remove_outliers_quantile(col_name)
+        result_df['average_x_new'] = average_x_new
+        result_df['average_y_new'] = average_y_new
 
-        raw_drifts_df = dframe.pandas_df()
-        raw_drifts_df = raw_drifts_df.interpolate(limit_direction='both')
+        #TODO: move this undistortion logic into DetectedRawDrift class
+        # camera = Camera.create()
+        # distortion_coeff = camera.distortion_at_center()
+        # result_df["average_x_new"] = result_df["average_x_new"] / distortion_coeff.x
+        # result_df["average_y_new"] = result_df["average_y_new"] / distortion_coeff.y
 
         # ---
-        self.__save_graphs_variance(raw_drifts_df[xColumns_raw], 'variance_x_raw')
-        self.__save_graphs_variance(raw_drifts_df[xColumns_new], 'variance_x_new')
-        self.__save_graphs_variance(raw_drifts_df[yColumns_raw], 'variance_y_raw')
-        self.__save_graphs_variance(raw_drifts_df[yColumns_new], 'variance_y_new')
+        self.__save_graphs_variance(result_df[xColumns_raw], 'variance_x_raw')
+        self.__save_graphs_variance(nowBack.pandas_df()[xColumns_new], 'variance_x_new')
+        self.__save_graphs_variance(result_df[yColumns_raw], 'variance_y_raw')
+        self.__save_graphs_variance(nowBack.pandas_df()[yColumns_new], 'variance_y_new')
 
-        #---
-
-        raw_drifts_df['average_y_new'] = raw_drifts_df[yColumns_new].mean(axis=1)
-        raw_drifts_df['average_x_new'] = raw_drifts_df[xColumns_new].mean(axis=1)
-
-        camera = Camera.create()
-        distortion_coeff = camera.distortion_at_center()
-        raw_drifts_df["average_x_new"] = raw_drifts_df["average_x_new"] / distortion_coeff
-        raw_drifts_df["average_y_new"] = raw_drifts_df["average_y_new"] / distortion_coeff
-
-        return raw_drifts_df
+        return result_df
 
     def __save_graphs_variance(self, columns, variance_column_name):
 
@@ -235,10 +235,10 @@ class DriftRawData(PandasWrapper):
             num = str(feature_matcher_idx)
             column_name_y_drift_raw = "fm_" + num + "_drift_y"
             column_name_x_drift_raw = "fm_" + num + "_drift_x"
-            df.loc[df['fm_' + num + '_result'] == "FAILED", [column_name_y_drift_raw, column_name_x_drift_raw]] = numpy.nan
+            df.loc[df['fm_' + num + '_result'] != "DETECTED", [column_name_y_drift_raw, column_name_x_drift_raw]] = numpy.nan
 
-            df.loc[df[column_name_x_drift_raw] < -200, [column_name_x_drift_raw, column_name_y_drift_raw]] = numpy.nan
-            df.loc[df[column_name_x_drift_raw] > 200, [column_name_x_drift_raw, column_name_y_drift_raw]] = numpy.nan
+            df.loc[df[column_name_x_drift_raw] < -50, [column_name_x_drift_raw, column_name_y_drift_raw]] = numpy.nan
+            df.loc[df[column_name_x_drift_raw] > 50, [column_name_x_drift_raw, column_name_y_drift_raw]] = numpy.nan
 
             df.loc[df[column_name_y_drift_raw] < -200, [column_name_x_drift_raw, column_name_y_drift_raw]] = numpy.nan
             df.loc[df[column_name_y_drift_raw] > 200, [column_name_x_drift_raw, column_name_y_drift_raw]] = numpy.nan
@@ -253,8 +253,62 @@ class DriftRawData(PandasWrapper):
 
             df = df.interpolate(limit_direction='both')
 
-
         return df
+
+    def _to_obj(val: Dict) -> Point:
+        non_null_values = list()
+        print (val)
+
+    @staticmethod
+    def _remove_outliers_stderr(val: Dict) -> Point:
+        non_null_values = list()
+        for k,v in val.items():
+            if k == "frameNumber":
+                continue
+
+            if math.isnan(v):
+                continue
+            non_null_values.append(v)
+
+        has_outlier = DriftRawData._has_outlier_stderr(non_null_values)
+
+        val["has_outlier"] = has_outlier
+
+        #min_loc = ls.index(min(ls))
+        #max_loc = ls.index(max(ls))
+
+        return has_outlier
+        # return val
+
+
+    @staticmethod
+    def _has_outlier_stderr(ls: List) -> bool:
+        if len(ls)<3:
+            return "OK"
+
+        stdev = np.std(ls)
+        min_loc = ls.index(min(ls))
+        max_loc = ls.index(max(ls))
+        std_err = stats.sem(ls, axis=None, ddof=0)
+        # print("lst     ", std_err, stdev, len(ls), min_loc, max_loc,ls)
+
+        lst_no_min = ls[:min_loc] + ls[min_loc + 1:]
+        new_std = np.std(lst_no_min)
+        std_err_min = stats.sem(lst_no_min, axis=None, ddof=0)
+        # print("lst_no_min", std_err_min, new_std, (stdev/new_std), len(lst_no_min), max(lst_no_min) - min(lst_no_min), lst_no_min)
+        if std_err > 8 and std_err_min <4:
+            # removing this one value has reduced standard error by more than twice.
+            return "MIN_OUTLIER"
+
+        lst_no_max = ls[:max_loc] + ls[max_loc + 1:]
+        new_std = np.std(lst_no_max)
+        std_err_max = stats.sem(lst_no_max, axis=None, ddof=0)
+        # print("lst_no_max", std_err_max, new_std, (stdev/new_std), len(lst_no_max), max(lst_no_max) - min(lst_no_max), lst_no_max)
+        if std_err > 8 and std_err_max < 4:
+            #removing this one value has reduced standard error by more than twice.
+            return "MAX_OUTLIER"
+
+        return "OK"
 
     def _point_from_x_y_coord(self, val: Dict) -> Point:
         x_coord = val[0]
@@ -344,14 +398,12 @@ class DriftRawData(PandasWrapper):
 
     def interpolate(self, manualDrifts: DriftManualData, redDotsData: RedDotsData, driftsDetectionStep: int) -> pd.DataFrame:
         raw_drifts_df = self._replaceInvalidValuesWithNaN(self.__df, driftsDetectionStep)
-        if self.__generate_debug_graphs:
-            self.__save_graphs_drifts_raw(raw_drifts_df, 2000, 2500)
 
         zoom_factor = redDotsData.scalingFactorColumn(driftsDetectionStep)
 
         df_compensated = self._compensate_for_zoom(raw_drifts_df, zoom_factor)
         if self.__generate_debug_graphs:
-            self.__save_graphs_drifts_zoom_compensated(df_compensated, 2000, 2500)
+            self.__save_graphs_drifts_zoom_compensated(df_compensated, 1000, 1500)
 
         df = raw_drifts_df.copy()
         df = pd.merge(df, df_compensated[['average_y_new', "average_x_new", "frameNumber"]], on='frameNumber', how='left', suffixes=('_draft', '_reddot'))
@@ -370,13 +422,6 @@ class DriftRawData(PandasWrapper):
 
         # df = self.__replace_with_NaN_if_very_diff_to_neighbors(df, "driftY", driftsDetectionStep)
         df = self.__interpolateToHaveEveryFrame(df)
-
-        # since drifts were created using undistorted image, we need to increase drifts for raw/distored images
-        # camera = Camera.create()
-        # distortion_coeff = camera.distortion_at_center()
-        # print ("distortion_coeff is ",distortion_coeff)
-        # df["driftX"] = df["driftX"] / distortion_coeff
-        # df["driftY"] = df["driftY"] / distortion_coeff
 
         #TODO: extract this function of overwriting raw drifts with manual values elsewhere, so that it is more explicit
         df = manualDrifts.overwrite_values(df)

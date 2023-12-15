@@ -7,8 +7,10 @@ import cv2
 import numpy as np
 
 from lib.Frame import Frame
-from lib.Image import Image
-from lib.common import Point
+from lib.model.Image import Image
+from lib.model.Point import Point
+from lib.model.Vector import Vector
+
 
 #https://learnopencv.com/understanding-lens-distortion/
 
@@ -51,7 +53,7 @@ class Camera:
         # self.__dst  for 4K camera is:
         # [[-0.30592777  0.2554346  -0.00322515 -0.00050018 -0.1366279 ]]
         # self.__dst  for Full_HD_Kara_Sea camera is:
-        # [[-0.30329438  0.20865141 -0.00037175 -0.00374731 -0.08253806]]
+        # [[-0.30329438  0.20865141 - 0.00037175 - 0.00374731 - 0.08253806]]
 
     @staticmethod
     def create() -> Camera:
@@ -70,16 +72,17 @@ class Camera:
         Camera.__instance = Camera(Frame._FRAME_WIDTH_HIGH_RES, Frame._FRAME_HEIGHT_HIGH_RES)
 
     def center_point(self) -> Point:
-        return Point(int(self.frame_width() / 2), int(self.frame_height()/2))
+        return Point(int(self.frame_width() / 2), int(self.frame_height() / 2))
+
     def frame_height(self) -> int:
         return self.__frame_height
 
     def frame_width(self) -> int:
         return self.__frame_width
 
-    def distortion_at_center(self) -> float:
+    def distortion_at_center(self) -> Vector:
         point = self.get_optical_center()
-        return self.distortion_at_point(point)
+        return self.distortion_at_point_vector(point)
 
     def distortion_at_point(self, point: Point) -> float:
         if point is None:
@@ -92,6 +95,24 @@ class Camera:
         distance_non_distorted = point_away_1_undistorted.distanceTo(point_away_2_undistorted)
         distortion_coeff = distance_non_distorted / distance_distorted
         return distortion_coeff
+
+    def distortion_at_point_vector(self, point: Point) -> Vector:
+        if point is None:
+            return 1
+        point_away_1 = point.translate_by_xy(-10, -10)
+        point_away_2 = point.translate_by_xy(10, 10)
+        x1, y1 = self.__undistort_point_internal(point_away_1, self.__mtx, self.__dst)
+        x2, y2 = self.__undistort_point_internal(point_away_2, self.__mtx, self.__dst)
+
+        x_diff = abs(x1 - x2)
+        y_diff = abs(y1 - y2)
+        x_distortion = x_diff / abs(point_away_1.x - point_away_2.x)
+        y_distortion = y_diff / abs(point_away_1.y - point_away_2.y)
+
+        # if (x_diff>20 or y_diff > 20):
+        #     print("STRECHING", x_diff, y_diff, str(point_away_1), str(point_away_2),x1,y1,x2,y2)
+
+        return Vector(x_distortion,y_distortion)
 
     def getCalibrationMatrix(self):
         return self.__mtx
@@ -111,17 +132,22 @@ class Camera:
         return Image(ret)
 
     def undistort_point(self, point: Point):
+        if point is None:
+            return None
+
+        x,y = self.__undistort_point_internal(point, self.__mtx, self.__dst)
+        return Point(int(x), int(y))
+
+    def __undistort_point_internal(self, point, mtx, dst):
         image_size = ((self.__frame_width), (self.__frame_height))
-        return self.__undistort_point_internal(point, image_size, self.__mtx, self.__dst)
-
-    def __undistort_point_internal(self, point, image_size, mtx, dst):
-
         newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dst, image_size, 1, image_size)
 
         points = np.float32(np.array([(point.x, point.y)])[:, np.newaxis, :])
         undistorted_pts = cv2.undistortPoints(points, mtx, dst, P=newcameramtx)
 
-        return Point(int(undistorted_pts[0][0][0]), int(undistorted_pts[0][0][1]))
+        x = undistorted_pts[0][0][0]
+        y = undistorted_pts[0][0][1]
+        return x, y
 
     def distance_to_object(self, size_of_object_in_pixels, metric_size_of_object):
         #depth is the length along z-axis of object's projection (if object is right at the center of image, then this is the distance from camera lens's center to this object)

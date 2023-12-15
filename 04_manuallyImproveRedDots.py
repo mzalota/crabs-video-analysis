@@ -1,14 +1,13 @@
 import sys
 
-from lib.Camera import Camera
-from lib.CommandLineLauncher import CommandLineLauncher
+from lib.imageProcessing.Camera import Camera
+from lib.infra.CommandLineLauncher import CommandLineLauncher
 from lib.infra.Configurations import Configurations
 from lib.infra.MyTimer import MyTimer
 from lib.ui.FileOpenUI import FileOpenUI
-from lib.ui.StreamToLogger import StreamToLogger
 from lib.data.RedDotsData import RedDotsData
 from lib.FillRedDotsGapsController import FillRedDotsGapsController
-from lib.FolderStructure import FolderStructure
+from lib.infra.FolderStructure import FolderStructure
 from lib.VideoStream import VideoStream
 import cv2
 

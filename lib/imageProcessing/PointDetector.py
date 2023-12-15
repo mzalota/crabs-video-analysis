@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from lib.Image import Image
+from lib.model.Image import Image
 
 
 ############# DETECTORS AND DESCRIPTORS #################

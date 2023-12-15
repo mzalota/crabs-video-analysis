@@ -1,6 +1,7 @@
 from unittest import TestCase
 
-from lib.common import Point, Box
+from lib.model.Box import Box
+from lib.model.Point import Point
 
 
 class TestBox(TestCase):

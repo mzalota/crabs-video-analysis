@@ -80,27 +80,31 @@ Subdirectory
 - **z** - "Zoom": toggle between viewing just one frame (zoom-in) or viewing neighboring frames (zoom-out)   
 - **c** - "Contrast": toggle between make image *brighter*, *darker* and return to *normal*
 - **f** - "Focus": toggle between make image *more focused/shaper*, *even more focused/sharper* and return to *normal* 
+- **x** - "Rectifier": Rectify image (remove optical distortion caused by the convexity of camera lens)
 - **b** - "Bad": mark this and next 50 frames as *bad* and jump to 51st frame
 - **s** - "Save Image": save image of the currently viewed frame into savedFrames subdirectory  
 - **r** - "open RedDotsUI": opens new window zoomed to area around red dots. Click on each red dot once. Data will be saved to reddots_manual.csv and all files interpolated again.
+- **ctrl+z** - "Undo": remove mark that was last added.
 - **q** - "Quit": quite application 
 
 #### Navigation commands in main "Scientist UI" screen
+- **home** - jump to the very first frame of the video
+- **end** - jump to the very last frame of the video
 - **arrow right** - jump to next seefloor slice.
 - **arrow left** - jump to previous seefloor slice. 
 - **page down** - jump 10 seefloor slice backwoard. 
 - **page up** - jump 10 seefloor slice forward.
-- **home** - jump to the very first frame of the video
-- **end** - jump to the very last frame of the video
-- **arrow down** - scroll exactly 50 frames forward
-- **arrow up** - scroll exactly 50 frames backward
-- **plus (+)** - scroll 500 frames forward
-- **minus (-)** - scroll 500 frames backward
+- **n** - scroll 1 frame forward
+- **p** - scroll 1 frame backward
 - **space** - scroll 7 frames forward
 - **backspace** - scroll 7 frames backward
+- **arrow down** - scroll 50 frames forward
+- **arrow up** - scroll 50 frames backward
+- **plus (+)** - scroll 500 frames forward
+- **minus (-)** - scroll 500 frames backward
 
 #### Commands in "RedDots UI" screen
-- **mouse click** - "Mark RedDots": click exactly two times, once on each red dot.  
+- **mouse click** - "Mark RedDots": clnick exactly two times, once on each red dot.  
 - **q** - "quit": quite this RedDots UI screen. 
 - **arrow down** - scroll exactly 2 frames forward
 - **arrow up** - scroll exactly 2 frames backward

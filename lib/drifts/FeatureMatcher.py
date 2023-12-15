@@ -1,93 +1,90 @@
-from lib.Camera import Camera
 from lib.Frame import Frame
-from lib.common import Point
 from lib.drifts.SeeFloorSection import SeeFloorSection
+from lib.imageProcessing.Analyzer import Analyzer
+from lib.imageProcessing.Camera import Camera
+from lib.model.Box import Box
+from lib.model.Point import Point
 
 
 class FeatureMatcher:
     def __init__(self, startingBox):
         self.__startingBox = startingBox
-        self.__resetReason = ""
-        self.__correlation = 0
+        self.__resetReason = "JustCreated"
+        self.__resetToStartingBox = True
+        self.__driftIsValid = False
         self.__seeFloorSection = None
 
-    def starting_box(self):
-        # type: () -> Box
-        return self.__startingBox
-
-    def seefloor_section(self):
+    def seefloor_section(self) -> SeeFloorSection:
         return self.__seeFloorSection
 
-    def detectionWasReset(self):
-        if self.__resetReason == "":
+    def detectionWasReset(self) -> bool:
+        return self.__resetToStartingBox
+
+    def drift_is_valid(self) -> bool:
+        return self.__driftIsValid
+
+    def reset_to_starting_box(self):
+        self.__resetReason = "ManualReset"
+        self.__resetToStartingBox = True
+        self.__driftIsValid = False
+
+    def detectSeeFloorSection(self, frame: Frame) -> bool:
+        if self.__resetToStartingBox:
+            self.__seeFloorSection = SeeFloorSection(frame, self.__startingBox)
+            self.__resetReason = "JustReset"
+            self.__resetToStartingBox = False
+            self.__driftIsValid = False
             return False
-        else:
-            return True
 
-    def detectSeeFloorSection(self, frame):
-        # type: (Frame) -> None
-        self.__seeFloorSection = self.__detectSeeFloorSection(frame, self.__seeFloorSection)
-
-    def __detectSeeFloorSection(self, frame: Frame, section: SeeFloorSection) -> SeeFloorSection:
-        if section is None:
-            return SeeFloorSection(frame, self.__startingBox)
-
-        newTopLeftOfFeature = section.findLocationInFrame(frame)
+        newTopLeftOfFeature = self.__seeFloorSection.findLocationInFrame(frame)
         if newTopLeftOfFeature is None:
-            self.__resetReason = "NotDetected"
-        else:
-            self.__resetReason = self.__is_feature_too_close_to_edge(newTopLeftOfFeature, Frame.is_high_resolution(frame.frame_height()))
+            print("WARN: newTopLeftOfFeature is None. NotDetected_1")
+            self.__resetReason = "NotDetected_1"
+            self.__resetToStartingBox = True
+            self.__driftIsValid = False
+            return False
 
-        if self.detectionWasReset():
-            #create bew SeeFloorSection
-            return SeeFloorSection(frame, self.__startingBox)
-        else:
-            return section
+        section_drift = self.__seeFloorSection.get_detected_drift()
+        if section_drift is None:
+            print("WARN: section_drift is None. NotDetected_2")
+            self.__resetReason = "NotDetected_2"
+            self.__resetToStartingBox = True
+            self.__driftIsValid = False
+            return False
 
-    def __is_feature_too_close_to_edge(self, top_left_of_feature: Point, is_high_resolution: bool) -> str:
+        if section_drift.x == 0 and section_drift.y == 0:
+            self.__resetReason = "NotMoved"
+            self.__resetToStartingBox = True
+            self.__driftIsValid = False
+            return False
 
+        if self.__is_feature_too_close_to_edge(self.__seeFloorSection.box_around_feature()):
+            self.__resetReason = "TooCloseToEdge"
+            self.__resetToStartingBox = True
+            self.__driftIsValid = True
+            return False
+
+        self.__resetReason = ""
+        self.__resetToStartingBox = False
+        self.__driftIsValid = True
+        return True
+
+
+    def __is_feature_too_close_to_edge(self, top_left_of_feature: Box) -> bool:
         camera = Camera.create()
 
-        too_close_to_image_top_edge = 100 #20
-        too_close_to_image_bottom_edge = camera.frame_height() - 150 # 980+hi_res_height_diff
-        too_close_to_image_left_edge = 80 #20
-        too_close_to_image_right_edge = camera.frame_width() - 80 # 1900+hi_res_width_diff
+        too_close_to_image_top_edge = 100
+        too_close_to_image_bottom_edge = camera.frame_height() - 150
+        too_close_to_image_left_edge = 80
+        too_close_to_image_right_edge = camera.frame_width() - 80
 
-        if top_left_of_feature.y <= too_close_to_image_top_edge:
-            return "TopEdge"
-        elif (top_left_of_feature.y + self.__startingBox.hight()) > too_close_to_image_bottom_edge:
-            return "BottomEdge"
-        elif top_left_of_feature.x <= too_close_to_image_left_edge:
-            return "LeftEdge"
-        elif (top_left_of_feature.x + self.__startingBox.width()) > too_close_to_image_right_edge:
-            return "RightEdge"
-        else:
-            return ""
+        if top_left_of_feature.topLeft.y < too_close_to_image_top_edge:
+            return True #"TopEdge"
+        if top_left_of_feature.bottomRight.y > too_close_to_image_bottom_edge:
+            return True #"BottomEdge"
+        if top_left_of_feature.topLeft.x < too_close_to_image_left_edge:
+            return True #"LeftEdge"
+        if top_left_of_feature.bottomRight.x > too_close_to_image_right_edge:
+            return True #"RightEdge"
 
-
-    @staticmethod
-    def infoHeaders():
-        row = list()
-        row.append("featureId")
-        row.append("boxSize")
-        row.append("correlation")
-        row.append("Reset")
-        row.append("featureX")
-        row.append("featureY")
-        row.append("resetReason")
-        return row
-
-    def infoAboutFeature(self):
-        row = list()
-        row.append(self.__seeFloorSection.getID())
-        row.append(self.__startingBox.width())
-        row.append(self.__correlation)
-        if self.detectionWasReset():
-            row.append("Yes")
-        else:
-            row.append("No")
-        row.append(self.__seeFloorSection.getLocation().x)
-        row.append(self.__seeFloorSection.getLocation().y)
-
-        row.append(self.__resetReason)
-        return row
+        return False

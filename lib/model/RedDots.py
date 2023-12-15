@@ -1,5 +1,6 @@
-from lib.Camera import Camera
-from lib.common import Point
+from lib.imageProcessing.Camera import Camera
+from lib.model.Point import Point
+from lib.reddots.RedDot import RedDot
 
 
 class RedDots:

@@ -21,28 +21,22 @@ class VelocityDetectorMultiThreaded(VelocityDetector):
             #timerInner.lap("futures.append")
 
         for future in futures:
-            #timerInner = MyTimer("futures")
-            section = future.result()
-            #timerInner.lap("join")
-            section.drawFeatureOnFrame(imgObj)
-            if fm.detectionWasReset():
+            fm = future.result()
+            if not fm.drift_is_valid():
                 continue
 
-            drift = section.getDrift()
+            section = fm.seefloor_section()
+            drift = section.get_detected_drift()
             if not drift:
                 continue
 
             self._drifts.append(drift)
-
-            #section.showSubImage()
 
         self._timer.lap("in detectVelocity() multithreaded end")
         self._prevFrame = frame
 
     # https://pythonhosted.org/Pebble/#concurrent-decorators
     @concurrent.thread
-    def parallelize(self, fm, frame):
-        # type: (FeatureMatcher, Frame) -> SeeFloorSection
+    def parallelize(self, fm: FeatureMatcher, frame: Frame) -> SeeFloorSection:
         fm.detectSeeFloorSection(frame)
-        section = fm.seefloor_section()
-        return section
+        return fm

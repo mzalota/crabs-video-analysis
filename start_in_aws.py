@@ -1,6 +1,6 @@
 from lib.reddots.DetectRedDotsController import DetectRedDotsController
 from lib.drifts.DetectDriftsController import DetectDriftsController
-from lib.FolderStructure import FolderStructure
+from lib.infra.FolderStructure import FolderStructure
 import os
 import json
 import boto3

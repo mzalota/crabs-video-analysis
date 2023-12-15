@@ -1,12 +1,14 @@
+from __future__ import annotations
+
 from math import ceil
 
-from lib.Camera import Camera
-from lib.Frame import Frame
-from lib.common import Point, Box
+from lib.imageProcessing.Camera import Camera
+from lib.model.Box import Box
+from lib.model.Point import Point
+from lib.seefloor.SeeFloor import SeeFloor
 
 
 #TODO: SeeFloorSection and Feature classes are very similar. The concepts are not clearly defined/separated. Refactor!
-from lib.data.SeeFloorNoBadBlocks import SeeFloorNoBadBlocks
 
 
 class Feature:
@@ -19,9 +21,7 @@ class Feature:
     #__frameID
     #__location
 
-
-    def __init__(self, seeFloor, frameID, location, boxSize):
-        # type: (SeeFloorNoBadBlocks, int, Point, int) -> Feature
+    def __init__(self, seeFloor: SeeFloor, frameID: int, location: Point, boxSize: int) -> Feature:
         self.__seeFloor = seeFloor
         self.__frameID = frameID
         self.__location = location
@@ -118,7 +118,7 @@ class Feature:
                 self.__lastFrameID = self.__seeFloor.maxFrameID()
                 break
 
-            newPoint = self.__seeFloor.translatePointCoordinate(self.__location, self.__frameID, nextFrameID)
+            newPoint = self.__seeFloor.translatePointCoord(self.__location, self.__frameID, nextFrameID)
 
             # print("drift:", frameID, str(crabPoint), nextFrameID, str(newPoint), str(drift), visibleBoxArea.area(), str(visibleBoxArea))
             if (newPoint.x <= 0 or newPoint.y <= 0):
@@ -198,7 +198,7 @@ class Feature:
         return visibleBoxArea
 
     def getCoordinateInFrame(self, frameID: int) -> Point:
-        newPoint = self.__seeFloor.translatePointCoordinate(self.__location, self.__frameID, frameID)
+        newPoint = self.__seeFloor.translatePointCoord(self.__location, self.__frameID, frameID)
         return newPoint
 
     # def getCoordinateInFrame_old(self, frameID):

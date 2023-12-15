@@ -1,17 +1,19 @@
 from __future__ import annotations
 
-from typing import List
+from typing import List, Dict
 
-from lib.Camera import Camera
+from lib.imageProcessing.Camera import Camera
 from lib.Frame import Frame
-from lib.Image import Image
+from lib.model.Image import Image
 from lib.VideoStream import VideoStream
-from lib.common import Point, Vector, Box
+from lib.model.Box import Box
+from lib.model.Vector import Vector
+from lib.model.Point import Point
 from lib.data import RedDotsData
 from lib.data.BadFramesData import BadFramesData
 from lib.data.CrabsData import CrabsData
 from lib.data.MarkersData import MarkersData
-from lib.data.SeeFloor import SeeFloor
+from lib.seefloor.SeeFloor import SeeFloor
 from lib.imageProcessing.Analyzer import Analyzer
 from lib.imageProcessing.Rectificator import Rectificator
 from lib.model.Crab import Crab
@@ -46,7 +48,7 @@ class FrameDecoFactory:
 
     def __centerPointForGrid(self, frameID, referenceFrameID):
         gridMidPoint = self.__seeFloorGeometry.getRedDotsData().midPoint(referenceFrameID)
-        return self.__seeFloorGeometry.translatePointCoordinate(gridMidPoint, referenceFrameID, frameID)
+        return self.__seeFloorGeometry.translatePointCoord(gridMidPoint, referenceFrameID, frameID)
 
     def getFrameDecoRedDots(self, frameDeco: FrameDecorator) -> DecoRedDots:
         return DecoRedDots(frameDeco, self.__seeFloorGeometry.getRedDotsData())
@@ -144,7 +146,7 @@ class DecoMarkersWithNumbers(FrameDecorator):
             marker_id = marker['markerId']
 
             orig_location = Point(marker['locationX'], marker['locationY'])
-            location = self.__seefloorGeometry.translatePointCoordinate(orig_location, frame_number, frame_id)
+            location = self.__seefloorGeometry.translatePointCoord(orig_location, frame_number, frame_id)
 
             if self.__is_undistorted:
                 camera = Camera.create()
@@ -154,10 +156,9 @@ class DecoMarkersWithNumbers(FrameDecorator):
 
         # timer.lap("Number of markers" + str(len(markers)))
 
-    def __markersOnFrame(self, frame_id):
-        # type: (int) -> dict
-        prev_frame_id = self.__seefloorGeometry.getPrevFrameMM(frame_id)
-        next_frame_id = self.__seefloorGeometry.getNextFrameMM(frame_id)
+    def __markersOnFrame(self, frame_id: int) -> Dict:
+        prev_frame_id = self.__seefloorGeometry.getPrevFrame(frame_id)
+        next_frame_id = self.__seefloorGeometry.getNextFrame(frame_id)
         print("__markersOnFrame: frame_id",frame_id, "prev_frame_id", prev_frame_id, "next_frame_id", next_frame_id)
         return self.__markersData.marksBetweenFrames(prev_frame_id, next_frame_id)
 
@@ -246,7 +247,7 @@ class DecoMarkedCrabs(FrameDecorator):
             frame_id_crab_orig = markedCrab.frame_id()
             crabLocationOrig = markedCrab.center()
 
-            crab_location_image = self.__seefloorGeometry.translatePointCoordinate(crabLocationOrig, frame_id_crab_orig, frame_id_image)
+            crab_location_image = self.__seefloorGeometry.translatePointCoord(crabLocationOrig, frame_id_crab_orig, frame_id_image)
             if self.__is_undistorted:
                 camera = Camera.create()
                 crab_location_image = camera.undistort_point(crab_location_image)
@@ -256,8 +257,8 @@ class DecoMarkedCrabs(FrameDecorator):
         #timer.lap("Number of crabs" + str(len(markedCrabs)))
 
     def __crabs_visible_on_frame(self, frame_id: int) -> List[Crab]:
-        prev_frame_id = self.__seefloorGeometry.getPrevFrameMM(frame_id)
-        next_frame_id = self.__seefloorGeometry.getNextFrameMM(frame_id)
+        prev_frame_id = self.__seefloorGeometry.getPrevFrame(frame_id)
+        next_frame_id = self.__seefloorGeometry.getNextFrame(frame_id)
         markedCrabs = self.__crabsData.crabs_between_frames(prev_frame_id, next_frame_id)
         return markedCrabs
 
@@ -274,7 +275,7 @@ class DecoAdjustDrift(FrameDecorator):
         # type: () -> Image
         imgObj = self.frameDeco.getImgObj()
 
-        new_location = self.__seefloorGeometry.translatePointCoordinate(self.__start_point, self.__start_frame_id, self.getFrameID())
+        new_location = self.__seefloorGeometry.translatePointCoord(self.__start_point, self.__start_frame_id, self.getFrameID())
         #print ("trying to mark manual drift", new_location, self.getFrameID(), self.__start_frame_id)
         imgObj.drawCrossVertical(new_location, size=12)
         return imgObj

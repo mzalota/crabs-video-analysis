@@ -1,10 +1,12 @@
-from lib.FolderStructure import FolderStructure
+from lib.infra.FolderStructure import FolderStructure
 from lib.VideoStream import VideoStream
-from lib.data import SeeFloorNoBadBlocks
+from lib.seefloor import SeeFloor
 from lib.data.CrabsData import CrabsData
 from lib.Feature import Feature
-from lib.ImageWindow import ImageWindow
-from lib.common import Box, Point, Vector
+from lib.ui.ImageWindow import ImageWindow
+from lib.model.Box import Box
+from lib.model.Vector import Vector
+from lib.model.Point import Point
 from lib.model.Crab import Crab
 
 
@@ -12,7 +14,7 @@ class CrabUI:
     def __init__(self,
                  crabsData: CrabsData,
                  videoStream: VideoStream,
-                 seeFloor: SeeFloorNoBadBlocks,
+                 seeFloor: SeeFloor,
                  folderStruct: FolderStructure,
                  frameID: int,
                  crabPoint: Point):
@@ -61,7 +63,8 @@ class CrabUI:
 
         frameImage = self.__videoStream.read_image_obj(frameID)
 
-        box_around_crab_on_that_frame = self.__crabFeature.getCoordinateInFrame(frameID).boxAroundPoint(self.__boxSize)
+        point = self.__crabFeature.getCoordinateInFrame(frameID)
+        box_around_crab_on_that_frame = Box.boxAroundPoint(point, self.__boxSize)
         crabImage = frameImage.subImage(box_around_crab_on_that_frame)
         crabImage = crabImage.growByPaddingBottomAndRight(self.__boxSize, self.__boxSize)
 
@@ -132,7 +135,8 @@ class CrabUI:
 
     def __crabCoordinatesOnItsFrame(self, frameID, offsetOfCrabImageOnCrabWindow) -> Box:
 
-        boxAroundCrabOnItsFrame = self.__crabFeature.getCoordinateInFrame(frameID).boxAroundPoint(self.__boxSize)
+        point = self.__crabFeature.getCoordinateInFrame(frameID)
+        boxAroundCrabOnItsFrame = Box.boxAroundPoint(point, self.__boxSize)
         lineNormalizedTo0x0 = self.__line_marked_by_user.translateBy(offsetOfCrabImageOnCrabWindow)
         lineCoordinatesOnItsFrame = lineNormalizedTo0x0.translateCoordinateToOuter(boxAroundCrabOnItsFrame.topLeft)
         return  lineCoordinatesOnItsFrame

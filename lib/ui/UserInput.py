@@ -1,4 +1,4 @@
-from lib.ImageWindow import ImageWindow
+from lib.ui.ImageWindow import ImageWindow
 
 
 class UserInput():
@@ -142,13 +142,19 @@ class UserInput():
     def is_next_seefloor_slice_command(self):
         if self.is_key_arrow_right():
             return True
-        #if self.__key == self.KEY_SPACE:
-        #    return True
+
+    def is_next_frame_command(self):
         if self.__key == ord("n"):
             return True
         if self.__key == ord("N"):
             return True
+        return False
 
+    def is_prev_frame_command(self):
+        if self.__key == ord("p"):
+            return True
+        if self.__key == ord("P"):
+            return True
         return False
 
     def is_command_undo(self):

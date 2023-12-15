@@ -2,7 +2,7 @@ from cv2 import cv2
 
 from pebble import synchronized
 
-from lib.Image import Image
+from lib.model.Image import Image
 from lib.VideoStream import VideoStream, VideoStreamException
 
 

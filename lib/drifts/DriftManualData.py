@@ -1,7 +1,7 @@
 import numpy
 import pandas as pd
 from datetime import datetime
-from lib.FolderStructure import FolderStructure
+from lib.infra.FolderStructure import FolderStructure
 from lib.data.PandasWrapper import PandasWrapper
 from lib.infra.DataframeWrapper import DataframeWrapper
 

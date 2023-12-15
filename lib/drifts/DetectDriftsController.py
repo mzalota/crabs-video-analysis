@@ -37,7 +37,7 @@ class DetectDriftsController:
 
         print("starting processing from frame", startFrameID)
 
-        velocityDetector.runLoop(startFrameID, stepSize, logger, videoStream)
+        velocityDetector.runLoop(int(startFrameID), stepSize, logger, videoStream)
 
         logger.closeFile()
 

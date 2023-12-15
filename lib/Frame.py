@@ -1,6 +1,7 @@
-#from pandas.compat.numpy import np
+from __future__ import annotations
 
-from lib.Image import Image
+from lib.VideoStream import VideoStream
+from lib.model.Image import Image
 
 class Frame:
     #__frameID = None
@@ -12,8 +13,7 @@ class Frame:
     _FRAME_HEIGHT_HIGH_RES = 2048
     _FRAME_WIDTH_HIGH_RES = 3072
 
-    def __init__(self, frameNumber, videoStream):
-        # type: (int, VideoStream) -> Frame
+    def __init__(self, frameNumber: int, videoStream: VideoStream) ->Frame:
         self.__frameID = frameNumber
         self.__videoStream = videoStream
 

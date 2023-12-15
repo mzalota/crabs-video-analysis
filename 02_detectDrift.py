@@ -1,12 +1,11 @@
 import sys
 
-from lib.Camera import Camera
-from lib.CommandLineLauncher import CommandLineLauncher
+from lib.imageProcessing.Camera import Camera
+from lib.infra.CommandLineLauncher import CommandLineLauncher
 from lib.VideoStream import VideoStream
 from lib.drifts.DetectDriftsController import DetectDriftsController
-from lib.FolderStructure import FolderStructure
+from lib.infra.FolderStructure import FolderStructure
 from lib.ui.FileOpenUI import FileOpenUI
-from lib.ui.StreamToLogger import StreamToLogger
 from lib.infra.Configurations import Configurations
 
 print ("Launched DetectDrift script")

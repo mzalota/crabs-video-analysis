@@ -1,12 +1,11 @@
 import sys
 
-from lib.Camera import Camera
+from lib.imageProcessing.Camera import Camera
 from lib.VideoStream import VideoStream
 from lib.reddots.DetectRedDotsController import DetectRedDotsController
-from lib.CommandLineLauncher import CommandLineLauncher
-from lib.FolderStructure import FolderStructure
+from lib.infra.CommandLineLauncher import CommandLineLauncher
+from lib.infra.FolderStructure import FolderStructure
 from lib.ui.FileOpenUI import FileOpenUI
-from lib.ui.StreamToLogger import StreamToLogger
 
 # https://www.pyimagesearch.com/2016/10/31/detecting-multiple-bright-spots-in-an-image-with-python-and-opencv/
 from lib.infra.Configurations import Configurations

@@ -1,6 +1,6 @@
 import pandas as pd
 
-from lib.FolderStructure import FolderStructure
+from lib.infra.FolderStructure import FolderStructure
 from lib.infra.Logger import Logger
 from lib.data.PandasWrapper import PandasWrapper
 

@@ -3,8 +3,11 @@ from __future__ import annotations
 import cv2
 import numpy as np
 
-from lib.FolderStructure import FolderStructure
-from lib.common import Point, Box, Vector
+from lib.infra.FolderStructure import FolderStructure
+from lib.model.Box import Box
+from lib.model.Vector import Vector
+from lib.model.Point import Point
+
 
 class Image:
     def __init__(self, imageAsNumpyArray):
@@ -24,6 +27,9 @@ class Image:
 
     def asNumpyArray(self):
         return self.__image
+
+    def is_identical_to(self, other_image: Image) -> bool:
+        return np.array_equal(self.asNumpyArray(), other_image.asNumpyArray())
 
     def copy(self):
         # type: () -> Image

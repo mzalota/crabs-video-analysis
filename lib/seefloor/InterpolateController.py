@@ -1,10 +1,10 @@
-from lib.FolderStructure import FolderStructure
+from lib.infra.FolderStructure import FolderStructure
 from lib.data.CrabsData import CrabsData
 from lib.data.DriftInterpolatedData import DriftInterpolatedData
 from lib.drifts.DriftManualData import DriftManualData
 from lib.drifts.DriftRawData import DriftRawData
 from lib.data.RedDotsData import RedDotsData
-from lib.data.SeeFloor import SeeFloor
+from lib.seefloor.SeeFloor import SeeFloor
 from lib.infra.Configurations import Configurations
 
 
@@ -52,7 +52,7 @@ class InterpolateController:
         print("drawing graphs for RedDots")
         rdd = RedDotsData.createFromFolderStruct(self.__folderStruct)
         # rdd.saveGraphs(13000, 14000)
-        rdd.saveGraphs(2000,2500)
+        rdd.saveGraphs(1000,1500)
 
         print("drawing graphs for SeeFloor")
         sf = SeeFloor.createFromFolderStruct(self.__folderStruct)

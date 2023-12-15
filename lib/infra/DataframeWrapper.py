@@ -14,6 +14,16 @@ class DataframeWrapper:
     def create_from_list(list_of_values: List, column_name) -> DataframeWrapper:
         return DataframeWrapper(pd.DataFrame(list_of_values, columns=[column_name]))
 
+    # this is opposite of  as_records_list() function (see below)
+    # input should look like this:
+    # [{'crabLocationX': 221, 'crabLocationY': 368, 'frameNumber': 10026},
+    # {'crabLocationX': 865, 'crabLocationY': 304, 'frameNumber': 10243},
+    # {'crabLocationX': 101, 'crabLocationY': 420, 'frameNumber': 10530}]
+    @staticmethod
+    def create_from_record_list(list_of_dicts: List) -> DataframeWrapper:
+        df = pd.DataFrame.from_records(list_of_dicts)
+        return DataframeWrapper(df)
+
     def save_file_csv(self, filepath):
         # type: (str) -> None
         self.__df.to_csv(filepath, sep='\t', index=False)
@@ -28,7 +38,7 @@ class DataframeWrapper:
     def append_to_df(df, row_to_append: Dict) -> pd.DataFrame:
         return pd.concat([df, pd.DataFrame([row_to_append])])
 
-    def append_dataframe(self, df_to_append: DataframeWrapper) -> pd.DataFrame:
+    def append_dataframe(self, df_to_append: DataframeWrapper):
         self.__df = pd.concat([self.__df, df_to_append.pandas_df()], axis='columns')
 
     # example of the output of this to_dict() function

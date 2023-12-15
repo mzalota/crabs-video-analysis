@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from typing import List, Dict
+from typing import List
 
 import pandas as pd
 from datetime import datetime
-from lib.FolderStructure import FolderStructure
-from lib.common import Box
+from lib.infra.FolderStructure import FolderStructure
+from lib.model.Box import Box
 from lib.data.PandasWrapper import PandasWrapper
-from lib.data.SeeFloor import SeeFloor
+from lib.seefloor.SeeFloor import SeeFloor
 from lib.infra.DataframeWrapper import DataframeWrapper
 from lib.model.Crab import Crab
 
@@ -155,6 +155,7 @@ class CrabsData(PandasWrapper):
         mm_per_pixel_undistorted = sf.getRedDotsData().mm_per_pixel_undistorted(frame_id)
 
         mm_per_pixel = sf.mm_per_pixel(frame_id)
+
         frame_coord_y_mm = frame_coord_y_px * mm_per_pixel
         y_coord_mm = sf.getYCoordMMOrigin(frame_id) + frame_coord_y_mm
         frame_coord_x_mm = frame_coord_x_px * mm_per_pixel
