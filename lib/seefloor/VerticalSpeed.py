@@ -29,9 +29,10 @@ class VerticalSpeed:
         dist_diff = column - column.shift(periods=-1)
         scaling_factor_single_step = dist_diff / column
         result = scaling_factor_single_step + 0
-        for increment in range(1, driftsDetectionStep+1):
+        for increment in range(1, driftsDetectionStep):
             prev = scaling_factor_single_step.shift(periods=-increment)
             result = result + prev
+
         result = result.shift(periods=driftsDetectionStep)
         return result
 

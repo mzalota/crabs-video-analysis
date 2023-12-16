@@ -79,12 +79,6 @@ class DetectedRawDrift:
         avg_x = np.mean(values_x)
         avg_y = np.mean(values_y)
 
-        # camera = Camera.create()
-        # distortion_coeff = camera.distortion_at_center()
-        #
-        # avg_x = avg_x / distortion_coeff.x
-        # avg_y = avg_y / distortion_coeff.y
-
         return Vector(avg_x,avg_y)
 
 

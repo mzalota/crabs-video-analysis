@@ -168,10 +168,6 @@ class DriftRawData(PandasWrapper):
         result_df['average_y_new'] = average_y_new
 
         #TODO: move this undistortion logic into DetectedRawDrift class
-        # camera = Camera.create()
-        # distortion_coeff = camera.distortion_at_center()
-        # result_df["average_x_new"] = result_df["average_x_new"] / distortion_coeff.x
-        # result_df["average_y_new"] = result_df["average_y_new"] / distortion_coeff.y
 
         # ---
         self.__save_graphs_variance(result_df[xColumns_raw], 'variance_x_raw')
