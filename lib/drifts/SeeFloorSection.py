@@ -1,76 +1,53 @@
 import cv2
 
-from lib.Frame import Frame
-from lib.model.Image import Image
 from lib.model.Box import Box
-from lib.model.Vector import Vector
+from lib.model.Image import Image
 from lib.model.Point import Point
-
+from lib.model.Vector import Vector
 
 
 class SeeFloorSection:
     CORRELATION_THRESHOLD_FOR_MATCHING = 0.6
 
-    def __init__(self, frame: Frame, starting_box_location: Box):
-        self.__startingBox = starting_box_location
+    def __init__(self, full_frame_image: Image, starting_box_location: Box):
+        self.__box_width = starting_box_location.width()
+        self.__box_height = starting_box_location.height()
 
-        self._detection_was_successfull = False
-        self._prev_frame_obj = None
-        self._this_frame_obj = frame
-        self._prev_top_left_point = None
-        self._this_top_left_point = starting_box_location.topLeft
+        self._detection_was_successful = False
+        self.__drift_vector = None
+
+        self.__reset_vars(full_frame_image, starting_box_location.topLeft)
+
+    def __reset_vars(self, image_full_frame: Image, top_left):
+        self._box_top_left_point = top_left #change this variable first, so that box_around_feature() function returns correct location.
+        self._sub_image_to_find = image_full_frame.subImage(self.box_around_feature())
+
+    def try_detecting(self, image_to_search: Image) -> bool:
+        new_location = self.__find_location_of_sub_image(image_to_search, self._sub_image_to_find)
+        if not new_location:
+            self._detection_was_successful = False
+            self.__drift_vector = None
+            return False
+
+        self._detection_was_successful = True
+        self.__drift_vector = Vector.create_from(new_location).minus(self._box_top_left_point)
+        self.__reset_vars(image_to_search, new_location)
+        return True
 
     def box_around_feature(self) -> Box:
-        topLeftPoint = self._this_top_left_point
-        bottomRightPoint = Point(topLeftPoint.x + self.__startingBox.width(), topLeftPoint.y + self.__startingBox.hight())
-        return Box(topLeftPoint, bottomRightPoint)
+        top_left = self._box_top_left_point
+        bottom_right = Point(top_left.x + self.__box_width, top_left.y + self.__box_height)
+        return Box(top_left, bottom_right)
 
-    def get_center_point(self) -> Point:
-        box = self.box_around_feature()
-        return box.centerPoint()
-
-    def detection_was_successfull(self) -> bool:
-        return self._detection_was_successfull
+    def detection_was_successful(self) -> bool:
+        return self._detection_was_successful
 
     def get_detected_drift(self) -> Vector:
-        # if self._prev_frame_obj is None:
-        #     return None
-
-        lastPoint = self._this_top_left_point
-        beforeLastPoint = self._prev_top_left_point
-        driftVector = Vector(lastPoint.x-beforeLastPoint.x, lastPoint.y-beforeLastPoint.y)
-
-        return driftVector
-
-    def findLocationInFrame(self, frame: Frame) -> bool:
-        newLocation = self.__find_location_of_sub_image(frame.getImgObj(), self.__get_prev_subimage())
-        if not newLocation:
-            self._detection_was_successfull = False
-            self._prev_frame_obj = None
-            self._this_frame_obj = frame
-            self._prev_top_left_point = None
-            # self._this_top_left_point = newLocation
-            return False
-        else:
-            self._detection_was_successfull = True
-            self._prev_frame_obj = self._this_frame_obj
-            self._this_frame_obj = frame
-            self._prev_top_left_point = self._this_top_left_point
-            self._this_top_left_point = newLocation
-            return True
-
-    def __get_prev_subimage(self) -> Image:
-        # img_obj = self._prev_frame_obj.getImgObj()
-        img_obj = self._this_frame_obj.getImgObj()
-        img = img_obj.subImage(self.box_around_feature())
-        return img
+        return self.__drift_vector
 
     def __find_location_of_sub_image(self, whereToSearch: Image, whatToFind: Image) -> Point:
         image = whereToSearch.asNumpyArray()
         subImage = whatToFind.asNumpyArray()
-
-        if subImage is None:
-            return None
 
         # Algorithm is described here: https: // www.geeksforgeeks.org / template - matching - using - opencv - in -python /
 

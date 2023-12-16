@@ -72,14 +72,14 @@ class Box:
     def width(self):
         return self.bottomRight.x - self.topLeft.x
 
-    def hight(self):
+    def height(self):
         return self.bottomRight.y - self.topLeft.y
 
     def diagonal(self):
         return self.topLeft.distanceTo(self.bottomRight)
 
     def area(self):
-        return self.width() * self.hight()
+        return self.width() * self.height()
 
     def centerPoint(self) -> Point:
         return self.topLeft.calculateMidpoint(self.bottomRight)

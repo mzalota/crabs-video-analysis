@@ -49,9 +49,6 @@ class Point:
         dist = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
         return dist
 
-    def minus(self, vector: Point) -> Point:
-        return Point(self.x - vector.x, self.y - vector.y)
-
     # def translateBy(self, vector: Vector) -> Point:
     def translateBy(self, vector: Point) -> Point:
         vector_floats = self.translate_by_vector(vector)

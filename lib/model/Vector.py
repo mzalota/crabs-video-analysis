@@ -8,9 +8,10 @@ from lib.model.Point import Point
 
 
 class Vector(Point):
-    # def __init__(self, point):
-    #     self.x = point.x
-    #     self.y = point.y
+    # def __init__(self, point: Point):
+    #     super().__init__(point.x, point.y)
+    #     # self.x = point.x
+    #     # self.y = point.y
 
     def __init__(self, x, y):
         self.x = x
@@ -18,6 +19,10 @@ class Vector(Point):
 
     def __str__(self):
         return str(Point(self.x, self.y))
+
+    @staticmethod
+    def create_from(point: Point) -> Vector:
+        return Vector(point.x, point.y)
 
     @staticmethod
     def vectorArrayAsString(vectorArray):
@@ -50,6 +55,9 @@ class Vector(Point):
         zeroPoint = Point(0, 0)
         endPoint = Point(self.x, self.y)
         return zeroPoint.distanceTo(endPoint)
+
+    def minus(self, vector: Point) -> Vector:
+        return Vector(self.x - vector.x, self.y - vector.y)
 
     def angle(self):
         if self.x == 0:

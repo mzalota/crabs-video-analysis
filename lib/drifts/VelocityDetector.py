@@ -5,6 +5,7 @@ import numpy
 
 from lib.drifts.FeatureMatcher import FeatureMatcher
 from lib.model.Box import Box
+from lib.model.Image import Image
 from lib.model.Vector import Vector
 from lib.model.Point import Point
 from lib.Frame import Frame
@@ -63,7 +64,7 @@ class VelocityDetector():
 
 
             if self.__is_debug:
-                self.__show_ui_window(self._fm.values(), frame, driftVector)
+                self.__show_ui_window(self._fm.values(), frame.getImgObj(), driftVector)
 
             prevFrameID = frameID
             frameID += stepSize
@@ -88,8 +89,7 @@ class VelocityDetector():
         print(driftsRow)
         logger.writeToFile(driftsRow)
 
-    def __show_ui_window(self, feature_matchers, frame, drift_vector_median):
-        img = frame.getImgObj()
+    def __show_ui_window(self, feature_matchers, img: Image, drift_vector_median: Vector):
         for feature_matcher in feature_matchers:
             section = feature_matcher.seefloor_section()
             if (section is None):
@@ -100,27 +100,33 @@ class VelocityDetector():
                 color = (0, 255, 255)  # draw box in yellow color when it is reset
             else:
                 color = (0, 255, 0)  # green
-            img.drawBoxOnImage(section.box_around_feature(), color=color, thickness=4)
 
-            if not section.detection_was_successfull():
+            #TODO: why are we calling section if FeaturMatcher was reset?
+            box_to_draw = section.box_around_feature()
+            img.drawBoxOnImage(box_to_draw, color=color, thickness=4)
+
+            #draw drift vector in the middle of the box
+            if not feature_matcher.drift_is_valid():
                 continue
+
+            if not section.detection_was_successful():
+                continue
+
+            drift_vector = section.get_detected_drift()
+            img.drawDriftVectorOnImage(drift_vector, box_to_draw.centerPoint())
 
             if drift_vector_median is None:
                 continue
 
-            drift_vector = section.get_detected_drift()
-            draw_starting_point = section.get_center_point()
-            img.drawDriftVectorOnImage(drift_vector, draw_starting_point)
+            #draw difference to drift_vector_median (shows how drift detected by this FeatureMatcher differs from median drift)
+            draw_starting_point_up = box_to_draw.centerPoint().translateBy(Vector(-50, -50))
+            drift_contribution_of_this_feature_matcher = drift_vector.minus(drift_vector_median)
+            img.drawDriftVectorOnImage(drift_contribution_of_this_feature_matcher, draw_starting_point_up)
 
-            vector_shift_up = Vector(-50, -50)
-
-            draw_starting_point2 = draw_starting_point.translateBy(vector_shift_up)
-            drift_contribution_of_this_feature_matcher = drift_vector.translateBy(Vector(-drift_vector_median.x, -drift_vector_median.y))
-            img.drawDriftVectorOnImage(drift_contribution_of_this_feature_matcher, draw_starting_point2)
-
-            draw_starting_point3 = draw_starting_point.translateBy(vector_shift_up.invert())
-            without_drift_elongated = Point(drift_contribution_of_this_feature_matcher.x*20, drift_contribution_of_this_feature_matcher.y)
-            img.drawDriftVectorOnImage(without_drift_elongated, draw_starting_point3)
+            # draw difference to drift_vector_median but exaggerate the x dimension 10-fold and y dimention 2 fold.
+            draw_starting_point_down = box_to_draw.centerPoint().translateBy(Vector(50, 50))
+            without_drift_elongated = Point(drift_contribution_of_this_feature_matcher.x*10, drift_contribution_of_this_feature_matcher.y*10)
+            img.drawDriftVectorOnImage(without_drift_elongated, draw_starting_point_down)
 
         self.__ui_window.showWindowAndWait(img.asNumpyArray())
 
@@ -249,8 +255,7 @@ class VelocityDetector():
 
         return driftsNew
 
-    def __getMedianDriftVector(self):
-        # type: () -> Vector
+    def __getMedianDriftVector(self) ->Vector:
         withoutOutliers = self.excludeOutliers(self._drifts)
         if not withoutOutliers:
             return None
@@ -277,12 +282,12 @@ class VelocityDetector():
         self._timer.lap("in detectVelocity() sequential start")
         self._drifts = list()
         for fm_id, fm in self._fm.items():
-            fm.detectSeeFloorSection(frame)
+            fm.detectSeeFloorSection(frame.getImgObj())
             if not fm.drift_is_valid():
                 continue
 
             section = fm.seefloor_section()
-            if not section.detection_was_successfull():
+            if not section.detection_was_successful():
                 continue
 
             drift = section.get_detected_drift()

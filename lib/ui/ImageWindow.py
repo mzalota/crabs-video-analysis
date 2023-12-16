@@ -28,7 +28,7 @@ class ImageWindow:
         # type: (String, Box) -> ImageWindow
         win = ImageWindow(windowName, windowBox.topLeft)
         win.__windowWidth = windowBox.width()
-        win.__windowHight = windowBox.hight()
+        win.__windowHight = windowBox.height()
         return win
 
     def __waitForMouseClick(self):
