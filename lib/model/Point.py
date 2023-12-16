@@ -27,9 +27,7 @@ class Point:
     def __str__(self):
         return "(" + str(self.x) + "," + str(self.y) + ")"
 
-
-    def calculateMidpoint(self, point2):
-        # type: (Point) -> Point
+    def calculateMidpoint(self, point2: Point) -> Point:
         x1 = self.x
         y1 = self.y
         x2 = point2.x

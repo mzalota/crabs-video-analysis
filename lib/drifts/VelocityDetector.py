@@ -93,33 +93,34 @@ class VelocityDetector():
         for feature_matcher in feature_matchers:
             section = feature_matcher.seefloor_section()
             if (section is None):
-                #we did not initialize the seefloor_section in this feature_matcher yet
+                # we did not initialize the seefloor_section in this feature_matcher yet
                 continue
 
             if feature_matcher.detectionWasReset():
-                color = (0, 255, 255) # draw box in yellow color when it is reset
+                color = (0, 255, 255)  # draw box in yellow color when it is reset
             else:
                 color = (0, 255, 0)  # green
             img.drawBoxOnImage(section.box_around_feature(), color=color, thickness=4)
 
+            if not section.detection_was_successfull():
+                continue
+
+            if drift_vector_median is None:
+                continue
+
             drift_vector = section.get_detected_drift()
-            if drift_vector_median is not None and drift_vector is not None:
+            draw_starting_point = section.get_center_point()
+            img.drawDriftVectorOnImage(drift_vector, draw_starting_point)
 
-                draw_starting_point = section.get_center_point()
-                img.drawDriftVectorOnImage(drift_vector, draw_starting_point)
+            vector_shift_up = Vector(-50, -50)
 
-                vector_shift_up = Vector(-50, -50)
+            draw_starting_point2 = draw_starting_point.translateBy(vector_shift_up)
+            drift_contribution_of_this_feature_matcher = drift_vector.translateBy(Vector(-drift_vector_median.x, -drift_vector_median.y))
+            img.drawDriftVectorOnImage(drift_contribution_of_this_feature_matcher, draw_starting_point2)
 
-                draw_starting_point2 = draw_starting_point.translateBy(vector_shift_up)
-                drift_contribution_of_this_feature_matcher = drift_vector.translateBy(Vector(-drift_vector_median.x, -drift_vector_median.y))
-                img.drawDriftVectorOnImage(drift_contribution_of_this_feature_matcher, draw_starting_point2)
-
-
-                draw_starting_point3 = draw_starting_point.translateBy(vector_shift_up.invert())
-                without_drift_elongated = Point(drift_contribution_of_this_feature_matcher.x*20, drift_contribution_of_this_feature_matcher.y)
-                img.drawDriftVectorOnImage(without_drift_elongated, draw_starting_point3)
-
-
+            draw_starting_point3 = draw_starting_point.translateBy(vector_shift_up.invert())
+            without_drift_elongated = Point(drift_contribution_of_this_feature_matcher.x*20, drift_contribution_of_this_feature_matcher.y)
+            img.drawDriftVectorOnImage(without_drift_elongated, draw_starting_point3)
 
         self.__ui_window.showWindowAndWait(img.asNumpyArray())
 
@@ -281,10 +282,10 @@ class VelocityDetector():
                 continue
 
             section = fm.seefloor_section()
-            drift = section.get_detected_drift()
-            if not drift:
+            if not section.detection_was_successfull():
                 continue
 
+            drift = section.get_detected_drift()
             self._drifts.append(drift)
 
         self._prevFrame = frame
@@ -320,12 +321,13 @@ class VelocityDetector():
             for idx in range(0, 9):
                 section = self._fm[idx].seefloor_section()
                 box = section.box_around_feature()
-                drift = section.get_detected_drift()
                 driftsRow.append(box.topLeft.x)
                 driftsRow.append(box.topLeft.y)
                 driftsRow.append(box.bottomRight.x)
                 driftsRow.append(box.bottomRight.y)
+                # if section.detection_was_successfull():
                 if self._fm[idx].drift_is_valid():
+                    drift = section.get_detected_drift()
                     driftsRow.append("DETECTED")
                     driftsRow.append(drift.x)
                     driftsRow.append(drift.y)

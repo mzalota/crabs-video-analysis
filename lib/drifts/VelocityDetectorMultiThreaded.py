@@ -26,10 +26,10 @@ class VelocityDetectorMultiThreaded(VelocityDetector):
                 continue
 
             section = fm.seefloor_section()
-            drift = section.get_detected_drift()
-            if not drift:
+            if not section.detection_was_successfull():
                 continue
 
+            drift = section.get_detected_drift()
             self._drifts.append(drift)
 
         self._timer.lap("in detectVelocity() multithreaded end")

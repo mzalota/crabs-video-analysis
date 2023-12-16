@@ -36,21 +36,15 @@ class FeatureMatcher:
             self.__driftIsValid = False
             return False
 
-        newTopLeftOfFeature = self.__seeFloorSection.findLocationInFrame(frame)
-        if newTopLeftOfFeature is None:
-            print("WARN: newTopLeftOfFeature is None. NotDetected_1")
-            self.__resetReason = "NotDetected_1"
+        self.__seeFloorSection.findLocationInFrame(frame)
+        if not self.__seeFloorSection.detection_was_successfull():
+            print("WARN: section_drift is None. NotDetected")
+            self.__resetReason = "NotDetected_2"
             self.__resetToStartingBox = True
             self.__driftIsValid = False
             return False
 
         section_drift = self.__seeFloorSection.get_detected_drift()
-        if section_drift is None:
-            print("WARN: section_drift is None. NotDetected_2")
-            self.__resetReason = "NotDetected_2"
-            self.__resetToStartingBox = True
-            self.__driftIsValid = False
-            return False
 
         if section_drift.x == 0 and section_drift.y == 0:
             self.__resetReason = "NotMoved"
