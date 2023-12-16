@@ -167,8 +167,6 @@ class DriftRawData(PandasWrapper):
         result_df['average_x_new'] = average_x_new
         result_df['average_y_new'] = average_y_new
 
-        #TODO: move this undistortion logic into DetectedRawDrift class
-
         # ---
         self.__save_graphs_variance(result_df[xColumns_raw], 'variance_x_raw')
         self.__save_graphs_variance(nowBack.pandas_df()[xColumns_new], 'variance_x_new')
