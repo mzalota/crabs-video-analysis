@@ -50,7 +50,7 @@ class DetectedRawDrift:
 
             zoom_factor = self._zoom_factor()+1
             new_loc = FramePhysics._adjust_location_for_depth_change_zoom(feature_location, zoom_factor)
-            diff_due_to_zoom = Vector(feature_location).minus(new_loc)
+            diff_due_to_zoom = Vector.create_from(feature_location).minus(new_loc)
             # print("diff due to zoom", str(diff_due_to_zoom), zoom_factor, str(feature_location), str(new_loc))
 
             undistorted_drift = self.undistorted_drifts_at(feature_matcher_idx)

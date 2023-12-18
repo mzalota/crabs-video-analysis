@@ -82,73 +82,70 @@ class VelocityDetector(ToMoveToFeatureMatcher):
         if self.__is_debug:
             self.__ui_window = ImageWindow("mainWindow", Point(700, 200))
 
-        prevFrameID = frameID
+        is_first_loop = True
         success = True
         while success:
+            prevFrameID = frameID
+            frameID += stepSize
             if frameID > videoStream.num_of_frames():
                 break
 
-            if (prevFrameID == frameID):
+            if is_first_loop:
                 print("this is the first frame in the video stream")
                 self._write_out_empty_row(frameID, logger)
-                prevFrameID = frameID
-                frameID += stepSize
+                is_first_loop = False
                 continue
 
-            frame = Frame(frameID, videoStream)
-            try:
-                #try to read frame from video stream
-                current_image = frame.getImgObj()
-            except VideoStreamException as error:
-                print("WARN: Cannot read frame id:" + str(frameID) + ", skipping to next")
-                # print(repr(error))
+            is_OK = self.preload_from_videoStream(frameID, prevFrameID, videoStream)
+            if not is_OK:
                 self._write_out_empty_row(frameID, logger)
-                self.reset_all_fm()
-                prevFrameID = frameID
-                frameID += stepSize
                 continue
 
-            framePrev = Frame(prevFrameID, videoStream)
-            try:
-                #try to read frame from video stream
-                prev_image = framePrev.getImgObj()
-            except VideoStreamException as error:
-                print("WARN: Cannot read previous frame id:" + str(prevFrameID) + ", skipping current frame "+str(frameID)+" to next")
-                # print(repr(error))
-                self._write_out_empty_row(frameID, logger)
-                self.reset_all_fm()
-                prevFrameID = frameID
-                frameID += stepSize
-                continue
+            current_image = Frame(frameID, videoStream).getImgObj()
+            drifts = self.detectVelocity(current_image)
 
-            if current_image.is_identical_to(prev_image):
-                print("WARN: the image in this frame, "+str(frameID)+", is identical to image in previous frame, "+str(prevFrameID))
-                self._write_out_empty_row(frameID, logger)
-                self.reset_all_fm()
-                prevFrameID = frameID
-                frameID += stepSize
-                continue
-
-            drifts = self.detectVelocity(frame)
-            self._write_out_drift_row(frameID, logger, drifts)
             driftVector = self.__getMedianDriftVector(drifts)
+            if driftVector is None:
+                # none of the detected drifts are valid.
+                # TODO: clean this up... we need a more modern logic for deciding if detected drifts are valid or not.
+                self._write_out_empty_row(frameID, logger, drifts)
+                return
+
+            self._write_out_drift_row(frameID, logger, drifts)
 
             if self.__is_debug:
-                self.__show_ui_window(self._fm.values(), frame.getImgObj(), driftVector)
+                self.__show_ui_window(self._fm.values(), current_image, drifts)
 
-            prevFrameID = frameID
-            frameID += stepSize
 
+        #end of while loop. close UI window
         if self.__is_debug:
             self.__ui_window.closeWindow()
 
+    def preload_from_videoStream(self, frameID, prevFrameID, videoStream) -> List:
+
+        frame = Frame(frameID, videoStream)
+        try:
+            current_image = frame.getImgObj()
+        except VideoStreamException as error:
+            print("WARN: Cannot read frame id:" + str(frameID) + ", skipping to next")
+            self.reset_all_fm()
+            return False
+
+        framePrev = Frame(prevFrameID, videoStream)
+        try:
+            prev_image = framePrev.getImgObj()
+        except VideoStreamException as error:
+            print("WARN: Cannot read previous frame id:" + str(prevFrameID) + ", skipping current frame " + str(frameID) + " to next")
+            return False
+
+        if current_image.is_identical_to(prev_image):
+            print("WARN: the image in this frame, " + str(frameID) + ", is identical to image in previous frame, " + str(prevFrameID))
+            self.reset_all_fm()
+            return False
+
+        return True
 
     def _write_out_drift_row(self, frameID, logger, drifts: List):
-        driftVector = self.__getMedianDriftVector(drifts)
-        if driftVector is None:
-            self._write_out_empty_row(frameID, logger, drifts)
-            return
-
         driftsRow = self.infoAboutDrift(frameID, drifts)
         print(driftsRow)
         logger.writeToFile(driftsRow)
@@ -158,7 +155,8 @@ class VelocityDetector(ToMoveToFeatureMatcher):
         print(driftsRow)
         logger.writeToFile(driftsRow)
 
-    def __show_ui_window(self, feature_matchers, img: Image, drift_vector_median: Vector):
+    def __show_ui_window(self, feature_matchers, img: Image, drifts):
+        drift_vector_median = self.__getMedianDriftVector(drifts)
         for feature_matcher in feature_matchers:
             section = feature_matcher.seefloor_section()
             if (section is None):
@@ -298,10 +296,10 @@ class VelocityDetector(ToMoveToFeatureMatcher):
         for fm_id, fm in self._fm.items():
             fm.reset_to_starting_box()
 
-    def detectVelocity(self, frame: Frame) -> List:
+    def detectVelocity(self, img_frame) -> List:
         drifts = list()
         for fm_id, fm in self._fm.items():
-            fm.detectSeeFloorSection(frame.getImgObj())
+            fm.detectSeeFloorSection(img_frame)
             if not fm.drift_is_valid():
                 continue
 

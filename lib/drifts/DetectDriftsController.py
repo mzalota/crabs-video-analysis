@@ -31,9 +31,9 @@ class DetectDriftsController:
         rawDriftData = DriftRawData(folderStruct)
         maxFrameID = rawDriftData.maxFrameID()
         if maxFrameID > 1:
-            startFrameID = maxFrameID + stepSize
+            startFrameID = maxFrameID
         else:
-            startFrameID = videoStream.get_id_of_first_frame(stepSize)  #5
+            startFrameID = videoStream.get_id_of_first_frame(stepSize)
 
         print("starting processing from frame", startFrameID)
 
