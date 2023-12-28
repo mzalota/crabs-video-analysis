@@ -82,6 +82,7 @@ class VelocityDetector(ToMoveToFeatureMatcher):
         if self.__is_debug:
             self.__ui_window = ImageWindow("mainWindow", Point(700, 200))
 
+        self._write_out_empty_row(frameID, logger)
         is_first_loop = True
         success = True
         while success:
@@ -104,10 +105,10 @@ class VelocityDetector(ToMoveToFeatureMatcher):
             current_image = Frame(frameID, videoStream).getImgObj()
             drifts = self.detectVelocity(current_image)
 
+            #TODO: clean this up... we need a more modern logic for deciding if detected drifts are valid or not.
             driftVector = self.__getMedianDriftVector(drifts)
             if driftVector is None:
                 # none of the detected drifts are valid.
-                # TODO: clean this up... we need a more modern logic for deciding if detected drifts are valid or not.
                 self._write_out_empty_row(frameID, logger, drifts)
                 continue
 
