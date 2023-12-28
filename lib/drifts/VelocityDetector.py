@@ -109,7 +109,7 @@ class VelocityDetector(ToMoveToFeatureMatcher):
                 # none of the detected drifts are valid.
                 # TODO: clean this up... we need a more modern logic for deciding if detected drifts are valid or not.
                 self._write_out_empty_row(frameID, logger, drifts)
-                return
+                continue
 
             self._write_out_drift_row(frameID, logger, drifts)
 
