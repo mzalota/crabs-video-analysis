@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy
 
-from lib.data.DriftInterpolatedData import DriftInterpolatedData
+from lib.drifts_interpolate.DriftInterpolatedData import DriftInterpolatedData
 from lib.imageProcessing.Camera import Camera
 from lib.VideoStream import VideoStream
 from lib.model.Point import Point
@@ -46,8 +46,7 @@ class SeeFloor(PandasWrapper):
         newObj = SeeFloor(driftsData, redDotsData, folderStruct, df)
         return newObj
 
-    def getDriftData(self):
-        # type: () -> DriftData
+    def getDriftData(self) -> DriftInterpolatedData:
         return self.__driftData
 
     def getRedDotsData(self) -> RedDotsData:

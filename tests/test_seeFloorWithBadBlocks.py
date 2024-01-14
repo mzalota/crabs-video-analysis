@@ -5,7 +5,7 @@ import pandas as pd
 from lib.imageProcessing.Camera import Camera
 from lib.Frame import Frame
 from lib.data.BadFramesData import BadFramesData
-from lib.data.DriftInterpolatedData import DriftInterpolatedData
+from lib.drifts_interpolate.DriftInterpolatedData import DriftInterpolatedData
 from lib.seefloor.SeeFloorWithBadBlocks import SeeFloorWithBadBlocks
 from lib.infra.DataframeWrapper import DataframeWrapper
 

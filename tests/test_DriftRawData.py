@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from lib.drifts.DriftRawData import DriftRawData
+from lib.drifts_interpolate.DriftRawData import DriftRawData
 
 
 class TestDriftRawData(TestCase):

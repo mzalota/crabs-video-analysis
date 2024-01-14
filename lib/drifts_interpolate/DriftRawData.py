@@ -6,18 +6,15 @@ import numpy as np
 import pandas as pd
 from scipy.stats import stats
 
-from lib.drifts.DetectedRawDrift import DetectedRawDrift
-#import statistics as statistics
-from lib.imageProcessing.Camera import Camera
-from lib.infra.FolderStructure import FolderStructure
-from lib.infra.GraphPlotter import GraphPlotter
-from lib.drifts.DriftManualData import DriftManualData
-
 from lib.data.PandasWrapper import PandasWrapper
 from lib.data.RedDotsData import RedDotsData
-from lib.drifts.DriftManualData import DriftManualData
+from lib.drifts_interpolate.DetectedRawDrift import DetectedRawDrift
+from lib.drifts_detect.DriftManualData import DriftManualData
+from lib.imageProcessing.Camera import Camera
 from lib.infra.Configurations import Configurations
 from lib.infra.DataframeWrapper import DataframeWrapper
+from lib.infra.FolderStructure import FolderStructure
+from lib.infra.GraphPlotter import GraphPlotter
 from lib.model.Point import Point
 
 
@@ -140,7 +137,6 @@ class DriftRawData(PandasWrapper):
         if self.__generate_debug_graphs:
             self.__save_graphs_drifts_raw(result_df, 1000, 1500)
 
-
         yColumns_raw = list()
         xColumns_raw = list()
         yColumns_new = list()
@@ -206,15 +202,11 @@ class DriftRawData(PandasWrapper):
         camera = Camera.create()
         distortion_coeff = [camera.distortion_at_point(k) for k in center_point]
         return distortion_coeff
-        # frame_a = pd.DataFrame(distortion_coeff, columns=['undistort_coeff'])
-        # return DataframeWrapper(frame_a)
 
     def __undistorted_points_column(self, point: List[Point]) -> DataframeWrapper:
         camera = Camera.create()
         undistorted_point = [camera.undistort_point(k) for k in point]
         return undistorted_point
-        # frame_a = pd.DataFrame(undistorted_point, columns=['undistored_point'])
-        # return DataframeWrapper(frame_a)
 
     def _center_points_list(self, raw_drifts_df, num) -> List[Point]:
         center_y = self.__fm_center_y(raw_drifts_df, num)
@@ -248,10 +240,6 @@ class DriftRawData(PandasWrapper):
             df = df.interpolate(limit_direction='both')
 
         return df
-
-    def _to_obj(val: Dict) -> Point:
-        non_null_values = list()
-        print (val)
 
     @staticmethod
     def _remove_outliers_stderr(val: Dict) -> Point:
@@ -421,10 +409,10 @@ class DriftRawData(PandasWrapper):
         df = manualDrifts.overwrite_values(df)
 
         #set drifts in the first row to zero.
-        self.setValuesInFirstRowToZeros(df)
+        self.__set_values_in_first_row_to_zeros(df)
         return df
 
-    def setValuesInFirstRowToZeros(self, df):
+    def __set_values_in_first_row_to_zeros(self, df):
         df.loc[0, self.__COLNAME_driftX] = 0
         df.loc[0, self.__COLNAME_driftY] = 0
 
@@ -443,19 +431,19 @@ class DriftRawData(PandasWrapper):
 
     def __interpolateToHaveEveryFrame(self, df):
         # type: (pd.DataFrame) -> pd.DataFrame
-        minFrameID = self.minFrameID()
-        maxFrameID = self.maxFrameID()
+        minFrameID = self.min_frame_id()
+        maxFrameID = self.max_frame_id()
         df = df.set_index("frameNumber")
         arrayOfFrameIDs = numpy.arange(start=minFrameID, stop=maxFrameID, step=1)
         everyFrame = pd.DataFrame(arrayOfFrameIDs, columns=["frameNumber"]).set_index("frameNumber")
         df = df.combine_first(everyFrame).reset_index()
         return df
 
-    def minFrameID(self):
+    def min_frame_id(self):
         # type: () -> int
         return self.__df[self.__COLNAME_frameNumber].min()
 
-    def maxFrameID(self):
+    def max_frame_id(self):
         # type: () -> int
         return self.__df[self.__COLNAME_frameNumber].max()
 

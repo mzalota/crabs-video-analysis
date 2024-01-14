@@ -12,7 +12,7 @@ from lib.data.CrabsData import CrabsData
 from lib.data.MarkersData import MarkersData
 from lib.data.RedDotsData import RedDotsData
 from lib.seefloor.SeeFloor import SeeFloor
-from lib.drifts.DriftManualData import DriftManualData
+from lib.drifts_detect.DriftManualData import DriftManualData
 from lib.imageProcessing.Rectificator import Rectificator
 from lib.infra.MyTimer import MyTimer
 from lib.ui.CrabUI import CrabUI

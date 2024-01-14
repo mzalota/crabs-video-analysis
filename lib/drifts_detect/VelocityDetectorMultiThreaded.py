@@ -1,9 +1,9 @@
 from pebble import concurrent
 
 from lib.Frame import Frame
-from lib.drifts.FeatureMatcher import FeatureMatcher
-from lib.drifts.SeeFloorSection import SeeFloorSection
-from lib.drifts.VelocityDetector import VelocityDetector
+from lib.drifts_detect.FeatureMatcher import FeatureMatcher
+from lib.drifts_detect.SeeFloorSection import SeeFloorSection
+from lib.drifts_detect.VelocityDetector import VelocityDetector
 
 
 class VelocityDetectorMultiThreaded(VelocityDetector):

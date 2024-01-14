@@ -1,4 +1,4 @@
-from lib.drifts.SeeFloorSection import SeeFloorSection
+from lib.drifts_detect.SeeFloorSection import SeeFloorSection
 from lib.imageProcessing.Camera import Camera
 from lib.model.Box import Box
 from lib.model.Image import Image

@@ -3,7 +3,7 @@ import sys
 from lib.imageProcessing.Camera import Camera
 from lib.infra.CommandLineLauncher import CommandLineLauncher
 from lib.VideoStream import VideoStream
-from lib.drifts.DetectDriftsController import DetectDriftsController
+from lib.drifts_detect.DetectDriftsController import DetectDriftsController
 from lib.infra.FolderStructure import FolderStructure
 from lib.ui.FileOpenUI import FileOpenUI
 from lib.infra.Configurations import Configurations

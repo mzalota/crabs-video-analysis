@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from lib.data.DriftInterpolatedData import DriftInterpolatedData
+from lib.drifts_interpolate.DriftInterpolatedData import DriftInterpolatedData
 import pandas as pd
 
 from lib.infra.DataframeWrapper import DataframeWrapper

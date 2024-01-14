@@ -1,6 +1,6 @@
 import pandas as pd
 
-from lib.data.DriftInterpolatedData import DriftInterpolatedData
+from lib.drifts_interpolate.DriftInterpolatedData import DriftInterpolatedData
 from lib.infra.FolderStructure import FolderStructure
 from lib.data.BadFramesData import BadFramesData
 from lib.data.PandasWrapper import PandasWrapper

@@ -1,8 +1,8 @@
 from lib.infra.FolderStructure import FolderStructure
 from lib.data.CrabsData import CrabsData
-from lib.data.DriftInterpolatedData import DriftInterpolatedData
-from lib.drifts.DriftManualData import DriftManualData
-from lib.drifts.DriftRawData import DriftRawData
+from lib.drifts_interpolate.DriftInterpolatedData import DriftInterpolatedData
+from lib.drifts_detect.DriftManualData import DriftManualData
+from lib.drifts_interpolate.DriftRawData import DriftRawData
 from lib.data.RedDotsData import RedDotsData
 from lib.seefloor.SeeFloor import SeeFloor
 from lib.infra.Configurations import Configurations
@@ -22,8 +22,8 @@ class InterpolateController:
         print("Using driftsStepSize: " + str(driftsStepSize))
 
         rawDrifts = DriftRawData(self.__folderStruct)
-        min_frame_id = rawDrifts.minFrameID()
-        max_frame_id = rawDrifts.maxFrameID() + 1
+        min_frame_id = rawDrifts.min_frame_id()
+        max_frame_id = rawDrifts.max_frame_id() + 1
 
         print ("regenerating/interpolating RedDots")
         rdd = RedDotsData.createFromFolderStruct(self.__folderStruct)

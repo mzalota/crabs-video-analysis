@@ -1,7 +1,7 @@
 from lib.infra.Logger import Logger
-from lib.drifts.VelocityDetector import VelocityDetector
+from lib.drifts_detect.VelocityDetector import VelocityDetector
 from lib.VideoStream import VideoStream
-from lib.drifts.DriftRawData import DriftRawData
+from lib.drifts_interpolate.DriftRawData import DriftRawData
 from lib.infra.Configurations import Configurations
 
 
@@ -29,7 +29,7 @@ class DetectDriftsController:
         videoStream = VideoStream(folderStruct.getVideoFilepath())
 
         rawDriftData = DriftRawData(folderStruct)
-        maxFrameID = rawDriftData.maxFrameID()
+        maxFrameID = rawDriftData.max_frame_id()
         if maxFrameID > 1:
             startFrameID = maxFrameID+stepSize
         else:

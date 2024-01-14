@@ -7,7 +7,7 @@ import numpy
 
 from lib.Frame import Frame
 from lib.VideoStream import VideoStreamException
-from lib.drifts.FeatureMatcher import FeatureMatcher
+from lib.drifts_detect.FeatureMatcher import FeatureMatcher
 from lib.infra.MyTimer import MyTimer
 from lib.model.Box import Box
 from lib.model.Image import Image
