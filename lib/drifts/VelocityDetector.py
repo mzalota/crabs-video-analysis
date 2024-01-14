@@ -80,7 +80,7 @@ class VelocityDetector(ToMoveToFeatureMatcher):
         self.__createFeatureMatchers(Frame.is_high_resolution(videoStream.frame_height()))
 
         if self.__is_debug:
-            self.__ui_window = ImageWindow("mainWindow", Point(700, 200))
+            ui_window = ImageWindow("mainWindow", Point(700, 200))
 
         self._write_out_empty_row(frameID, logger)
         is_first_loop = True
@@ -106,8 +106,8 @@ class VelocityDetector(ToMoveToFeatureMatcher):
             drifts = self.detectVelocity(current_image)
 
             #TODO: clean this up... we need a more modern logic for deciding if detected drifts are valid or not.
-            driftVector = self.__getMedianDriftVector(drifts)
-            if driftVector is None:
+            medianDrift = self.__getMedianDriftVector(drifts)
+            if medianDrift is None:
                 # none of the detected drifts are valid.
                 self._write_out_empty_row(frameID, logger, drifts)
                 continue
@@ -115,12 +115,13 @@ class VelocityDetector(ToMoveToFeatureMatcher):
             self._write_out_drift_row(frameID, logger, drifts)
 
             if self.__is_debug:
-                self.__show_ui_window(self._fm.values(), current_image, drifts)
+                img = self.__draw_feature_matchers_on_frame(self._fm.values(), current_image, medianDrift)
+                ui_window.showWindowAndWait(img.asNumpyArray())
 
 
         #end of while loop. close UI window
         if self.__is_debug:
-            self.__ui_window.closeWindow()
+            ui_window.closeWindow()
 
     def preload_from_videoStream(self, frameID, prevFrameID, videoStream) -> List:
 
@@ -156,8 +157,7 @@ class VelocityDetector(ToMoveToFeatureMatcher):
         print(driftsRow)
         logger.writeToFile(driftsRow)
 
-    def __show_ui_window(self, feature_matchers, img: Image, drifts):
-        drift_vector_median = self.__getMedianDriftVector(drifts)
+    def __draw_feature_matchers_on_frame(self, feature_matchers, img: Image, drift_vector_median) -> Image:
         for feature_matcher in feature_matchers:
             section = feature_matcher.seefloor_section()
             if (section is None):
@@ -196,7 +196,8 @@ class VelocityDetector(ToMoveToFeatureMatcher):
             without_drift_elongated = Point(drift_contribution_of_this_feature_matcher.x*10, drift_contribution_of_this_feature_matcher.y*10)
             img.drawDriftVectorOnImage(without_drift_elongated, draw_starting_point_down)
 
-        self.__ui_window.showWindowAndWait(img.asNumpyArray())
+        return img
+
 
     def __createFeatureMatchers(self, is_high_resolution: bool):
 
