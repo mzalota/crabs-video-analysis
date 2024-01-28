@@ -38,7 +38,7 @@ class DetectedRawDrift:
 
     def calculate_drifts(self):
         camera = Camera.create()
-        distortion_coeff = camera.distortion_at_center()
+        distortion_at_center = camera.distortion_at_center()
 
         non_null_values_x = list()
         non_null_values_y = list()
@@ -47,27 +47,42 @@ class DetectedRawDrift:
                 continue
 
             feature_location = self.center_point_at(feature_matcher_idx)
+            drift_vector = self.drift_vector_at(feature_matcher_idx)
+
+            self.__init_dict["fm_" + str(feature_matcher_idx) + "_drift_x_new"] = drift_vector.x
+            self.__init_dict["fm_" + str(feature_matcher_idx) + "_drift_y_new"] = drift_vector.y
+
+            if math.isnan(drift_vector.x):
+                continue
+            if math.isnan(drift_vector.y):
+                continue
+            if math.isnan(feature_location.x):
+                continue
+            if math.isnan(feature_location.y):
+                continue
+
+            distortion_at_point = camera.distortion_at_point_vector(feature_location)
+            distortion_coefficient_at_x = distortion_at_point.x / distortion_at_center.x
+            distortion_coefficient_at_y = distortion_at_point.y / distortion_at_center.y
+
+            undistorted_drift = Vector(drift_vector.x / distortion_coefficient_at_x , drift_vector.y / distortion_coefficient_at_y)
+
 
             zoom_factor = self._zoom_factor()+1
-            new_loc = FramePhysics._adjust_location_for_depth_change_zoom(feature_location, zoom_factor)
-            diff_due_to_zoom = Vector.create_from(feature_location).minus(new_loc)
-            # print("diff due to zoom", str(diff_due_to_zoom), zoom_factor, str(feature_location), str(new_loc))
+            diff_due_to_zoom = FramePhysics.zoom_compensation(feature_location, zoom_factor).invert()
+            #new_loc = FramePhysics._adjust_location_for_depth_change_zoom(feature_location, zoom_factor)
+            #diff_due_to_zoom = Vector.create_from(feature_location).minus(new_loc)
 
-            undistorted_drift = self.undistorted_drifts_at(feature_matcher_idx)
+            result = undistorted_drift.plus(diff_due_to_zoom)
 
-            self.__init_dict["fm_" + str(feature_matcher_idx) + "_drift_x_new"] = undistorted_drift.x
-            self.__init_dict["fm_" + str(feature_matcher_idx) + "_drift_y_new"] = undistorted_drift.y
-
-            if math.isnan(undistorted_drift.x):
-                continue
-
-            compensated_drift_x = (undistorted_drift.x / distortion_coeff.x + diff_due_to_zoom.x)
+            compensated_drift_x = (undistorted_drift.x + diff_due_to_zoom.x)
             non_null_values_x.append(compensated_drift_x)
+            # non_null_values_x.append(result.x)
 
-            if math.isnan(undistorted_drift.y):
-                continue
-            compensated_drift_y = (undistorted_drift.y / distortion_coeff.y + diff_due_to_zoom.y)
+            compensated_drift_y = (undistorted_drift.y + diff_due_to_zoom.y)
             non_null_values_y.append(compensated_drift_y)
+            # non_null_values_y.append(result.y)
+
 
             self.__init_dict["fm_" + str(feature_matcher_idx) + "_drift_x_new"] = compensated_drift_x
             self.__init_dict["fm_" + str(feature_matcher_idx) + "_drift_y_new"] = compensated_drift_y
@@ -81,13 +96,11 @@ class DetectedRawDrift:
 
         return Vector(avg_x,avg_y)
 
-
     def outliers_x(self):
         if self.skip_row():
             return "INVALID"
 
         values_x, values_y = self.calculate_drifts()
-        drift_vec = self.drift_vector()
         response = DetectedRawDrift._has_outlier_stderr(values_x)
         return response
 
@@ -147,11 +160,13 @@ class DetectedRawDrift:
 
     def undistorted_drifts_at(self, num: int) -> Vector:
         drift_vector = self.drift_vector_at(num)
+        point = self.center_point_at(num)
 
         camera = Camera.create()
-        distortion = camera.distortion_at_point_vector(self.center_point_at(num))
+        distortion = camera.distortion_at_point_vector(point)
 
-        return Vector(drift_vector.x*distortion.x, drift_vector.y*distortion.y)
+        vector = Vector(drift_vector.x * distortion.x, drift_vector.y * distortion.y)
+        return vector
 
     def center_point_at(self, num: int) -> Point:
         x_top = self.__init_dict["fm_" + str(num) + "_top_x"]

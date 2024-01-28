@@ -56,8 +56,11 @@ class Vector(Point):
         endPoint = Point(self.x, self.y)
         return zeroPoint.distanceTo(endPoint)
 
-    def minus(self, vector: Point) -> Vector:
+    def minus(self, vector: Vector) -> Vector:
         return Vector(self.x - vector.x, self.y - vector.y)
+
+    def plus(self, vector: Vector) -> Vector:
+        return self.minus(vector.invert())
 
     def angle(self):
         if self.x == 0:
