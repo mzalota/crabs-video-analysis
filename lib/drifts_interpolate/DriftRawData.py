@@ -69,23 +69,10 @@ class DriftRawData(PandasWrapper):
         graph_plotter.saveGraphToFile(x_axis_column, yColumns_new, graph_title, filepath_prefix + "drift_y_new.png")
 
 
-    def __undistort_coeff_column(self, center_point: List[Point]) -> DataframeWrapper:
-        camera = Camera.create()
-        distortion_coeff = [camera.distortion_at_point(k) for k in center_point]
-        return distortion_coeff
-
     def __undistorted_points_column(self, point: List[Point]) -> DataframeWrapper:
         camera = Camera.create()
         undistorted_point = [camera.undistort_point(k) for k in point]
         return undistorted_point
-
-    def _center_points_list(self, raw_drifts_df, num) -> List[Point]:
-        center_y = self.__fm_center_y(raw_drifts_df, num)
-        center_x = self.__fm_center_x(raw_drifts_df, num)
-        combined = pd.concat([center_x, center_y], axis='columns')
-        new_list = DataframeWrapper(combined).as_records_list()
-        center_point = [self._point_from_x_y_coord(k) for k in new_list]
-        return center_point
 
     @staticmethod
     def _remove_outliers_stderr(val: Dict) -> Point:
@@ -137,92 +124,6 @@ class DriftRawData(PandasWrapper):
             return "MAX_OUTLIER"
 
         return "OK"
-
-    def _point_from_x_y_coord(self, val: Dict) -> Point:
-        x_coord = val[0]
-        y_coord = val[1]
-        if math.isnan(x_coord):
-            return None
-        if math.isnan(y_coord):
-            return None
-
-        return Point(x_coord, y_coord)
-
-    def _undistort_coeff_for_point(self, point: Point) ->float:
-        camera = Camera.create()
-        return camera.distortion_at_point(point)
-
-    def _undistort_coeff_for_point(self, val: Dict):
-        x_coord = val[0]
-        y_coord = val[1]
-        if math.isnan(x_coord):
-            return 1
-        if math.isnan(y_coord):
-            return 1
-
-        point = Point(x_coord, y_coord)
-        camera = Camera.create()
-        return camera.distortion_at_point(point)
-
-    def __fm_center_y(self, df: pd.DataFrame, num: str) -> pd.DataFrame:
-        y_coord_top = df[("fm_" + str(num) + "_top_y")]
-        y_coord_bottom = df[("fm_" + str(num) + "_bottom_y")]
-        y_coord_center = y_coord_top + (y_coord_bottom - y_coord_top) / 2
-        return y_coord_center
-
-    def __fm_center_x(self, df: pd.DataFrame, num: str) -> pd.DataFrame:
-        x_coord_top = df[("fm_" + str(num) + "_top_x")]
-        x_coord_bottom = df[("fm_" + str(num) + "_bottom_x")]
-        x_coord_center = x_coord_top + (x_coord_bottom - x_coord_top) / 2
-        return x_coord_center
-
-
-    def __drift_y_dezoomed(self, df: pd.DataFrame, num: str, zoom_factor: pd.DataFrame)-> pd.DataFrame:
-        undistored_drift_y = self._undistored_drift_y(df, num)
-        drift_y_due_to_zoom = self._drift_compnent_due_to_zoom_y(df, num, zoom_factor)
-        return undistored_drift_y + drift_y_due_to_zoom
-
-    def _drift_compnent_due_to_zoom_y(self, df, num, zoom_factor):
-        center_point_undistorted = self._center_points_undistorted_list(df, num)
-        center_y_undistorted = pd.Series([k.y for k in center_point_undistorted])
-        distance_from_center_along_y = center_y_undistorted - Camera.create().center_point().y
-        drift_y_due_to_zoom = distance_from_center_along_y * zoom_factor
-        return drift_y_due_to_zoom
-
-    def _undistored_drift_y(self, df, num):
-        column_name_y_raw = "fm_" + num + "_drift_y"
-        center_point = self._center_points_list(df, num)
-        undistort_coeff = pd.Series(self.__undistort_coeff_column(center_point))
-        undistored_drift_y = df[column_name_y_raw] * undistort_coeff
-        return undistored_drift_y
-
-    def __drift_x_dezoomed(self, df: pd.DataFrame, num: str, zoom_factor: pd.DataFrame) -> pd.DataFrame:
-        undistored_drift_x = self._undistored_drift_x(df, num)
-        drift_x_due_to_zoom = self._drift_compnent_due_to_zoom_x(df, num, zoom_factor)
-        return undistored_drift_x + drift_x_due_to_zoom
-
-    def _drift_compnent_due_to_zoom_x(self, df, num, zoom_factor):
-        center_point_undistorted = self._center_points_undistorted_list(df, num)
-        center_x_undistorted = pd.Series([k.x for k in center_point_undistorted])
-        distance_from_center_along_x = center_x_undistorted - Camera.create().center_point().x
-        drift_x_due_to_zoom = distance_from_center_along_x * zoom_factor
-        return drift_x_due_to_zoom
-
-    def _undistored_drift_x(self, df, num):
-        column_name_x_raw = "fm_" + num + "_drift_x"
-        center_point = self._center_points_list(df, num)
-        undistort_coeff = pd.Series(self.__undistort_coeff_column(center_point))
-        undistored_drift_x = df[column_name_x_raw] * undistort_coeff
-        return undistored_drift_x
-
-    def _center_points_undistorted_list(self, df, num):
-        point = self._center_points_list(df, num)
-        camera = Camera.create()
-        undistorted_points = [camera.undistort_point(k) for k in point]
-        # frame_a = pd.DataFrame(undistorted_points, columns=['undistored_point'])
-        # return DataframeWrapper(frame_a)
-        #return undistorted_points
-        return pd.Series(undistorted_points)
 
     def interpolate(self, manualDrifts: DriftManualData, redDotsData: RedDotsData, driftsDetectionStep: int) -> pd.DataFrame:
         raw_drifts_df = self._replaceInvalidValuesWithNaN(self.__df, driftsDetectionStep)

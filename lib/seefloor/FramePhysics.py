@@ -14,7 +14,6 @@ class FramePhysics:
     def translate_forward(self, point: Point) -> Point:
         drift_forward_at_center = self.__drift
 
-
         camera = Camera.create()
         distortion_at_point = camera.distortion_at_point_vector(point)
         distortion_at_center = camera.distortion_at_center()
@@ -30,6 +29,7 @@ class FramePhysics:
 
     def translate_backward(self, point: Point) -> Point:
         drift_backward_at_center = self.__drift.invert()
+
         camera = Camera.create()
         distortion_at_point = camera.distortion_at_point_vector(point)
         distortion_at_center = camera.distortion_at_center()

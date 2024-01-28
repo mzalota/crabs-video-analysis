@@ -84,18 +84,6 @@ class Camera:
         point = self.get_optical_center()
         return self.distortion_at_point_vector(point)
 
-    def distortion_at_point(self, point: Point) -> float:
-        if point is None:
-            return 1
-        point_away_1 = point.translate_by_xy(-10, -10)
-        point_away_2 = point.translate_by_xy(10, 10)
-        distance_distorted = point_away_1.distanceTo(point_away_2)
-        point_away_1_undistorted = self.undistort_point(point_away_1)
-        point_away_2_undistorted = self.undistort_point(point_away_2)
-        distance_non_distorted = point_away_1_undistorted.distanceTo(point_away_2_undistorted)
-        distortion_coeff = distance_non_distorted / distance_distorted
-        return distortion_coeff
-
     def distortion_at_point_vector(self, point: Point) -> Vector:
         if point is None:
             return 1
