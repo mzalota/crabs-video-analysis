@@ -1,10 +1,30 @@
+from __future__ import annotations
+from typing import List
+
 import matplotlib.pyplot as plt
+import pandas as pd
+
+from lib.infra.FolderStructure import FolderStructure
 
 
 class GraphPlotter:
     def __init__(self, df):
         # type: (pd.DataFrame) -> GraphPlotter
         self.__df = df
+
+    @staticmethod
+    def createNew(df: pd.DataFrame, folder_struct: FolderStructure) -> GraphPlotter:
+        plotter = GraphPlotter(df)
+        plotter.__folder_struct = folder_struct
+        return plotter
+
+    #TODO: convert all users of GraphPlotter class to use createNew factory method above and this more concise generateGraph() function instead of saveGraphToFile
+    def generate_graph(self, graph_title_suffix: str, columns_y: List):
+        title_prefix = self.__folder_struct.getVideoFilename()
+        graph_title = title_prefix + "_" + graph_title_suffix
+        filename = self.__folder_struct.getSubDirpath() + "graph_debug_" + graph_title_suffix + ".png"
+        x_axis_column = ["frameNumber"]
+        self.saveGraphToFile(x_axis_column, columns_y, graph_title, filename)
 
     def saveGraphToFile(self, xColumns, yColumns, graphTitle, filePath):
         fig, ax = plt.subplots(figsize=(15,7))

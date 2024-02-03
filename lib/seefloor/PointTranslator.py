@@ -31,7 +31,6 @@ class PointTranslator:
     def __get_frame_physics(self, to_frame_id: int) -> FramePhysics:
         drift = self.__get_drift_instantaneous(to_frame_id)
         zoom = self.__zoom_instantaneous(to_frame_id)
-        #print("In __get_frame_physics: scale", scale, "drift", drift, "zoom", zoom)
         return FramePhysics(drift, zoom)
 
     def translatePointCoordinate(self, pointLocation: Point, origFrameID: int, targetFrameID: int) -> Point:

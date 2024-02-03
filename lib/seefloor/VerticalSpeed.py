@@ -2,7 +2,6 @@ import pandas as pd
 
 from lib.data.FourierSmoothing import FourierSmoothing
 from lib.infra.Configurations import Configurations
-from lib.infra.DataframeWrapper import DataframeWrapper
 from lib.infra.FolderStructure import FolderStructure
 from lib.infra.GraphPlotter import GraphPlotter
 
@@ -21,7 +20,10 @@ class VerticalSpeed:
         if Configurations(self.__folderStruct).is_debug():
             result = self.__calculate_scaling_factor(df["distance"], driftsDetectionStep)
             df["scaling_factor_not_smooth"] = result
-            self._save_graph_zoom_factor(df, ["scaling_factor", "scaling_factor_not_smooth"], 1000, 1500)
+            y = ["scaling_factor", "scaling_factor_not_smooth"]
+            df_to_plot = df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 1500)]
+
+            GraphPlotter.createNew(df_to_plot, self.__folderStruct).generate_graph("zoom_factor", y)
 
         return df[["frameNumber", "scaling_factor"]]
 
@@ -63,16 +65,3 @@ class VerticalSpeed:
 
         graph_title = title_prefix + "_Distance_Fourier_"+distance_column_name
         GraphPlotter(df_to_plot).saveGraphToFile(["frameNumber"], columns_y, graph_title, filepath_prefix+"fourier.png")
-
-    def _save_graph_zoom_factor(self, df, columns_y, frame_id_from: int = 0, fream_id_to: int = 123456):
-
-        x_axis_column = ["frameNumber"]
-        filepath_prefix = self.__folderStruct.getSubDirpath() + "graph_debug_"
-        title_prefix = self.__folderStruct.getVideoFilename()
-
-        graph_title = title_prefix + "_scaling_factor"
-        df_to_plot = df.loc[(df['frameNumber'] > frame_id_from) & (df['frameNumber'] < fream_id_to)]
-
-        plotter = GraphPlotter(df_to_plot)
-        plotter.saveGraphToFile(x_axis_column, columns_y, graph_title,
-                                filepath_prefix + "zoom_factor.png")

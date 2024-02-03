@@ -1,10 +1,8 @@
-import math
 from typing import Dict, List
 
 import numpy as np
 from scipy.stats import stats
 
-from lib.imageProcessing.Camera import Camera
 from lib.model.Box import Box
 from lib.model.Point import Point
 from lib.model.Vector import Vector
