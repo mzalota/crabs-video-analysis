@@ -22,7 +22,7 @@ class VerticalSpeed:
             df["scaling_factor_not_smooth"] = result
             y = ["scaling_factor", "scaling_factor_not_smooth"]
             df_to_plot = df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 1500)]
-            GraphPlotter.createNew(df_to_plot, self.__folderStruct).generate_graph("zoom_factor", y)
+            GraphPlotter.createNew(df_to_plot, self.__folderStruct).generate_graph("debug_scale_factor", y)
 
         return df[["frameNumber", "scaling_factor"]]
 

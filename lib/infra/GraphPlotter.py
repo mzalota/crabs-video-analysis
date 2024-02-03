@@ -20,9 +20,9 @@ class GraphPlotter:
 
     #TODO: convert all users of GraphPlotter class to use createNew factory method above and this more concise generateGraph() function instead of saveGraphToFile
     def generate_graph(self, graph_title_suffix: str, columns_y: List):
-        title_prefix = self.__folder_struct.getVideoFilename()
-        graph_title = title_prefix + "_" + graph_title_suffix
-        filename = self.__folder_struct.getSubDirpath() + "graph_debug_" + graph_title_suffix + ".png"
+        videofile_name = self.__folder_struct.getVideoFilename()
+        graph_title = videofile_name + "_" + graph_title_suffix
+        filename = self.__folder_struct.getSubDirpath() + "graph_" + videofile_name+ "_" + graph_title_suffix + ".png"
         x_axis_column = ["frameNumber"]
         self.saveGraphToFile(x_axis_column, columns_y, graph_title, filename)
 

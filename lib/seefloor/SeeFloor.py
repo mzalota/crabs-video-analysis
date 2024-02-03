@@ -227,22 +227,22 @@ class SeeFloor(PandasWrapper):
 
     #translates the point stepwise for each frame between orig and target.
 
-    def saveGraphForZoomInstananeous(self):
+    def saveGraphForZoomInstananeous(self, frame_id_from: int = 0, frame_id_to: int = 123456):
         min_frame_id = self.__fastObj.min_frame_id()
         max_frame_id = self.__fastObj.max_frame_id()
         records = list()
         for frame_id in range(min_frame_id, max_frame_id):
             rec = dict()
             rec["frameNumber"] = frame_id
-            rec["zoom_insta"] = self.__fastObj.zoom_factor(frame_id)
+            rec["zoom_factor"] = self.__fastObj.zoom_factor(frame_id)
             records.append(rec)
 
         df = DataframeWrapper.create_from_record_list(records).pandas_df()
-        yColumns = ["zoom_insta"]
-        df_to_plot = df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 1500)]
+        yColumns = ["zoom_factor"]
+        df_to_plot = df.loc[(df['frameNumber'] > frame_id_from) & (df['frameNumber'] < frame_id_to)]
 
         graphPlotter = GraphPlotter.createNew(df_to_plot, self._folderStruct)
-        graphPlotter.generate_graph("zoom_insta",yColumns)
+        graphPlotter.generate_graph("zoom_factor",yColumns)
 
 
     def saveGraphSeefloorY(self):
