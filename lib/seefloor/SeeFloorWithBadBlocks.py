@@ -4,7 +4,7 @@ from lib.drifts_interpolate.DriftInterpolatedData import DriftInterpolatedData
 from lib.infra.FolderStructure import FolderStructure
 from lib.data.BadFramesData import BadFramesData
 from lib.data.PandasWrapper import PandasWrapper
-from lib.data.RedDotsData import RedDotsData
+from lib.reddots_interpolate.RedDotsData import RedDotsData
 from lib.seefloor.SeeFloor import SeeFloor
 from lib.seefloor.SeeFloorSlicer import SeeFloorSlicer
 

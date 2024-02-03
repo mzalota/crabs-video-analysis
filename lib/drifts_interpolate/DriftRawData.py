@@ -8,7 +8,7 @@ import pandas as pd
 from scipy.stats import stats
 
 from lib.data.PandasWrapper import PandasWrapper
-from lib.data.RedDotsData import RedDotsData
+from lib.reddots_interpolate.RedDotsData import RedDotsData
 from lib.drifts_detect.DriftManualData import DriftManualData
 from lib.drifts_interpolate.CompensateForZoom import CompensateForZoom
 from lib.imageProcessing.Camera import Camera

@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import pandas as pd
 
-from lib.data.RedDotsData import RedDotsData
+from lib.reddots_interpolate.RedDotsData import RedDotsData
 from lib.infra.DataframeWrapper import DataframeWrapper
 
 

@@ -1,5 +1,4 @@
-from lib.data.RedDotsData import RedDotsData
-from lib.data.RedDotsManualData import RedDotsManualData
+from lib.reddots_interpolate.RedDotsData import RedDotsData
 from lib.ui.RedDotsUI import RedDotsUI
 
 

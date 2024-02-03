@@ -3,7 +3,6 @@ from lib.seefloor.FramePhysics import FramePhysics
 from lib.model.Vector import Vector
 from lib.model.Point import Point
 from lib.seefloor.SeeFloorFast import SeeFloorFast
-from lib.infra.MyTimer import MyTimer
 
 
 class PointTranslator:
@@ -11,26 +10,9 @@ class PointTranslator:
     def __init__(self, fastObj: SeeFloorFast):
         self.__fastObj = fastObj
 
-    def __get_drift_instantaneous(self, frame_id) -> Vector:
-        # type: (int) -> Vector
-        drift_x = self.__fastObj._drift_x(frame_id)
-        drift_y = self.__fastObj._drift_y(frame_id)
-        return Vector(drift_x, drift_y)
-
-    def _zoom_instantaneous(self, frame_id):
-        # type: (int) -> float
-        if frame_id <= self.__fastObj.min_frame_id():
-            return 1
-
-        scale_this = self.__fastObj._mm_per_pixel(frame_id)
-        scale_prev = self.__fastObj._mm_per_pixel(frame_id - 1)
-
-        change = scale_this / scale_prev
-        return change
-
     def __get_frame_physics(self, to_frame_id: int) -> FramePhysics:
-        drift = self.__get_drift_instantaneous(to_frame_id)
-        zoom = self._zoom_instantaneous(to_frame_id)
+        drift = self.__fastObj.get_drift(to_frame_id)
+        zoom = self.__fastObj.zoom_factor(to_frame_id)
         return FramePhysics(drift, zoom)
 
     def translatePointCoordinate(self, pointLocation: Point, origFrameID: int, targetFrameID: int) -> Point:

@@ -9,7 +9,7 @@ from lib.infra.DataframeWrapper import DataframeWrapper
 from lib.model.Point import Point
 from lib.infra.GraphPlotter import GraphPlotter
 from lib.data.PandasWrapper import PandasWrapper
-from lib.data.RedDotsData import RedDotsData
+from lib.reddots_interpolate.RedDotsData import RedDotsData
 from lib.infra.FolderStructure import FolderStructure
 import pandas as pd
 
@@ -219,25 +219,24 @@ class SeeFloor(PandasWrapper):
 
         camera = Camera.create()
         dfMerged["bottom_corner_mm"] = camera.frame_height() * dfMerged["mm_per_pixel"] + dfMerged["driftY_sum_mm"]
-        # dfMerged["bottom_corner_mm"] = Frame.FRAME_HEIGHT * dfMerged["mm_per_pixel"] + dfMerged["driftY_sum_mm"]
+
+        #TODO: replace hardcoded constant VideoStream.FRAMES_PER_SECOND with dynamic video_stream.frames_per_second() function call
         dfMerged["seconds"] = dfMerged["frameNumber"]/VideoStream.FRAMES_PER_SECOND
         dfMerged = dfMerged.sort_values(by=['frameNumber'])
         return dfMerged
 
     #translates the point stepwise for each frame between orig and target.
 
-    def saveZoomInstananeous(self):
-        point_translator = PointTranslator(self.__fastObj)
+    def saveGraphForZoomInstananeous(self):
         min_frame_id = self.__fastObj.min_frame_id()
         max_frame_id = self.__fastObj.max_frame_id()
         records = list()
         for frame_id in range(min_frame_id, max_frame_id):
             rec = dict()
             rec["frameNumber"] = frame_id
-            rec["zoom_insta"] = point_translator._zoom_instantaneous(frame_id)
+            rec["zoom_insta"] = self.__fastObj.zoom_factor(frame_id)
             records.append(rec)
 
-        #[{'crabLocationX': 221, 'crabLocationY': 368, 'frameNumber': 10026},
         df = DataframeWrapper.create_from_record_list(records).pandas_df()
         yColumns = ["zoom_insta"]
         df_to_plot = df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 1500)]

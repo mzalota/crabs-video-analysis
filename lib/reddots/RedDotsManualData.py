@@ -5,9 +5,8 @@ import pandas as pd
 
 from lib.infra.FolderStructure import FolderStructure
 from lib.data.PandasWrapper import PandasWrapper
-from lib.data.RedDotsRawData import RedDotsRawData
+from lib.reddots.RedDotsRawData import RedDotsRawData
 from lib.infra.DataframeWrapper import DataframeWrapper
-
 
 class RedDotsManualData(PandasWrapper):
     # __df = None

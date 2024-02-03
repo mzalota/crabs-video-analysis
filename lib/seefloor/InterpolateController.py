@@ -3,7 +3,7 @@ from lib.data.CrabsData import CrabsData
 from lib.drifts_interpolate.DriftInterpolatedData import DriftInterpolatedData
 from lib.drifts_detect.DriftManualData import DriftManualData
 from lib.drifts_interpolate.DriftRawData import DriftRawData
-from lib.data.RedDotsData import RedDotsData
+from lib.reddots_interpolate.RedDotsData import RedDotsData
 from lib.seefloor.SeeFloor import SeeFloor
 from lib.infra.Configurations import Configurations
 
@@ -22,12 +22,11 @@ class InterpolateController:
         print("Using driftsStepSize: " + str(driftsStepSize))
 
         rawDrifts = DriftRawData(self.__folderStruct)
-        min_frame_id = rawDrifts.min_frame_id()
-        max_frame_id = rawDrifts.max_frame_id() + 1
 
         print ("regenerating/interpolating RedDots")
         rdd = RedDotsData.createFromFolderStruct(self.__folderStruct)
-        rdd.saveInterpolatedDFToFile(min_frame_id, max_frame_id)
+        #TODO. get rid of this line. For now I am just calling to initialize pandas_df in RedDotsData
+        rdd.getPandasDF()
 
         # TODO: extract logic in few rows into a "regenerate drafts" module/class
         print ("regenerating/interpolating Drafts")
@@ -56,7 +55,7 @@ class InterpolateController:
 
         print("drawing graphs for SeeFloor")
         sf = SeeFloor.createFromFolderStruct(self.__folderStruct)
-        sf.saveZoomInstananeous()
+        sf.saveGraphForZoomInstananeous()
         sf.saveGraphSeefloorY()
         sf.saveGraphSeefloorX()
         sf.saveGraphSeefloorXY()

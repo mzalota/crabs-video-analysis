@@ -7,7 +7,7 @@ from lib.reddots.RedDotsDetector import RedDotsDetector
 from lib.VideoStream import VideoStream, VideoStreamException
 
 #https://www.pyimagesearch.com/2016/10/31/detecting-multiple-bright-spots-in-an-image-with-python-and-opencv/
-from lib.data.RedDotsRawData import RedDotsRawData
+from lib.reddots.RedDotsRawData import RedDotsRawData
 
 class DetectRedDotsController:
     __loop_count = 0

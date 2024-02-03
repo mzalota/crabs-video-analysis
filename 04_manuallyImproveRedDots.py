@@ -5,7 +5,7 @@ from lib.infra.CommandLineLauncher import CommandLineLauncher
 from lib.infra.Configurations import Configurations
 from lib.infra.MyTimer import MyTimer
 from lib.ui.FileOpenUI import FileOpenUI
-from lib.data.RedDotsData import RedDotsData
+from lib.reddots_interpolate.RedDotsData import RedDotsData
 from lib.FillRedDotsGapsController import FillRedDotsGapsController
 from lib.infra.FolderStructure import FolderStructure
 from lib.VideoStream import VideoStream

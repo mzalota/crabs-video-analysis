@@ -11,8 +11,8 @@ from lib.VideoStream import VideoStream
 from lib.infra.GraphPlotter import GraphPlotter
 from lib.data.PandasWrapper import PandasWrapper
 from lib.model.Point import Point
-from lib.data.RedDotsManualData import RedDotsManualData
-from lib.data.RedDotsRawData import RedDotsRawData
+from lib.reddots.RedDotsManualData import RedDotsManualData
+from lib.reddots.RedDotsRawData import RedDotsRawData
 from lib.infra.DataframeWrapper import DataframeWrapper
 from lib.model.RedDots import RedDots
 
@@ -69,14 +69,21 @@ class RedDotsData(PandasWrapper):
         except AttributeError:
             #TODO: Interpolation does not work for early frames where video was bad. It still shows steps of 5
 
+            video_stream = VideoStream(self.__folderStruct.getVideoFilepath())
+            first_frame_id = video_stream.get_id_of_first_frame(1)
+            last_frame_id = video_stream.num_of_frames()
+            self.saveInterpolatedDFToFile(first_frame_id, last_frame_id)
+
             # attribute self.__interpolatedDF have not been initialized yet
-            print("RedDotsData in getPandasDF. creating __interpolatedDF")
-            filepath = self.__folderStruct.getRedDotsInterpolatedFilepath()
-            print("getRedDotsInterpolatedFilepath: "+filepath)
-            if self.__folderStruct.fileExists(filepath):
-                self.__interpolatedDF = self.readDataFrameFromCSV(filepath)
-            else:
-                self.__interpolatedDF = PandasWrapper.empty_df()
+            # print("RedDotsData in getPandasDF. creating __interpolatedDF")
+            # filepath = self.__folderStruct.getRedDotsInterpolatedFilepath()
+            # print("getRedDotsInterpolatedFilepath: "+filepath)
+            # if self.__folderStruct.fileExists(filepath):
+            #     self.__interpolatedDF = self.readDataFrameFromCSV(filepath)
+            # else:
+            #     self.__interpolatedDF = PandasWrapper.empty_df()
+
+
             return self.__interpolatedDF
 
     def scalingFactorColumn(self, driftsDetectionStep: int = 1) -> pd.DataFrame:
@@ -197,8 +204,10 @@ class RedDotsData(PandasWrapper):
 
     def saveInterpolatedDFToFile(self, minFrameID=None, maxFrameID=None):
         interpolatedDF = self.__generateIntepolatedDF(minFrameID, maxFrameID)
-        filepath = self.__folderStruct.getRedDotsInterpolatedFilepath()
-        interpolatedDF.to_csv(filepath, sep='\t', index=False)
+        if Configurations(self.__folderStruct).is_debug():
+            filepath = self.__folderStruct.getRedDotsInterpolatedFilepath()
+            interpolatedDF.to_csv(filepath, sep='\t', index=False)
+
         self.__interpolatedDF = interpolatedDF
         self.__df_as_dict = None # clear the cache of the DF. it will be need to be regenerated next time
 
@@ -329,16 +338,6 @@ class RedDotsData(PandasWrapper):
         outlier_rows = ((df[column_with_outliers] < lower_bound) | (
                     df[column_with_outliers] > upper_bound)) & not_manual
         df.loc[outlier_rows, columns_with_wrong_values] = numpy.nan
-
-    def __replaceOutlierBetweenTwo_orig(self, df, columnName):
-        outlier_threshold = 100
-        prevValue = df[columnName].shift(periods=1)
-        nextValue = df[columnName].shift(periods=-1)
-        diffNextPrev = abs(prevValue - nextValue)
-        meanPrevNext = (prevValue + nextValue) / 2
-        deviation = abs(df[columnName] - meanPrevNext)
-        single_outlier = (deviation > outlier_threshold) & (diffNextPrev < outlier_threshold)
-        df.drop(df[single_outlier].index, inplace=True)
 
     def forPlotting(self):
         dataRedDot1 = self.__combinedOnlyRedDot1()[[self.COLNAME_frameNumber, self.__COLNAME_centerPoint_x, self.__COLNAME_centerPoint_y, "origin"]]

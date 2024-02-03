@@ -1,5 +1,3 @@
-import traceback
-
 from lib.infra.FolderStructure import FolderStructure
 from lib.Frame import Frame
 from lib.model.Image import Image
@@ -10,7 +8,7 @@ from lib.model.Point import Point
 from lib.data.BadFramesData import BadFramesData
 from lib.data.CrabsData import CrabsData
 from lib.data.MarkersData import MarkersData
-from lib.data.RedDotsData import RedDotsData
+from lib.reddots_interpolate.RedDotsData import RedDotsData
 from lib.seefloor.SeeFloor import SeeFloor
 from lib.drifts_detect.DriftManualData import DriftManualData
 from lib.imageProcessing.Rectificator import Rectificator
