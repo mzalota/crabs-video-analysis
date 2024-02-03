@@ -1,3 +1,4 @@
+from __future__ import annotations
 import pandas as pd
 
 from lib.data.FourierSmoothing import FourierSmoothing
@@ -7,10 +8,9 @@ from lib.infra.GraphPlotter import GraphPlotter
 
 
 class VerticalSpeed:
-    def __init__(self, folderStruct):
-        # type: (FolderStructure) -> VerticalSpeed
+    def __init__(self, folderStruct: FolderStructure) -> VerticalSpeed:
         self.__folderStruct = folderStruct
-    def vertical_speed_ratio(self, df, driftsDetectionStep):
+    def vertical_speed_ratio(self, df: pd.DataFrame, driftsDetectionStep) -> pd.DataFrame:
 
         df['distance_smooth'] = self.__smooth_distance_value(df, "distance")
 
@@ -22,7 +22,6 @@ class VerticalSpeed:
             df["scaling_factor_not_smooth"] = result
             y = ["scaling_factor", "scaling_factor_not_smooth"]
             df_to_plot = df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 1500)]
-
             GraphPlotter.createNew(df_to_plot, self.__folderStruct).generate_graph("zoom_factor", y)
 
         return df[["frameNumber", "scaling_factor"]]
@@ -36,6 +35,7 @@ class VerticalSpeed:
             result = result + prev
 
         result = result.shift(periods=driftsDetectionStep)
+        result = result + 1
         return result
 
     def __smooth_distance_value(self, newDF, distance_column_name):
@@ -49,13 +49,11 @@ class VerticalSpeed:
         newDF['distance_shift0_4'] = shifted_0_4
 
         if Configurations(self.__folderStruct).is_debug():
-            # columns_y = [distance_column_name, "distance_shift1_0", "distance_shift0_7", "distance_shift0_4"]
             columns_y = [distance_column_name, "distance_shift0_4", "distance_shift1_0", "distance_shift1_6", ]
             self.__save_graphs_smooth_distance(newDF, distance_column_name, columns_y, 1000, 1500)
 
-        #TODO: Access which smoothing setting (which value of lowband pass: 1.0, 0.7 or 0.4 or other) is best by looking at variance of fm_N_drift_x_new
-        return shifted_0_4
-        # return shifted_1_0
+        # return shifted_0_4
+        return shifted_1_6
 
     def __save_graphs_smooth_distance(self, df, distance_column_name, columns_y, frame_id_from: int = 0, fream_id_to: int = 123456):
         df_to_plot = df.loc[(df['frameNumber'] > frame_id_from) & (df['frameNumber'] < fream_id_to)]

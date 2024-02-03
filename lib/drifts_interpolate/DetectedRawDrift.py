@@ -44,7 +44,7 @@ class DetectedRawDrift:
             feature_location = self.center_point_at(feature_matcher_idx)
             drift_vector = self.drift_vector_at(feature_matcher_idx)
 
-            zoom_factor = self._zoom_factor()+1
+            zoom_factor = self._zoom_factor()
             diff_due_to_zoom = FramePhysics.zoom_compensation(feature_location, zoom_factor)
 
             result = drift_vector.minus(diff_due_to_zoom)

@@ -17,7 +17,7 @@ class PointTranslator:
         drift_y = self.__fastObj._drift_y(frame_id)
         return Vector(drift_x, drift_y)
 
-    def __zoom_instantaneous(self, frame_id):
+    def _zoom_instantaneous(self, frame_id):
         # type: (int) -> float
         if frame_id <= self.__fastObj.min_frame_id():
             return 1
@@ -30,12 +30,12 @@ class PointTranslator:
 
     def __get_frame_physics(self, to_frame_id: int) -> FramePhysics:
         drift = self.__get_drift_instantaneous(to_frame_id)
-        zoom = self.__zoom_instantaneous(to_frame_id)
+        zoom = self._zoom_instantaneous(to_frame_id)
         return FramePhysics(drift, zoom)
 
     def translatePointCoordinate(self, pointLocation: Point, origFrameID: int, targetFrameID: int) -> Point:
         point_location_new = pointLocation
-        timer = MyTimer("translatePointCoordinate")
+        # timer = MyTimer("translatePointCoordinate")
         individual_frames = FrameId.sequence_of_frames(origFrameID, targetFrameID)
         for idx in range(1, len(individual_frames)):
             to_frame_id = individual_frames[idx]

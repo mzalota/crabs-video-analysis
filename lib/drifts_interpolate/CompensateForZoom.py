@@ -113,10 +113,11 @@ class CompensateForZoom:
         result_df['average_y_new'] = average_y_new
 
         # ---
-        self.__save_graphs_variance(result_df[xColumns_raw], 'variance_x_raw')
-        self.__save_graphs_variance(nowBack.pandas_df()[xColumns_new], 'variance_x_new')
-        self.__save_graphs_variance(result_df[yColumns_raw], 'variance_y_raw')
-        self.__save_graphs_variance(nowBack.pandas_df()[yColumns_new], 'variance_y_new')
+        if self.__generate_debug_graphs:
+            self.__save_graphs_variance(result_df[xColumns_raw], 'variance_x_raw')
+            self.__save_graphs_variance(nowBack.pandas_df()[xColumns_new], 'variance_x_new')
+            self.__save_graphs_variance(result_df[yColumns_raw], 'variance_y_raw')
+            self.__save_graphs_variance(nowBack.pandas_df()[yColumns_new], 'variance_y_new')
 
         return result_df
 
@@ -128,8 +129,9 @@ class CompensateForZoom:
         frame_b = DataframeWrapper.create_from_list(variance_list, variance_column_name).pandas_df()
 
         # print(variance_column_name+"_variance: ", frame_b.var())
-        print(variance_column_name+"_variance2: ", np.var(variance_list))
-        print(variance_column_name+"_variance_avg: ", sum(variance_list) / len(variance_list) )
+        print(variance_column_name+"_variance: ", np.nanvar(variance_list))
+        print(variance_column_name+"_variance_mean: ", np.nanmean(variance_list))
+        print(variance_column_name+"_variance_avg: ",  np.nansum(variance_list) / len(variance_list) )
 
         frame_b = frame_b.reset_index()
 

@@ -5,6 +5,7 @@ import numpy
 from lib.drifts_interpolate.DriftInterpolatedData import DriftInterpolatedData
 from lib.imageProcessing.Camera import Camera
 from lib.VideoStream import VideoStream
+from lib.infra.DataframeWrapper import DataframeWrapper
 from lib.model.Point import Point
 from lib.infra.GraphPlotter import GraphPlotter
 from lib.data.PandasWrapper import PandasWrapper
@@ -224,6 +225,26 @@ class SeeFloor(PandasWrapper):
         return dfMerged
 
     #translates the point stepwise for each frame between orig and target.
+
+    def saveZoomInstananeous(self):
+        point_translator = PointTranslator(self.__fastObj)
+        min_frame_id = self.__fastObj.min_frame_id()
+        max_frame_id = self.__fastObj.max_frame_id()
+        records = list()
+        for frame_id in range(min_frame_id, max_frame_id):
+            rec = dict()
+            rec["frameNumber"] = frame_id
+            rec["zoom_insta"] = point_translator._zoom_instantaneous(frame_id)
+            records.append(rec)
+
+        #[{'crabLocationX': 221, 'crabLocationY': 368, 'frameNumber': 10026},
+        df = DataframeWrapper.create_from_record_list(records).pandas_df()
+        yColumns = ["zoom_insta"]
+        df_to_plot = df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 1500)]
+
+        graphPlotter = GraphPlotter.createNew(df_to_plot, self._folderStruct)
+        graphPlotter.generate_graph("zoom_insta",yColumns)
+
 
     def saveGraphSeefloorY(self):
         filePath = self._folderStruct.getGraphSeefloorAdvancementY()

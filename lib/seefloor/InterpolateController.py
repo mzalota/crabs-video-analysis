@@ -56,6 +56,7 @@ class InterpolateController:
 
         print("drawing graphs for SeeFloor")
         sf = SeeFloor.createFromFolderStruct(self.__folderStruct)
+        sf.saveZoomInstananeous()
         sf.saveGraphSeefloorY()
         sf.saveGraphSeefloorX()
         sf.saveGraphSeefloorXY()
