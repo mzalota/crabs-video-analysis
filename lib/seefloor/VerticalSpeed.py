@@ -12,21 +12,23 @@ class VerticalSpeed:
         self.__folderStruct = folderStruct
     def vertical_speed_ratio(self, df: pd.DataFrame, driftsDetectionStep) -> pd.DataFrame:
 
-        df['distance_smooth'] = self.__smooth_distance_value(df, "distance")
+        low_band_pass_cutoff = 0.4 # cuttoff gitter noise (high fequencies) - making curve "smooth"
+        df['distance_smooth'] = FourierSmoothing().smooth_curve(df["distance"], low_band_pass_cutoff)
 
-        result = self.__calculate_scaling_factor(df["distance_smooth"], driftsDetectionStep)
+        result = self.calculate_scaling_factor_from_distance_between_reddots(df["distance_smooth"], driftsDetectionStep)
         df["scaling_factor"] = result
 
         if Configurations(self.__folderStruct).is_debug():
-            result = self.__calculate_scaling_factor(df["distance"], driftsDetectionStep)
+            result = self.calculate_scaling_factor_from_distance_between_reddots(df["distance"], driftsDetectionStep)
             df["scaling_factor_not_smooth"] = result
             y = ["scaling_factor", "scaling_factor_not_smooth"]
             df_to_plot = df.loc[(df['frameNumber'] > 1000) & (df['frameNumber'] < 1500)]
             GraphPlotter.createNew(df_to_plot, self.__folderStruct).generate_graph("debug_scale_factor", y)
 
-        return df[["frameNumber", "scaling_factor"]]
+        scaling_factor_df = df[["frameNumber", "scaling_factor"]]
+        return scaling_factor_df
 
-    def __calculate_scaling_factor(self, column: pd.Series, driftsDetectionStep: int) ->pd.DataFrame:
+    def calculate_scaling_factor_from_distance_between_reddots(self, column: pd.Series, driftsDetectionStep: int) ->pd.DataFrame:
         dist_diff = column - column.shift(periods=-1)
         scaling_factor_single_step = dist_diff / column
         result = scaling_factor_single_step + 0
@@ -38,22 +40,21 @@ class VerticalSpeed:
         result = result + 1
         return result
 
-    def __smooth_distance_value(self, newDF, distance_column_name):
-        distance_column = newDF[distance_column_name]
-        shifted_0_4 = FourierSmoothing().smooth_curve(distance_column, "distance_0_4", 0.4)
-        shifted_1_0 = FourierSmoothing().smooth_curve(distance_column, "distance_1_0", 1)
-        shifted_1_6 = FourierSmoothing().smooth_curve(distance_column, "distance_1_6", 1.6)
+    def save_graph_smooth_distances(self, df, distance_column_name, frame_id_from, fream_id_to):
+        cutoff_freq = [0.2, 0.4, 1.0, 1.6, 2.0]
+        distance_column = df[distance_column_name]
+        columns_y = list()
 
-        newDF['distance_shift1_0'] = shifted_1_0
-        newDF['distance_shift1_6'] = shifted_1_6
-        newDF['distance_shift0_4'] = shifted_0_4
+        for cutoff_freq in cutoff_freq:
+            smoothed = FourierSmoothing().smooth_curve(distance_column, cutoff_freq)
+            colName = "distance_" + str(cutoff_freq)
+            columns_y.append(colName)
+            df[colName] = smoothed
 
-        if Configurations(self.__folderStruct).is_debug():
-            columns_y = [distance_column_name, "distance_shift0_4", "distance_shift1_0", "distance_shift1_6", ]
-            self.__save_graphs_smooth_distance(newDF, distance_column_name, columns_y, 1000, 1500)
+        columns_y.append(distance_column_name)
+        self.__save_graphs_smooth_distance(df, distance_column_name, columns_y, frame_id_from, fream_id_to
+                                               )
 
-        # return shifted_0_4
-        return shifted_1_6
 
     def __save_graphs_smooth_distance(self, df, distance_column_name, columns_y, frame_id_from: int = 0, fream_id_to: int = 123456):
         df_to_plot = df.loc[(df['frameNumber'] > frame_id_from) & (df['frameNumber'] < fream_id_to)]

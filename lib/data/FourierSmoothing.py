@@ -8,7 +8,7 @@ from lib.data.Correlation import Correlation
 
 
 class FourierSmoothing:
-    def smooth_curve(self, column_to_smooth: pd.DataFrame, column_name: str, cutoff_freq=0.1) -> pd.DataFrame:
+    def smooth_curve(self, column_to_smooth: pd.DataFrame, cutoff_freq=0.1) -> pd.DataFrame:
 
         # https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html
         b, a = self._butter_bandpass(1, cutoff_freq, 25, order=6)

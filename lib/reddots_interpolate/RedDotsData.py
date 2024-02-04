@@ -90,7 +90,12 @@ class RedDotsData(PandasWrapper):
         df = self.getPandasDF()
         newDF = df[["frameNumber", "distance"]].copy()
         verticalSpeedCalculator = VerticalSpeed(self.__folderStruct)
-        return verticalSpeedCalculator.vertical_speed_ratio(newDF, driftsDetectionStep)
+        speed_ratio = verticalSpeedCalculator.vertical_speed_ratio(newDF, driftsDetectionStep)
+
+        if Configurations(self.__folderStruct).is_debug():
+            verticalSpeedCalculator.save_graph_smooth_distances(newDF, "distance", 1000, 1500)
+
+        return speed_ratio
 
     def saveGraphs(self, frame_id_from: int = 0, frame_id_to: int = 123456):
         df = self.getPandasDF()
