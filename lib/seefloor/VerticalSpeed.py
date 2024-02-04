@@ -41,7 +41,7 @@ class VerticalSpeed:
         return result
 
     def save_graph_smooth_distances(self, df, distance_column_name, frame_id_from, fream_id_to):
-        cutoff_freq = [0.2, 0.4, 1.0, 1.6, 2.0]
+        cutoff_freq = [0.2, 0.4, 1.0, 1.6]
         distance_column = df[distance_column_name]
         columns_y = list()
 

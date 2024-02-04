@@ -130,8 +130,10 @@ class DriftRawData(PandasWrapper):
 
         zoom_factor = redDotsData.scalingFactorColumn(driftsDetectionStep)
 
+        raw_drifts_df = pd.merge(raw_drifts_df, zoom_factor, on='frameNumber', how='left', suffixes=('_draft', '_reddot'))
+
         zoom_compensator = CompensateForZoom(self.__folderStruct)
-        df_compensated = zoom_compensator.compensate_for_zoom(raw_drifts_df, zoom_factor)
+        df_compensated = zoom_compensator.compensate_for_zoom(raw_drifts_df)
         if self.__generate_debug_graphs:
             self.__save_graphs_drifts_zoom_compensated(df_compensated, 1000, 1500)
 

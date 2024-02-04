@@ -73,17 +73,6 @@ class RedDotsData(PandasWrapper):
             first_frame_id = video_stream.get_id_of_first_frame(1)
             last_frame_id = video_stream.num_of_frames()
             self.saveInterpolatedDFToFile(first_frame_id, last_frame_id)
-
-            # attribute self.__interpolatedDF have not been initialized yet
-            # print("RedDotsData in getPandasDF. creating __interpolatedDF")
-            # filepath = self.__folderStruct.getRedDotsInterpolatedFilepath()
-            # print("getRedDotsInterpolatedFilepath: "+filepath)
-            # if self.__folderStruct.fileExists(filepath):
-            #     self.__interpolatedDF = self.readDataFrameFromCSV(filepath)
-            # else:
-            #     self.__interpolatedDF = PandasWrapper.empty_df()
-
-
             return self.__interpolatedDF
 
     def scalingFactorColumn(self, driftsDetectionStep: int = 1) -> pd.DataFrame:

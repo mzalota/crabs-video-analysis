@@ -77,10 +77,7 @@ class CompensateForZoom:
 
         return df
 
-    def compensate_for_zoom(self, result_df, zoom_factor: pd.DataFrame) -> pd.DataFrame:
-
-        result_df = pd.merge(result_df, zoom_factor, on='frameNumber', how='left', suffixes=('_draft', '_reddot'))
-
+    def compensate_for_zoom(self, result_df) -> pd.DataFrame:
         result_df = self.__remove_values_in_failed_records(result_df)
 
         if self.__generate_debug_graphs:
