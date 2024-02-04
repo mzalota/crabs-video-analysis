@@ -24,6 +24,9 @@ class Point:
 
         return Point(int(coordinates[0]), int(coordinates[1]))
 
+    def copy(self) -> Point:
+        return Point(self.x, self.y)
+
     def __str__(self):
         return "(" + str(self.x) + "," + str(self.y) + ")"
 

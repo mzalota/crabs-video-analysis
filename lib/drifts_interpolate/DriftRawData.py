@@ -17,6 +17,8 @@ from lib.infra.DataframeWrapper import DataframeWrapper
 from lib.infra.FolderStructure import FolderStructure
 from lib.infra.GraphPlotter import GraphPlotter
 from lib.model.Point import Point
+from lib.seefloor.VerticalSpeed import VerticalSpeed
+
 
 class DriftRawData(PandasWrapper):
     #__df = None
@@ -125,22 +127,22 @@ class DriftRawData(PandasWrapper):
 
         return "OK"
 
-    def interpolate(self, manualDrifts: DriftManualData, redDotsData: RedDotsData, driftsDetectionStep: int) -> pd.DataFrame:
-        raw_drifts_df = self._replaceInvalidValuesWithNaN(self.__df, driftsDetectionStep)
-
-        zoom_factor = redDotsData.scalingFactorColumn(driftsDetectionStep)
-
-        raw_drifts_df = pd.merge(raw_drifts_df, zoom_factor, on='frameNumber', how='left', suffixes=('_draft', '_reddot'))
-
+    def interpolate(self, manualDrifts: DriftManualData, verticalSpeed: VerticalSpeed, driftsDetectionStep: int) -> pd.DataFrame:
         zoom_compensator = CompensateForZoom(self.__folderStruct)
-        df_compensated = zoom_compensator.compensate_for_zoom(raw_drifts_df)
+
+        raw_drifts_df = self._replaceInvalidValuesWithNaN(self.__df, driftsDetectionStep)
+        raw_drifts_df = zoom_compensator.remove_values_in_failed_records(raw_drifts_df)
+        if self.__generate_debug_graphs:
+            zoom_compensator.save_graphs_drifts_raw(raw_drifts_df, 1000, 1500)
+
+        df_compensated = zoom_compensator.compensate_for_zoom(raw_drifts_df, verticalSpeed)
+
         if self.__generate_debug_graphs:
             self.__save_graphs_drifts_zoom_compensated(df_compensated, 1000, 1500)
 
         df = raw_drifts_df.copy()
-        df = pd.merge(df, df_compensated[['average_y_new', "average_x_new", "frameNumber"]], on='frameNumber', how='left', suffixes=('_draft', '_reddot'))
-        df["driftY"] = df['average_y_new']
-        df["driftX"] = df['average_x_new']
+        df["driftY"] = df_compensated['average_y_new']
+        df["driftX"] = df_compensated['average_x_new']
 
         #TODO: Check if frame image cannot be read from video due to some technical error. Reset the values and then interpolate
 

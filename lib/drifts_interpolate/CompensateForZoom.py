@@ -11,6 +11,7 @@ from lib.infra.Configurations import Configurations
 from lib.infra.DataframeWrapper import DataframeWrapper
 from lib.infra.FolderStructure import FolderStructure
 from lib.infra.GraphPlotter import GraphPlotter
+from lib.seefloor.VerticalSpeed import VerticalSpeed
 
 
 class CompensateForZoom:
@@ -21,7 +22,7 @@ class CompensateForZoom:
         self.__generate_debug_graphs = configs.is_debug()
 
 
-    def __save_graphs_drifts_raw(self, df_param, frame_id_from: int = 0, fream_id_to: int = 123456):
+    def save_graphs_drifts_raw(self, df_param, frame_id_from: int = 0, fream_id_to: int = 123456):
 
         df = df_param.copy()
 
@@ -77,11 +78,7 @@ class CompensateForZoom:
 
         return df
 
-    def compensate_for_zoom(self, result_df) -> pd.DataFrame:
-        result_df = self.__remove_values_in_failed_records(result_df)
-
-        if self.__generate_debug_graphs:
-            self.__save_graphs_drifts_raw(result_df, 1000, 1500)
+    def compensate_for_zoom(self, result_df, verticalSpeed: VerticalSpeed) -> pd.DataFrame:
 
         yColumns_raw = list()
         xColumns_raw = list()
@@ -96,7 +93,7 @@ class CompensateForZoom:
 
         full_df = DataframeWrapper(result_df)
         records_list_all = full_df.as_records_list()
-        raw_drift_objs = [DetectedRawDrift.createFromDict(k) for k in records_list_all]
+        raw_drift_objs = [DetectedRawDrift.createFromDict(k, verticalSpeed) for k in records_list_all]
 
         average_y_new = [k.drift_vector().y for k in raw_drift_objs]
         average_x_new = [k.drift_vector().x for k in raw_drift_objs]
@@ -146,7 +143,7 @@ class CompensateForZoom:
         values = list(dict_of_vals.values())
         return np.var(values)
 
-    def __remove_values_in_failed_records(self, df):
+    def remove_values_in_failed_records(self, df):
         for feature_matcher_idx in range(0, 9):
             num = str(feature_matcher_idx)
             column_name_y_drift_raw = "fm_" + num + "_drift_y"

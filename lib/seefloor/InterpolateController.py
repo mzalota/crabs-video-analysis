@@ -25,14 +25,13 @@ class InterpolateController:
 
         print ("regenerating/interpolating RedDots")
         rdd = RedDotsData.createFromFolderStruct(self.__folderStruct)
-        #TODO. get rid of this line. For now I am just calling to initialize pandas_df in RedDotsData
-        rdd.getPandasDF()
+        verticalSpeed = rdd.verticalSpeed()
 
         # TODO: extract logic in few rows into a "regenerate drafts" module/class
         print ("regenerating/interpolating Drafts")
         manualDrifts = DriftManualData.createFromFile(self.__folderStruct)
 
-        drifts_interpolated_df = rawDrifts.interpolate(manualDrifts, rdd, driftsStepSize)
+        drifts_interpolated_df = rawDrifts.interpolate(manualDrifts, verticalSpeed, driftsStepSize)
 
         drifts = DriftInterpolatedData.createFromFolderStruct(self.__folderStruct)
         drifts.setDF(drifts_interpolated_df)

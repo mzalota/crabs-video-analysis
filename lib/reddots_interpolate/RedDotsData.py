@@ -3,6 +3,7 @@ import math
 import pandas as pd
 import numpy
 
+from lib.data.FourierSmoothing import FourierSmoothing
 from lib.imageProcessing.Camera import Camera
 from lib.seefloor.VerticalSpeed import VerticalSpeed
 from lib.infra.Configurations import Configurations
@@ -62,8 +63,7 @@ class RedDotsData(PandasWrapper):
         self.__redDotsManual.addManualDots(frameID,box)
         self.saveInterpolatedDFToFile()
 
-    def getPandasDF(self):
-        # type: () -> pd
+    def getPandasDF(self)->pd.DataFrame:
         try:
             return self.__interpolatedDF
         except AttributeError:
@@ -75,16 +75,26 @@ class RedDotsData(PandasWrapper):
             self.saveInterpolatedDFToFile(first_frame_id, last_frame_id)
             return self.__interpolatedDF
 
-    def scalingFactorColumn(self, driftsDetectionStep: int = 1) -> pd.DataFrame:
-        df = self.getPandasDF()
-        newDF = df[["frameNumber", "distance"]].copy()
-        verticalSpeedCalculator = VerticalSpeed(self.__folderStruct)
-        speed_ratio = verticalSpeedCalculator.vertical_speed_ratio(newDF, driftsDetectionStep)
+    def verticalSpeed(self) -> VerticalSpeed:
+        newDF = self.getPandasDF()[["frameNumber", self.__COLNAME_distance]].copy()
+
+        low_band_pass_cutoff = 0.4  # 0.4  cuttoff gitter noise (high fequencies) - making curve "smooth"
+        newDF['distance_smooth'] = FourierSmoothing().smooth_curve(newDF["distance"], low_band_pass_cutoff)
+
+        verticalSpeedCalculator = VerticalSpeed()
+        verticalSpeedCalculator.vertical_speed_ratio(newDF)
 
         if Configurations(self.__folderStruct).is_debug():
-            verticalSpeedCalculator.save_graph_smooth_distances(newDF, "distance", 1000, 1500)
+            verticalSpeedCalculator.save_graph_smooth_distances(newDF, "distance", self.__folderStruct, 500, 2500)
 
-        return speed_ratio
+        if Configurations(self.__folderStruct).is_debug():
+            result = verticalSpeedCalculator.calculate_scaling_factor_from_distance_between_reddots(newDF["distance"])
+            newDF["scaling_factor_not_smooth"] = result
+            y = ["scaling_factor", "scaling_factor_not_smooth"]
+            df_to_plot = newDF.loc[(newDF['frameNumber'] > 500) & (newDF['frameNumber'] < 2500)]
+            GraphPlotter.createNew(df_to_plot, self.__folderStruct).generate_graph("debug_scale_factor", y)
+
+        return verticalSpeedCalculator
 
     def saveGraphs(self, frame_id_from: int = 0, frame_id_to: int = 123456):
         df = self.getPandasDF()
@@ -140,12 +150,7 @@ class RedDotsData(PandasWrapper):
                                                                       self.red_dots_separation_mm())
         return depth_z_axis_to_seefloor_on_image
 
-    def zoom_instantaneous(self, frame_id):
-        # type: (int) -> float
-        if frame_id <= self.__minFrameID():
-            return 0
-        return self.scalingFactor(frame_id-1, frame_id)
-
+    #TODO: doublecheck that this logic is still correct. We probably need recursive-continuous step-by-step for every frame scaling.
     def scalingFactor(self, frameIDOrigin, frameIDTarget):
         # type: (int, int) -> float
         distanceRef = self.getDistancePixels(frameIDOrigin)
@@ -158,12 +163,6 @@ class RedDotsData(PandasWrapper):
         # type: (int) -> float
         self.__initialize_dict()
         result = self.__df_as_dict[frameId]["mm_per_pixel"]
-
-        #old slower way to fetch record
-        # dfResult = self.__rowForFrame(frameId)
-        # result2 = dfResult["mm_per_pixel"].iloc[0]
-        # print("getMMPerPixel results: "+str(result)+ " _ "+str(result2))
-
         return result
 
     def __initialize_dict(self):
@@ -179,8 +178,6 @@ class RedDotsData(PandasWrapper):
         self.__df_as_dict = records_by_frame_id
 
     def mm_per_pixel_undistorted(self, frameId : int) -> float:
-        # type: (int) -> float
-        # self.getRedDot1()
         distance_between_dots_px = self.distance_px_undistorted(frameId)
         return self.red_dots_separation_mm()/distance_between_dots_px
 
@@ -279,7 +276,7 @@ class RedDotsData(PandasWrapper):
         angle_in_radians = numpy.arctan(yLength_df / xLength_df)*(-1)
         df[self.__COLNAME_angle] = angle_in_radians / math.pi * 90
 
-    def __interpolate_values(self, df) -> pd.DataFrame:
+    def __interpolate_values(self, df: pd.DataFrame) -> pd.DataFrame:
         df = df.interpolate(limit_direction='both')
 
         df.loc[pd.isna(df["origin_dot1"]), ["origin_dot1"]] = self.VALUE_ORIGIN_interpolate

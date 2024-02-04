@@ -7,16 +7,18 @@ from lib.model.Box import Box
 from lib.model.Point import Point
 from lib.model.Vector import Vector
 from lib.seefloor.FramePhysics import FramePhysics
+from lib.seefloor.VerticalSpeed import VerticalSpeed
 
 
 class DetectedRawDrift:
 
-    def __init__(self, from_dict):
+    def __init__(self, from_dict, verticalSpeed: VerticalSpeed):
         self.__init_dict = from_dict
+        self.__verticalSpeed = verticalSpeed
 
     @staticmethod
-    def createFromDict(from_dict: Dict):
-        return DetectedRawDrift(from_dict)
+    def createFromDict(from_dict: Dict, verticalSpeed: VerticalSpeed):
+        return DetectedRawDrift(from_dict, verticalSpeed)
 
     def to_dict(self) -> Dict:
         result = dict()
@@ -37,6 +39,7 @@ class DetectedRawDrift:
     def calculate_drifts(self):
         non_null_values_x = list()
         non_null_values_y = list()
+
         for feature_matcher_idx in range(0, 9):
             if not self.__is_detected(feature_matcher_idx):
                 continue
@@ -44,8 +47,8 @@ class DetectedRawDrift:
             feature_location = self.center_point_at(feature_matcher_idx)
             drift_vector = self.drift_vector_at(feature_matcher_idx)
 
-            zoom_factor = self._zoom_factor()
-            diff_due_to_zoom = FramePhysics.zoom_compensation(feature_location, zoom_factor)
+            zoom_factor_new = self.__verticalSpeed.zoom_compensation(self.frame_id()-1, self.frame_id())
+            diff_due_to_zoom = FramePhysics.zoom_compensation(feature_location, zoom_factor_new)
 
             result = drift_vector.minus(diff_due_to_zoom)
 
