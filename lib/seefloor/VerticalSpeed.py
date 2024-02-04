@@ -18,7 +18,6 @@ class VerticalSpeed:
         for i in range(frame_id_from, frame_id_to+1, 1):
             scaling_factor = self.__scaling_factor_dict[i]
             result = result * scaling_factor
-
         return result
 
 

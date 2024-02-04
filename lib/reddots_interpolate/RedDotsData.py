@@ -75,6 +75,7 @@ class RedDotsData(PandasWrapper):
             self.saveInterpolatedDFToFile(first_frame_id, last_frame_id)
             return self.__interpolatedDF
 
+    #TODO: refactor this a bit (move saving of the graphs to saveGraphs() function, etc.)
     def verticalSpeed(self) -> VerticalSpeed:
         newDF = self.getPandasDF()[["frameNumber", self.__COLNAME_distance]].copy()
 
