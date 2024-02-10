@@ -1,31 +1,32 @@
 import numpy as np
-import pandas as pd
 from matplotlib import pyplot as plt
-from matplotlib.pyplot import figure
 from scipy.signal import lfilter, butter, filtfilt
 
-from lib.data.Correlation import Correlation
-
-
 class FourierSmoothing:
-    def smooth_curve(self, column_to_smooth: pd.DataFrame, cutoff_freq=0.1) -> pd.DataFrame:
 
+    def saveGraphFFT(self, smooth_signal: np, column_name: str, folder_struct):
+        filepath_prefix = folder_struct.getSubDirpath() + "graph_debug_fft_" + column_name
+        png_filepath = filepath_prefix + ".png"
+        self._plotFourierGraph(smooth_signal, column_name, png_filepath)
+
+    def smooth_array(self, orig_signal: np, cutoff_freq: float) -> np:
         # https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html
         b, a = self._butter_bandpass(1, cutoff_freq, 25, order=6)
-        dist_freq1 = filtfilt(b, a, column_to_smooth.to_numpy(), padlen=150)
+        smooth_signal = filtfilt(b, a, orig_signal, padlen=150)
+        # self._draw_fft_lowpass(orig_signal, smooth_signal, "colNameMaxName")
+        result = smooth_signal.reshape(-1)
+        return result
 
-        dataset = pd.DataFrame()
-        dataset['distance_streight'] = dist_freq1.reshape(-1)
-        return dataset
+    def _butter_bandpass(self, lowcut, highcut, fs, order=6):
+        nyq = 0.5 * fs
+        low = lowcut / nyq
+        high = highcut / nyq
 
-    def _draw_fft_lowpass(self, orig_np, lowpass_np, column_name): #, cutoff_freq=0.1):
-        # lowpass_np = self.bandpass_filter(orig_np, 1, cutoff_freq, 25)
-        # print(column_name, orig_np)
-        png_filepath = "c:/tmp/maximFFT_" + column_name + ".png"
-        self._plotFourierGraph(orig_np, column_name, png_filepath)
-        self.save_plot_numpy_as_png("c:/tmp/maxim_" + column_name + ".png", orig_np[2000:4000])
-        self.save_plot_numpy_as_png("c:/tmp/maxim_" + column_name + "_after_filter.png", lowpass_np[2000:4000])
-        return lowpass_np
+        # b, a = butter(order, [low, high], btype='band')
+
+        b, a = butter(order, high, 'low')
+        # b, a = butter(order, highcut, 'low', analog=True)
+        return b, a
 
     def _plotFourierGraph(self, np_array_to_plot: np, title: str, png_filepath: str):
         # np.fft.fft
@@ -40,6 +41,7 @@ class FourierSmoothing:
 
         plt.xscale("symlog")
         plt.yscale("symlog")
+
         # plt.grid(which='minor', axis='both', linestyle='--')
         plt.grid(which='major', axis='both', linestyle='--')
         plt.xlim(left=1)
@@ -48,28 +50,10 @@ class FourierSmoothing:
         plt.title(title)
         # plt.title('Power spectrum (np.fft.fft)')
 
-
         plt.savefig(png_filepath, format='png', dpi=300)
         plt.close('all')
-
-    def save_plot_numpy_as_png(self, filepath_image: str, nparr:np):
-        figure(num=None, figsize=(30, 6), facecolor='w', edgecolor='k')
-        plt.plot(nparr)
-        plt.gca().grid(which='major', axis='both', linestyle='--', )  # specify grid lines
-        plt.savefig(filepath_image, format='png', dpi=300)
 
     def bandpass_filter(self, data: np, lowcut: int, highcut: int, fs:int , order:int = 6) -> np:
         b, a = self._butter_bandpass(lowcut, highcut, fs, order=order)
         y = lfilter(b, a, data)
         return y
-
-    def _butter_bandpass(self, lowcut, highcut, fs, order=6):
-        nyq = 0.5 * fs
-        low = lowcut / nyq
-        high = highcut / nyq
-
-        # b, a = butter(order, [low, high], btype='band')
-
-        b, a = butter(order, high, 'low')
-        # b, a = butter(order, highcut, 'low', analog=True)
-        return b, a

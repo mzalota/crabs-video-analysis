@@ -80,7 +80,11 @@ class RedDotsData(PandasWrapper):
         newDF = self.getPandasDF()[["frameNumber", self.__COLNAME_distance]].copy()
 
         low_band_pass_cutoff = 0.4  # 0.4  cuttoff gitter noise (high fequencies) - making curve "smooth"
-        newDF['distance_smooth'] = FourierSmoothing().smooth_curve(newDF["distance"], low_band_pass_cutoff)
+        fourier = FourierSmoothing()
+        fourier.saveGraphFFT(newDF["distance"], "distance", self.__folderStruct)
+
+        smoothed_data = fourier.smooth_array(newDF["distance"].to_numpy(), low_band_pass_cutoff)
+        newDF['distance_smooth'] = smoothed_data
 
         verticalSpeedCalculator = VerticalSpeed()
         verticalSpeedCalculator.vertical_speed_ratio(newDF)

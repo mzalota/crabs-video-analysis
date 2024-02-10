@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import List
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 
 from lib.infra.FolderStructure import FolderStructure
@@ -81,3 +82,10 @@ class GraphPlotter:
 
         # save to file
         plt.savefig(filePath, format='png', dpi=300)
+
+
+    def saveGraph_numpy(self, filepath_image: str, nparr: np):
+        plt.figure(num=None, figsize=(30, 6), facecolor='w', edgecolor='k')
+        plt.plot(nparr)
+        plt.gca().grid(which='major', axis='both', linestyle='--', )  # specify grid lines
+        plt.savefig(filepath_image, format='png', dpi=300)

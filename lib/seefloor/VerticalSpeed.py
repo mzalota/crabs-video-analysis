@@ -42,9 +42,12 @@ class VerticalSpeed:
         columns_y = list()
 
         for cutoff_freq in cutoff_freq:
-            smoothed = FourierSmoothing().smooth_curve(distance_column, cutoff_freq)
+            fourier_smoothing = FourierSmoothing()
             colName = "distance_" + str(cutoff_freq)
             columns_y.append(colName)
+
+            smoothed = fourier_smoothing.smooth_array(distance_column.to_numpy(), cutoff_freq)
+            fourier_smoothing.saveGraphFFT(smoothed, colName, folderStruct)
             df[colName] = smoothed
 
         columns_y.append(distance_column_name)
