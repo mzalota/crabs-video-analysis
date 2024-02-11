@@ -6,7 +6,6 @@ from scipy.stats import stats
 from lib.model.Box import Box
 from lib.model.Point import Point
 from lib.model.Vector import Vector
-from lib.seefloor.FramePhysics import FramePhysics
 from lib.seefloor.VerticalSpeed import VerticalSpeed
 
 
@@ -48,7 +47,7 @@ class DetectedRawDrift:
             drift_vector = self.drift_vector_at(feature_matcher_idx)
 
             zoom_factor_new = self.__verticalSpeed.zoom_compensation(self.frame_id()-1, self.frame_id())
-            diff_due_to_zoom = FramePhysics.zoom_compensation(feature_location, zoom_factor_new)
+            diff_due_to_zoom = VerticalSpeed.zoom_correction(feature_location, zoom_factor_new)
 
             result = drift_vector.minus(diff_due_to_zoom)
 

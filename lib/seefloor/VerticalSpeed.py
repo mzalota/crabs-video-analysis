@@ -4,14 +4,27 @@ import pandas as pd
 
 from lib.data.FourierSmoothing import FourierSmoothing
 from lib.imageProcessing.Camera import Camera
-from lib.infra.DataframeWrapper import DataframeWrapper
-from lib.infra.FolderStructure import FolderStructure
 from lib.infra.GraphPlotter import GraphPlotter
-from lib.model.Point import Point
 from lib.model.Vector import Vector
 
 
 class VerticalSpeed:
+
+    #scaling factor greater than 1 means that seefloor got further away. Everything got smaller. Everything on the image got closer to the center of the image (fewer pixels away from center).
+    @staticmethod
+    def zoom_correction(point, scaling_factor):
+        camera = Camera.create()
+        frame_center_point = camera.center_point()
+
+        x_offset_from_middle_old = point.x - frame_center_point.x
+        x_offset_from_middle_new = x_offset_from_middle_old / scaling_factor
+        x_correction = x_offset_from_middle_new - x_offset_from_middle_old
+
+        y_offset_from_middle_old = point.y - frame_center_point.y
+        y_offset_from_middle_new = y_offset_from_middle_old / scaling_factor
+        y_correction = y_offset_from_middle_new - y_offset_from_middle_old
+
+        return Vector(x_correction, y_correction)
 
     def zoom_compensation(self, frame_id_from, frame_id_to) -> float:
         result = 1

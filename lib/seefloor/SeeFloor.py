@@ -1,21 +1,19 @@
 from __future__ import annotations
 
 import numpy
-
-from lib.drifts_interpolate.DriftInterpolatedData import DriftInterpolatedData
-from lib.imageProcessing.Camera import Camera
-from lib.VideoStream import VideoStream
-from lib.infra.DataframeWrapper import DataframeWrapper
-from lib.model.Point import Point
-from lib.infra.GraphPlotter import GraphPlotter
-from lib.data.PandasWrapper import PandasWrapper
-from lib.reddots_interpolate.RedDotsData import RedDotsData
-from lib.infra.FolderStructure import FolderStructure
 import pandas as pd
 
+from lib.VideoStream import VideoStream
+from lib.data.PandasWrapper import PandasWrapper
+from lib.drifts_interpolate.DriftInterpolatedData import DriftInterpolatedData
+from lib.imageProcessing.Camera import Camera
+from lib.infra.DataframeWrapper import DataframeWrapper
+from lib.infra.FolderStructure import FolderStructure
+from lib.infra.GraphPlotter import GraphPlotter
+from lib.model.Point import Point
+from lib.reddots_interpolate.RedDotsData import RedDotsData
 from lib.seefloor.SeeFloorFast import SeeFloorFast
-from lib.seefloor.PointTranslator import PointTranslator
-from lib.seefloor.SeeFloorSlicer import SeeFloorSlicer
+from lib.seefloor.SeeFloorSlicerService import SeeFloorSlicerService
 
 
 class SeeFloor(PandasWrapper):
@@ -29,8 +27,7 @@ class SeeFloor(PandasWrapper):
         self.__df = df
         self._folderStruct = folderStruct
         self.__fastObj = SeeFloorFast(df)
-        self.__pointTranslator = PointTranslator(self.__fastObj)
-        self.__slicer = SeeFloorSlicer(self.__pointTranslator, self.__fastObj)
+        self.__slicer = SeeFloorSlicerService(self.__fastObj)
 
     @staticmethod
     def createFromFolderStruct(folderStruct: FolderStructure) -> SeeFloor:
@@ -148,8 +145,10 @@ class SeeFloor(PandasWrapper):
         endYCoordMM = self.getYCoordMMOrigin(toFrameID)
         return endYCoordMM-startYCoordMM
 
+    #TODO: See if we can get rid of this function inline this function to
     def translatePointCoord(self, pointLocation: Point, origFrameID: int, targetFrameID: int) -> Point:
-        return self.__pointTranslator.translatePointCoordinate(pointLocation, origFrameID, targetFrameID)
+        seefloor_tract = self.__fastObj.seefloor_tract(origFrameID, targetFrameID)
+        return seefloor_tract.translatePointCoordinate(pointLocation)
     def mm_per_pixel(self, frame_id):
         return self.__fastObj._mm_per_pixel(frame_id)
 

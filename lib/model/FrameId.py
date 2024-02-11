@@ -1,8 +1,10 @@
+from typing import List
+
+
 class FrameId:
 
     @staticmethod
-    def sequence_of_frames(origFrameID, targetFrameID):
-        # type: (int, int) -> List(int)
+    def sequence_of_frames(origFrameID: int, targetFrameID: int)-> List[int]:
         if origFrameID > targetFrameID:
             increment = -1
         else:

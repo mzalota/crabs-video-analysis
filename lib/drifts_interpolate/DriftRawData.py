@@ -10,7 +10,7 @@ from scipy.stats import stats
 from lib.data.PandasWrapper import PandasWrapper
 from lib.reddots_interpolate.RedDotsData import RedDotsData
 from lib.drifts_detect.DriftManualData import DriftManualData
-from lib.drifts_interpolate.CompensateForZoom import CompensateForZoom
+from lib.drifts_interpolate.CompensateForZoomService import CompensateForZoomService
 from lib.imageProcessing.Camera import Camera
 from lib.infra.Configurations import Configurations
 from lib.infra.DataframeWrapper import DataframeWrapper
@@ -128,7 +128,7 @@ class DriftRawData(PandasWrapper):
         return "OK"
 
     def interpolate(self, manualDrifts: DriftManualData, verticalSpeed: VerticalSpeed, driftsDetectionStep: int) -> pd.DataFrame:
-        zoom_compensator = CompensateForZoom(self.__folderStruct)
+        zoom_compensator = CompensateForZoomService(self.__folderStruct)
 
         raw_drifts_df = self._replaceInvalidValuesWithNaN(self.__df, driftsDetectionStep)
         raw_drifts_df = zoom_compensator.remove_values_in_failed_records(raw_drifts_df)

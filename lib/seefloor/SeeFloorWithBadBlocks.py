@@ -6,7 +6,7 @@ from lib.data.BadFramesData import BadFramesData
 from lib.data.PandasWrapper import PandasWrapper
 from lib.reddots_interpolate.RedDotsData import RedDotsData
 from lib.seefloor.SeeFloor import SeeFloor
-from lib.seefloor.SeeFloorSlicer import SeeFloorSlicer
+from lib.seefloor.SeeFloorSlicerService import SeeFloorSlicerService
 
 
 class SeeFloorWithBadBlocks(SeeFloor):
@@ -82,7 +82,7 @@ class SeeFloorWithBadBlocks(SeeFloor):
                 return self._jump_to_previous_seefloor_slice(frame_id - 1)
 
         # we are in a good segment and not in its first frame.
-        new_frame_id = SeeFloorSlicer._jump_to_previous_seefloor_slice(self, frame_id)
+        new_frame_id = SeeFloorSlicerService._jump_to_previous_seefloor_slice(self, frame_id)
 
         if (first_good_frame >= new_frame_id):
             #the current good segment does not enough runway from frame_id to jump FramesStitcher.FRAME_HEIGHT pixels back.
@@ -113,7 +113,7 @@ class SeeFloorWithBadBlocks(SeeFloor):
                 return self._jump_to_next_seefloor_slice(frame_id + 1)
 
         # we are in a good segment and not in its last frame.
-        new_frame_id = SeeFloorSlicer._jump_to_next_seefloor_slice(self, frame_id)
+        new_frame_id = SeeFloorSlicerService._jump_to_next_seefloor_slice(self, frame_id)
 
         if (last_good_frame < new_frame_id):
             #the current good segment does not enough runway from frame_id to jump FramesStitcher.FRAME_HEIGHT pixels.

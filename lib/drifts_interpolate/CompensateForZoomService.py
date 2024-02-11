@@ -14,9 +14,9 @@ from lib.infra.GraphPlotter import GraphPlotter
 from lib.seefloor.VerticalSpeed import VerticalSpeed
 
 
-class CompensateForZoom:
+class CompensateForZoomService:
 
-    def __init__(self, folderStruct: FolderStructure) -> CompensateForZoom:
+    def __init__(self, folderStruct: FolderStructure) -> CompensateForZoomService:
         self.__folderStruct = folderStruct
         configs = Configurations(folderStruct)
         self.__generate_debug_graphs = configs.is_debug()
@@ -79,7 +79,6 @@ class CompensateForZoom:
         return df
 
     def compensate_for_zoom(self, result_df, verticalSpeed: VerticalSpeed) -> pd.DataFrame:
-
         yColumns_raw = list()
         xColumns_raw = list()
         yColumns_new = list()

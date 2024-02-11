@@ -1,6 +1,10 @@
+from __future__ import annotations
+
 from pandas import DataFrame
 
 from lib.model.Vector import Vector
+from lib.seefloor.SeeFloorTract import SeeFloorTract
+from lib.seefloor.SeefloorFrame import SeefloorFrame
 
 
 class SeeFloorFast:
@@ -48,3 +52,17 @@ class SeeFloorFast:
         change = scale_this / scale_prev
         return change
 
+    def seefloor_tract(self, from_frame_id: int, to_frame_id: int) -> SeeFloorTract:
+        tract = dict()
+        if from_frame_id > to_frame_id:
+            forward =  False
+            tmp = from_frame_id
+            from_frame_id = to_frame_id
+            to_frame_id = tmp
+        else:
+            forward = True
+
+        for frame_id in range(from_frame_id, to_frame_id):
+            tract[frame_id] = SeefloorFrame(self.get_drift(frame_id), self.zoom_factor(frame_id))
+
+        return SeeFloorTract(tract, forward)

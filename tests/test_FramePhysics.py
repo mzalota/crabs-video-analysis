@@ -1,11 +1,12 @@
 from os import getcwd, chdir
 from unittest import TestCase
 
-from lib.imageProcessing.Camera import Camera
 from lib.Frame import Frame
-from lib.seefloor.FramePhysics import FramePhysics
-from lib.model.Vector import Vector
+from lib.imageProcessing.Camera import Camera
 from lib.model.Point import Point
+from lib.model.Vector import Vector
+from lib.seefloor.SeefloorFrame import SeefloorFrame
+from lib.seefloor.VerticalSpeed import VerticalSpeed
 
 
 class TestFramePhysics(TestCase):
@@ -22,13 +23,19 @@ class TestFramePhysics(TestCase):
         #reset current working directory to be
         chdir(self.__filepath)
 
+
+
+    def _adjust_location_for_depth_change_zoom(self,  point: Point, scaling_factor: float) -> Point:
+        correction_for_zoom = VerticalSpeed.zoom_correction(point, scaling_factor)
+        return Vector.create_from(point).plus(correction_for_zoom)
+
     def test_adjust_zoom_location_depth_not_changed(self):
         #setup
         feature_location = self._center_point
         depth_change = 1
 
         #exercise
-        result = FramePhysics._adjust_location_for_depth_change_zoom(feature_location, depth_change)
+        result = self._adjust_location_for_depth_change_zoom(feature_location, depth_change)
 
         #assert
         self.assertEqual(Frame._FRAME_WIDTH_HIGH_RES / 2, result.x)
@@ -40,7 +47,7 @@ class TestFramePhysics(TestCase):
         depth_change = 2
 
         #exercise
-        result = FramePhysics._adjust_location_for_depth_change_zoom(feature_location, depth_change)
+        result = self._adjust_location_for_depth_change_zoom(feature_location, depth_change)
 
         #assert
         self.assertEqual(Frame._FRAME_WIDTH_HIGH_RES / 2, result.x)
@@ -52,7 +59,7 @@ class TestFramePhysics(TestCase):
         depth_change = 0.5 # depth is half the previous. All points on new frame are further away from center compared to previous frame
 
         #exercise
-        result = FramePhysics._adjust_location_for_depth_change_zoom(feature_location, depth_change)
+        result = self._adjust_location_for_depth_change_zoom(feature_location, depth_change)
 
         #assert
         self.assertEqual((Frame._FRAME_WIDTH_HIGH_RES / 2) + 20, result.x) #X dimention oved out by 20
@@ -64,7 +71,7 @@ class TestFramePhysics(TestCase):
         depth_change = 2 # all points appear closer to center on this frame image, compared to previous frame
 
         #exercise
-        result = FramePhysics._adjust_location_for_depth_change_zoom(feature_location, depth_change)
+        result = self._adjust_location_for_depth_change_zoom(feature_location, depth_change)
 
         #assert
         self.assertEqual((Frame._FRAME_WIDTH_HIGH_RES / 2) - 33, result.x) #X dimention oved in by 33, instead of 66
@@ -74,30 +81,29 @@ class TestFramePhysics(TestCase):
     def test_change_than_reverse(self):
         #setup
         zoom = 0.9997025696116583
-        physics = FramePhysics(Vector(3, 11), zoom)
+        seefloor_frame = SeefloorFrame(Vector(3, 11), zoom)
         point = Point(1000, 1000)
 
         #exercise
-        point_forward = physics.translate_forward(point)
-        point_back = physics.translate_backward(point_forward)
+        point_forward = seefloor_frame.translate_forward(point)
+        point_back = seefloor_frame.translate_backward(point_forward)
 
         #assert
         self.assertAlmostEqual(point_back.x, point.x, 1)
         self.assertAlmostEqual(point_back.y, point.y, 1)
+        self.assertAlmostEqual(point_forward.y, 1010.99, 2)
 
     def test_change_than_reverse2(self):
         #setup
         zoom = 1.0071198209766583
-        physics = FramePhysics(Vector(-0.9365915776278864, 5.538252792970677), zoom)
+        seefloor_frame = SeefloorFrame(Vector(-0.9365915776278864, 5.538252792970677), zoom)
         point = Point(1000, 1000)
 
         #exercise
-        point_forward = physics.translate_forward(point)
-        point_back = physics.translate_backward(point_forward)
+        point_forward = seefloor_frame.translate_forward(point)
+        point_back = seefloor_frame.translate_backward(point_forward)
 
         #assert
-
         self.assertAlmostEqual(point_back.x, point.x, 1)
         self.assertAlmostEqual(point_back.y, point.y, 1)
-
-        self.assertAlmostEqual(point_forward.y, 1005.75, 2)
+        self.assertAlmostEqual(point_forward.y, 1005.71, 2)
