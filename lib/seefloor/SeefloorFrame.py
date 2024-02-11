@@ -8,13 +8,14 @@ from lib.seefloor.VerticalSpeed import VerticalSpeed
 
 class SeefloorFrame:
     def __init__(self, drift: Vector, zoom: float) -> SeefloorFrame:
+
         self.__drift = drift
         self.__zoom = zoom
 
-    def _get_zoom(self):
+    def _get_zoom(self)->float:
         return self.__zoom
 
-    def _get_drift(self):
+    def _get_drift(self) -> Vector:
         return self.__drift
 
     def translate_forward(self, point: Point) -> Point:

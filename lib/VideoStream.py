@@ -89,7 +89,6 @@ class VideoStream():
         while True:
             if frame_id > self.num_of_frames():
                 raise Exception("Cannot find a valid frame in stream. Max valid frame is: "+self.num_of_frames())
-
             try:
                 print ("get_id_of_first_frame", frame_id)
                 self._read_image_raw(frame_id)

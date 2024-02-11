@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from operator import itemgetter
 from typing import Dict
+
+import numpy as np
 
 from lib.model.FrameId import FrameId
 from lib.model.Point import Point
@@ -12,16 +15,20 @@ class SeeFloorTract:
         self.__seefloor_frames = dict_of_seefloor_frames
         self.__forward = forward
 
-    def min_frame_id(self):
-        return min(self.__seefloor_frames.keys())
+    def __min_frame_id(self):
+        return min(list(self.__seefloor_frames.keys()))
 
-    def max_frame_id(self):
-        return max(self.__seefloor_frames.keys())
+    def __max_frame_id(self):
+        return max(list(self.__seefloor_frames.keys()))
 
     def translatePointCoordinate(self, pointLocation):
+        if len(self.__seefloor_frames) <=0 :
+            # Tract is just the same frame. Sot it's the same point.
+            return pointLocation
+
         point_location_new = pointLocation
         # timer = MyTimer("translatePointCoordinate")
-        individual_frames = FrameId.sequence_of_frames(self.min_frame_id(), self.max_frame_id())
+        individual_frames = FrameId.sequence_of_frames(self.__min_frame_id(), self.__max_frame_id())
         for idx in range(1, len(individual_frames)):
             to_frame_id = individual_frames[idx]
             if self.__forward:

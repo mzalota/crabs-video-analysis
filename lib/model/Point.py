@@ -2,8 +2,16 @@ from __future__ import annotations
 
 import math
 
+import numpy as np
+
+
 class Point:
     def __init__(self, x, y):
+        if x is None or x == "" or np.isnan(x):
+            x = 0
+        if y is None or y == "" or np.isnan(y):
+            y = 0
+
         self.x = x
         self.y = y
 

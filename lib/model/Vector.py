@@ -3,17 +3,17 @@ from __future__ import annotations
 import math
 
 import numpy
+import numpy as np
 
 from lib.model.Point import Point
 
 
 class Vector(Point):
-    # def __init__(self, point: Point):
-    #     super().__init__(point.x, point.y)
-    #     # self.x = point.x
-    #     # self.y = point.y
-
     def __init__(self, x, y):
+        if np.isnan(x) or x is None:
+            x = 0
+        if np.isnan(y) or y is None:
+            y = 0
         self.x = x
         self.y = y
 

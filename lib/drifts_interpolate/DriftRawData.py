@@ -35,8 +35,6 @@ class DriftRawData(PandasWrapper):
         configs = Configurations(folderStruct)
         self.__generate_debug_graphs = configs.is_debug()
 
-        print(" value of var is XXXXX __generate_debug_graphs", self.__generate_debug_graphs)
-
     def __save_graphs_drifts_zoom_compensated(self, df, frame_id_from: int = 0, fream_id_to: int = 123456):
         yColumns_new = list()
         xColumns_new = list()

@@ -120,7 +120,7 @@ class TestDriftManualData(TestCase):
         dfRaw = pd.concat([dfRaw, pd.DataFrame(data)])
 
         ddm = DriftManualData.createBrandNew(folderStruct)
-        ddm.add_manual_drift("101", Point("100", "200"), "102", Point("103", "211"))  # xDrift = 3, yDrift = 11
+        ddm.add_manual_drift("101", Point(100, 200), "102", Point(103, 211))  # xDrift = 3, yDrift = 11
 
         # Exercise
         resultDF = ddm.overwrite_values(dfRaw)
@@ -158,8 +158,8 @@ class TestDriftManualData(TestCase):
         dfRaw = pd.concat([dfRaw, pd.DataFrame(data)])
 
         ddm = DriftManualData.createBrandNew(folderStruct)
-        ddm.add_manual_drift("101", Point("100", "200"), "103", Point("106", "222"))  # xDrift = 3, yDrift = 11
-        ddm.add_manual_drift("102", Point("400", "800"), "104", Point("410", "826"))  # xDrift = 5, yDrift = 13
+        ddm.add_manual_drift("101", Point(100, 200), "103", Point(106, 222))  # xDrift = 3, yDrift = 11
+        ddm.add_manual_drift("102", Point(400, 800), "104", Point(410, 826))  # xDrift = 5, yDrift = 13
 
         # Exercise
         resultDF = ddm.overwrite_values(dfRaw)
