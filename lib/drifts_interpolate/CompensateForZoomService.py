@@ -4,7 +4,6 @@ from typing import Dict
 
 import numpy
 import numpy as np
-import pandas as pd
 
 from lib.drifts_interpolate.DetectedRawDrift import DetectedRawDrift
 from lib.infra.Configurations import Configurations
@@ -23,7 +22,6 @@ class CompensateForZoomService:
 
 
     def save_graphs_drifts_raw(self, df_param, frame_id_from: int = 0, fream_id_to: int = 123456):
-
         df = df_param.copy()
 
         xColumns_orig = list()
@@ -57,66 +55,104 @@ class CompensateForZoomService:
         df['average_x_orig'] = df[xColumns_orig].mean(axis=1)
 
         # --- now Plot graphs and save them to PNG files
-        x_axis_column = ["frameNumber"]
-        filepath_prefix = self.__folderStruct.getSubDirpath() + "graph_debug_"
-        title_prefix = self.__folderStruct.getVideoFilename()
-
         df_to_plot = df.loc[(df['frameNumber'] > frame_id_from) & (df['frameNumber'] < fream_id_to)]
 
-        graph_title = title_prefix + "_FrameMatcher_Drifts_X_raw"
-        graph_plotter = GraphPlotter(df_to_plot)
-        graph_plotter.saveGraphToFile(x_axis_column, xColumns_orig, graph_title, filepath_prefix + "drift_x_raw.png")
+        graph_plotter = GraphPlotter.createNew(df_to_plot, self.__folderStruct)
 
-        graph_title = title_prefix + "_FrameMatcher_Drifts_Y_raw"
-        graph_plotter = GraphPlotter(df_to_plot)
-        graph_plotter.saveGraphToFile(x_axis_column, yColumns_orig, graph_title, filepath_prefix + "drift_y_raw.png")
+        graph_title = "FrameMatcher_Drifts_X_raw"
+        graph_plotter.generate_graph(graph_title, xColumns_orig)
 
-        graph_title = title_prefix + "_median_drifts_x_y"
-        graphPlotter = GraphPlotter(df_to_plot)
-        graphPlotter.saveGraphToFile(x_axis_column, ["driftY", "driftX", "average_y_orig", "average_x_orig"], graph_title,
-                                     filepath_prefix + "drifts_px_raw.png")
+        graph_title = "FrameMatcher_Drifts_Y_raw"
+        graph_plotter.generate_graph(graph_title, yColumns_orig)
+
+        graph_title = "_median_drifts_x_y"
+        yColumns = ["driftY", "driftX", "average_y_orig", "average_x_orig"]
+        graph_plotter.generate_graph(graph_title, yColumns)
 
         return df
 
-    def compensate_for_zoom(self, result_df, verticalSpeed: VerticalSpeed) -> pd.DataFrame:
-        yColumns_raw = list()
-        xColumns_raw = list()
+    def save_graphs_drifts_zoom_compensated(self, df, frame_id_from: int = 0, fream_id_to: int = 123456):
+
+        df_to_plot = df.loc[(df['frameNumber'] > frame_id_from) & (df['frameNumber'] < fream_id_to)]
+        graph_plotter = GraphPlotter.createNew(df_to_plot, self.__folderStruct)
+
+        xColumns_new = self.__columns_x_dezoomed()
+        graph_plotter.generate_graph("FrameMatcher_Drifts_X_zoom", xColumns_new)
+
+        yColumns_new = self.__columns_y_dezoomed()
+        graph_plotter.generate_graph("FrameMatcher_Drifts_Y_zoom", yColumns_new)
+
+    def __columns_y_dezoomed(self):
         yColumns_new = list()
-        xColumns_new = list()
         for feature_matcher_idx in range(0, 9):
             num = str(feature_matcher_idx)
-            yColumns_raw.append("fm_" + num + "_drift_y")
-            xColumns_raw.append("fm_" + num + "_drift_x")
             yColumns_new.append("fm_" + num + "_drift_y_new")
-            xColumns_new.append("fm_" + num + "_drift_x_new")
+        return yColumns_new
 
-        full_df = DataframeWrapper(result_df)
+    def compensate_for_zoom(self, input_df, verticalSpeed: VerticalSpeed):
+        full_df = DataframeWrapper(input_df)
+
         records_list_all = full_df.as_records_list()
         raw_drift_objs = [DetectedRawDrift.createFromDict(k, verticalSpeed) for k in records_list_all]
 
         average_y_new = [k.drift_vector().y for k in raw_drift_objs]
         average_x_new = [k.drift_vector().x for k in raw_drift_objs]
+        #backToDataFrame = [k.to_dict() for k in raw_drift_objs]
+        #nowBack = DataframeWrapper.create_from_record_list(backToDataFrame)
+        #full_df.append_dataframe(nowBack)
 
+        result_df = full_df.pandas_df()
+        result_df['average_x_new'] = average_x_new
+        result_df['average_y_new'] = average_y_new
+        return result_df
+    def compensate_for_zoom_subdata(self, input_df, verticalSpeed: VerticalSpeed):
+        full_df = DataframeWrapper(input_df)
+
+        records_list_all = full_df.as_records_list()
+        raw_drift_objs = [DetectedRawDrift.createFromDict(k, verticalSpeed) for k in records_list_all]
+
+        average_y_new = [k.drift_vector().y for k in raw_drift_objs]
+        average_x_new = [k.drift_vector().x for k in raw_drift_objs]
         backToDataFrame = [k.to_dict() for k in raw_drift_objs]
+
         nowBack = DataframeWrapper.create_from_record_list(backToDataFrame)
         full_df.append_dataframe(nowBack)
-        result_df = full_df.pandas_df()
 
+        result_df = full_df.pandas_df()
         result_df['average_x_new'] = average_x_new
         result_df['average_y_new'] = average_y_new
 
-        # ---
-        if self.__generate_debug_graphs:
-            self.__save_graphs_variance(result_df[xColumns_raw], 'variance_x_raw')
-            self.__save_graphs_variance(nowBack.pandas_df()[xColumns_new], 'variance_x_new')
-            self.__save_graphs_variance(result_df[yColumns_raw], 'variance_y_raw')
-            self.__save_graphs_variance(nowBack.pandas_df()[yColumns_new], 'variance_y_new')
-
         return result_df
 
-    def __save_graphs_variance(self, columns, variance_column_name):
+    #TODO: Refactort to accept frame_from and frame_to parameters
+    def save_graphs_variance_raw(self, result_df):
+        yColumns_raw = list()
+        xColumns_raw = list()
+        for feature_matcher_idx in range(0, 9):
+            num = str(feature_matcher_idx)
+            yColumns_raw.append("fm_" + num + "_drift_y")
+            xColumns_raw.append("fm_" + num + "_drift_x")
+        self.__save_graphs_variance(result_df[xColumns_raw], 'variance_x_raw')
+        self.__save_graphs_variance(result_df[yColumns_raw], 'variance_y_raw')
 
-        all_x_vals = DataframeWrapper(columns).as_records_list()
+    # TODO: Refactort to accept frame_from and frame_to parameters
+    def save_graphs_variance_dezoomed(self, result_df):
+        xColumns_new = self.__columns_x_dezoomed()
+        self.__save_graphs_variance(result_df[xColumns_new], 'variance_x_new')
+        yColumns_new = self.__columns_y_dezoomed()
+        self.__save_graphs_variance(result_df[yColumns_new], 'variance_y_new')
+
+
+    def __columns_x_dezoomed(self):
+        xColumns_new = list()
+        for feature_matcher_idx in range(0, 9):
+            num = str(feature_matcher_idx)
+            xColumns_new.append("fm_" + num + "_drift_x_new")
+        return xColumns_new
+
+    def __save_graphs_variance(self, df, variance_column_name):
+
+        all_x_vals = DataframeWrapper(df).as_records_list()
         variance_list = [self._for_variance(k) for k in all_x_vals]
 
         frame_b = DataframeWrapper.create_from_list(variance_list, variance_column_name).pandas_df()
@@ -128,7 +164,6 @@ class CompensateForZoomService:
 
         frame_b = frame_b.reset_index()
 
-
         filepath_prefix = self.__folderStruct.getSubDirpath() + "graph_debug_"
         graph_title = variance_column_name
         graph_axis_x_column = 'index'
@@ -138,31 +173,11 @@ class CompensateForZoomService:
 
         graphPlotter.saveGraphToFile(["index"], [variance_column_name], graph_title, filename)
 
+        # graphPlotter = GraphPlotter.createNew(df_to_plot, self.__folderStruct)
+        # graphPlotter.generate_graph("variance_"+variance_column_name, [variance_column_name])
+
     def _for_variance(self, dict_of_vals: Dict):
         values = list(dict_of_vals.values())
         return np.var(values)
 
-    def remove_values_in_failed_records(self, df):
-        for feature_matcher_idx in range(0, 9):
-            num = str(feature_matcher_idx)
-            column_name_y_drift_raw = "fm_" + num + "_drift_y"
-            column_name_x_drift_raw = "fm_" + num + "_drift_x"
-            df.loc[df['fm_' + num + '_result'] != "DETECTED", [column_name_y_drift_raw, column_name_x_drift_raw]] = numpy.nan
 
-            df.loc[df[column_name_x_drift_raw] < -50, [column_name_x_drift_raw, column_name_y_drift_raw]] = numpy.nan
-            df.loc[df[column_name_x_drift_raw] > 50, [column_name_x_drift_raw, column_name_y_drift_raw]] = numpy.nan
-
-            df.loc[df[column_name_y_drift_raw] < -200, [column_name_x_drift_raw, column_name_y_drift_raw]] = numpy.nan
-            df.loc[df[column_name_y_drift_raw] > 200, [column_name_x_drift_raw, column_name_y_drift_raw]] = numpy.nan
-
-            without_outliers_y = DataframeWrapper(df)
-            without_outliers_y.remove_outliers_quantile(column_name_y_drift_raw)
-            df[column_name_y_drift_raw] = without_outliers_y.pandas_df()[column_name_y_drift_raw]
-
-            without_outliers_x = DataframeWrapper(df)
-            without_outliers_x.remove_outliers_quantile(column_name_x_drift_raw)
-            df[column_name_x_drift_raw] = without_outliers_x.pandas_df()[column_name_x_drift_raw]
-
-            df = df.interpolate(limit_direction='both')
-
-        return df

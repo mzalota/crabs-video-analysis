@@ -11,6 +11,7 @@ from lib.infra.FolderStructure import FolderStructure
 class GraphPlotter:
     def __init__(self, df):
         # type: (pd.DataFrame) -> GraphPlotter
+        self.__folder_struct = None
         self.__df = df
 
     @staticmethod
@@ -25,6 +26,7 @@ class GraphPlotter:
         graph_title = videofile_name + "_" + graph_title_suffix
         filename = self.__folder_struct.getSubDirpath() + "graph_" + videofile_name+ "_" + graph_title_suffix + ".png"
         x_axis_column = ["frameNumber"]
+
         self.saveGraphToFile(x_axis_column, columns_y, graph_title, filename)
 
     def saveGraphToFile(self, xColumns, yColumns, graphTitle, filePath):

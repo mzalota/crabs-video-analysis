@@ -97,7 +97,9 @@ class RedDotsData(PandasWrapper):
             newDF["scaling_factor_not_smooth"] = result
             y = ["scaling_factor", "scaling_factor_not_smooth"]
             df_to_plot = newDF.loc[(newDF['frameNumber'] > 500) & (newDF['frameNumber'] < 2500)]
-            GraphPlotter.createNew(df_to_plot, self.__folderStruct).generate_graph("debug_scale_factor", y)
+
+            graph_plotter = GraphPlotter.createNew(df_to_plot, self.__folderStruct)
+            graph_plotter.generate_graph("debug_scale_factor", y)
 
         return verticalSpeedCalculator
 

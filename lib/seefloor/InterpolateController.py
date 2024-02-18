@@ -19,19 +19,17 @@ class InterpolateController:
 
     def regenerateSeefloor(self):
         driftsStepSize = self.step_size()
-        print("Using driftsStepSize: " + str(driftsStepSize))
 
-
-        print ("regenerating/interpolating RedDots")
+        print ("-- Regenerating/interpolating RedDots")
         rdd = RedDotsData.createFromFolderStruct(self.__folderStruct)
         verticalSpeed = rdd.verticalSpeed()
 
         # TODO: extract logic in few rows into a "regenerate drafts" module/class
-        print ("regenerating/interpolating Drafts")
+        print ("-- Regenerating/interpolating Drafts")
         rawDrifts = DriftRawData(self.__folderStruct)
         rawDrifts.interpolate(verticalSpeed, driftsStepSize)
 
-        print("applying manual Drifts")
+        print("-- Applying manual Drifts")
         manualDrifts = DriftManualData.createFromFile(self.__folderStruct)
         drifts_interpolated_df = manualDrifts.overwrite_values(rawDrifts)
 
@@ -39,14 +37,15 @@ class InterpolateController:
         drifts.setDF(drifts_interpolated_df)
         drifts.saveToFile(self.__folderStruct.getDriftsFilepath())
 
-        print("regenerating SeeFloor")
+        print("-- Regenerating SeeFloor")
         sf = SeeFloor.createFromFolderStruct(self.__folderStruct)
         sf.saveToFile()
 
-        print ("regenerating crabs_on_seefloor")
+        print ("-- Regenerating crabs_on_seefloor")
         crabs = CrabsData.createFromFolderStruct(self.__folderStruct)
         crabs_on_seefloor_df = crabs.generate_crabs_on_seefloor(sf)
         crabs_on_seefloor_df.save_file_csv(self.__folderStruct.getCrabsOnSeefloorFilepath())
+
 
     def regenerateGraphs(self):
         print("drawing graphs for RedDots")
