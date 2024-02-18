@@ -24,22 +24,20 @@ class CompensateForZoomService:
     def save_graphs_drifts_raw(self, df_param, frame_id_from: int = 0, fream_id_to: int = 123456):
         df = df_param.copy()
 
-        xColumns_orig = list()
-        yColumns_orig = list()
-        for num in range(0, 9):
-            column_drift_y = "fm_" + str(num) + "_drift_y"
-            column_drift_x = "fm_" + str(num) + "_drift_x"
-            yColumns_orig.append(column_drift_y)
-            xColumns_orig.append(column_drift_x)
+        #TODO: Move this logic to DetectedRawDrift object.
+        for feature_matcher_idx in range(0, 9):
+            column_drift_y = "fm_" + str(feature_matcher_idx) + "_drift_y"
+            column_drift_x = "fm_" + str(feature_matcher_idx) + "_drift_x"
 
-            column_result = 'fm_' + str(num) + '_result'
+            column_result = 'fm_' + str(feature_matcher_idx) + '_result'
             df.loc[df[column_result] == "FAILED", [column_drift_y, column_drift_x, "driftX", "driftY"]] = numpy.nan
 
-
+        yColumns_orig = self.__columns_y_raw()
         dframe = DataframeWrapper(df)
         for col_name in yColumns_orig:
             dframe.remove_outliers_quantile(col_name)
 
+        xColumns_orig = self.__columns_x_raw()
         for col_name in xColumns_orig:
             dframe.remove_outliers_quantile(col_name)
 
@@ -82,73 +80,76 @@ class CompensateForZoomService:
         yColumns_new = self.__columns_y_dezoomed()
         graph_plotter.generate_graph("FrameMatcher_Drifts_Y_zoom", yColumns_new)
 
-    def __columns_y_dezoomed(self):
-        yColumns_new = list()
-        for feature_matcher_idx in range(0, 9):
-            num = str(feature_matcher_idx)
-            yColumns_new.append("fm_" + num + "_drift_y_new")
-        return yColumns_new
-
     def compensate_for_zoom(self, input_df, verticalSpeed: VerticalSpeed):
-        full_df = DataframeWrapper(input_df)
-
-        records_list_all = full_df.as_records_list()
-        raw_drift_objs = [DetectedRawDrift.createFromDict(k, verticalSpeed) for k in records_list_all]
-
+        inputDFW = DataframeWrapper(input_df)
+        raw_drift_objs = DetectedRawDrift.createListFromDataFrame(inputDFW, verticalSpeed)
         average_y_new = [k.drift_vector().y for k in raw_drift_objs]
         average_x_new = [k.drift_vector().x for k in raw_drift_objs]
-        #backToDataFrame = [k.to_dict() for k in raw_drift_objs]
-        #nowBack = DataframeWrapper.create_from_record_list(backToDataFrame)
-        #full_df.append_dataframe(nowBack)
 
-        result_df = full_df.pandas_df()
+        result_df = input_df[["frameNumber","driftX", "driftY"]].copy()
         result_df['average_x_new'] = average_x_new
         result_df['average_y_new'] = average_y_new
         return result_df
+
     def compensate_for_zoom_subdata(self, input_df, verticalSpeed: VerticalSpeed):
         full_df = DataframeWrapper(input_df)
 
-        records_list_all = full_df.as_records_list()
-        raw_drift_objs = [DetectedRawDrift.createFromDict(k, verticalSpeed) for k in records_list_all]
+        raw_drift_objs = DetectedRawDrift.createListFromDataFrame(full_df, verticalSpeed)
 
-        average_y_new = [k.drift_vector().y for k in raw_drift_objs]
-        average_x_new = [k.drift_vector().x for k in raw_drift_objs]
         backToDataFrame = [k.to_dict() for k in raw_drift_objs]
 
         nowBack = DataframeWrapper.create_from_record_list(backToDataFrame)
         full_df.append_dataframe(nowBack)
+        return full_df.pandas_df()
 
-        result_df = full_df.pandas_df()
-        result_df['average_x_new'] = average_x_new
-        result_df['average_y_new'] = average_y_new
-
-        return result_df
-
-    #TODO: Refactort to accept frame_from and frame_to parameters
     def save_graphs_variance_raw(self, result_df):
-        yColumns_raw = list()
-        xColumns_raw = list()
-        for feature_matcher_idx in range(0, 9):
-            num = str(feature_matcher_idx)
-            yColumns_raw.append("fm_" + num + "_drift_y")
-            xColumns_raw.append("fm_" + num + "_drift_x")
+        # TODO: Refactor to accept frame_from and frame_to parameters
+        xColumns_raw = self.__columns_x_raw()
         self.__save_graphs_variance(result_df[xColumns_raw], 'variance_x_raw')
+
+        yColumns_raw = self.__columns_y_raw()
         self.__save_graphs_variance(result_df[yColumns_raw], 'variance_y_raw')
 
-    # TODO: Refactort to accept frame_from and frame_to parameters
+
     def save_graphs_variance_dezoomed(self, result_df):
+        # TODO: Refactor to accept frame_from and frame_to parameters
         xColumns_new = self.__columns_x_dezoomed()
         self.__save_graphs_variance(result_df[xColumns_new], 'variance_x_new')
+
         yColumns_new = self.__columns_y_dezoomed()
         self.__save_graphs_variance(result_df[yColumns_new], 'variance_y_new')
 
+    def __columns_y_raw(self):
+        # TODO: Move this function to DetectedRawDrift class.
+        yColumns_raw = list()
+        for feature_matcher_idx in range(0, 9):
+            num = str(feature_matcher_idx)
+            yColumns_raw.append("fm_" + num + "_drift_y")
+        return yColumns_raw
+
+    def __columns_x_raw(self):
+        # TODO: Move this function to DetectedRawDrift class.
+        xColumns_orig = list()
+        for feature_matcher_idx in range(0, 9):
+            num = str(feature_matcher_idx)
+            xColumns_orig.append("fm_" + num + "_drift_x")
+        return xColumns_orig
 
     def __columns_x_dezoomed(self):
+        # TODO: Move this function to DetectedRawDrift class.
         xColumns_new = list()
         for feature_matcher_idx in range(0, 9):
             num = str(feature_matcher_idx)
             xColumns_new.append("fm_" + num + "_drift_x_new")
         return xColumns_new
+
+    def __columns_y_dezoomed(self):
+        # TODO: Move this function to DetectedRawDrift class.
+        yColumns_new = list()
+        for feature_matcher_idx in range(0, 9):
+            num = str(feature_matcher_idx)
+            yColumns_new.append("fm_" + num + "_drift_y_new")
+        return yColumns_new
 
     def __save_graphs_variance(self, df, variance_column_name):
 

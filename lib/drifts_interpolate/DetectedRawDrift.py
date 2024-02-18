@@ -1,8 +1,10 @@
+from __future__ import annotations
 from typing import Dict, List
 
 import numpy as np
 from scipy.stats import stats
 
+from lib.infra.DataframeWrapper import DataframeWrapper
 from lib.model.Box import Box
 from lib.model.Point import Point
 from lib.model.Vector import Vector
@@ -16,8 +18,16 @@ class DetectedRawDrift:
         self.__verticalSpeed = verticalSpeed
 
     @staticmethod
-    def createFromDict(from_dict: Dict, verticalSpeed: VerticalSpeed):
-        return DetectedRawDrift(from_dict, verticalSpeed)
+    def createFromDict(from_dict: Dict, verticalSpeed: VerticalSpeed) -> DetectedRawDrift:
+        new_obj = DetectedRawDrift(from_dict, verticalSpeed)
+        new_obj._calculate_drifts()
+        return new_obj
+
+    @staticmethod
+    def createListFromDataFrame(inputDFW: DataframeWrapper, verticalSpeed: VerticalSpeed) -> List[DetectedRawDrift]:
+        records_list_all = inputDFW.as_records_list()
+        raw_drift_objs = [DetectedRawDrift.createFromDict(k, verticalSpeed) for k in records_list_all]
+        return raw_drift_objs
 
     def to_dict(self) -> Dict:
         result = dict()
@@ -35,7 +45,7 @@ class DetectedRawDrift:
         else:
             return True
 
-    def calculate_drifts(self):
+    def _calculate_drifts(self):
         non_null_values_x = list()
         non_null_values_y = list()
 
@@ -60,7 +70,7 @@ class DetectedRawDrift:
         return non_null_values_x, non_null_values_y
 
     def drift_vector(self):
-        values_x, values_y = self.calculate_drifts()
+        values_x, values_y = self._calculate_drifts()
         avg_x = np.mean(values_x)
         avg_y = np.mean(values_y)
 
@@ -70,7 +80,7 @@ class DetectedRawDrift:
         if self.skip_row():
             return "INVALID"
 
-        values_x, values_y = self.calculate_drifts()
+        values_x, values_y = self._calculate_drifts()
         response = DetectedRawDrift._has_outlier_stderr(values_x)
         return response
 
@@ -78,7 +88,7 @@ class DetectedRawDrift:
         if self.skip_row():
             return "INVALID"
 
-        values_x, values_y = self.calculate_drifts()
+        values_x, values_y = self._calculate_drifts()
         response = DetectedRawDrift._has_outlier_stderr(values_y)
         return response
 

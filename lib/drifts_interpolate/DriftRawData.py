@@ -37,10 +37,10 @@ class DriftRawData(PandasWrapper):
 
     def __save_graphs_comparison(self, df, frame_id_from: int = 0, fream_id_to: int = 123456):
         df_to_plot = df.loc[(df['frameNumber'] > frame_id_from) & (df['frameNumber'] < fream_id_to)]
+
         graph_plotter = GraphPlotter.createNew(df_to_plot, self.__folderStruct)
         graph_plotter.generate_graph("_averages_y", ["average_y_new", "driftY"])
         graph_plotter.generate_graph("_averages_x", ["average_x_new", "driftX"])
-
 
     def __undistorted_points_column(self, point: List[Point]) -> DataframeWrapper:
         camera = Camera.create()
@@ -99,10 +99,13 @@ class DriftRawData(PandasWrapper):
         return "OK"
 
     def interpolate(self, verticalSpeed: VerticalSpeed, driftsDetectionStep: int) -> None:
+
+        raw_drifts_df = self.__df.copy()
+        raw_drifts_df = self._replaceInvalidValuesWithNaN(raw_drifts_df, driftsDetectionStep)
+        raw_drifts_df = self.__remove_values_in_failed_records(raw_drifts_df)
+
         zoom_compensator = CompensateForZoomService(self.__folderStruct)
 
-        raw_drifts_df = self._replaceInvalidValuesWithNaN(self.__df, driftsDetectionStep)
-        raw_drifts_df = self.remove_values_in_failed_records(raw_drifts_df)
         if self.__generate_debug_graphs:
             zoom_compensator.save_graphs_drifts_raw(raw_drifts_df, 1000, 1500)
             zoom_compensator.save_graphs_variance_raw(raw_drifts_df)
@@ -110,10 +113,12 @@ class DriftRawData(PandasWrapper):
         df_compensated = zoom_compensator.compensate_for_zoom(raw_drifts_df, verticalSpeed)
 
         if self.__generate_debug_graphs:
-            df_compensated2 = zoom_compensator.compensate_for_zoom_subdata(raw_drifts_df,verticalSpeed)
-            zoom_compensator.save_graphs_variance_dezoomed(df_compensated2)
-            zoom_compensator.save_graphs_drifts_zoom_compensated(df_compensated2, 1000, 1500)
-            self.__save_graphs_comparison(df_compensated2, 1000, 1500)
+            self.__save_graphs_comparison(df_compensated, 1000, 1500)
+
+        if self.__generate_debug_graphs:
+            df_compensated_full = zoom_compensator.compensate_for_zoom_subdata(raw_drifts_df, verticalSpeed)
+            zoom_compensator.save_graphs_drifts_zoom_compensated(df_compensated_full, 1000, 1500)
+            zoom_compensator.save_graphs_variance_dezoomed(df_compensated_full)
 
         df = raw_drifts_df.copy()
         df["driftY"] = df_compensated['average_y_new']
@@ -136,7 +141,7 @@ class DriftRawData(PandasWrapper):
 
         self.__df = df
 
-    def remove_values_in_failed_records(self, df):
+    def __remove_values_in_failed_records(self, df):
         for feature_matcher_idx in range(0, 9):
             num = str(feature_matcher_idx)
             column_name_y_drift_raw = "fm_" + num + "_drift_y"
