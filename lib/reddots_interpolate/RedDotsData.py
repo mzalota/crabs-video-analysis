@@ -69,7 +69,7 @@ class RedDotsData(PandasWrapper):
         except AttributeError:
             #TODO: Interpolation does not work for early frames where video was bad. It still shows steps of 5
 
-            video_stream = VideoStream(self.__folderStruct.getVideoFilepath())
+            video_stream = VideoStream.instance(self.__folderStruct.getVideoFilepath())
             first_frame_id = video_stream.get_id_of_first_frame(1)
             last_frame_id = video_stream.num_of_frames()
             self.saveInterpolatedDFToFile(first_frame_id, last_frame_id)

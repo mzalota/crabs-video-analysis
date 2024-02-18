@@ -26,7 +26,7 @@ class DetectDriftsController:
         logger = Logger.openInAppendMode(folderStruct.getRawDriftsFilepath())
 
         velocityDetector = VelocityDetector(Configurations(folderStruct).is_debug())
-        videoStream = VideoStream(folderStruct.getVideoFilepath())
+        videoStream = VideoStream.instance(folderStruct.getVideoFilepath())
 
         rawDriftData = DriftRawData(folderStruct)
         maxFrameID = rawDriftData.max_frame_id()

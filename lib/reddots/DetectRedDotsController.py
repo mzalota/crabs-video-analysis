@@ -16,7 +16,7 @@ class DetectRedDotsController:
         # type: (FolderStructure) -> None
         self.__configs = Configurations(folderStruct)
         self.__rdRaw = RedDotsRawData.createNewAndReplaceExistingCSVFile(folderStruct)
-        self.__videoStream = VideoStream(folderStruct.getVideoFilepath())
+        self.__videoStream = VideoStream.instance(folderStruct.getVideoFilepath())
         self.__show_debug_UI = False
 
     def run(self):

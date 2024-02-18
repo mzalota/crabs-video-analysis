@@ -34,7 +34,7 @@ print ("Starting Manually Improving RedDots")
 #Create _config.txt file if it does not exist
 configs = Configurations(folderStruct)
 
-videoStream = VideoStream(folderStruct.getVideoFilepath())
+videoStream = VideoStream.instance(folderStruct.getVideoFilepath())
 Camera.initialize(videoStream)
 
 timer = MyTimer("Starting manuallyImproveRedDots")

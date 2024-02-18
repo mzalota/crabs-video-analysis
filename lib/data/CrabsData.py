@@ -147,11 +147,6 @@ class CrabsData(PandasWrapper):
         frame_coord_x_px = crab.center().x
         frame_coord_y_px = crab.center().y
 
-        print("frame_id", frame_id)
-        print("crab_width_px", crab_width_px)
-        print("frame_coord_x_px", frame_coord_x_px)
-        print("frame_coord_y_px", frame_coord_y_px)
-
         mm_per_pixel_undistorted = sf.getRedDotsData().mm_per_pixel_undistorted(frame_id)
 
         mm_per_pixel = sf.mm_per_pixel(frame_id)
@@ -160,9 +155,6 @@ class CrabsData(PandasWrapper):
         y_coord_mm = sf.getYCoordMMOrigin(frame_id) + frame_coord_y_mm
         frame_coord_x_mm = frame_coord_x_px * mm_per_pixel
         x_coord_mm = sf.getXCoordMMOrigin(frame_id) + frame_coord_x_mm
-        print("mm_per_pixel", mm_per_pixel)
-        print("y_coord_mm", y_coord_mm)
-        print("x_coord_mm", x_coord_mm)
 
         result = dict()
         result['frameNumber'] = frame_id

@@ -36,13 +36,13 @@ print ("Starting to cut video into frames")
 #Create _config.txt file if it does not exist
 configs = Configurations(folderStruct)
 
-Camera.initialize(VideoStream(folderStruct.getVideoFilepath()))
+Camera.initialize(VideoStream.instance(folderStruct.getVideoFilepath()))
 
 interpolator = InterpolateController(folderStruct)
 interpolator.regenerateSeefloor()
 
 seefloorGeometry = SeeFloor.createFromFolderStruct(folderStruct)
-videoStream = VideoStream(folderStruct.getVideoFilepath())
+videoStream = VideoStream.instance(folderStruct.getVideoFilepath())
 
 framesStitcher = VideoToImages(seefloorGeometry, videoStream)
 
