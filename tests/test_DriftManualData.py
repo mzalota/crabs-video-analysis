@@ -1,5 +1,6 @@
 from unittest import TestCase
 
+from lib.drifts_interpolate.DriftRawData import DriftRawData
 from lib.infra.FolderStructure import FolderStructure
 from lib.model.Point import Point
 from lib.drifts_detect.DriftManualData import DriftManualData
@@ -23,10 +24,10 @@ class TestDriftManualData(TestCase):
         # df = df.append(data, ignore_index=True)
         df = DataframeWrapper.append_to_df(df, data)
 
-        ddm = DriftManualData.createFromDataFrame(df, folderStruct)
+        ddm = DriftManualData._createFromDataFrame(df, folderStruct)
 
         # Exercise
-        result = ddm.doIt()
+        result = ddm._list_of_corrections()
 
         # Assert
         self.assertEqual(1, len(result))
@@ -65,10 +66,10 @@ class TestDriftManualData(TestCase):
                 }
         df = DataframeWrapper.append_to_df(df, data)
 
-        ddm = DriftManualData.createFromDataFrame(df, folderStruct)
+        ddm = DriftManualData._createFromDataFrame(df, folderStruct)
 
         # Exercise
-        result = ddm.doIt()
+        result = ddm._list_of_corrections()
 
         # Assert
         self.assertEqual(1, len(result))
@@ -92,13 +93,13 @@ class TestDriftManualData(TestCase):
 
     def test_add_manual_drift(self):
         folderStruct = FolderStructure("dirName", "V987")
-        ddm = DriftManualData.createBrandNew(folderStruct)
+        ddm = DriftManualData._createBrandNew(folderStruct)
 
         # Exercise
         ddm.add_manual_drift(100, Point(125, 175), 200, Point(225, 375))
 
         # Assert
-        dfDict = ddm.getPandasDF().to_dict('records')
+        dfDict = ddm._getRecords()
         self.assertEqual(1, len(dfDict))
         self.assertEqual("100", dfDict[0][DriftManualData.COLNAME_frameNumber_1])
         self.assertEqual("200", dfDict[0][DriftManualData.COLNAME_frameNumber_2])
@@ -119,11 +120,11 @@ class TestDriftManualData(TestCase):
         # dfRaw = DataframeWrapper.append_to_df(dfRaw, data)
         dfRaw = pd.concat([dfRaw, pd.DataFrame(data)])
 
-        ddm = DriftManualData.createBrandNew(folderStruct)
+        ddm = DriftManualData._createBrandNew(folderStruct)
         ddm.add_manual_drift("101", Point(100, 200), "102", Point(103, 211))  # xDrift = 3, yDrift = 11
 
         # Exercise
-        resultDF = ddm.overwrite_values(dfRaw)
+        resultDF = ddm._overwrite_values_internal(dfRaw)
 
         # Assert
         dfDict = resultDF.to_dict('records')
@@ -157,12 +158,12 @@ class TestDriftManualData(TestCase):
         data.append({'frameNumber': 105, "driftX": 2, "driftY": 7})
         dfRaw = pd.concat([dfRaw, pd.DataFrame(data)])
 
-        ddm = DriftManualData.createBrandNew(folderStruct)
+        ddm = DriftManualData._createBrandNew(folderStruct)
         ddm.add_manual_drift("101", Point(100, 200), "103", Point(106, 222))  # xDrift = 3, yDrift = 11
         ddm.add_manual_drift("102", Point(400, 800), "104", Point(410, 826))  # xDrift = 5, yDrift = 13
 
         # Exercise
-        resultDF = ddm.overwrite_values(dfRaw)
+        resultDF = ddm._overwrite_values_internal(dfRaw)
 
         # Assert
         dfDict = resultDF.to_dict('records')

@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import math
 from typing import Dict, List
 
@@ -8,8 +9,6 @@ import pandas as pd
 from scipy.stats import stats
 
 from lib.data.PandasWrapper import PandasWrapper
-from lib.reddots_interpolate.RedDotsData import RedDotsData
-from lib.drifts_detect.DriftManualData import DriftManualData
 from lib.drifts_interpolate.CompensateForZoomService import CompensateForZoomService
 from lib.imageProcessing.Camera import Camera
 from lib.infra.Configurations import Configurations
@@ -125,7 +124,7 @@ class DriftRawData(PandasWrapper):
 
         return "OK"
 
-    def interpolate(self, manualDrifts: DriftManualData, verticalSpeed: VerticalSpeed, driftsDetectionStep: int) -> pd.DataFrame:
+    def interpolate(self, verticalSpeed: VerticalSpeed, driftsDetectionStep: int) -> None:
         zoom_compensator = CompensateForZoomService(self.__folderStruct)
 
         raw_drifts_df = self._replaceInvalidValuesWithNaN(self.__df, driftsDetectionStep)
@@ -142,7 +141,6 @@ class DriftRawData(PandasWrapper):
         df["driftY"] = df_compensated['average_y_new']
         df["driftX"] = df_compensated['average_x_new']
 
-        #TODO: Check if frame image cannot be read from video due to some technical error. Reset the values and then interpolate
 
         #TODO: dividiing drift by driftsDetectionStep is not flexible.
         # What if detectDrift step is not 2, but 3 or if it is mixed?
@@ -153,14 +151,14 @@ class DriftRawData(PandasWrapper):
         df = df.interpolate(limit_direction='both')
 
         # df = self.__replace_with_NaN_if_very_diff_to_neighbors(df, "driftY", driftsDetectionStep)
-        df = self.__interpolateToHaveEveryFrame(df)
-
-        #TODO: extract this function of overwriting raw drifts with manual values elsewhere, so that it is more explicit
-        df = manualDrifts.overwrite_values(df)
+        df = self.__interpolate_to_step_1_frame(df)
 
         #set drifts in the first row to zero.
         self.__set_values_in_first_row_to_zeros(df)
-        return df
+        self.__df = df
+
+    def pandas_df(self):
+        return self.__df
 
     def __set_values_in_first_row_to_zeros(self, df):
         df.loc[0, self.__COLNAME_driftX] = 0
@@ -179,9 +177,9 @@ class DriftRawData(PandasWrapper):
 
         return df
 
-    def __interpolateToHaveEveryFrame(self, df):
+    def __interpolate_to_step_1_frame(self, df):
         # type: (pd.DataFrame) -> pd.DataFrame
-        minFrameID = self.min_frame_id()
+        minFrameID = self.__min_frame_id()
         maxFrameID = self.max_frame_id()
         df = df.set_index("frameNumber")
         arrayOfFrameIDs = numpy.arange(start=minFrameID, stop=maxFrameID, step=1)
@@ -189,12 +187,10 @@ class DriftRawData(PandasWrapper):
         df = df.combine_first(everyFrame).reset_index()
         return df
 
-    def min_frame_id(self):
-        # type: () -> int
+    def __min_frame_id(self) -> int:
         return self.__df[self.__COLNAME_frameNumber].min()
 
-    def max_frame_id(self):
-        # type: () -> int
+    def max_frame_id(self) -> int:
         return self.__df[self.__COLNAME_frameNumber].max()
 
     def __replace_with_NaN_if_very_diff_to_neighbors(self, data, colName, step_size):

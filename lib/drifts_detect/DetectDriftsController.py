@@ -13,7 +13,7 @@ class DetectDriftsController:
 
 
     def run(self):
-        stepSize = self.step_size()
+        stepSize = self.__step_size()
         print("using stepSize: " + str(stepSize))
 
         folderStruct = self.__folderStruct
@@ -41,7 +41,7 @@ class DetectDriftsController:
 
         logger.closeFile()
 
-    def step_size(self):
+    def __step_size(self):
         # type: () -> int
         configs = Configurations(self.__folderStruct)
         return configs.get_drifts_step_size()

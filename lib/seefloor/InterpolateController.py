@@ -13,7 +13,7 @@ class InterpolateController:
         # type: (FolderStructure) -> InterpolateController
         self.__folderStruct = folderStruct
 
-    def step_size(self):
+    def step_size(self) -> int:
         configs = Configurations(self.__folderStruct)
         return configs.get_drifts_step_size()
 
@@ -21,7 +21,6 @@ class InterpolateController:
         driftsStepSize = self.step_size()
         print("Using driftsStepSize: " + str(driftsStepSize))
 
-        rawDrifts = DriftRawData(self.__folderStruct)
 
         print ("regenerating/interpolating RedDots")
         rdd = RedDotsData.createFromFolderStruct(self.__folderStruct)
@@ -29,9 +28,12 @@ class InterpolateController:
 
         # TODO: extract logic in few rows into a "regenerate drafts" module/class
         print ("regenerating/interpolating Drafts")
-        manualDrifts = DriftManualData.createFromFile(self.__folderStruct)
+        rawDrifts = DriftRawData(self.__folderStruct)
+        rawDrifts.interpolate(verticalSpeed, driftsStepSize)
 
-        drifts_interpolated_df = rawDrifts.interpolate(manualDrifts, verticalSpeed, driftsStepSize)
+        print("applying manual Drifts")
+        manualDrifts = DriftManualData.createFromFile(self.__folderStruct)
+        drifts_interpolated_df = manualDrifts.overwrite_values(rawDrifts)
 
         drifts = DriftInterpolatedData.createFromFolderStruct(self.__folderStruct)
         drifts.setDF(drifts_interpolated_df)
