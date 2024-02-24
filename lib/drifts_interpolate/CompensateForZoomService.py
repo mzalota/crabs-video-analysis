@@ -47,7 +47,7 @@ class CompensateForZoomService:
         df = dframe.pandas_df()
 
         #after removing values in rows with result="FAILED", now fill them out with interpolated values
-        df = df.interpolate(limit_direction='both')
+        df = DataframeWrapper(df).interpolate_nan_values_everywhere().pandas_df()
 
         df['average_y_orig'] = df[yColumns_orig].mean(axis=1)
         df['average_x_orig'] = df[xColumns_orig].mean(axis=1)
@@ -83,13 +83,17 @@ class CompensateForZoomService:
     def compensate_for_zoom(self, input_df, verticalSpeed: VerticalSpeed):
         inputDFW = DataframeWrapper(input_df)
         raw_drift_objs = DetectedRawDrift.createListFromDataFrame(inputDFW, verticalSpeed)
-        average_y_new = [k.drift_vector().y for k in raw_drift_objs]
-        average_x_new = [k.drift_vector().x for k in raw_drift_objs]
+        average_y_new = [k.drift_y() for k in raw_drift_objs]
+        average_x_new = [k.drift_x() for k in raw_drift_objs]
 
-        result_df = input_df[["frameNumber","driftX", "driftY"]].copy()
+        result_df = input_df[["frameNumber", "driftX", "driftY"]].copy()
         result_df['average_x_new'] = average_x_new
         result_df['average_y_new'] = average_y_new
-        return result_df
+
+        df_wrapper = DataframeWrapper(result_df)
+        df_wrapper.interpolate_nan_values_in_column('average_x_new')
+        df_wrapper.interpolate_nan_values_in_column('average_y_new')
+        return df_wrapper.pandas_df()
 
     def compensate_for_zoom_subdata(self, input_df, verticalSpeed: VerticalSpeed):
         full_df = DataframeWrapper(input_df)

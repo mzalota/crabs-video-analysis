@@ -284,7 +284,8 @@ class RedDotsData(PandasWrapper):
         df[self.__COLNAME_angle] = angle_in_radians / math.pi * 90
 
     def __interpolate_values(self, df: pd.DataFrame) -> pd.DataFrame:
-        df = df.interpolate(limit_direction='both')
+
+        df = DataframeWrapper(df).interpolate_nan_values_everywhere().pandas_df()
 
         df.loc[pd.isna(df["origin_dot1"]), ["origin_dot1"]] = self.VALUE_ORIGIN_interpolate
         df.loc[pd.isna(df["origin_dot2"]), ["origin_dot2"]] = self.VALUE_ORIGIN_interpolate

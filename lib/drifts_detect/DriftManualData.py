@@ -129,5 +129,10 @@ class DriftManualData(PandasWrapper):
         for correctionsDF in multipleCorrectionDFs:
             correctionsDF = correctionsDF.set_index("frameNumber")
             drifts_interpolated_df = correctionsDF.combine_first(drifts_interpolated_df)
-        return drifts_interpolated_df.reset_index().interpolate(limit_direction='both')
+
+        drifts_interpolated_df = drifts_interpolated_df.reset_index()
+
+        result_df = DataframeWrapper(drifts_interpolated_df).interpolate_nan_values_everywhere().pandas_df()
+        return result_df
+        # return drifts_interpolated_df.reset_index().interpolate(limit_direction='both')
 

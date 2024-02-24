@@ -24,6 +24,15 @@ class DataframeWrapper:
         df = pd.DataFrame.from_records(list_of_dicts)
         return DataframeWrapper(df)
 
+    def interpolate_nan_values_in_column(self, column_name: str) -> DataframeWrapper:
+        self.__df[column_name] = self.__df[column_name].interpolate(limit_direction='both')
+        return self
+
+    def interpolate_nan_values_everywhere(self) -> DataframeWrapper:
+        self.__df = self.__df.interpolate(limit_direction='both')
+        return self
+
+
     def save_file_csv(self, filepath):
         # type: (str) -> None
         self.__df.to_csv(filepath, sep='\t', index=False)

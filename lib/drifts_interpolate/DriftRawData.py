@@ -98,7 +98,7 @@ class DriftRawData(PandasWrapper):
 
         return "OK"
 
-    def interpolate(self, verticalSpeed: VerticalSpeed, driftsDetectionStep: int) -> None:
+    def generate_clean_drifts(self, verticalSpeed: VerticalSpeed, driftsDetectionStep: int) -> None:
 
         raw_drifts_df = self.__df.copy()
         raw_drifts_df = self._replaceInvalidValuesWithNaN(raw_drifts_df, driftsDetectionStep)
@@ -120,26 +120,27 @@ class DriftRawData(PandasWrapper):
             zoom_compensator.save_graphs_drifts_zoom_compensated(df_compensated_full, 1000, 1500)
             zoom_compensator.save_graphs_variance_dezoomed(df_compensated_full)
 
-        df = raw_drifts_df.copy()
-        df["driftY"] = df_compensated['average_y_new']
-        df["driftX"] = df_compensated['average_x_new']
+        df_compensated = df_compensated[[self.__COLNAME_frameNumber, "average_x_new", "average_y_new"]]
+        df_clean = df_compensated.rename(columns={'average_x_new': self.__COLNAME_driftX, 'average_y_new': self.__COLNAME_driftY, self.__COLNAME_frameNumber: self.__COLNAME_frameNumber})
 
-
-        #TODO: dividiing drift by driftsDetectionStep is not flexible.
-        # What if detectDrift step is not 2, but 3 or if it is mixed?
-        df["driftX"] = df["driftX"] / driftsDetectionStep
-        df["driftY"] = df["driftY"] / driftsDetectionStep
-
-        df = df[[self.__COLNAME_frameNumber, self.__COLNAME_driftX, self.__COLNAME_driftY]]
-        df = df.interpolate(limit_direction='both')
-
-        # df = self.__replace_with_NaN_if_very_diff_to_neighbors(df, "driftY", driftsDetectionStep)
-        df = self.__interpolate_to_step_1_frame(df)
-
-        #set drifts in the first row to zero.
-        self.__set_values_in_first_row_to_zeros(df)
+        df = self.__to_step_1(df_clean, driftsDetectionStep)
 
         self.__df = df
+
+    def __to_step_1(self, df, driftsDetectionStep: int):
+
+        # TODO: dividiing drift by driftsDetectionStep is not flexible.
+        # What if detectDrift step is not 2, but 3 or if it is mixed?
+        df[self.__COLNAME_driftX] = df[self.__COLNAME_driftX] / driftsDetectionStep
+        df[self.__COLNAME_driftY] = df[self.__COLNAME_driftY] / driftsDetectionStep
+
+        # df = self.__replace_with_NaN_if_very_diff_to_neighbors(df, "driftY", driftsDetectionStep)
+
+        df = self.__interpolate_to_step_1_frame(df)
+
+        # set drifts in the first row to zero.
+        self.__set_values_in_first_row_to_zeros(df)
+        return df
 
     def __remove_values_in_failed_records(self, df):
         for feature_matcher_idx in range(0, 9):
@@ -162,8 +163,7 @@ class DriftRawData(PandasWrapper):
             without_outliers_x.remove_outliers_quantile(column_name_x_drift_raw)
             df[column_name_x_drift_raw] = without_outliers_x.pandas_df()[column_name_x_drift_raw]
 
-            df = df.interpolate(limit_direction='both')
-
+            df = DataframeWrapper(df).interpolate_nan_values_everywhere().pandas_df()
         return df
 
     def pandas_df(self):
@@ -186,8 +186,7 @@ class DriftRawData(PandasWrapper):
 
         return df
 
-    def __interpolate_to_step_1_frame(self, df):
-        # type: (pd.DataFrame) -> pd.DataFrame
+    def __interpolate_to_step_1_frame(self, df: pd.DataFrame) -> pd.DataFrame:
         minFrameID = self.__min_frame_id()
         maxFrameID = self.max_frame_id()
         df = df.set_index("frameNumber")
