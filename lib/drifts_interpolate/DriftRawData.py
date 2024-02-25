@@ -100,9 +100,9 @@ class DriftRawData(PandasWrapper):
 
     def generate_clean_drifts(self, verticalSpeed: VerticalSpeed, driftsDetectionStep: int) -> None:
 
-        raw_drifts_df = self.__df.copy()
-        raw_drifts_df = self._replaceInvalidValuesWithNaN(raw_drifts_df, driftsDetectionStep)
-        raw_drifts_df = self.__remove_values_in_failed_records(raw_drifts_df)
+        raw_drifts_df_1 = self.__df.copy()
+        raw_drifts_df_1 = self._replaceInvalidValuesWithNaN(raw_drifts_df_1)
+        raw_drifts_df = self.__remove_values_in_failed_records(raw_drifts_df_1)
 
         zoom_compensator = CompensateForZoomService(self.__folderStruct)
 
@@ -110,9 +110,12 @@ class DriftRawData(PandasWrapper):
             zoom_compensator.save_graphs_drifts_raw(raw_drifts_df, 1000, 1500)
             zoom_compensator.save_graphs_variance_raw(raw_drifts_df)
 
-        df_compensated = zoom_compensator.compensate_for_zoom(raw_drifts_df, verticalSpeed)
+        # df_compensated = zoom_compensator.compensate_for_zoom(raw_drifts_df, verticalSpeed)
+        # df_compensated = zoom_compensator.compensate_for_zoom(self.__df.copy(), verticalSpeed)
+        df_compensated = zoom_compensator.compensate_for_zoom(raw_drifts_df_1, verticalSpeed)
 
         if self.__generate_debug_graphs:
+            df_compensated = self._replaceInvalidValuesWithNaN(df_compensated)
             self.__save_graphs_comparison(df_compensated, 1000, 1500)
 
         if self.__generate_debug_graphs:
@@ -141,7 +144,6 @@ class DriftRawData(PandasWrapper):
         # set drifts in the first row to zero.
         self.__set_values_in_first_row_to_zeros(df)
         return df
-
     def __remove_values_in_failed_records(self, df):
         for feature_matcher_idx in range(0, 9):
             num = str(feature_matcher_idx)
@@ -173,16 +175,10 @@ class DriftRawData(PandasWrapper):
         df.loc[0, self.__COLNAME_driftX] = 0
         df.loc[0, self.__COLNAME_driftY] = 0
 
-    def _replaceInvalidValuesWithNaN(self, df, step_size):
+    def _replaceInvalidValuesWithNaN(self, df):
         # type: (pd.DataFrame) -> pd.DataFrame
         df.loc[df['driftY'] == -999, ['driftY', 'driftX']] = numpy.nan
         df.loc[df['driftX'] == -888, ['driftX', 'driftY']] = numpy.nan
-
-        # df.loc[df['driftX'] < -10*step_size, ['driftX', 'driftY']] = numpy.nan #-20
-        # df.loc[df['driftX'] > 10*step_size, ['driftX', 'driftY']] = numpy.nan  #30
-        #
-        # df.loc[df['driftY'] < -10*step_size, ['driftX', 'driftY']] = numpy.nan #-20
-        # df.loc[df['driftY'] > 100*step_size/2, ['driftX', 'driftY']] = numpy.nan  #130
 
         return df
 

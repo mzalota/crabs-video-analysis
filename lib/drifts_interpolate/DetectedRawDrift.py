@@ -20,7 +20,7 @@ class DetectedRawDrift:
     @staticmethod
     def createFromDict(from_dict: Dict, verticalSpeed: VerticalSpeed) -> DetectedRawDrift:
         new_obj = DetectedRawDrift(from_dict, verticalSpeed)
-        new_obj._calculate_drifts()
+        new_obj._calculate_drifts_new()
         return new_obj
 
     @staticmethod
@@ -45,41 +45,66 @@ class DetectedRawDrift:
         else:
             return True
 
-    def _calculate_drifts(self):
-        non_null_values_x = list()
-        non_null_values_y = list()
+    def _calculate_drifts_new(self):
+        if self.skip_row():
+            return
 
         for feature_matcher_idx in range(0, 9):
             if not self.__is_detected(feature_matcher_idx):
                 continue
 
-            feature_location = self.center_point_at(feature_matcher_idx)
             drift_vector = self.drift_vector_at(feature_matcher_idx)
+            #Get rid of outliers based on absolute values - we know these values are not possible
+            #TODO: adjust these extreme upper/lower bound values based on step-size.
+            if drift_vector.x < -50 or drift_vector.x > 50:
+                continue
+            if drift_vector.y < -100 or drift_vector.y > 200:
+                continue
 
+            feature_location = self.center_point_at(feature_matcher_idx)
             zoom_factor_new = self.__verticalSpeed.zoom_compensation(self.frame_id() - 1, self.frame_id())
             diff_due_to_zoom = VerticalSpeed.zoom_correction(feature_location, zoom_factor_new)
 
             result = drift_vector.minus(diff_due_to_zoom)
 
-            non_null_values_x.append(result.x)
-            non_null_values_y.append(result.y)
-
             self.__init_dict["fm_" + str(feature_matcher_idx) + "_drift_x_new"] = result.x
             self.__init_dict["fm_" + str(feature_matcher_idx) + "_drift_y_new"] = result.y
 
-        return non_null_values_x, non_null_values_y
+    def __values_x(self):
+        non_null_values_x = list()
+        for feature_matcher_idx in range(0, 9):
+            key_x = "fm_" + str(feature_matcher_idx) + "_drift_x_new"
+            if key_x in self.__init_dict:
+                non_null_values_x.append(self.__init_dict[key_x])
+
+        return non_null_values_x
+
+    def __values_y(self):
+        non_null_values_y = list()
+        for feature_matcher_idx in range(0, 9):
+            key_y = "fm_" + str(feature_matcher_idx) + "_drift_y_new"
+            if key_y in self.__init_dict:
+                non_null_values_y.append(self.__init_dict[key_y])
+
+        return non_null_values_y
 
     def drift_x(self) -> float | None:
-        values_x, values_y = self._calculate_drifts()
-        if len(values_x) == 0 :
+        values_x  = self.__values_x()
+        if len(values_x) == 0:
             return None
+
+        if self.outliers_x() != "OK":
+             return None
 
         avg_x = np.mean(values_x)
         return avg_x
 
     def drift_y(self) -> float | None:
-        values_x, values_y = self._calculate_drifts()
+        values_y = self.__values_y()
         if len(values_y) == 0:
+            return None
+
+        if self.outliers_y() != "OK":
             return None
 
         avg_y = np.mean(values_y)
@@ -89,7 +114,7 @@ class DetectedRawDrift:
         if self.skip_row():
             return "INVALID"
 
-        values_x, values_y = self._calculate_drifts()
+        values_x = self.__values_x()
         response = DetectedRawDrift._has_outlier_stderr(values_x)
         return response
 
@@ -97,14 +122,15 @@ class DetectedRawDrift:
         if self.skip_row():
             return "INVALID"
 
-        values_x, values_y = self._calculate_drifts()
+        values_y = self.__values_y()
         response = DetectedRawDrift._has_outlier_stderr(values_y)
         return response
 
     @staticmethod
     def _has_outlier_stderr(ls: List) -> bool:
         if len(ls) < 3:
-            return "OK"
+            return "TOO_FEW_POINTS"
+            # return "OK"
 
         min_loc = ls.index(min(ls))
         max_loc = ls.index(max(ls))

@@ -90,10 +90,24 @@ class CompensateForZoomService:
         result_df['average_x_new'] = average_x_new
         result_df['average_y_new'] = average_y_new
 
-        df_wrapper = DataframeWrapper(result_df)
-        df_wrapper.interpolate_nan_values_in_column('average_x_new')
-        df_wrapper.interpolate_nan_values_in_column('average_y_new')
-        return df_wrapper.pandas_df()
+        without_outliers = DataframeWrapper(result_df)
+        without_outliers.remove_outliers_quantile("average_y_new")
+        without_outliers.remove_outliers_quantile("average_x_new")
+        without_outliers.remove_outliers_quantile("driftX")
+        without_outliers.remove_outliers_quantile("driftY")
+
+        without_outliers_df = without_outliers.pandas_df()
+
+        result_df["average_y_new"] = without_outliers_df["average_y_new"]
+        result_df["average_x_new"] = without_outliers_df["average_x_new"]
+        result_df["driftX"] = without_outliers_df["driftX"]
+        result_df["driftY"] = without_outliers_df["driftY"]
+
+        return result_df
+        # df_wrapper = DataframeWrapper(result_df)
+        # df_wrapper.interpolate_nan_values_in_column('average_x_new')
+        # df_wrapper.interpolate_nan_values_in_column('average_y_new')
+        # return df_wrapper.pandas_df()
 
     def compensate_for_zoom_subdata(self, input_df, verticalSpeed: VerticalSpeed):
         full_df = DataframeWrapper(input_df)
