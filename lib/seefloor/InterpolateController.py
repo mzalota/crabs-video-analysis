@@ -1,3 +1,4 @@
+from lib.drifts_interpolate.DriftsInterpolator import DriftsInterpolator
 from lib.infra.FolderStructure import FolderStructure
 from lib.data.CrabsData import CrabsData
 from lib.drifts_interpolate.DriftInterpolatedData import DriftInterpolatedData
@@ -28,11 +29,13 @@ class InterpolateController:
         print ("-- Regenerating/interpolating Drifts")
         rawDrifts = DriftRawData(self.__folderStruct)
 
+        drifts_interpolator = DriftsInterpolator(self.__folderStruct)
+
         configs = Configurations(self.__folderStruct)
         if configs.is_debug():
-            rawDrifts.save_graphs(verticalSpeed, 1500, 2500)
-
-        rawDrifts.generate_clean_drifts(verticalSpeed, driftsStepSize)
+            drifts_interpolator.save_graphs(rawDrifts, verticalSpeed, 1500, 2500)
+        # drifts_interpolator = DriftsInterpolator(self.__folderStruct)
+        rawDrifts.generate_clean_drifts(drifts_interpolator, verticalSpeed, driftsStepSize)
 
         print("-- Applying manual Drifts")
         manualDrifts = DriftManualData.createFromFile(self.__folderStruct)

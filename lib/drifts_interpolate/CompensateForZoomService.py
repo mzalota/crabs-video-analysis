@@ -19,7 +19,7 @@ class CompensateForZoomService:
         self.__folderStruct = folderStruct
         configs = Configurations(folderStruct)
         self.__generate_debug_graphs = configs.is_debug()
-        self.__nowBack_df = self.compensate_for_zoom_subdata(input_df, verticalSpeed)
+        self.__nowBack_df = self.__compensate_for_zoom_subdata(input_df, verticalSpeed)
 
     def save_graphs_drifts_raw(self, df_param, frame_id_from: int = 0, fream_id_to: int = 123456):
         df = df_param.copy()
@@ -81,15 +81,15 @@ class CompensateForZoomService:
         yColumns_new = self.__columns_y_dezoomed()
         graph_plotter.generate_graph("FrameMatcher_Drifts_Y_zoom", yColumns_new)
 
-    def compensate_for_zoom_subdata(self, input_df, verticalSpeed: VerticalSpeed):
+    def __compensate_for_zoom_subdata(self, input_df, verticalSpeed: VerticalSpeed):
         full_dfw = DataframeWrapper(input_df)
-        nowBack = self.process_raw_drifts(full_dfw, verticalSpeed)
+        nowBack = self.__process_raw_drifts(full_dfw, verticalSpeed)
 
         full_dfw.append_dataframe(nowBack)
         return full_dfw.pandas_df()
 
     def compensate_for_zoom(self, input_df, verticalSpeed: VerticalSpeed):
-        nowBack_df = self.__nowBack_df # self.compensate_for_zoom_subdata(input_df, verticalSpeed)
+        nowBack_df = self.__nowBack_df
 
         result_df = input_df[["frameNumber", "driftX", "driftY"]].copy()
         result_df['average_x_new'] = nowBack_df["average_x_new"]
@@ -110,7 +110,7 @@ class CompensateForZoomService:
 
         return result_df
 
-    def process_raw_drifts(self, inputDFW, verticalSpeed):
+    def __process_raw_drifts(self, inputDFW, verticalSpeed):
         raw_drift_objs = DetectedRawDrift.createListFromDataFrame(inputDFW, verticalSpeed)
         backToDataFrame = [k.to_dict() for k in raw_drift_objs]
         nowBack = DataframeWrapper.create_from_record_list(backToDataFrame)
@@ -183,7 +183,6 @@ class CompensateForZoomService:
 
         frame_b = DataframeWrapper.create_from_list(variance_list, variance_column_name).pandas_df()
 
-        # print(variance_column_name+"_variance: ", frame_b.var())
         print(variance_column_name+"_variance: ", np.nanvar(variance_list))
         print(variance_column_name+"_variance_mean: ", np.nanmean(variance_list))
         print(variance_column_name+"_variance_avg: ",  np.nansum(variance_list) / len(variance_list) )
@@ -198,9 +197,6 @@ class CompensateForZoomService:
         filename = filepath_prefix + variance_column_name + ".png"
 
         graphPlotter.saveGraphToFile(["index"], [variance_column_name], graph_title, filename)
-
-        # graphPlotter = GraphPlotter.createNew(df_to_plot, self.__folderStruct)
-        # graphPlotter.generate_graph("variance_"+variance_column_name, [variance_column_name])
 
     def _for_variance(self, dict_of_vals: Dict):
         values = list(dict_of_vals.values())

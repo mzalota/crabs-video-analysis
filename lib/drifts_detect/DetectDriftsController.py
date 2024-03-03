@@ -23,6 +23,7 @@ class DetectDriftsController:
         if not folderStruct.fileExists(folderStruct.getRawDriftsFilepath()):
             self.__createNewRawFileWithHeaderRow(folderStruct)
 
+        #TODO: Move this logger to DriftRawData class. Writing should be happening there.
         logger = Logger.openInAppendMode(folderStruct.getRawDriftsFilepath())
 
         velocityDetector = VelocityDetector(Configurations(folderStruct).is_debug())
