@@ -10,7 +10,17 @@ from lib.model.Vector import Vector
 
 class VerticalSpeed:
 
+
     #scaling factor greater than 1 means that seefloor got further away. Everything got smaller. Everything on the image got closer to the center of the image (fewer pixels away from center).
+    def __init__(self, df: pd.DataFrame):
+        df["scaling_factor"] = self.calculate_scaling_factor_from_distance_between_reddots(df["distance_smooth"])
+
+        scaling_factor_df = df[["frameNumber", "scaling_factor"]]
+
+        df_indexed = scaling_factor_df.set_index('frameNumber')
+        self.__scaling_factor_dict = df_indexed['scaling_factor'].to_dict()
+        self.__df = df
+
     @staticmethod
     def zoom_correction(point, scaling_factor):
         camera = Camera.create()
@@ -26,23 +36,13 @@ class VerticalSpeed:
 
         return Vector(x_correction, y_correction)
 
+
     def zoom_compensation(self, frame_id_from, frame_id_to) -> float:
         result = 1
         for i in range(frame_id_from, frame_id_to+1, 1):
             scaling_factor = self.__scaling_factor_dict[i]
             result = result * scaling_factor
         return result
-
-
-    def vertical_speed_ratio(self, df: pd.DataFrame) -> pd.DataFrame:
-        df["scaling_factor"] = self.calculate_scaling_factor_from_distance_between_reddots(df["distance_smooth"])
-
-        scaling_factor_df = df[["frameNumber", "scaling_factor"]]
-
-        df_indexed = scaling_factor_df.set_index('frameNumber')
-        self.__scaling_factor_dict = df_indexed['scaling_factor'].to_dict()
-
-        return scaling_factor_df
 
     def calculate_scaling_factor_from_distance_between_reddots(self, column: pd.Series) ->pd.DataFrame:
         distance_prev = column.shift(periods=-1)

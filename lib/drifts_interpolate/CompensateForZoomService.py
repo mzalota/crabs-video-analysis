@@ -15,11 +15,11 @@ from lib.seefloor.VerticalSpeed import VerticalSpeed
 
 class CompensateForZoomService:
 
-    def __init__(self, folderStruct: FolderStructure) -> CompensateForZoomService:
+    def __init__(self, folderStruct: FolderStructure, input_df, verticalSpeed: VerticalSpeed) -> CompensateForZoomService:
         self.__folderStruct = folderStruct
         configs = Configurations(folderStruct)
         self.__generate_debug_graphs = configs.is_debug()
-
+        self.__nowBack_df = self.compensate_for_zoom_subdata(input_df, verticalSpeed)
 
     def save_graphs_drifts_raw(self, df_param, frame_id_from: int = 0, fream_id_to: int = 123456):
         df = df_param.copy()
@@ -69,7 +69,8 @@ class CompensateForZoomService:
 
         return df
 
-    def save_graphs_drifts_zoom_compensated(self, df, frame_id_from: int = 0, fream_id_to: int = 123456):
+    def save_graphs_drifts_zoom_compensated(self, frame_id_from: int = 0, fream_id_to: int = 123456):
+        df = self.__nowBack_df
 
         df_to_plot = df.loc[(df['frameNumber'] > frame_id_from) & (df['frameNumber'] < fream_id_to)]
         graph_plotter = GraphPlotter.createNew(df_to_plot, self.__folderStruct)
@@ -80,15 +81,19 @@ class CompensateForZoomService:
         yColumns_new = self.__columns_y_dezoomed()
         graph_plotter.generate_graph("FrameMatcher_Drifts_Y_zoom", yColumns_new)
 
+    def compensate_for_zoom_subdata(self, input_df, verticalSpeed: VerticalSpeed):
+        full_dfw = DataframeWrapper(input_df)
+        nowBack = self.process_raw_drifts(full_dfw, verticalSpeed)
+
+        full_dfw.append_dataframe(nowBack)
+        return full_dfw.pandas_df()
+
     def compensate_for_zoom(self, input_df, verticalSpeed: VerticalSpeed):
-        inputDFW = DataframeWrapper(input_df)
-        raw_drift_objs = DetectedRawDrift.createListFromDataFrame(inputDFW, verticalSpeed)
-        average_y_new = [k.drift_y() for k in raw_drift_objs]
-        average_x_new = [k.drift_x() for k in raw_drift_objs]
+        nowBack_df = self.__nowBack_df # self.compensate_for_zoom_subdata(input_df, verticalSpeed)
 
         result_df = input_df[["frameNumber", "driftX", "driftY"]].copy()
-        result_df['average_x_new'] = average_x_new
-        result_df['average_y_new'] = average_y_new
+        result_df['average_x_new'] = nowBack_df["average_x_new"]
+        result_df['average_y_new'] = nowBack_df["average_y_new"]
 
         without_outliers = DataframeWrapper(result_df)
         without_outliers.remove_outliers_quantile("average_y_new")
@@ -104,21 +109,12 @@ class CompensateForZoomService:
         result_df["driftY"] = without_outliers_df["driftY"]
 
         return result_df
-        # df_wrapper = DataframeWrapper(result_df)
-        # df_wrapper.interpolate_nan_values_in_column('average_x_new')
-        # df_wrapper.interpolate_nan_values_in_column('average_y_new')
-        # return df_wrapper.pandas_df()
 
-    def compensate_for_zoom_subdata(self, input_df, verticalSpeed: VerticalSpeed):
-        full_df = DataframeWrapper(input_df)
-
-        raw_drift_objs = DetectedRawDrift.createListFromDataFrame(full_df, verticalSpeed)
-
+    def process_raw_drifts(self, inputDFW, verticalSpeed):
+        raw_drift_objs = DetectedRawDrift.createListFromDataFrame(inputDFW, verticalSpeed)
         backToDataFrame = [k.to_dict() for k in raw_drift_objs]
-
         nowBack = DataframeWrapper.create_from_record_list(backToDataFrame)
-        full_df.append_dataframe(nowBack)
-        return full_df.pandas_df()
+        return nowBack
 
     def save_graphs_variance_raw(self, result_df):
         # TODO: Refactor to accept frame_from and frame_to parameters
@@ -129,7 +125,18 @@ class CompensateForZoomService:
         self.__save_graphs_variance(result_df[yColumns_raw], 'variance_y_raw')
 
 
-    def save_graphs_variance_dezoomed(self, result_df):
+    def save_graphs_comparison(self, frame_id_from: int = 0, fream_id_to: int = 123456):
+        df = self.__nowBack_df
+
+        df_to_plot = df.loc[(df['frameNumber'] > frame_id_from) & (df['frameNumber'] < fream_id_to)]
+
+        graph_plotter = GraphPlotter.createNew(df_to_plot, self.__folderStruct)
+        graph_plotter.generate_graph("_averages_y", ["average_y_new", "driftY"])
+        graph_plotter.generate_graph("_averages_x", ["average_x_new", "driftX"])
+
+
+    def save_graphs_variance_dezoomed(self):
+        result_df = self.__nowBack_df
         # TODO: Refactor to accept frame_from and frame_to parameters
         xColumns_new = self.__columns_x_dezoomed()
         self.__save_graphs_variance(result_df[xColumns_new], 'variance_x_new')

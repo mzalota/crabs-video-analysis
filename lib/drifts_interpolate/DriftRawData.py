@@ -34,14 +34,6 @@ class DriftRawData(PandasWrapper):
         configs = Configurations(folderStruct)
         self.__generate_debug_graphs = configs.is_debug()
 
-
-    def __save_graphs_comparison(self, df, frame_id_from: int = 0, fream_id_to: int = 123456):
-        df_to_plot = df.loc[(df['frameNumber'] > frame_id_from) & (df['frameNumber'] < fream_id_to)]
-
-        graph_plotter = GraphPlotter.createNew(df_to_plot, self.__folderStruct)
-        graph_plotter.generate_graph("_averages_y", ["average_y_new", "driftY"])
-        graph_plotter.generate_graph("_averages_x", ["average_x_new", "driftX"])
-
     def __undistorted_points_column(self, point: List[Point]) -> DataframeWrapper:
         camera = Camera.create()
         undistorted_point = [camera.undistort_point(k) for k in point]
@@ -100,14 +92,8 @@ class DriftRawData(PandasWrapper):
 
     def generate_clean_drifts(self, verticalSpeed: VerticalSpeed, driftsDetectionStep: int) -> None:
 
-        zoom_compensator = CompensateForZoomService(self.__folderStruct)
+        zoom_compensator = CompensateForZoomService(self.__folderStruct, self._raw_drifts_with_nans(), verticalSpeed)
         df_compensated = zoom_compensator.compensate_for_zoom(self._raw_drifts_with_nans(), verticalSpeed)
-
-        # if self.__generate_debug_graphs:
-            # self.__save_graphs_comparison(df_compensated, 1000, 1500)
-
-        # if self.__generate_debug_graphs:
-        #     self.save_graphs(verticalSpeed, 1000, 1500)
 
         df_compensated = df_compensated[[self.__COLNAME_frameNumber, "average_x_new", "average_y_new"]]
         df_clean = df_compensated.rename(columns={'average_x_new': self.__COLNAME_driftX, 'average_y_new': self.__COLNAME_driftY, self.__COLNAME_frameNumber: self.__COLNAME_frameNumber})
@@ -118,13 +104,16 @@ class DriftRawData(PandasWrapper):
 
     def save_graphs(self, verticalSpeed, frame_id_from, fream_id_to):
         raw_drifts_df = self.__remove_values_in_failed_records(self._raw_drifts_with_nans())
-        zoom_compensator = CompensateForZoomService(self.__folderStruct)
-        zoom_compensator.save_graphs_drifts_raw(raw_drifts_df, frame_id_from, fream_id_to)
+
+        zoom_compensator = CompensateForZoomService(self.__folderStruct, raw_drifts_df, verticalSpeed)
+
         zoom_compensator.save_graphs_variance_raw(raw_drifts_df)
-        df_compensated_full = zoom_compensator.compensate_for_zoom_subdata(raw_drifts_df, verticalSpeed)
-        zoom_compensator.save_graphs_drifts_zoom_compensated(df_compensated_full, frame_id_from, fream_id_to)
-        zoom_compensator.save_graphs_variance_dezoomed(df_compensated_full)
-        self.__save_graphs_comparison(df_compensated_full, frame_id_from, fream_id_to)
+        zoom_compensator.save_graphs_variance_dezoomed()
+
+        zoom_compensator.save_graphs_drifts_raw(raw_drifts_df, frame_id_from, fream_id_to)
+        zoom_compensator.save_graphs_drifts_zoom_compensated(frame_id_from, fream_id_to)
+
+        zoom_compensator.save_graphs_comparison(frame_id_from, fream_id_to)
 
     def _raw_drifts_with_nans(self):
         raw_drifts_df_1 = self.pandas_df().copy()

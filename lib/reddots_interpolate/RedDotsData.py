@@ -75,7 +75,7 @@ class RedDotsData(PandasWrapper):
             self.saveInterpolatedDFToFile(first_frame_id, last_frame_id)
             return self.__interpolatedDF
 
-    #TODO: refactor this a bit (move saving of the graphs to saveGraphs() function, etc.)
+
     def verticalSpeed(self) -> VerticalSpeed:
         newDF = self.getPandasDF()[["frameNumber", self.__COLNAME_distance]].copy()
 
@@ -86,9 +86,9 @@ class RedDotsData(PandasWrapper):
         smoothed_data = fourier.smooth_array(newDF["distance"].to_numpy(), low_band_pass_cutoff)
         newDF['distance_smooth'] = smoothed_data
 
-        verticalSpeedCalculator = VerticalSpeed()
-        verticalSpeedCalculator.vertical_speed_ratio(newDF)
+        verticalSpeedCalculator = VerticalSpeed(newDF)
 
+        # TODO: refactor this a bit (move saving of the graphs to saveGraphs() function, etc.)
         if Configurations(self.__folderStruct).is_debug():
             verticalSpeedCalculator.save_graph_smooth_distances(newDF, "distance", self.__folderStruct, 500, 2500)
 

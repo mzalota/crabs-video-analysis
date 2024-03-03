@@ -25,7 +25,7 @@ class InterpolateController:
         verticalSpeed = rdd.verticalSpeed()
 
         # TODO: extract logic in few rows into a "regenerate drafts" module/class
-        print ("-- Regenerating/interpolating Drafts")
+        print ("-- Regenerating/interpolating Drifts")
         rawDrifts = DriftRawData(self.__folderStruct)
 
         configs = Configurations(self.__folderStruct)
