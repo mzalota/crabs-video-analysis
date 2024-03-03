@@ -42,9 +42,6 @@ class DriftsInterpolator:
 
         val["has_outlier"] = has_outlier
 
-        #min_loc = ls.index(min(ls))
-        #max_loc = ls.index(max(ls))
-
         return has_outlier
 
     @staticmethod
@@ -80,7 +77,7 @@ class DriftsInterpolator:
         df = self.__raw_drift_data.raw_drifts_df()
 
         zoom_compensator = CompensateForZoomService(self.__raw_drift_data, self.__folderStruct, df, self.__verticalSpeed)
-        df_compensated = zoom_compensator.result_df(df)
+        df_compensated = zoom_compensator.result_df()
 
         df_compensated = df_compensated[[self.__COLNAME_frameNumber, "drift_x_dezoomed", "drift_y_dezoomed"]]
         df_clean = df_compensated.rename(
@@ -96,14 +93,13 @@ class DriftsInterpolator:
 
         df = self.__remove_absolute_outliers(df)
         df = self.__remove_quantile_outliers(df)
-        raw_drifts_df = df
 
-        zoom_compensator = CompensateForZoomService(self.__raw_drift_data, self.__folderStruct, raw_drifts_df, self.__verticalSpeed)
+        zoom_compensator = CompensateForZoomService(self.__raw_drift_data, self.__folderStruct, df, self.__verticalSpeed)
 
-        zoom_compensator.save_graphs_variance_raw(raw_drifts_df)
+        zoom_compensator.save_graphs_variance_raw(df)
         zoom_compensator.save_graphs_variance_dezoomed()
 
-        zoom_compensator.save_graphs_drifts_raw(raw_drifts_df, frame_id_from, fream_id_to)
+        zoom_compensator.save_graphs_drifts_raw(df, frame_id_from, fream_id_to)
         zoom_compensator.save_graphs_drifts_dezoomed(frame_id_from, fream_id_to)
 
         zoom_compensator.save_graphs_comparison(frame_id_from, fream_id_to)

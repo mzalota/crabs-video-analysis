@@ -17,8 +17,18 @@ class CompensateForZoomService:
 
     def __init__(self, drd: DriftRawData, folderStruct: FolderStructure, input_df, verticalSpeed: VerticalSpeed) -> CompensateForZoomService:
         self.__folderStruct = folderStruct
-        self.__nowBack_df = self.__compensate_for_zoom_subdata(input_df, verticalSpeed)
+        self.__nowBack_df = self.__process_data(input_df, verticalSpeed)
         self.__driftRawData = drd
+
+    def __process_data(self, input_df, verticalSpeed: VerticalSpeed):
+        full_dfw = DataframeWrapper(input_df)
+        nowBack = self.__process_raw_drifts(full_dfw, verticalSpeed)
+
+        full_dfw.append_dataframe(nowBack)
+        return full_dfw.pandas_df()
+
+    def result_df(self):
+        return self.__nowBack_df
 
     def save_graphs_drifts_raw(self, df_param, frame_id_from: int = 0, fream_id_to: int = 123456):
         df = df_param.copy()
@@ -63,40 +73,11 @@ class CompensateForZoomService:
         df_to_plot = df.loc[(df['frameNumber'] > frame_id_from) & (df['frameNumber'] < fream_id_to)]
         graph_plotter = GraphPlotter.createNew(df_to_plot, self.__folderStruct)
 
-        xColumns_new = self.columns_x_dezoomed()
+        xColumns_new = self.__columns_x_dezoomed()
         graph_plotter.generate_graph("FrameMatcher_Drifts_X_zoom", xColumns_new)
 
         yColumns_new = self.__columns_y_dezoomed()
         graph_plotter.generate_graph("FrameMatcher_Drifts_Y_zoom", yColumns_new)
-
-    def __compensate_for_zoom_subdata(self, input_df, verticalSpeed: VerticalSpeed):
-        full_dfw = DataframeWrapper(input_df)
-        nowBack = self.__process_raw_drifts(full_dfw, verticalSpeed)
-
-        full_dfw.append_dataframe(nowBack)
-        return full_dfw.pandas_df()
-
-    def result_df(self, input_df):
-        nowBack_df = self.__nowBack_df
-
-        result_df = input_df[["frameNumber", "driftX", "driftY"]].copy()
-        result_df['drift_x_dezoomed'] = nowBack_df["drift_x_dezoomed"]
-        result_df['drift_y_dezoomed'] = nowBack_df["drift_y_dezoomed"]
-
-        without_outliers = DataframeWrapper(result_df)
-        without_outliers.remove_outliers_quantile("drift_x_dezoomed")
-        without_outliers.remove_outliers_quantile("drift_y_dezoomed")
-        without_outliers.remove_outliers_quantile("driftX")
-        without_outliers.remove_outliers_quantile("driftY")
-
-        without_outliers_df = without_outliers.pandas_df()
-
-        result_df["drift_x_dezoomed"] = without_outliers_df["drift_x_dezoomed"]
-        result_df["drift_y_dezoomed"] = without_outliers_df["drift_y_dezoomed"]
-        result_df["driftX"] = without_outliers_df["driftX"]
-        result_df["driftY"] = without_outliers_df["driftY"]
-
-        return result_df
 
     def __process_raw_drifts(self, inputDFW, verticalSpeed):
         raw_drift_objs = DetectedRawDrift.createListFromDataFrame(inputDFW, verticalSpeed)
@@ -126,14 +107,14 @@ class CompensateForZoomService:
     def save_graphs_variance_dezoomed(self):
         result_df = self.__nowBack_df
         # TODO: Refactor to accept frame_from and frame_to parameters
-        xColumns_new = self.columns_x_dezoomed()
+        xColumns_new = self.__columns_x_dezoomed()
         self.__save_graphs_variance(result_df[xColumns_new], 'variance_x_new')
 
         yColumns_new = self.__columns_y_dezoomed()
         self.__save_graphs_variance(result_df[yColumns_new], 'variance_y_new')
 
 
-    def columns_x_dezoomed(self):
+    def __columns_x_dezoomed(self):
         # TODO: Move this function to DetectedRawDrift class.
         xColumns_new = list()
         for feature_matcher_idx in range(0, 9):
