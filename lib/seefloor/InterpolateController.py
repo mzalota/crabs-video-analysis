@@ -34,12 +34,12 @@ class InterpolateController:
         configs = Configurations(self.__folderStruct)
         if configs.is_debug():
             drifts_interpolator.save_graphs(rawDrifts, verticalSpeed, 1500, 2500)
-        # drifts_interpolator = DriftsInterpolator(self.__folderStruct)
-        rawDrifts.generate_clean_drifts(drifts_interpolator, verticalSpeed, driftsStepSize)
+
+        clean_drifts_df = drifts_interpolator.clean_up_raw_drifts(rawDrifts, driftsStepSize, verticalSpeed)
 
         print("-- Applying manual Drifts")
         manualDrifts = DriftManualData.createFromFile(self.__folderStruct)
-        drifts_interpolated_df = manualDrifts.overwrite_values(rawDrifts)
+        drifts_interpolated_df = manualDrifts.overwrite_values(clean_drifts_df)
 
         drifts = DriftInterpolatedData.createFromFolderStruct(self.__folderStruct)
         drifts.setDF(drifts_interpolated_df)

@@ -73,7 +73,7 @@ class DriftsInterpolator:
 
         return "OK"
 
-    def generate_clean_drifts2(self, drd: DriftRawData, driftsDetectionStep, verticalSpeed):
+    def clean_up_raw_drifts(self, drd: DriftRawData, driftsDetectionStep, verticalSpeed):
         df = drd.raw_drifts_with_nans()
 
         zoom_compensator = CompensateForZoomService(self.__folderStruct, df, verticalSpeed)
@@ -88,7 +88,6 @@ class DriftsInterpolator:
 
     def save_graphs(self, drd: DriftRawData, verticalSpeed, frame_id_from, fream_id_to):
         df = drd.raw_drifts_with_nans()
-        df = drd.remove_values_in_failed_records(df)
 
         df = self.__remove_absolute_outliers(df)
         df = self.__remove_quantile_outliers(df)
@@ -105,7 +104,7 @@ class DriftsInterpolator:
         zoom_compensator.save_graphs_comparison(frame_id_from, fream_id_to)
 
     def __to_step_1(self, df, driftsDetectionStep: int):
-        # TODO: dividiing drift by driftsDetectionStep is not flexible.
+        # TODO: dividing drift by driftsDetectionStep is not flexible.
         # What if detectDrift step is not 2, but 3 or if it is mixed?
         df[self.__COLNAME_driftX] = df[self.__COLNAME_driftX] / driftsDetectionStep
         df[self.__COLNAME_driftY] = df[self.__COLNAME_driftY] / driftsDetectionStep
@@ -145,7 +144,7 @@ class DriftsInterpolator:
             df.loc[df[column_name_y_drift_raw] < -200, [column_name_x_drift_raw, column_name_y_drift_raw]] = numpy.nan
             df.loc[df[column_name_y_drift_raw] > 200, [column_name_x_drift_raw, column_name_y_drift_raw]] = numpy.nan
 
-            df = DataframeWrapper(df).interpolate_nan_values_everywhere().pandas_df()
+        df = DataframeWrapper(df).interpolate_nan_values_everywhere().pandas_df()
         return df
 
     def __remove_quantile_outliers(self, df):
@@ -162,7 +161,7 @@ class DriftsInterpolator:
             without_outliers_x.remove_outliers_quantile(column_name_x_drift_raw)
             df[column_name_x_drift_raw] = without_outliers_x.pandas_df()[column_name_x_drift_raw]
 
-            df = DataframeWrapper(df).interpolate_nan_values_everywhere().pandas_df()
+        df = DataframeWrapper(df).interpolate_nan_values_everywhere().pandas_df()
         return df
 
     def __replace_with_NaN_if_very_diff_to_neighbors(self, data, colName, step_size):

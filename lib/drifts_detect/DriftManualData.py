@@ -119,8 +119,7 @@ class DriftManualData(PandasWrapper):
 
         return corrections
 
-    def overwrite_values(self, rawDrifts: DriftRawData) -> pd.DataFrame:
-        drifts_interpolated_df = rawDrifts.pandas_df()
+    def overwrite_values(self, drifts_interpolated_df: pd.DataFrame) -> pd.DataFrame:
         return self._overwrite_values_internal(drifts_interpolated_df)
 
     def _overwrite_values_internal(self, drifts_interpolated_df):
@@ -134,5 +133,4 @@ class DriftManualData(PandasWrapper):
 
         result_df = DataframeWrapper(drifts_interpolated_df).interpolate_nan_values_everywhere().pandas_df()
         return result_df
-        # return drifts_interpolated_df.reset_index().interpolate(limit_direction='both')
 
