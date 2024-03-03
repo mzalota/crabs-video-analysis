@@ -7,7 +7,7 @@ from lib.reddots.RedDotsDetector import RedDotsDetector
 from lib.VideoStream import VideoStream, VideoStreamException
 
 #https://www.pyimagesearch.com/2016/10/31/detecting-multiple-bright-spots-in-an-image-with-python-and-opencv/
-from lib.data.RedDotsRawData import RedDotsRawData
+from lib.reddots.RedDotsRawData import RedDotsRawData
 
 class DetectRedDotsController:
     __loop_count = 0
@@ -16,7 +16,7 @@ class DetectRedDotsController:
         # type: (FolderStructure) -> None
         self.__configs = Configurations(folderStruct)
         self.__rdRaw = RedDotsRawData.createNewAndReplaceExistingCSVFile(folderStruct)
-        self.__videoStream = VideoStream(folderStruct.getVideoFilepath())
+        self.__videoStream = VideoStream.instance(folderStruct.getVideoFilepath())
         self.__show_debug_UI = False
 
     def run(self):

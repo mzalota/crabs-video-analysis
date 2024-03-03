@@ -1,7 +1,7 @@
 from lib.infra.Logger import Logger
-from lib.drifts.VelocityDetector import VelocityDetector
+from lib.drifts_detect.VelocityDetector import VelocityDetector
 from lib.VideoStream import VideoStream
-from lib.drifts.DriftRawData import DriftRawData
+from lib.drifts_interpolate.DriftRawData import DriftRawData
 from lib.infra.Configurations import Configurations
 
 
@@ -13,7 +13,7 @@ class DetectDriftsController:
 
 
     def run(self):
-        stepSize = self.step_size()
+        stepSize = self.__step_size()
         print("using stepSize: " + str(stepSize))
 
         folderStruct = self.__folderStruct
@@ -23,17 +23,18 @@ class DetectDriftsController:
         if not folderStruct.fileExists(folderStruct.getRawDriftsFilepath()):
             self.__createNewRawFileWithHeaderRow(folderStruct)
 
+        #TODO: Move this logger to DriftRawData class. Writing should be happening there.
         logger = Logger.openInAppendMode(folderStruct.getRawDriftsFilepath())
 
         velocityDetector = VelocityDetector(Configurations(folderStruct).is_debug())
-        videoStream = VideoStream(folderStruct.getVideoFilepath())
+        videoStream = VideoStream.instance(folderStruct.getVideoFilepath())
 
         rawDriftData = DriftRawData(folderStruct)
-        maxFrameID = rawDriftData.maxFrameID()
+        maxFrameID = rawDriftData.max_frame_id()
         if maxFrameID > 1:
-            startFrameID = maxFrameID + stepSize
+            startFrameID = maxFrameID+stepSize
         else:
-            startFrameID = videoStream.get_id_of_first_frame(stepSize)  #5
+            startFrameID = videoStream.get_id_of_first_frame(stepSize)
 
         print("starting processing from frame", startFrameID)
 
@@ -41,7 +42,7 @@ class DetectDriftsController:
 
         logger.closeFile()
 
-    def step_size(self):
+    def __step_size(self):
         # type: () -> int
         configs = Configurations(self.__folderStruct)
         return configs.get_drifts_step_size()

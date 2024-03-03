@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import psutil
 import cv2
 import pylru
@@ -14,22 +16,34 @@ class VideoStreamException(Exception):
 #https://docs.opencv.org/3.4/d4/d15/group__videoio__flags__base.html#gaeb8dd9c89c10a5c63c139bf7c4f5704d
 
 
-class VideoStream():
+class VideoStream:
+    _instance = None
     FRAMES_PER_SECOND = 25
 
-    def __init__(self, videoFilepath):
+    @classmethod
+    def instance(cls, videoFilepath: str) -> VideoStream:
+        if cls._instance is None:
+            print('Creating new instance')
+            cls._instance = cls.__new__(cls)
+            # Put any initialization here.
+            cls._instance.__initialize(videoFilepath)
+
+        return cls._instance
+
+    def __init__(self):
+        raise RuntimeError('Call VideoStream.instance(videoFilepath) instead')
+
+    def __initialize(self, videoFilepath):
         self._vidcap = cv2.VideoCapture(videoFilepath)
-        self.__imagesCache = pylru.lrucache(4) #set the size of cache to be 10 images large
-
+        self.__imagesCache = pylru.lrucache(10)  # set the size of cache to be 10 images large
         print("cv2 version", cv2.__version__)
-        print ("num_of_frames", self.num_of_frames())
-        print ("frame_height", self.frame_height())
-        print ("frame_width", self.frame_width())
-        print ("frames_per_second", self.frames_per_second())
-        print ("codec_code", self.codec_code())
+        print("num_of_frames", self.num_of_frames())
+        print("frame_height", self.frame_height())
+        print("frame_width", self.frame_width())
+        print("frames_per_second", self.frames_per_second())
+        print("codec_code", self.codec_code())
 
-    def num_of_frames(self):
-        # type: () -> int
+    def num_of_frames(self) -> int:
         return int(self._vidcap.get(cv2.CAP_PROP_FRAME_COUNT))
 
     def frame_width(self):
@@ -89,7 +103,6 @@ class VideoStream():
         while True:
             if frame_id > self.num_of_frames():
                 raise Exception("Cannot find a valid frame in stream. Max valid frame is: "+self.num_of_frames())
-
             try:
                 print ("get_id_of_first_frame", frame_id)
                 self._read_image_raw(frame_id)

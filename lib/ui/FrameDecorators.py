@@ -9,7 +9,7 @@ from lib.VideoStream import VideoStream
 from lib.model.Box import Box
 from lib.model.Vector import Vector
 from lib.model.Point import Point
-from lib.data import RedDotsData
+from lib.reddots_interpolate import RedDotsData
 from lib.data.BadFramesData import BadFramesData
 from lib.data.CrabsData import CrabsData
 from lib.data.MarkersData import MarkersData

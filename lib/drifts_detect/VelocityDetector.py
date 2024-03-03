@@ -1,127 +1,203 @@
+from __future__ import annotations
+
 import math
-import traceback
+from typing import List
 
 import numpy
 
-from lib.drifts.FeatureMatcher import FeatureMatcher
-from lib.model.Box import Box
-from lib.model.Vector import Vector
-from lib.model.Point import Point
 from lib.Frame import Frame
-from lib.ui.ImageWindow import ImageWindow
-from lib.infra.MyTimer import MyTimer
 from lib.VideoStream import VideoStreamException
+from lib.drifts_detect.FeatureMatcher import FeatureMatcher
+from lib.infra.MyTimer import MyTimer
+from lib.model.Box import Box
+from lib.model.Image import Image
+from lib.model.Point import Point
+from lib.model.Vector import Vector
+from lib.ui.ImageWindow import ImageWindow
 
 
-class VelocityDetector():
-    def __init__(self, is_debug = False):
-        # type: () -> VelocityDetector
-        self._prevFrame = None
+class ToMoveToFeatureMatcher:
+    def __isAbsoluteValueMoreThanTwiceBig(self, thisValue, medianValue):
+        if math.fabs(thisValue) > math.fabs(medianValue) * 2:
+            return True
+        else:
+            return False
+
+    def excludeOutliers(self, driftsOld):
+        if len(driftsOld) <= 0:
+            return None
+
+        medianLength = Vector.medianLengthOfVectorArray(driftsOld)
+
+        driftsNew = list()
+        for drift in driftsOld:
+            #if drift.isZeroVector():
+            #    continue
+
+            if drift.y > 150:
+                # the ship is not going to move that fast
+                continue
+
+            if drift.y < -30:
+                # the ship is not going to move backward faster that -30...
+                continue
+
+            # print "medianLength "+str(medianLength)+ " drift.length() "+str(drift.length())+ " div two "+ str(medianLength / 2)
+            if (self.__isAbsoluteValueMoreThanTwiceBig(drift.length(), medianLength)):
+                continue
+
+            driftsNew.append(drift)
+
+        return driftsNew
+
+    def _getMedianDriftVector_toMove(self, drifts: List) ->Vector:
+
+        withoutOutliers = self.excludeOutliers(drifts)
+        if not withoutOutliers:
+            return None
+
+        if len(withoutOutliers) <= 0:
+            return None
+
+        driftX = list()
+        driftY = list()
+        for drift in withoutOutliers:
+            #if not drift.isZeroVector():
+            driftX.append(drift.x)
+            driftY.append(drift.y)
+
+        medianXDrift = numpy.median(driftX)
+        medianYDrift = numpy.median(driftY)
+        return Vector(medianXDrift, medianYDrift)
+
+
+class VelocityDetector(ToMoveToFeatureMatcher):
+    def __init__(self, is_debug: bool = False):
         self._timer = MyTimer("VelocityDetector")
         self.__is_debug = is_debug
-        self._drifts = list()
 
     def runLoop(self, frameID: int, stepSize: int, logger, videoStream):
         self.__createFeatureMatchers(Frame.is_high_resolution(videoStream.frame_height()))
 
         if self.__is_debug:
-            self.__ui_window = ImageWindow("mainWindow", Point(700, 200))
+            ui_window = ImageWindow("mainWindow", Point(700, 200))
 
-        prevFrameID = frameID
+        self._write_out_empty_row(frameID, logger)
+        is_first_loop = True
         success = True
         while success:
+            prevFrameID = frameID
+            frameID += stepSize
             if frameID > videoStream.num_of_frames():
                 break
 
-            frame = Frame(frameID, videoStream)
-            try:
-                #try to read frame from video stream
-                current_image = frame.getImgObj()
-            except VideoStreamException as error:
-                print("cannot read frame " + str(frameID) + ", skipping to next")
-                print(repr(error))
-                self.write_out_empty_row(frameID, logger)
-                frameID += stepSize
-                continue
-
-            if (prevFrameID == frameID):
+            if is_first_loop:
                 print("this is the first frame in the video stream")
-                self.write_out_empty_row(frameID, logger)
-                frameID += stepSize
+                self._write_out_empty_row(frameID, logger)
+                is_first_loop = False
                 continue
 
-            framePrev = Frame(prevFrameID, videoStream)
-            if current_image.is_identical_to(framePrev.getImgObj()):
-                print("WARN: the image in this frame, "+str(frameID)+", is identical to image in previous frame, "+str(prevFrameID))
-                self.write_out_empty_row(frameID, logger)
-                self.reset_all_fm()
-                driftVector = None
-            else:
-                self.detectVelocity(frame)
-                self.write_out_drift_row(frameID, logger)
-                driftVector = self.__getMedianDriftVector()
+            is_OK = self.preload_from_videoStream(frameID, prevFrameID, videoStream)
+            if not is_OK:
+                self._write_out_empty_row(frameID, logger)
+                continue
 
+            current_image = Frame(frameID, videoStream).getImgObj()
+            drifts = self.detectVelocity(current_image)
+
+            #TODO: clean this up... we need a more modern logic for deciding if detected drifts are valid or not.
+            medianDrift = self.__getMedianDriftVector(drifts)
+            if medianDrift is None:
+                # none of the detected drifts are valid.
+                self._write_out_empty_row(frameID, logger, drifts)
+                continue
+
+            self._write_out_drift_row(frameID, logger, drifts)
 
             if self.__is_debug:
-                self.__show_ui_window(self._fm.values(), frame, driftVector)
-
-            prevFrameID = frameID
-            frameID += stepSize
+                img = self.__draw_feature_matchers_on_frame(self._fm.values(), current_image, medianDrift)
+                ui_window.showWindowAndWait(img.asNumpyArray())
 
 
+        #end of while loop. close UI window
         if self.__is_debug:
-            self.__ui_window.closeWindow()
+            ui_window.closeWindow()
 
+    def preload_from_videoStream(self, frameID, prevFrameID, videoStream) -> List:
 
-    def write_out_drift_row(self, frameID, logger):
-        driftVector = self.__getMedianDriftVector()
-        if driftVector is None:
-            driftsRow = self.emptyRow(frameID)
-        else:
-            driftsRow = self.infoAboutDrift(frameID)
+        frame = Frame(frameID, videoStream)
+        try:
+            current_image = frame.getImgObj()
+        except VideoStreamException as error:
+            print("WARN: Cannot read frame id:" + str(frameID) + ", skipping to next")
+            self.reset_all_fm()
+            return False
+
+        framePrev = Frame(prevFrameID, videoStream)
+        try:
+            prev_image = framePrev.getImgObj()
+        except VideoStreamException as error:
+            print("WARN: Cannot read previous frame id:" + str(prevFrameID) + ", skipping current frame " + str(frameID) + " to next")
+            return False
+
+        if current_image.is_identical_to(prev_image):
+            print("WARN: the image in this frame, " + str(frameID) + ", is identical to image in previous frame, " + str(prevFrameID))
+            self.reset_all_fm()
+            return False
+
+        return True
+
+    def _write_out_drift_row(self, frameID, logger, drifts: List):
+        driftsRow = self.infoAboutDrift(frameID, drifts)
         print(driftsRow)
         logger.writeToFile(driftsRow)
-        return driftVector
 
-    def write_out_empty_row(self, frameID, logger):
-        driftsRow = self.emptyRow(frameID)
+    def _write_out_empty_row(self, frameID, logger, drifts=list()):
+        driftsRow = self.emptyRow(frameID, drifts)
         print(driftsRow)
         logger.writeToFile(driftsRow)
 
-    def __show_ui_window(self, feature_matchers, frame, drift_vector_median):
-        img = frame.getImgObj()
+    def __draw_feature_matchers_on_frame(self, feature_matchers, img: Image, drift_vector_median) -> Image:
         for feature_matcher in feature_matchers:
             section = feature_matcher.seefloor_section()
             if (section is None):
-                #we did not initialize the seefloor_section in this feature_matcher yet
+                # we did not initialize the seefloor_section in this feature_matcher yet
                 continue
 
             if feature_matcher.detectionWasReset():
-                color = (0, 255, 255) # draw box in yellow color when it is reset
+                color = (0, 255, 255)  # draw box in yellow color when it is reset
             else:
                 color = (0, 255, 0)  # green
-            img.drawBoxOnImage(section.box_around_feature(), color=color, thickness=4)
+
+            #TODO: why are we calling section if FeaturMatcher was reset?
+            box_to_draw = section.box_around_feature()
+            img.drawBoxOnImage(box_to_draw, color=color, thickness=4)
+
+            #draw drift vector in the middle of the box
+            if not feature_matcher.drift_is_valid():
+                continue
+
+            if not section.detection_was_successful():
+                continue
 
             drift_vector = section.get_detected_drift()
-            if drift_vector_median is not None and drift_vector is not None:
+            img.drawDriftVectorOnImage(drift_vector, box_to_draw.centerPoint())
 
-                draw_starting_point = section.get_center_point()
-                img.drawDriftVectorOnImage(drift_vector, draw_starting_point)
+            if drift_vector_median is None:
+                continue
 
-                vector_shift_up = Vector(-50, -50)
+            #draw difference to drift_vector_median (shows how drift detected by this FeatureMatcher differs from median drift)
+            draw_starting_point_up = box_to_draw.centerPoint().translateBy(Vector(-50, -50))
+            drift_contribution_of_this_feature_matcher = drift_vector.minus(drift_vector_median)
+            img.drawDriftVectorOnImage(drift_contribution_of_this_feature_matcher, draw_starting_point_up)
 
-                draw_starting_point2 = draw_starting_point.translateBy(vector_shift_up)
-                drift_contribution_of_this_feature_matcher = drift_vector.translateBy(Vector(-drift_vector_median.x, -drift_vector_median.y))
-                img.drawDriftVectorOnImage(drift_contribution_of_this_feature_matcher, draw_starting_point2)
+            # draw difference to drift_vector_median but exaggerate the x dimension 10-fold and y dimention 2 fold.
+            draw_starting_point_down = box_to_draw.centerPoint().translateBy(Vector(50, 50))
+            without_drift_elongated = Point(drift_contribution_of_this_feature_matcher.x*10, drift_contribution_of_this_feature_matcher.y*10)
+            img.drawDriftVectorOnImage(without_drift_elongated, draw_starting_point_down)
 
+        return img
 
-                draw_starting_point3 = draw_starting_point.translateBy(vector_shift_up.invert())
-                without_drift_elongated = Point(drift_contribution_of_this_feature_matcher.x*20, drift_contribution_of_this_feature_matcher.y)
-                img.drawDriftVectorOnImage(without_drift_elongated, draw_starting_point3)
-
-
-
-        self.__ui_window.showWindowAndWait(img.asNumpyArray())
 
     def __createFeatureMatchers(self, is_high_resolution: bool):
 
@@ -163,29 +239,23 @@ class VelocityDetector():
         self._fm[8] = FeatureMatcher(Box(Point(1200 + hi_res_width_diff, 300),
                                            Point(1200 + hi_res_width_diff + 500, 300 + 300)))  # right top, wider
 
-    def getMedianDriftDistance(self):
-        if len(self._drifts) <= 0:
+    def getMedianDriftDistance(self, drifts):
+        if len(drifts) <= 0:
             return None
 
         driftPixels = list()
-        for drift in self._drifts:
+        for drift in drifts:
             driftPixels.append(drift.length())
         return numpy.median(driftPixels)
 
-    def getMedianDriftAngle(self):
-        if len(self._drifts) <= 0:
+    def getMedianDriftAngle(self, drifts):
+        if len(drifts) <= 0:
             return None
 
         driftAngles = list()
-        for drift in self._drifts:
+        for drift in drifts:
             driftAngles.append(drift.angle())
         return numpy.median(driftAngles)
-
-    def __isAbsoluteValueMoreThanTwiceBig(self, thisValue, medianValue):
-        if math.fabs(thisValue) > math.fabs(medianValue) * 2:
-            return True
-        else:
-            return False
 
     def _isNegative(self, number):
         if number < 0:
@@ -221,88 +291,37 @@ class VelocityDetector():
 
         return this
 
-    def excludeOutliers(self, driftsOld):
-        if len(driftsOld) <= 0:
-            return None
-
-        medianLength = Vector.medianLengthOfVectorArray(driftsOld)
-
-        driftsNew = list()
-        for drift in driftsOld:
-            #if drift.isZeroVector():
-            #    continue
-
-            if drift.y > 150:
-                # the ship is not going to move that fast
-                continue
-
-            if drift.y < -30:
-                # the ship is not going to move backward faster that -30...
-                continue
-
-            # print "medianLength "+str(medianLength)+ " drift.length() "+str(drift.length())+ " div two "+ str(medianLength / 2)
-            if (self.__isAbsoluteValueMoreThanTwiceBig(drift.length(), medianLength)):
-                continue
-
-            driftsNew.append(drift)
-
-        return driftsNew
-
-    def __getMedianDriftVector(self):
-        # type: () -> Vector
-        withoutOutliers = self.excludeOutliers(self._drifts)
-        if not withoutOutliers:
-            return None
-
-        if len(withoutOutliers) <= 0:
-            return None
-
-        driftX = list()
-        driftY = list()
-        for drift in withoutOutliers:
-            #if not drift.isZeroVector():
-            driftX.append(drift.x)
-            driftY.append(drift.y)
-
-        medianXDrift = numpy.median(driftX)
-        medianYDrift = numpy.median(driftY)
-        return Vector(medianXDrift, medianYDrift)
+    def __getMedianDriftVector(self, drifts: List) ->Vector:
+        return self._getMedianDriftVector_toMove(drifts)
 
     def reset_all_fm(self):
         for fm_id, fm in self._fm.items():
             fm.reset_to_starting_box()
 
-    def detectVelocity(self, frame: Frame):
-        self._timer.lap("in detectVelocity() sequential start")
-        self._drifts = list()
+    def detectVelocity(self, img_frame) -> List:
+        drifts = list()
         for fm_id, fm in self._fm.items():
-            fm.detectSeeFloorSection(frame)
+            fm.detectSeeFloorSection(img_frame)
             if not fm.drift_is_valid():
                 continue
 
             section = fm.seefloor_section()
-            drift = section.get_detected_drift()
-            if not drift:
+            if not section.detection_was_successful():
                 continue
 
-            self._drifts.append(drift)
+            drift = section.get_detected_drift()
+            drifts.append(drift)
 
-        self._prevFrame = frame
         self._timer.lap("in detectVelocity() sequential end")
+        return drifts
 
-    def getDriftsAsString(self):
-        return Vector.vectorArrayAsString(self._drifts)
-
-    def getDriftsCount(self):
-        return len(self._drifts)
-
-    def infoAboutDrift(self, frame_id):
-        driftVector = self.__getMedianDriftVector()
-        driftDistance = self.getMedianDriftDistance()
-        driftAngle = self.getMedianDriftAngle()
-        driftsCount = self.getDriftsCount()
-        driftsStr = self.getDriftsAsString()
-        driftsWithoutOutliers = self.excludeOutliers(self._drifts)
+    def infoAboutDrift(self, frame_id: int, drifts: List):
+        driftVector = self.__getMedianDriftVector(drifts)
+        driftDistance = self.getMedianDriftDistance(drifts)
+        driftAngle = self.getMedianDriftAngle(drifts)
+        driftsCount = len(drifts)
+        driftsStr = Vector.vectorArrayAsString(drifts)
+        driftsWithoutOutliers = list() #self.excludeOutliers(self._drifts)
         driftsNoOutliersStr = Vector.vectorArrayAsString(driftsWithoutOutliers)
 
         driftsRow = []
@@ -320,12 +339,13 @@ class VelocityDetector():
             for idx in range(0, 9):
                 section = self._fm[idx].seefloor_section()
                 box = section.box_around_feature()
-                drift = section.get_detected_drift()
                 driftsRow.append(box.topLeft.x)
                 driftsRow.append(box.topLeft.y)
                 driftsRow.append(box.bottomRight.x)
                 driftsRow.append(box.bottomRight.y)
+                # if section.detection_was_successfull():
                 if self._fm[idx].drift_is_valid():
+                    drift = section.get_detected_drift()
                     driftsRow.append("DETECTED")
                     driftsRow.append(drift.x)
                     driftsRow.append(drift.y)
@@ -336,7 +356,7 @@ class VelocityDetector():
 
         return driftsRow
 
-    def emptyRow(self, frame_id):
+    def emptyRow(self, frame_id: int, drifts: List):
         row = []
         row.append(frame_id)
         row.append(-888)
@@ -344,9 +364,9 @@ class VelocityDetector():
         row.append(-777)
         row.append(-45)
         row.append(0)
-        row.append(self.getDriftsCount())
+        row.append(len(drifts))
         row.append("")
-        row.append(self.getDriftsAsString())
+        row.append(Vector.vectorArrayAsString(drifts))
         row.append("EMPTY_DRIFTS")
         return row
 

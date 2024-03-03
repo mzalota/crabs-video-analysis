@@ -41,7 +41,7 @@ configs = Configurations(folderStruct)
 
 timer = MyTimer("Starting MarkCrabs")
 
-videoStream = VideoStream(folderStruct.getVideoFilepath())
+videoStream = VideoStream.instance(folderStruct.getVideoFilepath())
 Camera.initialize(videoStream)
 
 interpolator = InterpolateController(folderStruct)

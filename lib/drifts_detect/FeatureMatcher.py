@@ -1,9 +1,7 @@
-from lib.Frame import Frame
-from lib.drifts.SeeFloorSection import SeeFloorSection
-from lib.imageProcessing.Analyzer import Analyzer
+from lib.drifts_detect.SeeFloorSection import SeeFloorSection
 from lib.imageProcessing.Camera import Camera
 from lib.model.Box import Box
-from lib.model.Point import Point
+from lib.model.Image import Image
 
 
 class FeatureMatcher:
@@ -28,30 +26,22 @@ class FeatureMatcher:
         self.__resetToStartingBox = True
         self.__driftIsValid = False
 
-    def detectSeeFloorSection(self, frame: Frame) -> bool:
+    def detectSeeFloorSection(self, frame_image: Image) -> bool:
         if self.__resetToStartingBox:
-            self.__seeFloorSection = SeeFloorSection(frame, self.__startingBox)
+            self.__seeFloorSection = SeeFloorSection(frame_image, self.__startingBox)
             self.__resetReason = "JustReset"
             self.__resetToStartingBox = False
             self.__driftIsValid = False
             return False
 
-        newTopLeftOfFeature = self.__seeFloorSection.findLocationInFrame(frame)
-        if newTopLeftOfFeature is None:
-            print("WARN: newTopLeftOfFeature is None. NotDetected_1")
-            self.__resetReason = "NotDetected_1"
+        self.__seeFloorSection.try_detecting(frame_image)
+        if not self.__seeFloorSection.detection_was_successful():
+            self.__resetReason = "NotDetected"
             self.__resetToStartingBox = True
             self.__driftIsValid = False
             return False
 
         section_drift = self.__seeFloorSection.get_detected_drift()
-        if section_drift is None:
-            print("WARN: section_drift is None. NotDetected_2")
-            self.__resetReason = "NotDetected_2"
-            self.__resetToStartingBox = True
-            self.__driftIsValid = False
-            return False
-
         if section_drift.x == 0 and section_drift.y == 0:
             self.__resetReason = "NotMoved"
             self.__resetToStartingBox = True

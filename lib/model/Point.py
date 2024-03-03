@@ -2,8 +2,16 @@ from __future__ import annotations
 
 import math
 
+import numpy as np
+
+
 class Point:
     def __init__(self, x, y):
+        if x is None or x == "" or np.isnan(x):
+            x = 0
+        if y is None or y == "" or np.isnan(y):
+            y = 0
+
         self.x = x
         self.y = y
 
@@ -24,12 +32,13 @@ class Point:
 
         return Point(int(coordinates[0]), int(coordinates[1]))
 
+    def copy(self) -> Point:
+        return Point(self.x, self.y)
+
     def __str__(self):
         return "(" + str(self.x) + "," + str(self.y) + ")"
 
-
-    def calculateMidpoint(self, point2):
-        # type: (Point) -> Point
+    def calculateMidpoint(self, point2: Point) -> Point:
         x1 = self.x
         y1 = self.y
         x2 = point2.x
@@ -50,9 +59,6 @@ class Point:
 
         dist = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
         return dist
-
-    def minus(self, vector: Point) -> Point:
-        return Point(self.x - vector.x, self.y - vector.y)
 
     # def translateBy(self, vector: Vector) -> Point:
     def translateBy(self, vector: Point) -> Point:

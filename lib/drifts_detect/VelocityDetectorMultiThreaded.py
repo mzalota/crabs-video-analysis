@@ -1,7 +1,9 @@
 from pebble import concurrent
 
-from lib.drifts.FeatureMatcher import FeatureMatcher
-from lib.drifts.VelocityDetector import VelocityDetector
+from lib.Frame import Frame
+from lib.drifts_detect.FeatureMatcher import FeatureMatcher
+from lib.drifts_detect.SeeFloorSection import SeeFloorSection
+from lib.drifts_detect.VelocityDetector import VelocityDetector
 
 
 class VelocityDetectorMultiThreaded(VelocityDetector):
@@ -26,10 +28,10 @@ class VelocityDetectorMultiThreaded(VelocityDetector):
                 continue
 
             section = fm.seefloor_section()
-            drift = section.get_detected_drift()
-            if not drift:
+            if not section.detection_was_successful():
                 continue
 
+            drift = section.get_detected_drift()
             self._drifts.append(drift)
 
         self._timer.lap("in detectVelocity() multithreaded end")
@@ -38,5 +40,5 @@ class VelocityDetectorMultiThreaded(VelocityDetector):
     # https://pythonhosted.org/Pebble/#concurrent-decorators
     @concurrent.thread
     def parallelize(self, fm: FeatureMatcher, frame: Frame) -> SeeFloorSection:
-        fm.detectSeeFloorSection(frame)
+        fm.detectSeeFloorSection(frame.getImgObj)
         return fm

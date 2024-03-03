@@ -84,35 +84,25 @@ class Camera:
         point = self.get_optical_center()
         return self.distortion_at_point_vector(point)
 
-    def distortion_at_point(self, point: Point) -> float:
-        if point is None:
-            return 1
-        point_away_1 = point.translate_by_xy(-10, -10)
-        point_away_2 = point.translate_by_xy(10, 10)
-        distance_distorted = point_away_1.distanceTo(point_away_2)
-        point_away_1_undistorted = self.undistort_point(point_away_1)
-        point_away_2_undistorted = self.undistort_point(point_away_2)
-        distance_non_distorted = point_away_1_undistorted.distanceTo(point_away_2_undistorted)
-        distortion_coeff = distance_non_distorted / distance_distorted
-        return distortion_coeff
-
     def distortion_at_point_vector(self, point: Point) -> Vector:
         if point is None:
             return 1
         point_away_1 = point.translate_by_xy(-10, -10)
         point_away_2 = point.translate_by_xy(10, 10)
-        x1, y1 = self.__undistort_point_internal(point_away_1, self.__mtx, self.__dst)
-        x2, y2 = self.__undistort_point_internal(point_away_2, self.__mtx, self.__dst)
+        # x1, y1 = self.undistort_point(point_away_1)
+        # x2, y2 = self.undistort_point(point_away_2)
+        p1 = self.undistort_point(point_away_1)
+        p2 = self.undistort_point(point_away_2)
 
-        x_diff = abs(x1 - x2)
-        y_diff = abs(y1 - y2)
+        x_diff = abs(p1.x - p2.x)
+        y_diff = abs(p1.y - p2.y)
         x_distortion = x_diff / abs(point_away_1.x - point_away_2.x)
         y_distortion = y_diff / abs(point_away_1.y - point_away_2.y)
 
         # if (x_diff>20 or y_diff > 20):
         #     print("STRECHING", x_diff, y_diff, str(point_away_1), str(point_away_2),x1,y1,x2,y2)
 
-        return Vector(x_distortion,y_distortion)
+        return Vector(x_distortion, y_distortion)
 
     def getCalibrationMatrix(self):
         return self.__mtx

@@ -1,78 +1,76 @@
+from __future__ import annotations
+
 import pandas as pd
 
 from lib.data.FourierSmoothing import FourierSmoothing
-from lib.infra.Configurations import Configurations
-from lib.infra.DataframeWrapper import DataframeWrapper
-from lib.infra.FolderStructure import FolderStructure
+from lib.imageProcessing.Camera import Camera
 from lib.infra.GraphPlotter import GraphPlotter
+from lib.model.Vector import Vector
 
 
 class VerticalSpeed:
-    def __init__(self, folderStruct):
-        # type: (FolderStructure) -> VerticalSpeed
-        self.__folderStruct = folderStruct
-    def vertical_speed_ratio(self, df, driftsDetectionStep):
 
-        df['distance_smooth'] = self.__smooth_distance_value(df, "distance")
 
-        result = self.__calculate_scaling_factor(df["distance_smooth"], driftsDetectionStep)
-        df["scaling_factor"] = result
+    #scaling factor greater than 1 means that seefloor got further away. Everything got smaller. Everything on the image got closer to the center of the image (fewer pixels away from center).
+    def __init__(self, df: pd.DataFrame):
+        df["scaling_factor"] = self.calculate_scaling_factor_from_distance_between_reddots(df["distance_smooth"])
 
-        if Configurations(self.__folderStruct).is_debug():
-            result = self.__calculate_scaling_factor(df["distance"], driftsDetectionStep)
-            df["scaling_factor_not_smooth"] = result
-            self._save_graph_zoom_factor(df, ["scaling_factor", "scaling_factor_not_smooth"], 1000, 1500)
+        scaling_factor_df = df[["frameNumber", "scaling_factor"]]
 
-        return df[["frameNumber", "scaling_factor"]]
+        df_indexed = scaling_factor_df.set_index('frameNumber')
+        self.__scaling_factor_dict = df_indexed['scaling_factor'].to_dict()
+        self.__df = df
 
-    def __calculate_scaling_factor(self, column: pd.Series, driftsDetectionStep: int) ->pd.DataFrame:
-        dist_diff = column - column.shift(periods=-1)
-        scaling_factor_single_step = dist_diff / column
-        result = scaling_factor_single_step + 0
-        for increment in range(1, driftsDetectionStep):
-            prev = scaling_factor_single_step.shift(periods=-increment)
-            result = result + prev
+    @staticmethod
+    def zoom_correction(point, scaling_factor):
+        camera = Camera.create()
+        frame_center_point = camera.center_point()
 
-        result = result.shift(periods=driftsDetectionStep)
+        x_offset_from_middle_old = point.x - frame_center_point.x
+        x_offset_from_middle_new = x_offset_from_middle_old / scaling_factor
+        x_correction = x_offset_from_middle_new - x_offset_from_middle_old
+
+        y_offset_from_middle_old = point.y - frame_center_point.y
+        y_offset_from_middle_new = y_offset_from_middle_old / scaling_factor
+        y_correction = y_offset_from_middle_new - y_offset_from_middle_old
+
+        return Vector(x_correction, y_correction)
+
+
+    def zoom_compensation(self, frame_id_from, frame_id_to) -> float:
+        result = 1
+        for i in range(frame_id_from, frame_id_to+1, 1):
+            scaling_factor = self.__scaling_factor_dict[i]
+            result = result * scaling_factor
         return result
 
-    def __smooth_distance_value(self, newDF, distance_column_name):
-        distance_column = newDF[distance_column_name]
-        shifted_0_4 = FourierSmoothing().smooth_curve(distance_column, "distance_0_4", 0.4)
-        shifted_1_0 = FourierSmoothing().smooth_curve(distance_column, "distance_1_0", 1)
-        shifted_1_6 = FourierSmoothing().smooth_curve(distance_column, "distance_1_6", 1.6)
+    def calculate_scaling_factor_from_distance_between_reddots(self, column: pd.Series) ->pd.DataFrame:
+        distance_prev = column.shift(periods=-1)
+        return column/distance_prev
 
-        newDF['distance_shift1_0'] = shifted_1_0
-        newDF['distance_shift1_6'] = shifted_1_6
-        newDF['distance_shift0_4'] = shifted_0_4
 
-        if Configurations(self.__folderStruct).is_debug():
-            # columns_y = [distance_column_name, "distance_shift1_0", "distance_shift0_7", "distance_shift0_4"]
-            columns_y = [distance_column_name, "distance_shift0_4", "distance_shift1_0", "distance_shift1_6", ]
-            self.__save_graphs_smooth_distance(newDF, distance_column_name, columns_y, 1000, 1500)
+    def save_graph_smooth_distances(self, df, distance_column_name, folderStruct, frame_id_from, fream_id_to):
+        cutoff_freq = [0.2, 0.4, 1.0, 1.6]
+        distance_column = df[distance_column_name]
+        columns_y = list()
 
-        #TODO: Access which smoothing setting (which value of lowband pass: 1.0, 0.7 or 0.4 or other) is best by looking at variance of fm_N_drift_x_new
-        return shifted_0_4
-        # return shifted_1_0
+        for cutoff_freq in cutoff_freq:
+            fourier_smoothing = FourierSmoothing()
+            colName = "distance_" + str(cutoff_freq)
+            columns_y.append(colName)
 
-    def __save_graphs_smooth_distance(self, df, distance_column_name, columns_y, frame_id_from: int = 0, fream_id_to: int = 123456):
+            smoothed = fourier_smoothing.smooth_array(distance_column.to_numpy(), cutoff_freq)
+            fourier_smoothing.saveGraphFFT(smoothed, colName, folderStruct)
+            df[colName] = smoothed
+
+        columns_y.append(distance_column_name)
+        self.__save_graphs_smooth_distance(df, distance_column_name, columns_y, folderStruct, frame_id_from, fream_id_to)
+
+
+    def __save_graphs_smooth_distance(self, df, distance_column_name, columns_y, folder_struct, frame_id_from: int = 0, fream_id_to: int = 123456):
         df_to_plot = df.loc[(df['frameNumber'] > frame_id_from) & (df['frameNumber'] < fream_id_to)]
-
-        filepath_prefix = self.__folderStruct.getSubDirpath() + "graph_debug_"+distance_column_name+"_"
-        title_prefix = self.__folderStruct.getVideoFilename()
+        filepath_prefix = folder_struct.getSubDirpath() + "graph_debug_" + distance_column_name + "_"
+        title_prefix = folder_struct.getVideoFilename()
 
         graph_title = title_prefix + "_Distance_Fourier_"+distance_column_name
         GraphPlotter(df_to_plot).saveGraphToFile(["frameNumber"], columns_y, graph_title, filepath_prefix+"fourier.png")
-
-    def _save_graph_zoom_factor(self, df, columns_y, frame_id_from: int = 0, fream_id_to: int = 123456):
-
-        x_axis_column = ["frameNumber"]
-        filepath_prefix = self.__folderStruct.getSubDirpath() + "graph_debug_"
-        title_prefix = self.__folderStruct.getVideoFilename()
-
-        graph_title = title_prefix + "_scaling_factor"
-        df_to_plot = df.loc[(df['frameNumber'] > frame_id_from) & (df['frameNumber'] < fream_id_to)]
-
-        plotter = GraphPlotter(df_to_plot)
-        plotter.saveGraphToFile(x_axis_column, columns_y, graph_title,
-                                filepath_prefix + "zoom_factor.png")

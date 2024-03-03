@@ -1,12 +1,12 @@
 from lib.imageProcessing.Camera import Camera
 from lib.model.Point import Point
-from lib.seefloor.PointTranslator import PointTranslator
 from lib.seefloor.SeeFloorFast import SeeFloorFast
 from lib.infra.MyTimer import MyTimer
+from lib.seefloor.SeeFloorTract import SeeFloorTract
 
-class SeeFloorSlicer:
-    def __init__(self, point_translator: PointTranslator, fastObj: SeeFloorFast):
-        self._point_translator = point_translator
+
+class SeeFloorSlicerService:
+    def __init__(self, fastObj: SeeFloorFast):
         self.__fastObj = fastObj
         self.__cache_next_frames = dict()
         self.__cache_prev_frames = dict()
@@ -134,57 +134,52 @@ class SeeFloorSlicer:
 
     def _do_frames_overlap(self, start_frame_id, candidate_frame_id):
         #check if any of the points on the center of each start_frame_id's side are visible on candidate_frame_id
-        is_there_overlap = self.__is_start_frame_visible_on_candidate_frame(start_frame_id, candidate_frame_id)
+        tract = self.__fastObj.seefloor_tract(start_frame_id, candidate_frame_id)
+        is_there_overlap = self.__is_start_frame_visible_on_candidate_frame(tract)
         if is_there_overlap:
             return True
 
         # now check the reverse
         # check if any of the points on the center of each candidate_frame_id's side are visible on start_frame_id
-        is_there_overlap = self.__is_start_frame_visible_on_candidate_frame(candidate_frame_id, start_frame_id)
+        tract_reverse = self.__fastObj.seefloor_tract(candidate_frame_id, start_frame_id)
+        is_there_overlap = self.__is_start_frame_visible_on_candidate_frame(tract_reverse)
         if is_there_overlap:
             return True
 
         return False
 
-    def __is_start_frame_visible_on_candidate_frame(self, start_frame_id, candidate_frame_id):
+    def __is_start_frame_visible_on_candidate_frame(self, seefloor_tract: SeeFloorTract):
         # examine next frames, until none of the corner pixels visible.
         camera = Camera.create()
         frame_width = camera.frame_width()
         frame_height = camera.frame_height()
+        frame_center = camera.center_point()
 
-        frame_center  = camera.center_point()
-        top_center    = Point(frame_center.x, 1)
+        top_center = Point(frame_center.x, 1)
         bottom_center = Point(frame_center.x, frame_height - 1)
+        left_center = Point(1, frame_center.y)
+        right_center = Point(frame_width - 1, frame_center.y)
 
-        left_center   = Point(1,               frame_center.y)
-        right_center  = Point(frame_width - 1, frame_center.y)
-
-        point_translator = self._point_translator
-        new_top_center = point_translator.translatePointCoordinate(top_center, start_frame_id, candidate_frame_id)
+        new_top_center = seefloor_tract.translatePointCoordinate(top_center)
         if (self.__point_is_visible(new_top_center)):
             # print("new_top_center is still visible")
             return True
-
-        new_bottom_center = point_translator.translatePointCoordinate(bottom_center, start_frame_id, candidate_frame_id)
+        new_bottom_center = seefloor_tract.translatePointCoordinate(bottom_center)
         if self.__point_is_visible(new_bottom_center):
             # print("new_bottom_center is still visible")
             return True
-
-        new_right_center = point_translator.translatePointCoordinate(right_center, start_frame_id, candidate_frame_id)
+        new_right_center = seefloor_tract.translatePointCoordinate(right_center)
         if self.__point_is_visible(new_right_center):
             # print("new_right_center is still visible")
             return True
-
-        new_left_center = point_translator.translatePointCoordinate(left_center, start_frame_id, candidate_frame_id)
+        new_left_center = seefloor_tract.translatePointCoordinate(left_center)
         if self.__point_is_visible(new_left_center):
             # print("new_left_center is still visible")
             return True
-
-        new_center = point_translator.translatePointCoordinate(frame_center, start_frame_id, candidate_frame_id)
+        new_center = seefloor_tract.translatePointCoordinate(frame_center)
         if self.__point_is_visible(new_center):
             # print("new_center is still visible")
             return True
-
         return False
 
     def __point_is_visible(self, point):

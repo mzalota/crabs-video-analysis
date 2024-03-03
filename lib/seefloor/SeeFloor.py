@@ -1,20 +1,19 @@
 from __future__ import annotations
 
 import numpy
-
-from lib.data.DriftInterpolatedData import DriftInterpolatedData
-from lib.imageProcessing.Camera import Camera
-from lib.VideoStream import VideoStream
-from lib.model.Point import Point
-from lib.infra.GraphPlotter import GraphPlotter
-from lib.data.PandasWrapper import PandasWrapper
-from lib.data.RedDotsData import RedDotsData
-from lib.infra.FolderStructure import FolderStructure
 import pandas as pd
 
+from lib.VideoStream import VideoStream
+from lib.data.PandasWrapper import PandasWrapper
+from lib.drifts_interpolate.DriftInterpolatedData import DriftInterpolatedData
+from lib.imageProcessing.Camera import Camera
+from lib.infra.DataframeWrapper import DataframeWrapper
+from lib.infra.FolderStructure import FolderStructure
+from lib.infra.GraphPlotter import GraphPlotter
+from lib.model.Point import Point
+from lib.reddots_interpolate.RedDotsData import RedDotsData
 from lib.seefloor.SeeFloorFast import SeeFloorFast
-from lib.seefloor.PointTranslator import PointTranslator
-from lib.seefloor.SeeFloorSlicer import SeeFloorSlicer
+from lib.seefloor.SeeFloorSlicerService import SeeFloorSlicerService
 
 
 class SeeFloor(PandasWrapper):
@@ -28,8 +27,7 @@ class SeeFloor(PandasWrapper):
         self.__df = df
         self._folderStruct = folderStruct
         self.__fastObj = SeeFloorFast(df)
-        self.__pointTranslator = PointTranslator(self.__fastObj)
-        self.__slicer = SeeFloorSlicer(self.__pointTranslator, self.__fastObj)
+        self.__slicer = SeeFloorSlicerService(self.__fastObj)
 
     @staticmethod
     def createFromFolderStruct(folderStruct: FolderStructure) -> SeeFloor:
@@ -46,8 +44,7 @@ class SeeFloor(PandasWrapper):
         newObj = SeeFloor(driftsData, redDotsData, folderStruct, df)
         return newObj
 
-    def getDriftData(self):
-        # type: () -> DriftData
+    def getDriftData(self) -> DriftInterpolatedData:
         return self.__driftData
 
     def getRedDotsData(self) -> RedDotsData:
@@ -55,8 +52,7 @@ class SeeFloor(PandasWrapper):
 
     def maxFrameID(self):
         # type: () -> int
-        return self.__df[self._COLNAME_frameNumber].max()
-        # return self._max_frame_id()
+        return self.__df[self._COLNAME_frameNumber].max()-1
 
     def minFrameID(self):
         # type: () -> int
@@ -148,8 +144,11 @@ class SeeFloor(PandasWrapper):
         endYCoordMM = self.getYCoordMMOrigin(toFrameID)
         return endYCoordMM-startYCoordMM
 
+    #TODO: See if we can get rid of this function inline this function to
     def translatePointCoord(self, pointLocation: Point, origFrameID: int, targetFrameID: int) -> Point:
-        return self.__pointTranslator.translatePointCoordinate(pointLocation, origFrameID, targetFrameID)
+        seefloor_tract = self.__fastObj.seefloor_tract(origFrameID, targetFrameID)
+        return seefloor_tract.translatePointCoordinate(pointLocation)
+
     def mm_per_pixel(self, frame_id):
         return self.__fastObj._mm_per_pixel(frame_id)
 
@@ -219,12 +218,31 @@ class SeeFloor(PandasWrapper):
 
         camera = Camera.create()
         dfMerged["bottom_corner_mm"] = camera.frame_height() * dfMerged["mm_per_pixel"] + dfMerged["driftY_sum_mm"]
-        # dfMerged["bottom_corner_mm"] = Frame.FRAME_HEIGHT * dfMerged["mm_per_pixel"] + dfMerged["driftY_sum_mm"]
+
+        #TODO: replace hardcoded constant VideoStream.FRAMES_PER_SECOND with dynamic video_stream.frames_per_second() function call
         dfMerged["seconds"] = dfMerged["frameNumber"]/VideoStream.FRAMES_PER_SECOND
         dfMerged = dfMerged.sort_values(by=['frameNumber'])
         return dfMerged
 
     #translates the point stepwise for each frame between orig and target.
+
+    def saveGraphForZoomInstananeous(self, frame_id_from: int = 0, frame_id_to: int = 123456):
+        min_frame_id = self.__fastObj.min_frame_id()
+        max_frame_id = self.__fastObj.max_frame_id()
+        records = list()
+        for frame_id in range(min_frame_id, max_frame_id):
+            rec = dict()
+            rec["frameNumber"] = frame_id
+            rec["zoom_factor"] = self.__fastObj.zoom_factor(frame_id)
+            records.append(rec)
+
+        df = DataframeWrapper.create_from_record_list(records).pandas_df()
+        yColumns = ["zoom_factor"]
+        df_to_plot = df.loc[(df['frameNumber'] > frame_id_from) & (df['frameNumber'] < frame_id_to)]
+
+        graphPlotter = GraphPlotter.createNew(df_to_plot, self._folderStruct)
+        graphPlotter.generate_graph("zoom_factor",yColumns)
+
 
     def saveGraphSeefloorY(self):
         filePath = self._folderStruct.getGraphSeefloorAdvancementY()

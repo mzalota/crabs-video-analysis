@@ -1,9 +1,14 @@
+from typing import List
+
 import numpy
 import pandas as pd
 from datetime import datetime
+
+from lib.drifts_interpolate.DriftRawData import DriftRawData
 from lib.infra.FolderStructure import FolderStructure
 from lib.data.PandasWrapper import PandasWrapper
 from lib.infra.DataframeWrapper import DataframeWrapper
+from lib.model.Point import Point
 
 
 class DriftManualData(PandasWrapper):
@@ -22,13 +27,13 @@ class DriftManualData(PandasWrapper):
         self.__df = df
 
     @staticmethod
-    def createFromDataFrame(df, folderStruct):
+    def _createFromDataFrame(df, folderStruct):
         newObj = DriftManualData(df, folderStruct)
         return newObj
 
     @staticmethod
-    def createBrandNew(folderStruct):
-        df = pd.DataFrame(columns=DriftManualData.column_names())
+    def _createBrandNew(folderStruct):
+        df = pd.DataFrame(columns=DriftManualData.__column_names())
         newObj = DriftManualData(df, folderStruct)
         return newObj
 
@@ -36,16 +41,16 @@ class DriftManualData(PandasWrapper):
     def createFromFile(folderStruct):
         filepath = folderStruct.getDriftsManualFilepath()
         if folderStruct.fileExists(filepath):
-            df = PandasWrapper.readDataFrameFromCSV(filepath, DriftManualData.column_names())
+            df = PandasWrapper.readDataFrameFromCSV(filepath, DriftManualData.__column_names())
             df = df[1:]  # .reset_index(drop=True)
         else:
-            df = pd.DataFrame(columns=DriftManualData.column_names())
+            df = pd.DataFrame(columns=DriftManualData.__column_names())
 
         newObj = DriftManualData(df, folderStruct)
         return newObj
 
     @staticmethod
-    def column_names():
+    def __column_names():
         column_names = [
                         DriftManualData.COLNAME_frameNumber_1,
                         DriftManualData.COLNAME_locationX_1,
@@ -57,10 +62,7 @@ class DriftManualData(PandasWrapper):
                         ]
         return column_names
 
-    def add_manual_drift(self, frame_number1, point1, frame_number2, point2):
-        # type: (int, Point, int, Point) -> None
-
-
+    def add_manual_drift(self, frame_number1: int, point1: Point, frame_number2: int, point2: Point) -> None:
         if frame_number1 < frame_number2:
             row_to_append = {
                          self.COLNAME_frameNumber_1: str(int(frame_number1)),
@@ -82,27 +84,16 @@ class DriftManualData(PandasWrapper):
                          self.COLNAME_createdOn: datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
                          }
 
-        # self.__df = self.__df.append(row_to_append, ignore_index=True)
         self.__df = DataframeWrapper.append_to_df(self.__df, row_to_append)
-        #self.saveToFile()
 
-        return row_to_append
-
-    def saveToFile(self):
-        self.__df.to_csv(self.__folderStruct.getDriftsManualFilepath(), sep='\t', index=False)
-
-    def getCount(self):
-        return len(self.__df.index)
-
-    def getPandasDF(self):
-        # type: () -> pd.DataFrame
-        return self.__df
+    def _getRecords(self):
+        return self.__df.to_dict('records')
 
     def save_to_file(self):
         filepath = self.__folderStruct.getDriftsManualFilepath()
         self.__df.to_csv(filepath, sep='\t', index=False)
 
-    def doIt(self):
+    def _list_of_corrections(self) -> List:
         corrections = list()
         tmp = self.__df.to_dict('records')
         for rec in tmp:
@@ -128,21 +119,18 @@ class DriftManualData(PandasWrapper):
 
         return corrections
 
-    def overwrite_values(self, df):
-        # type: (pd.DataFrame) -> pd.DataFrame
-        df = df.set_index("frameNumber")
-        multipleCorrectionDFs = self.doIt()
+    def overwrite_values(self, drifts_interpolated_df: pd.DataFrame) -> pd.DataFrame:
+        return self._overwrite_values_internal(drifts_interpolated_df)
+
+    def _overwrite_values_internal(self, drifts_interpolated_df):
+        drifts_interpolated_df = drifts_interpolated_df.set_index("frameNumber")
+        multipleCorrectionDFs = self._list_of_corrections()
         for correctionsDF in multipleCorrectionDFs:
             correctionsDF = correctionsDF.set_index("frameNumber")
-            df = correctionsDF.combine_first(df)
+            drifts_interpolated_df = correctionsDF.combine_first(drifts_interpolated_df)
 
-        return df.reset_index().interpolate(limit_direction='both')
+        drifts_interpolated_df = drifts_interpolated_df.reset_index()
 
+        result_df = DataframeWrapper(drifts_interpolated_df).interpolate_nan_values_everywhere().pandas_df()
+        return result_df
 
-    def minFrameID(self):
-        # type: () -> int
-        return self.__df[self.__COLNAME_frameNumber].min()
-
-    def maxFrameID(self):
-        # type: () -> int
-        return self.__df[self.__COLNAME_frameNumber].max()
