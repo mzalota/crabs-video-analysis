@@ -32,7 +32,7 @@ class InterpolateController:
 
         configs = Configurations(self.__folderStruct)
         if configs.is_debug():
-            drifts_interpolator.save_graphs(1500, 2500)
+            drifts_interpolator.save_graphs(1000, 1500)
 
         clean_drifts_df = drifts_interpolator.clean_up_raw_drifts(driftsStepSize)
 

@@ -82,11 +82,13 @@ class DriftsInterpolator:
         zoom_compensator = CompensateForZoomService(self.__raw_drift_data, self.__folderStruct, df, self.__verticalSpeed)
         df_compensated = zoom_compensator.result_df(df)
 
-        df_compensated = df_compensated[[self.__COLNAME_frameNumber, "average_x_new", "average_y_new"]]
+        df_compensated = df_compensated[[self.__COLNAME_frameNumber, "drift_x_dezoomed", "drift_y_dezoomed"]]
         df_clean = df_compensated.rename(
-            columns={'average_x_new': self.__COLNAME_driftX, 'average_y_new': self.__COLNAME_driftY,
+            columns={'drift_y_dezoomed': self.__COLNAME_driftX,
+                     'drift_x_dezoomed': self.__COLNAME_driftY,
                      self.__COLNAME_frameNumber: self.__COLNAME_frameNumber})
         df = self.__to_step_1(df_clean, driftsDetectionStep)
+
         return df
 
     def save_graphs(self, frame_id_from: int, fream_id_to: int):

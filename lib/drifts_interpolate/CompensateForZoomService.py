@@ -23,13 +23,13 @@ class CompensateForZoomService:
     def save_graphs_drifts_raw(self, df_param, frame_id_from: int = 0, fream_id_to: int = 123456):
         df = df_param.copy()
 
-        yColumns_orig = self.__driftRawData.columns_y_raw()
+        yColumns_raw = self.__driftRawData.columns_y_raw()
         dframe = DataframeWrapper(df)
-        for col_name in yColumns_orig:
+        for col_name in yColumns_raw:
             dframe.remove_outliers_quantile(col_name)
 
-        xColumns_orig = self.__driftRawData.columns_x_raw()
-        for col_name in xColumns_orig:
+        xColumns_raw = self.__driftRawData.columns_x_raw()
+        for col_name in xColumns_raw:
             dframe.remove_outliers_quantile(col_name)
 
         df = dframe.pandas_df()
@@ -37,8 +37,8 @@ class CompensateForZoomService:
         #after removing values in rows with result="FAILED", now fill them out with interpolated values
         df = DataframeWrapper(df).interpolate_nan_values_everywhere().pandas_df()
 
-        df['average_y_orig'] = df[yColumns_orig].mean(axis=1)
-        df['average_x_orig'] = df[xColumns_orig].mean(axis=1)
+        df['driftY_avg'] = df[yColumns_raw].mean(axis=1)
+        df['driftX_avg'] = df[xColumns_raw].mean(axis=1)
 
         # --- now Plot graphs and save them to PNG files
         df_to_plot = df.loc[(df['frameNumber'] > frame_id_from) & (df['frameNumber'] < fream_id_to)]
@@ -46,13 +46,13 @@ class CompensateForZoomService:
         graph_plotter = GraphPlotter.createNew(df_to_plot, self.__folderStruct)
 
         graph_title = "FrameMatcher_Drifts_X_raw"
-        graph_plotter.generate_graph(graph_title, xColumns_orig)
+        graph_plotter.generate_graph(graph_title, xColumns_raw)
 
         graph_title = "FrameMatcher_Drifts_Y_raw"
-        graph_plotter.generate_graph(graph_title, yColumns_orig)
+        graph_plotter.generate_graph(graph_title, yColumns_raw)
 
-        graph_title = "_median_drifts_x_y"
-        yColumns = ["driftY", "driftX", "average_y_orig", "average_x_orig"]
+        graph_title = "raw_drifts_avg_vs_median"
+        yColumns = ["driftY", "driftX", "driftY_avg", "driftX_avg"]
         graph_plotter.generate_graph(graph_title, yColumns)
 
         return df
@@ -80,19 +80,19 @@ class CompensateForZoomService:
         nowBack_df = self.__nowBack_df
 
         result_df = input_df[["frameNumber", "driftX", "driftY"]].copy()
-        result_df['average_x_new'] = nowBack_df["average_x_new"]
-        result_df['average_y_new'] = nowBack_df["average_y_new"]
+        result_df['drift_x_dezoomed'] = nowBack_df["drift_x_dezoomed"]
+        result_df['drift_y_dezoomed'] = nowBack_df["drift_y_dezoomed"]
 
         without_outliers = DataframeWrapper(result_df)
-        without_outliers.remove_outliers_quantile("average_y_new")
-        without_outliers.remove_outliers_quantile("average_x_new")
+        without_outliers.remove_outliers_quantile("drift_x_dezoomed")
+        without_outliers.remove_outliers_quantile("drift_y_dezoomed")
         without_outliers.remove_outliers_quantile("driftX")
         without_outliers.remove_outliers_quantile("driftY")
 
         without_outliers_df = without_outliers.pandas_df()
 
-        result_df["average_y_new"] = without_outliers_df["average_y_new"]
-        result_df["average_x_new"] = without_outliers_df["average_x_new"]
+        result_df["drift_x_dezoomed"] = without_outliers_df["drift_x_dezoomed"]
+        result_df["drift_y_dezoomed"] = without_outliers_df["drift_y_dezoomed"]
         result_df["driftX"] = without_outliers_df["driftX"]
         result_df["driftY"] = without_outliers_df["driftY"]
 
@@ -119,8 +119,8 @@ class CompensateForZoomService:
         df_to_plot = df.loc[(df['frameNumber'] > frame_id_from) & (df['frameNumber'] < fream_id_to)]
 
         graph_plotter = GraphPlotter.createNew(df_to_plot, self.__folderStruct)
-        graph_plotter.generate_graph("_averages_y", ["average_y_new", "driftY"])
-        graph_plotter.generate_graph("_averages_x", ["average_x_new", "driftX"])
+        graph_plotter.generate_graph("drifts_raw_vs_dezoomed_y", ["drift_y_dezoomed", "driftY"])
+        graph_plotter.generate_graph("drifts_raw_vs_dezoomed_x", ["drift_x_dezoomed", "driftX"])
 
 
     def save_graphs_variance_dezoomed(self):
