@@ -26,23 +26,19 @@ class DriftRawData(PandasWrapper):
     def max_frame_id(self) -> int:
         return self.__df[self.__COLNAME_frameNumber].max()
 
-    def raw_drifts_with_nans(self):
-        df = self.__raw_drifts_with_nans()
-        df = self.__remove_values_in_failed_records(df)
-        return df
-
-    def __raw_drifts_with_nans(self):
+    def raw_drifts_df(self):
         df = self.__df.copy()
-        df = self.__replaceInvalidValuesWithNaN(df)
+        df = self.__erase_values_of_invalid_rows(df)
+        df = self.__erase_values_of_undetected_records(df)
         return df
 
-    def __replaceInvalidValuesWithNaN(self, df):
+    def __erase_values_of_invalid_rows(self, df):
         # type: (pd.DataFrame) -> pd.DataFrame
         df.loc[df['driftY'] == -999, ['driftY', 'driftX']] = numpy.nan
         df.loc[df['driftX'] == -888, ['driftX', 'driftY']] = numpy.nan
         return df
 
-    def __remove_values_in_failed_records(self, df):
+    def __erase_values_of_undetected_records(self, df):
         for feature_matcher_idx in range(0, 9):
             num = str(feature_matcher_idx)
             column_name_y_drift_raw = "fm_" + num + "_drift_y"

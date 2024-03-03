@@ -23,7 +23,6 @@ class CompensateForZoomService:
     def save_graphs_drifts_raw(self, df_param, frame_id_from: int = 0, fream_id_to: int = 123456):
         df = df_param.copy()
 
-
         yColumns_orig = self.__driftRawData.columns_y_raw()
         dframe = DataframeWrapper(df)
         for col_name in yColumns_orig:
@@ -58,7 +57,7 @@ class CompensateForZoomService:
 
         return df
 
-    def save_graphs_drifts_zoom_compensated(self, frame_id_from: int = 0, fream_id_to: int = 123456):
+    def save_graphs_drifts_dezoomed(self, frame_id_from: int = 0, fream_id_to: int = 123456):
         df = self.__nowBack_df
 
         df_to_plot = df.loc[(df['frameNumber'] > frame_id_from) & (df['frameNumber'] < fream_id_to)]
@@ -77,7 +76,7 @@ class CompensateForZoomService:
         full_dfw.append_dataframe(nowBack)
         return full_dfw.pandas_df()
 
-    def compensate_for_zoom(self, input_df, verticalSpeed: VerticalSpeed):
+    def result_df(self, input_df):
         nowBack_df = self.__nowBack_df
 
         result_df = input_df[["frameNumber", "driftX", "driftY"]].copy()

@@ -13,6 +13,7 @@ from lib.drifts_interpolate.DriftRawData import DriftRawData
 from lib.infra.DataframeWrapper import DataframeWrapper
 from lib.infra.FolderStructure import FolderStructure
 from lib.model.Point import Point
+from lib.seefloor.VerticalSpeed import VerticalSpeed
 
 
 class DriftsInterpolator:
@@ -21,8 +22,10 @@ class DriftsInterpolator:
     __COLNAME_driftY = 'driftY'
 
 
-    def __init__(self, folderStruct: FolderStructure):
+    def __init__(self, folderStruct: FolderStructure, drd: DriftRawData, verticalSpeed: VerticalSpeed):
         self.__folderStruct = folderStruct
+        self.__raw_drift_data = drd
+        self.__verticalSpeed = verticalSpeed
 
     @staticmethod
     def _remove_outliers_stderr(val: Dict) -> Point:
@@ -73,11 +76,11 @@ class DriftsInterpolator:
 
         return "OK"
 
-    def clean_up_raw_drifts(self, drd: DriftRawData, driftsDetectionStep, verticalSpeed):
-        df = drd.raw_drifts_with_nans()
+    def clean_up_raw_drifts(self, driftsDetectionStep: int) -> pd.DataFrame:
+        df = self.__raw_drift_data.raw_drifts_df()
 
-        zoom_compensator = CompensateForZoomService(drd, self.__folderStruct, df, verticalSpeed)
-        df_compensated = zoom_compensator.compensate_for_zoom(df, verticalSpeed)
+        zoom_compensator = CompensateForZoomService(self.__raw_drift_data, self.__folderStruct, df, self.__verticalSpeed)
+        df_compensated = zoom_compensator.result_df(df)
 
         df_compensated = df_compensated[[self.__COLNAME_frameNumber, "average_x_new", "average_y_new"]]
         df_clean = df_compensated.rename(
@@ -86,20 +89,20 @@ class DriftsInterpolator:
         df = self.__to_step_1(df_clean, driftsDetectionStep)
         return df
 
-    def save_graphs(self, drd: DriftRawData, verticalSpeed, frame_id_from, fream_id_to):
-        df = drd.raw_drifts_with_nans()
+    def save_graphs(self, frame_id_from: int, fream_id_to: int):
+        df = self.__raw_drift_data.raw_drifts_df()
 
         df = self.__remove_absolute_outliers(df)
         df = self.__remove_quantile_outliers(df)
         raw_drifts_df = df
 
-        zoom_compensator = CompensateForZoomService(drd, self.__folderStruct, raw_drifts_df, verticalSpeed)
+        zoom_compensator = CompensateForZoomService(self.__raw_drift_data, self.__folderStruct, raw_drifts_df, self.__verticalSpeed)
 
         zoom_compensator.save_graphs_variance_raw(raw_drifts_df)
         zoom_compensator.save_graphs_variance_dezoomed()
 
         zoom_compensator.save_graphs_drifts_raw(raw_drifts_df, frame_id_from, fream_id_to)
-        zoom_compensator.save_graphs_drifts_zoom_compensated(frame_id_from, fream_id_to)
+        zoom_compensator.save_graphs_drifts_dezoomed(frame_id_from, fream_id_to)
 
         zoom_compensator.save_graphs_comparison(frame_id_from, fream_id_to)
 
