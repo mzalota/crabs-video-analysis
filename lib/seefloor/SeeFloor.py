@@ -52,8 +52,7 @@ class SeeFloor(PandasWrapper):
 
     def maxFrameID(self):
         # type: () -> int
-        return self.__df[self._COLNAME_frameNumber].max()
-        # return self._max_frame_id()
+        return self.__df[self._COLNAME_frameNumber].max()-1
 
     def minFrameID(self):
         # type: () -> int

@@ -81,8 +81,8 @@ class DriftsInterpolator:
 
         df_compensated = df_compensated[[self.__COLNAME_frameNumber, "drift_x_dezoomed", "drift_y_dezoomed"]]
         df_clean = df_compensated.rename(
-            columns={'drift_y_dezoomed': self.__COLNAME_driftX,
-                     'drift_x_dezoomed': self.__COLNAME_driftY,
+            columns={'drift_x_dezoomed': self.__COLNAME_driftX,
+                     'drift_y_dezoomed': self.__COLNAME_driftY,
                      self.__COLNAME_frameNumber: self.__COLNAME_frameNumber})
         df = self.__to_step_1(df_clean, driftsDetectionStep)
 
