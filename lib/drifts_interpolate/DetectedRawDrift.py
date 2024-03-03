@@ -37,6 +37,8 @@ class DetectedRawDrift:
             # if k == "frameNumber":
             #     result[k] = v
 
+        result['average_x_new'] = self.drift_x()
+        result['average_y_new'] = self.drift_y()
         return result
 
     def skip_row(self) -> bool:

@@ -27,6 +27,11 @@ class InterpolateController:
         # TODO: extract logic in few rows into a "regenerate drafts" module/class
         print ("-- Regenerating/interpolating Drafts")
         rawDrifts = DriftRawData(self.__folderStruct)
+
+        configs = Configurations(self.__folderStruct)
+        if configs.is_debug():
+            rawDrifts.save_graphs(verticalSpeed, 1500, 2500)
+
         rawDrifts.generate_clean_drifts(verticalSpeed, driftsStepSize)
 
         print("-- Applying manual Drifts")
