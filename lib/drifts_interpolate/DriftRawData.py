@@ -52,3 +52,17 @@ class DriftRawData(PandasWrapper):
         df = DataframeWrapper(df).interpolate_nan_values_everywhere().pandas_df()
         return df
 
+    def columns_y_raw(self):
+        yColumns_raw = list()
+        for feature_matcher_idx in range(0, 9):
+            num = str(feature_matcher_idx)
+            yColumns_raw.append("fm_" + num + "_drift_y")
+        return yColumns_raw
+
+    def columns_x_raw(self):
+        xColumns_orig = list()
+        for feature_matcher_idx in range(0, 9):
+            num = str(feature_matcher_idx)
+            xColumns_orig.append("fm_" + num + "_drift_x")
+        return xColumns_orig
+

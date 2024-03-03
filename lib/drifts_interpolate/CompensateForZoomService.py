@@ -6,7 +6,7 @@ import numpy
 import numpy as np
 
 from lib.drifts_interpolate.DetectedRawDrift import DetectedRawDrift
-from lib.infra.Configurations import Configurations
+from lib.drifts_interpolate.DriftRawData import DriftRawData
 from lib.infra.DataframeWrapper import DataframeWrapper
 from lib.infra.FolderStructure import FolderStructure
 from lib.infra.GraphPlotter import GraphPlotter
@@ -15,34 +15,23 @@ from lib.seefloor.VerticalSpeed import VerticalSpeed
 
 class CompensateForZoomService:
 
-    def __init__(self, folderStruct: FolderStructure, input_df, verticalSpeed: VerticalSpeed) -> CompensateForZoomService:
+    def __init__(self, drd: DriftRawData, folderStruct: FolderStructure, input_df, verticalSpeed: VerticalSpeed) -> CompensateForZoomService:
         self.__folderStruct = folderStruct
-        configs = Configurations(folderStruct)
-        self.__generate_debug_graphs = configs.is_debug()
         self.__nowBack_df = self.__compensate_for_zoom_subdata(input_df, verticalSpeed)
+        self.__driftRawData = drd
 
     def save_graphs_drifts_raw(self, df_param, frame_id_from: int = 0, fream_id_to: int = 123456):
         df = df_param.copy()
 
-        #TODO: Move this logic to DetectedRawDrift object.
-        for feature_matcher_idx in range(0, 9):
-            column_drift_y = "fm_" + str(feature_matcher_idx) + "_drift_y"
-            column_drift_x = "fm_" + str(feature_matcher_idx) + "_drift_x"
 
-            column_result = 'fm_' + str(feature_matcher_idx) + '_result'
-            df.loc[df[column_result] == "FAILED", [column_drift_y, column_drift_x, "driftX", "driftY"]] = numpy.nan
-
-        yColumns_orig = self.__columns_y_raw()
+        yColumns_orig = self.__driftRawData.columns_y_raw()
         dframe = DataframeWrapper(df)
         for col_name in yColumns_orig:
             dframe.remove_outliers_quantile(col_name)
 
-        xColumns_orig = self.__columns_x_raw()
+        xColumns_orig = self.__driftRawData.columns_x_raw()
         for col_name in xColumns_orig:
             dframe.remove_outliers_quantile(col_name)
-
-        # dframe.remove_outliers_quantile("driftX", 0.90)
-        # dframe.remove_outliers_quantile("driftY", 0.90)
 
         df = dframe.pandas_df()
 
@@ -75,7 +64,7 @@ class CompensateForZoomService:
         df_to_plot = df.loc[(df['frameNumber'] > frame_id_from) & (df['frameNumber'] < fream_id_to)]
         graph_plotter = GraphPlotter.createNew(df_to_plot, self.__folderStruct)
 
-        xColumns_new = self.__columns_x_dezoomed()
+        xColumns_new = self.columns_x_dezoomed()
         graph_plotter.generate_graph("FrameMatcher_Drifts_X_zoom", xColumns_new)
 
         yColumns_new = self.__columns_y_dezoomed()
@@ -118,10 +107,10 @@ class CompensateForZoomService:
 
     def save_graphs_variance_raw(self, result_df):
         # TODO: Refactor to accept frame_from and frame_to parameters
-        xColumns_raw = self.__columns_x_raw()
+        xColumns_raw = self.__driftRawData.columns_x_raw()
         self.__save_graphs_variance(result_df[xColumns_raw], 'variance_x_raw')
 
-        yColumns_raw = self.__columns_y_raw()
+        yColumns_raw = self.__driftRawData.columns_y_raw()
         self.__save_graphs_variance(result_df[yColumns_raw], 'variance_y_raw')
 
 
@@ -138,29 +127,14 @@ class CompensateForZoomService:
     def save_graphs_variance_dezoomed(self):
         result_df = self.__nowBack_df
         # TODO: Refactor to accept frame_from and frame_to parameters
-        xColumns_new = self.__columns_x_dezoomed()
+        xColumns_new = self.columns_x_dezoomed()
         self.__save_graphs_variance(result_df[xColumns_new], 'variance_x_new')
 
         yColumns_new = self.__columns_y_dezoomed()
         self.__save_graphs_variance(result_df[yColumns_new], 'variance_y_new')
 
-    def __columns_y_raw(self):
-        # TODO: Move this function to DetectedRawDrift class.
-        yColumns_raw = list()
-        for feature_matcher_idx in range(0, 9):
-            num = str(feature_matcher_idx)
-            yColumns_raw.append("fm_" + num + "_drift_y")
-        return yColumns_raw
 
-    def __columns_x_raw(self):
-        # TODO: Move this function to DetectedRawDrift class.
-        xColumns_orig = list()
-        for feature_matcher_idx in range(0, 9):
-            num = str(feature_matcher_idx)
-            xColumns_orig.append("fm_" + num + "_drift_x")
-        return xColumns_orig
-
-    def __columns_x_dezoomed(self):
+    def columns_x_dezoomed(self):
         # TODO: Move this function to DetectedRawDrift class.
         xColumns_new = list()
         for feature_matcher_idx in range(0, 9):
@@ -201,5 +175,4 @@ class CompensateForZoomService:
     def _for_variance(self, dict_of_vals: Dict):
         values = list(dict_of_vals.values())
         return np.var(values)
-
 
