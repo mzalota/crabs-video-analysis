@@ -25,8 +25,13 @@ class Rectificator():
         self.__scale_factor = 0.25
 
         camera = Camera.create()
-        self.__mtx = camera.getCalibrationMatrix()
+
+        mtx_in = camera.getCalibrationMatrix()
+
         self.__dst = camera.getDistortionCoefficients()
+        self.__mtx = cv2.getOptimalNewCameraMatrix(mtx_in, self.__dst, 
+                                                   (self.__frame_width, self.__frame_height), 
+                                                   1, (self.__frame_width, self.__frame_height))
 
         # self.__image_to_rectify = self.__vs.read_image_obj(self.__frameID)
         self.__plane_normal = None
