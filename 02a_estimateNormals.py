@@ -4,12 +4,12 @@ from lib.imageProcessing.Camera import Camera
 from lib.infra.CommandLineLauncher import CommandLineLauncher
 from lib.VideoStream import VideoStream
 from lib.drifts_detect.DetectDriftsController import DetectDriftsController
-from lib.imageProcessing.EstimateNormalsController import EstimateNormalsController
+from lib.estimateNormals.EstimateNormalsController import EstimateNormalsController
 from lib.infra.FolderStructure import FolderStructure
 from lib.ui.FileOpenUI import FileOpenUI
 from lib.infra.Configurations import Configurations
 
-print ("Launched DetectDrift script")
+print ("Launched estimateNormals script")
 
 folderStruct = CommandLineLauncher.initializeFolderStruct(sys.argv)
 if folderStruct is None:
@@ -25,7 +25,7 @@ if folderStruct is None:
     folderStruct.createDirectoriesIfDontExist(folderStruct.getDriftsFilepath())
 
 # StreamToLogger(folderStruct.getLogFilepath())
-print ("Starting EstimateNormal")
+print ("Starting EstimateNormals")
 
 #Create _config.txt file if it does not exist
 configs = Configurations(folderStruct)
