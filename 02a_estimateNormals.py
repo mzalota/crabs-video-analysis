@@ -33,7 +33,11 @@ configs = Configurations(folderStruct)
 Camera.initialize(VideoStream.instance(folderStruct.getVideoFilepath()))
 
 controller = EstimateNormalsController(folderStruct)
-controller.run()
+if configs.is_debug():
+    print("is Debugging")
+    controller.run_with_debug_UI()
+else:
+    controller.run()
 
 print("Done EstimateNormals")
 print("Dir: "+rootDir+", file "+videoFileName)

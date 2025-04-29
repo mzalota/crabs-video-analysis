@@ -51,14 +51,16 @@ class NormalsRawData(PandasWrapper):
 
         return self.__logger
 
-    def addXcomponent(self, frame_id, xComponent):
-         # type: (int, NormalComponent) -> None
-        self.__addNormalComponentEntryToLogger(frame_id, "redDot1", redDot1)       
-
+    def addNormal(self, frame_id, planeNormal):
+         # type: (int, np.ndarray) -> None
+        self.__addNormalComponentEntryToLogger(frame_id, planeNormal)       
 
     def __addNormalComponentEntryToLogger(self, frame_id, planeNormal):
         # type: (int, np.ndarray) -> None
-        row = list(planeNormal)
+        if planeNormal is not None:
+            row = list(planeNormal)
+        else:
+            row = ['','','']
         row.insert(0, frame_id)
         self.__getLogger().writeToFile(row)
         print(row)
