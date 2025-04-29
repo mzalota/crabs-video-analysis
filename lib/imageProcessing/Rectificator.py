@@ -37,14 +37,17 @@ class Rectificator():
         self.__plane_normal = None
 
 
-    def generate_rectified_image(self, image_to_rectify: Image) -> Image:
+    def generate_plane_normal(self, image_to_rectify: Image) -> None:
         if self.__plane_normal is None:
             self.__generate_normal(image_to_rectify)
         plane_normal = self.__plane_normal
 
         if plane_normal is None:
-            return None
+            return None     
 
+
+    def generate_rectified_image(self, image_to_rectify: Image) -> Image:
+        plane_normal = self.__plane_normal
         rot_mtx = self.__rotate_matrix_from_normal(*plane_normal)
         res_img = self.__rotate_image_plane(image_to_rectify, rot_mtx)
         res_img = Image(res_img)
