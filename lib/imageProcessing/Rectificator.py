@@ -19,7 +19,7 @@ class Rectificator():
         self.__show_debug = debug_mode
 
         # By default scale 4K video dowm 4 times
-        self.__abs_motion_threshold = 50.0
+        self.__abs_motion_threshold = 10.0
         self.__init_frame_step = 10
         self.__frame_step_size = 2
         self.__scale_factor = 0.25
@@ -29,13 +29,12 @@ class Rectificator():
         mtx_in = camera.getCalibrationMatrix()
 
         self.__dst = camera.getDistortionCoefficients()
-        self.__mtx = cv2.getOptimalNewCameraMatrix(mtx_in, self.__dst, 
+        self.__mtx, _ = cv2.getOptimalNewCameraMatrix(mtx_in, self.__dst, 
                                                    (self.__frame_width, self.__frame_height), 
                                                    1, (self.__frame_width, self.__frame_height))
 
         # self.__image_to_rectify = self.__vs.read_image_obj(self.__frameID)
         self.__plane_normal = None
-
 
     def generate_plane_normal(self, image_to_rectify: Image) -> None:
         if self.__plane_normal is None:
@@ -108,6 +107,7 @@ class Rectificator():
         except(TypeError, np.linalg.LinAlgError):
             print('Unable to rectify current frame: can not estimate translation vector')
             return None
+
 
 
     def get_plane_normal(self):
