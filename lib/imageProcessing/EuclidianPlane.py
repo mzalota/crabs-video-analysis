@@ -61,7 +61,7 @@ class EuclidianPlane:
         x = v[0,-1]
         y = v[1,-1]
         z = v[2,-1]
-        print( 'Vanishing point calculated: ' + str([x,y,z]))
+        print( f'Vanishing point calculated: {x}, {y}, {z}' )
         vanish_point = (int(x/z), int(y/z))
         sqr = np.sqrt(x*x + y*y + z*z)
 
@@ -138,5 +138,5 @@ class EuclidianPlane:
         a, b, c, d = v[:, -1]
         if c < 0:
             a, b, c, d = [-element for element in (a,b,c,d)]
-        nomal_abs = np.sqrt(a*a + b*b + c*c)
-        return np.float32([a/nomal_abs, b/nomal_abs, c/nomal_abs])
+        normal_abs = np.sqrt(a*a + b*b + c*c)
+        return np.float32([a/normal_abs, b/normal_abs, c/normal_abs])
