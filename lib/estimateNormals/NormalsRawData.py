@@ -13,7 +13,7 @@ class NormalsRawData(PandasWrapper):
 
     @staticmethod
     def createFromCSVFile(folderStruct):
-        # type: (FolderStructure) -> RedDotsRawData
+        # type: (FolderStructure) -> NormalsRawData
 
         filepath = folderStruct.getRawNormalsFilepath()
         if not folderStruct.fileExists(filepath):
@@ -45,14 +45,6 @@ class NormalsRawData(PandasWrapper):
         # type: () -> pd.DataFrame
         return self.__df
 
-    # def minFrameID(self):
-    #     # type: () -> int
-    #     return self.__df[self.__COLNAME_frameNumber].max() #[0]
-    #
-    # def maxFrameID(self):
-    #     # type: () -> int
-    #     return self.__df[self.__COLNAME_frameNumber].max()
-
     def __getLogger(self):
         if not self.__logger:
             self.__logger = Logger.openInAppendMode(self.__folderStruct.getRawNormalsFilepath())
@@ -61,21 +53,13 @@ class NormalsRawData(PandasWrapper):
 
     def addXcomponent(self, frame_id, xComponent):
          # type: (int, NormalComponent) -> None
-        self.__addRedDotEntryToLogger(frame_id, "redDot1", redDot1)       
+        self.__addNormalComponentEntryToLogger(frame_id, "redDot1", redDot1)       
 
-    def addRedDot1(self, frame_id, redDot1):
-        # type: (int, RedNormalComponentDot) -> None
-        self.__addRedDotEntryToLogger(frame_id, "redDot1", redDot1)
 
-    def addRedDot2(self, NormalComponent, redDot2):
-        # type: (int, RedDot) -> None
-        self.__addRedDotEntryToLogger(frame_id, "redDot2", redDot2)
-
-    def __addNormalComponentEntryToLogger(self, frame_id, normalComponent):
-        # type: (int, NormalComponent, Logger) -> None
-        row = normalComponent.infoAboutDot()
+    def __addNormalComponentEntryToLogger(self, frame_id, planeNormal):
+        # type: (int, np.ndarray) -> None
+        row = list(planeNormal)
         row.insert(0, frame_id)
-        row.insert(1, dotName)
         self.__getLogger().writeToFile(row)
         print(row)
 
