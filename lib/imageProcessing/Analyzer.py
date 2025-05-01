@@ -25,6 +25,9 @@ class Analyzer:
 
     def getBrightnessRatio(self):
         return self.__estimateBrighntess(self.__image_equalized)
+    
+    def getOverexposedRatio(self):
+        return self.__estimate_if_overexposed(self.__image_equalized)
 
     ########################## HAZE ESTIMATION ##############################
     # https://www.mdpi.com/2073-4433/13/5/710
@@ -59,3 +62,21 @@ class Analyzer:
     def __estimateBrighntess(self, image):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         return np.mean(gray)
+
+    ########################### Estimate overexposed images #######################
+    # Based on histogram. If result is > 1, we consider is overexposed
+    def __estimate_if_overexposed(self, image):
+        """
+        Function takes an image 
+        and calculates index of overexposure
+        based on histogram
+        """
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        image = cv2.resize(gray, (400,300))
+        histogram, _ = np.histogram(image, bins=256, range=(0, 255))
+
+        # Consider bright pixels with value higher than 217
+        bright_average = np.mean(histogram[217:])
+        mid_average = np.mean(histogram[:217]) + 0.00000001 # Ensure no zero division
+
+        return bright_average / mid_average

@@ -4,7 +4,7 @@ from lib.Frame import Frame
 from lib.infra.Configurations import Configurations
 from lib.imageProcessing.Rectificator import Rectificator
 from lib.VideoStream import VideoStream, VideoStreamException
-from lib.imageProcessing import Camera
+from lib.imageProcessing.Analyzer import Analyzer
 import cv2
 
 #https://www.pyimagesearch.com/2016/10/31/detecting-multiple-bright-spots-in-an-image-with-python-and-opencv/
@@ -42,7 +42,11 @@ class EstimateNormalsController:
             frame = Frame(frame_id, self.__videoStream)
 
             try:
-                frame.getImgObj()
+                cur_img = frame.getImgObj()
+                an = Analyzer(cur_img)
+                if an.getOverexposedRatio() > 1.0:
+                    print('Skipping overexposed image')
+                    raise VideoStreamException
                 self.__compute_current_frame_normal(frame, frame_id)
             except VideoStreamException as error:
                 print("cannot read frame " + str(frame_id) + ", skipping to next")
