@@ -4,6 +4,8 @@ from lib.Frame import Frame
 from lib.infra.Configurations import Configurations
 from lib.imageProcessing.Rectificator import Rectificator
 from lib.VideoStream import VideoStream, VideoStreamException
+from lib.imageProcessing import Camera
+import cv2
 
 #https://www.pyimagesearch.com/2016/10/31/detecting-multiple-bright-spots-in-an-image-with-python-and-opencv/
 from lib.estimateNormals.NormalsRawData import NormalsRawData
@@ -61,11 +63,21 @@ class EstimateNormalsController:
         vf = Rectificator(self.__videoStream, frame_id, self.__show_debug_UI)
         vf.generate_plane_normal(img)
         self.__add_normal_info_for_saving(frame_id, vf.get_plane_normal())
+        if self.__show_debug_UI:
+            self.showDebugRect(vf, img)
+
 
 
     def __add_normal_info_for_saving(self, frame_id, planeNormal):
         # type: (int, np.ndarray) -> object
         self.__nrmRaw.addNormal(frame_id, planeNormal)
+
+
+    def showDebugRect(self, vf : Rectificator, img):
+        res = vf.generate_rectified_image(img)
+        to_show = res.scale_by_factor(0.25)
+        cv2.imshow('Debug rectified', to_show.asNumpyArray())
+        cv2.waitKey(1)
 
 
 

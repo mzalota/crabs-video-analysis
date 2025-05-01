@@ -19,16 +19,16 @@ class Rectificator():
         self.__show_debug = debug_mode
 
         # By default scale 4K video dowm 4 times
-        self.__abs_motion_threshold = 10.0
+        self.__abs_motion_threshold = 30.0
         self.__init_frame_step = 10
         self.__frame_step_size = 2
         self.__scale_factor = 0.25
 
-        camera = Camera.create()
+        self.camera = Camera.create()
 
-        mtx_in = camera.getCalibrationMatrix()
+        mtx_in = self.camera.getCalibrationMatrix()
 
-        self.__dst = camera.getDistortionCoefficients()
+        self.__dst = self.camera.getDistortionCoefficients()
         self.__mtx, _ = cv2.getOptimalNewCameraMatrix(mtx_in, self.__dst, 
                                                    (self.__frame_width, self.__frame_height), 
                                                    1, (self.__frame_width, self.__frame_height))
@@ -45,6 +45,7 @@ class Rectificator():
 
 
     def generate_rectified_image(self, image_to_rectify: Image) -> Image:
+        image_to_rectify = self.camera.undistort_image(image_to_rectify)
         plane_normal = self.__plane_normal
         if plane_normal is None:
             return None 
@@ -68,8 +69,10 @@ class Rectificator():
         motion = 0.0
         step = self.__init_frame_step
 
-        image1 = image_to_rectify.scale_by_factor(self.__scale_factor)
+        image1 = self.camera.undistort_image(image_to_rectify)
+        image1 = image1.scale_by_factor(self.__scale_factor)
         image1 = image1.equalize()
+       
 
         iteration = 0
         while motion < self.__abs_motion_threshold and iteration < 20:
@@ -77,8 +80,10 @@ class Rectificator():
             frame2_ID = self.__frameID + step
 
             image2 = self.__vs.read_image_obj(frame2_ID)
+            image2 = self.camera.undistort_image(image2)
             image2 = image2.scale_by_factor(self.__scale_factor)
             image2 = image2.equalize()
+            
 
             pd = PointDetector(self.__show_debug)
             ret = pd.calculate_keypoints(image1, image2)
