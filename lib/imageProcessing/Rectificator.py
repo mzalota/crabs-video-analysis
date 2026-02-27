@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from matplotlib import pyplot as plt
 
 from lib.model.Image import Image
 from lib.imageProcessing.Camera import Camera
@@ -19,8 +20,8 @@ class Rectificator():
         self.__show_debug = debug_mode
 
         # By default scale 4K video dowm 4 times
-        self.__abs_motion_threshold = 30.0
-        self.__init_frame_step = 10
+        self.__abs_motion_threshold = 20.0
+        self.__init_frame_step = 5
         self.__frame_step_size = 2
         self.__scale_factor = 0.25
 
@@ -66,8 +67,13 @@ class Rectificator():
         print('Attempt to rectify current frame')
         # image_to_rectify = self.__image_to_rectify
 
+        # Calculate within 1 second
+        iteration_num = int((self.__vs.frames_per_second() - self.__init_frame_step) / self.__frame_step_size)
+
+        raw_plane_normals =  np.zeros((1,3))
         motion = 0.0
         step = self.__init_frame_step
+        step = self.__estimate_rectify_step_direction(step)
 
         image1 = self.camera.undistort_image(image_to_rectify)
         image1 = image1.scale_by_factor(self.__scale_factor)
@@ -75,8 +81,9 @@ class Rectificator():
        
 
         iteration = 0
-        while motion < self.__abs_motion_threshold and iteration < 20:
-            step = self.__estimate_rectify_step_direction(step)
+        motion_search_iteration = 0
+        while iteration < iteration_num:
+
             frame2_ID = self.__frameID + step
 
             image2 = self.__vs.read_image_obj(frame2_ID)
@@ -99,19 +106,48 @@ class Rectificator():
             motion = pd.absolute_motion()
             print(f'Motion between frame {self.__frameID} and {frame2_ID} is {motion}')
             step += self.__frame_step_size
+            if motion < self.__abs_motion_threshold:
+                motion_search_iteration += 1
+                continue
 
-        if motion == 0.0:
-            print('Unable to rectify current frame: no motion detected')
+        # if motion == 0.0:
+        #     print('Unable to rectify current frame: no motion detected')
+        #     return None
+
+            # Calculate translation vector
+            try:
+                seafloor_plane = EuclidianPlane(ptsA, ptsB, self.__scale_factor, self.__mtx)
+
+                # Modify normal length by weight of detected points number
+                cur_normal = seafloor_plane.compute_normal() 
+
+                raw_plane_normals = np.vstack((raw_plane_normals, cur_normal))
+                # self.__plane_normal = seafloor_plane.compute_normal()
+
+            except(TypeError, np.linalg.LinAlgError):
+                print('Unable to rectify current frame: can not estimate translation vector')
+                continue
+
+            finally:
+                iteration += 1
+
+        # Plot normals
+        if self.__show_debug:
+            plt.plot(raw_plane_normals)
+            plt.show(block=False)
+            plt.pause(0.1)
+
+        self.__plane_normal = self.mean_normal_estimation(raw_plane_normals)
+
+            
+    def mean_normal_estimation(self, raw_normals):
+        if raw_normals.shape[0] == 1:
             return None
+            return np.array([0, 0, 0])
+        a, b, c =  np.sum(raw_normals, 0) / (raw_normals.shape[0] - 1)
+        normal_abs = np.sqrt(a*a + b*b + c*c) + 0.0001
+        return np.array([a, b, c]) / normal_abs
 
-        # Calculate translation vector
-        try:
-            seafloor_plane = EuclidianPlane(ptsA, ptsB, self.__scale_factor, self.__mtx)
-            self.__plane_normal = seafloor_plane.compute_normal()
-
-        except(TypeError, np.linalg.LinAlgError):
-            print('Unable to rectify current frame: can not estimate translation vector')
-            return None
 
 
 

@@ -131,4 +131,9 @@ class PointDetector:
         Function to help estimate, if there is enough motion between frames
         to perform stereo 3d recostruction
         """
+        vector_sum = np.sum(self.points_B() - self.points_A(), axis=0)
+        # print(f'Shape of points matrix is {self.points_A().shape};')
+        # print((self.points_B() - self.points_A())[:10])
+        # print(f'Vector sum is {vector_sum}')
+        return np.linalg.norm(vector_sum / self.points_A().shape[0])
         return np.average(np.linalg.norm(self.points_B() - self.points_A(), axis=1))
